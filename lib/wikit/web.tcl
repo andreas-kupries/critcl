@@ -1,10 +1,10 @@
 # These routines are used when WiKit is called from CGI
 
 package provide Web 1.0
-package require cgi
 
-# fix, as suggested by Ramon Ribo on c.l.tcl - Sep 19, 2002
-fconfigure stdout -encoding [encoding system]
+package require cgi
+package require Wikit::Db
+package require Wikit::Search
 
 # dump CGI env to file for debugging purposes
 if {[catch {
@@ -45,7 +45,6 @@ set ProtectedPages {}
 proc cgi_mail_start {args} {
   catch {
     global _cgi env appname
-    chdir /home/jcw/data
     file delete $appname.lock
     set fd [open errors.txt a]
     puts $fd {=================================================================}
@@ -83,7 +82,11 @@ proc Wikit::ProcessCGI {} {
   variable readonly
   global htmlcopy htmlcache env roflag
 
-  admin_mail_addr nowhere@to.go
+  if {[info exists env(WIKIT_EMAIL)]} {
+    admin_mail_addr $env(WIKIT_EMAIL)
+  } else {
+    admin_mail_addr nowhere@to.go
+  }
   #debug -on
   
   # 2002-06-17: moved to app-wikit/start.tcl
@@ -100,6 +103,13 @@ proc Wikit::ProcessCGI {} {
   }
 
   set ::script_name $::env(SCRIPT_NAME)
+
+  # fix embedded wikithttpd server script name
+  if { [string first "WikitHttpd" $env(SERVER_SOFTWARE)] > -1 } {
+      if { $::script_name == "/" } {
+          set ::script_name ""
+      }
+  }
 
   # this code added 1-5-2001 to handle ErrorDocument redirection/caching
   if {[info exists ::env(REDIRECT_URL)]} {
@@ -134,17 +144,25 @@ proc Wikit::ProcessCGI {} {
   # end of new code
 
   cgi_eval {
-  set host $::env(REMOTE_ADDR)
-  #catch {set host $::env(REMOTE_HOST)}
+    set host $::env(REMOTE_ADDR)
+    #catch {set host $::env(REMOTE_HOST)}
+
+    # this adds user name, if it is known (thx Shane McDonald, wiki page 19)
+    catch {set host "$::env(REMOTE_USER)@$host"}
 
     set path ""
     catch {set path $::env(PATH_INFO)}
     
     set query ""
     catch {set query $::env(QUERY_STRING)}
+    regsub {^Q=} $query {} query
+    regsub {&.*} $query {} query
     
     set cmd ""
-    if {![regexp {^/([0-9]+)(.*)$} $path x N cmd] || $N >= [mk::view size wdb.pages]} {
+    set section ""
+      # Updated 3Mar03, edit and references are now subdirs to allow
+      # for site indexing. 
+      if {![regexp {^/(edit/|references/)?([0-9]+)(.*)$} $path x section N cmd] || $N >= [mk::view size wdb.pages]} {
       set N 0
     
         # try to locate a page by name, using various search heuristics
@@ -175,6 +193,9 @@ proc Wikit::ProcessCGI {} {
     }
     #tclLog "path $path query $query N $N"
 
+    # prevent DoS via way too large integers
+    if {$query eq "" && [string length $N] > 9} { set query $N }
+
     if {$query != ""} {
       set N 2
       variable searchKey 
@@ -188,6 +209,9 @@ proc Wikit::ProcessCGI {} {
     set origtag [list $date $who]
     set refs [mk::select wdb.refs to $N]
     
+    # added 2004-05-17 wru cookie identification
+    catch {source $::env(WIKIT_WRU)}
+
     # if there is new page content, save it now
     if {$N != "" && [lsearch -exact $::ProtectedPages $N] < 0} {
       if {$roflag < 0 && ![catch {import C}] && [import C] != ""} {
@@ -199,6 +223,7 @@ proc Wikit::ProcessCGI {} {
 	    pragma no-cache
 	  }
 	  head {
+	    cgi_http_equiv Content-type "text/html; charset=utf-8"
 	    title $name
 	    cgi_http_equiv Pragma no-cache
 	    cgi_http_equiv Expire "Mon, 04 Dec 1999 21:29:02 GMT"
@@ -218,24 +243,35 @@ proc Wikit::ProcessCGI {} {
 	  }
 	  return
 	}
-	# this cache flushing is not perfect - for one, it fails to be run
-	# when running the same wiki in local mode as well, the solution is
-	# to move this code to the modify layer, not just the cgi script use
-	if {[info exists htmlcache]} {
-	  file delete $htmlcache/4.html
-	  file delete $htmlcache/$N.html
-	  # remove all referencing pages, if this page did not exist before
-	  # this makes sure that cache entries point to a filled-in page
-	  # from now on, instead of a "[...]" link to a first-time edit page
-	  if {$date == 0} {
-	    foreach r $refs {
-	      set r [mk::get wdb.refs!$refs from]
-	      file delete $htmlcache/$r.html
-	    }
-	  }
+	# thx Alistair Grant, see http://mini.net/tcl/9747
+	#SavePage $N $C $host $name
+	cgi_import_as Action editAction
+	# Only actually save the page if the user selected "Save"
+	if {[string trim $editAction] == "Save" && \
+	    (![info exists ::env(WIKIT_WRU_REQ)] || [info exists wru_nick])} {
+          # this cache flushing is not perfect - for one, it fails to be run
+          # when running the same wiki in local mode as well, the solution is
+          # to move this code to the modify layer, not just the cgi script use
+          if {[info exists htmlcache]} {
+            file delete $htmlcache/4.html
+            file delete $htmlcache/$N.html
+            # remove all referencing pages, if this page did not exist before
+            # this makes sure that cache entries point to a filled-in page
+            # from now on, instead of a "[...]" link to a first-time edit page
+            if {$date == 0} {
+              foreach r $refs {
+                set r1 [mk::get wdb.refs!$r from]
+                file delete $htmlcache/$r1.html
+              }
+            }
+          }
+	  SavePage $N $C $host $name
+	  # end of change, 03-09-2003
+	  mk::file commit wdb
+	  set saved "saved"
+	} else {
+	  set saved "not saved"
 	}
-	SavePage $N $C $host $name
-	mk::file commit wdb
 	# a general improvement: redirect through a fetch again
 	if {![catch {import Z}]} {
 	  tclLog "redirect $Z"
@@ -251,7 +287,7 @@ proc Wikit::ProcessCGI {} {
 	    stylesheet
 	  }
 	  body {
-	    puts "Page saved... [link - [Wikit::Format::quote $name] $Z]"
+	    puts "Page $saved... [link - [Wikit::Format::quote $name] $Z]"
 	  }
 	  return
 	}
@@ -265,26 +301,41 @@ proc Wikit::ProcessCGI {} {
       0 {
 	set backRef ""
         set Refs ""
-        set Title $name
+        set Title [Wikit::Format::quote $name]
       }
       1 {
-	set backRef [mk::get wdb.refs!$refs from]
+        # 03-06-2003 generate page with back ref request, so cached
+	# copy stays valid when more page references are added later
+	#set backRef [mk::get wdb.refs!$refs from]
+	set backRef references/$N!
         set Refs "[Wiki Reference $backRef] - " 
         set Title [Wiki $name $backRef]
       }
       default {
-	set backRef $N!
-        set Refs "[llength $refs] [Wiki References $N!] - "
-        set Title [Wiki $name $N!]
+	set backRef references/$N!
+        set Refs "[llength $refs] [Wiki References $backRef] - "
+        set Title [Wiki $name $backRef]
       }
     }
     
-    set Edit "Edit [Wiki - $N@]"
-    set Home "Go to [Wiki - 0]"
-    set About "About [Wiki - 1] - "
-    set Search "[Wiki - 2] - "
-    set Changes "[Wiki - 4] - "
-    set Help " - [Wiki - 3]"
+    set Edit "Edit [Wiki - edit/$N@]"
+
+    if { $section eq "" } {
+	set Home "Go to [Wiki - 0]"
+	set About "About [Wiki - 1] - "
+	set Search "[Wiki - 2] - "
+	set Changes "[Wiki - 4] - "
+	set Help " - [Wiki - 3]"
+    } else {
+	# either edit/ or references/ is in the URL. That means all
+	# links must point to ../, to avoid confusion (it would still
+	# work, though).
+	set Home "Go to [Wiki - ../0]"
+	set About "About [Wiki - ../1] - "
+	set Search "[Wiki - ../2] - "
+	set Changes "[Wiki - ../4] - "
+	set Help " - [Wiki - ../3]"
+    }
 
     if {$N == 1} { set About "" }
     if {$N == 2} { set Search "" }
@@ -295,13 +346,25 @@ proc Wikit::ProcessCGI {} {
       set date [clock format $date -gmt 1 -format {%e %b %Y, %R GMT}]
     }
     
-    set updated "Updated [font size=-1 $date]"
+    set updated "Updated [cgi_font size=-1 $date]"
+
+    # added 2004-05-17
+    if {[regexp {^(.+)[,@]} $who - who_nick] && $who_nick ne ""} {
+      append updated " by $who_nick"
+    }
+
     if {[lsearch -exact $::ProtectedPages $N] >= 0} {
       set menu ""
     } elseif {$roflag >= 0 || $readonly} {
       set menu "$updated[nl]"
     } else {
-      set menu "$updated [nbspace]-[nbspace] $Edit[nl]"
+      set menu "$updated [nbspace]-[nbspace] $Edit"
+      # 2004-05-29 add optional link to history
+      if {[info exists ::env(WIKIT_REVS)] && $::env(WIKIT_REVS) ne ""} {
+      append menu " [nbspace]-[nbspace]\
+        [link - Revisions $::env(WIKIT_REVS)/$N]"
+      }
+      append menu [nl]
     }
     
     append menu "$Search$Changes$Refs$About$Home$Help"
@@ -319,33 +382,52 @@ proc Wikit::ProcessCGI {} {
 
 	@ { # called to generate an edit page
 	  cgi_head {
+	    cgi_http_equiv Content-type "text/html; charset=utf-8"
 	    cgi_title "Edit $name"
 	    cgi_meta name=robots content=noindex,nofollow
 	    cgi_http_equiv Pragma no-cache
 	    cgi_http_equiv Expire "Mon, 04 Dec 1999 21:29:02 GMT"
 	    stylesheet
 	    if {$N != "2" && [info exists ::env(WIKIT_BASE)]} {
-	      cgi_base href=$::env(WIKIT_BASE)
+	      cgi_base href=$::env(WIKIT_BASE)edit/
 	    }
 	  }
 	  
 	  cgi_body bgcolor=#ffffff {
-	    cgi_puts [h2 [Wiki - $N]]
+	    cgi_h2 [Wiki - ../$N]
 	    
 	    cgi_form $::script_name/$N {
 	      cgi_export O=$origtag
 	      catch {
 		set z "http://$::env(HTTP_HOST)$::env(REDIRECT_URL)"
 		regsub {@$} $z {} z
+		regsub /edit/ $z / z
 		cgi_export Z=$z
 	      }
 	      textarea C=[GetPage $N] rows=30 cols=72 wrap=virtual \
 		style=width:100%
 	      p
-	      submit_button "=  Save  "
+	      # thx Alistair Grant, see http://mini.net/tcl/9747
+	      #submit_button "=  Save  "
+	      # Create Save and Cancel buttons
+	      submit_button "Action=Save" \
+	          [expr {[info exists ::env(WIKIT_WRU_REQ)] && \
+	          ![info exists wru_nick] ? "disabled" : ""}]
+	      cgi_puts " [nbspace] "
+	      submit_button "Action=Cancel"
+	      # end of change, 03-09-2003
+	      # 2004-05-17 added some sugar to show wru identities
 	      if {$date != 0} {
 		cgi_puts " [nbspace] [nbspace] [nbspace] "
 		cgi_puts [italic "Last saved on [bold $date]"]
+		if {[info exists who_nick] && $who_nick ne ""} {
+		  cgi_puts [italic " by [bold $who_nick]"]
+		}
+	      }
+	      if {[info exists wru_nick]} {
+		cgi_puts " [nbspace] (you are: [bold $wru_nick])"
+	      } elseif {[info exists ::env(WIKIT_WRU_REQ)]} {
+	        cgi_puts " [nbspace] ([bold [url Register $::env(WIKIT_WRU_REQ)]] to enable saving)"
 	      }
 	      p
 	      cgi_puts $::EditInstructions
@@ -355,18 +437,19 @@ proc Wikit::ProcessCGI {} {
 	      
 	! { # called to generate a page with references
 	  cgi_head {
+	    cgi_http_equiv Content-type "text/html; charset=utf-8"
 	    cgi_title "References to $name"
 	    cgi_meta name=robots content=noindex,nofollow
 	    cgi_http_equiv Pragma no-cache
 	    cgi_http_equiv Expire "Mon, 04 Dec 1999 21:29:02 GMT"
 	    stylesheet
 	    if {$N != "2" && [info exists ::env(WIKIT_BASE)]} {
-	      cgi_base href=$::env(WIKIT_BASE)
+	      cgi_base href=$::env(WIKIT_BASE)references/
 	    }
 	  }
 
 	  cgi_body bgcolor=#ffffff {
-	    cgi_puts [h2 "References to [Wiki - $N]"]
+	    cgi_h2 "References to [Wiki - ../$N]"
 	
 	    set refList ""
 	    foreach r $refs {
@@ -382,19 +465,20 @@ proc Wikit::ProcessCGI {} {
 	      foreach x [lsort -dict -index 0 [lsort -dict $refList]] {
 		lassign $x name r
 		pagevars $r who date
-		li "[GetTimeStamp $date] . . . [Wiki - $r] . . . $who"
+		li "[GetTimeStamp $date] . . . [Wiki - ../$r] . . . $who"
 	      }
 	    }
 	    
-	    hr noshade
-	    cgi_puts [font size=-1 "$Search - $Changes - $About - $Home"]
+	    hr noshade	    
+	    cgi_puts [cgi_font size=-1 "$Search - $Changes - $About - $Home"]
 	  }
 	}
 
 	default { # display one page, also handles expanded pages
-	  head {
+	  cgi_head {
+	    cgi_http_equiv Content-type "text/html; charset=utf-8"
 	    #if {$N == 4} { cgi_http_equiv refresh 300 }
-	    title $name
+	    cgi_title $name
 	    cgi_http_equiv Pragma no-cache
 	    cgi_http_equiv Expire "Mon, 04 Dec 1999 21:29:02 GMT"
 	    stylesheet
@@ -411,13 +495,16 @@ proc Wikit::ProcessCGI {} {
 	    if {!$noTitle} { h2 $Title }
 	
 	    if {$N == 2} {
-	      isindex
+	      # thx Alistair Grant, see http://mini.net/tcl/9748
+	      isindex "prompt=Enter the search phrase. \
+	      	Append an asterisk (*) to search page contents as well: "
 	    }
 	    
 	    p $C
 	  
 	    hr noshade
-	    cgi_puts $menu
+	    #cgi_puts $menu
+	    cgi_puts "<p id='footer'>$menu</p>"
 	  }
 	}
       }

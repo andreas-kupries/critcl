@@ -1,6 +1,19 @@
-# C Runtime In Tcl - compile C code on the fly
+package provide critcl 2.0
 
-package provide critcl 0.35
+package require platform
+
+set sourcedir [info script]
+
+# make sure the Tcl interpreter supports lassign
+if {[info command ::lassign] eq ""} {
+    proc lassign {valueList args} {
+        if {[llength $args] == 0} {
+            error "wrong # args: lassign list varname ?varname..?"
+        }
+        uplevel [list foreach $args $valueList {break}]
+        return [lrange $valueList [llength $args] end]
+    }
+}
 
 # md5 could be a cmd or a pkg, or be in a separate namespace
 if {[catch { md5 "" }]} {
@@ -31,9 +44,11 @@ if {[catch { md5 "" }]} {
 }
 
 namespace eval ::critcl {
-  namespace export config csources clibraries cinit ccode ccommand cproc \
-                cdata compiling scripting failed done tk cache tsources \
-                platform cheaders cdefines
+  namespace export cache ccode ccommand cdata cdefines cflags cheaders \
+                   check cinit clibraries compiled compiling config cproc \
+                   csources debug done failed framework ldflags platform \
+                   tk tsources preload license
+  variable run [interp create] ;# interpreter to run commands, eval when, etc
 
   # ouch, some md5 implementations return hex, others binary
   if {[string length [md5 ""]] == 32} {
@@ -63,50 +78,52 @@ namespace eval ::critcl {
     proc file_normalize {file} { return [file normalize $file] }
   }
 
-    # return a platform designator, including both OS and machine
-    #
-    # only use first element of $tcl_platform(os) - we don't care
-    # whether we are on "Windows NT" or "Windows XP" or whatever
-    #
-    # transforms $tcl_platform(machine) for some special cases
-    #  - on SunOS, matches for sun4* are transformed to sparc
-    #  - on all OS's matches for intel and i*86* are transformed to x86
-    #  - on MacOS X "Power Macintosh" is transformed to ppc
-    #
     proc platform {} {
-        global tcl_platform
-        set plat [lindex $tcl_platform(os) 0]
-        set mach $tcl_platform(machine)
-        switch -glob -- $mach {
-            sun4* { set mach sparc }
-            intel -
-            i*86* { set mach x86 }
-            "Power Macintosh" { set mach ppc }
-        }
-	switch -- $plat {
-	  AIX   { set mach ppc }
-	  HP-UX { set mach hppa }
-	}
-        return "$plat-$mach"
+        return $v::platform
     }
 
-    proc cache {} {
-        return [file join ~ .critcl [::critcl::platform]]
+    proc platformcc {} {
+        set platform [::platform::generic]
+        if {[string match "*-win32" $platform]} {
+            set cc gcc
+            if {[info exists ::env(CC)]} {
+                set cc $::env(CC)
+            } elseif {[string length [auto_execok cl]] > 0} {
+                set cc cl
+            }
+            append platform -$cc
+        }
+        return $platform
+    }
+
+    proc cache {{dir ""}} {
+        if {$dir ne ""} {
+            set v::cache [file normalize $dir]
+        }
+        return $v::cache
+    }
+
+    # namespace to flag when options set
+    namespace eval option {
+        variable debug_symbols  0
     }
 
   # keep all variables in a sub-namespace for easy access
   namespace eval v {
-    variable cache	[::critcl::cache]
+    variable cache                          ;# cache directory
+    variable platform                       ;# target platform
+    variable version ""                     ;# min version # on platform
+    variable generic [critcl::platformcc]   ;# actual platform
+    variable config                         ;# the matching config 
     variable hdrdir	[file join [file dirname [info script]] critcl_c]
 
     variable prefix	"v[package require critcl]"
     regsub {\.} $prefix {} prefix
 
-    variable compile	{gcc -shared -DUSE_TCL_STUBS}
-    # this should be deferred until after we know if we are cross compiling
-    if {$::tcl_platform(platform) != "windows"} { lappend compile "-fPIC" }
-
+    variable compile
+    variable link
     variable options
+
     array set options {outdir "" keepsrc 0 combine "" appinit "" force 0}
     array set options {I "" L "" tk 0 language "" lines 1}
 
@@ -116,8 +133,28 @@ namespace eval ::critcl {
     variable failed 0    ;# set if compile fails
     variable ininame "" 
     variable libfile "" 
-    variable sharedlibext [info sharedlibextension]
+    variable cflags ""
+    variable ldflags ""  
+    variable targets ""    ;# cross-compile targets
+    variable objs [list] ;# compiled object for each csources
+    variable preload ""  ;# list of shared libraries to pre-load
+
+    # config variables 
+    variable configvars { platform compile include link strip tclstubs tkstubs
+                          debug_memory debug_symbols output preproc_define
+                          preproc_enum object optimize noassert threadflags
+                          sharedlibext link_debug link_release version
+                          link_preload ldoutput
+                        }
+
   }
+
+  # keep config options in a namespace
+  namespace eval c [list 
+      foreach var $v::configvars {
+        variable $var
+     }
+  ]
 
   proc emit {s} {
     append v::code($v::curr) $s
@@ -170,6 +207,36 @@ namespace eval ::critcl {
 
   proc clibraries {args} {
     return [setparam libs $args]
+  }
+
+  proc framework {args} {
+      foreach arg $args {
+          # if an arg contains a slash it must be a framework path
+          if {[string first / $arg] == -1} {
+              append c::link " -framework $arg"
+          } else {
+              append c::compile " -F$arg"
+              append c::link " -F$arg"
+          }
+      }
+  }
+
+  proc cflags {args} {
+      foreach arg $args {
+        append v::cflags " $arg"
+      }
+  }
+
+  proc include {args} {
+      foreach arg $args {
+          append v::cflags "$c::include$arg"
+      }
+  }
+
+  proc ldflags {args} {
+      foreach arg $args {
+        append v::ldflags " -Wl,$arg"
+      }
   }
 
   proc cinit {text exts} {
@@ -273,7 +340,11 @@ namespace eval ::critcl {
       set types($n) $t
       lappend names $n
       lappend cnames _$n
-      lappend cargs "$t $n"
+      if {$t eq "bytearray" || $t eq "rawchar*"} {
+          lappend cargs "char * $n"
+      } else {
+          lappend cargs "$t $n"
+      }
     }
   
     switch -- $rtype {
@@ -304,9 +375,15 @@ namespace eval ::critcl {
     foreach x $names {
       set t $types($x)
       switch -- $t {
-	int - long - float - double - char* - Tcl_Obj* {
+	int - long - float - double -
+        char* - int* - float* - double* -
+        Tcl_Obj* {
 	  emitln "  $types($x) _$x;"
 	}
+        bytearray -
+        rawchar* {
+            emitln "  char* _$x;"
+        }
 	default {
 	  emitln "  void *_$x;"
 	}
@@ -347,6 +424,17 @@ namespace eval ::critcl {
 	char* {
 	  emitln "  _$x = Tcl_GetString(ov\[$n]);"
 	}
+        int* -
+        float* -
+        double* {
+          emitln "  _$x = ($types($x)) Tcl_GetByteArrayFromObj(ov\[$n], NULL);"
+          emitln "  Tcl_InvalidateStringRep(ov\[$n]) ;"
+        }
+        bytearray -
+        rawchar* {
+            emitln "  _$x = (char*) Tcl_GetByteArrayFromObj(ov\[$n], NULL);"
+            emitln "  Tcl_InvalidateStringRep(ov\[$n]) ;"
+        }
 	default {
 	  emitln "  _$x = ov\[$n];"
 	}
@@ -362,10 +450,10 @@ namespace eval ::critcl {
     switch -- $rtype {
       void    	{ }
       ok	{ emitln "  return rv;" }
-      int	{ emitln "  Tcl_SetIntObj(Tcl_GetObjResult(ip), rv);" }
-      long	{ emitln "  Tcl_SetLongObj(Tcl_GetObjResult(ip), rv);" }
+      int	{ emitln "  Tcl_SetObjResult(ip, Tcl_NewIntObj(rv));" }
+      long	{ emitln "  Tcl_SetObjResult(ip, Tcl_NewLongObj(rv));" }
       float -
-      double	{ emitln "  Tcl_SetDoubleObj(Tcl_GetObjResult(ip), rv);" }
+      double	{ emitln "  Tcl_SetObjResult(ip, Tcl_NewDoubleObj(rv));" }
       char*	{ emitln "  Tcl_SetResult(ip, rv, TCL_STATIC);" }
       string -
       dstring	{ emitln "  Tcl_SetResult(ip, rv, TCL_DYNAMIC);" }
@@ -405,14 +493,55 @@ namespace eval ::critcl {
     return $name
   }
 
-  proc cbuild {{file ""} {load 1} {prefix {}} {silent ""}} {
-    if {$file == ""} { set file [file_normalize [info script]] }
+    proc compile {file src copts lfd obj} {
+        variable run
+        set cmdline "$c::compile $v::cflags $c::threadflags $c::tclstubs $copts"
+        set outfile $obj
+        append cmdline " [subst $c::output] $src"
+        if {$v::options(language) != ""} {
+         # Allow the compiler to determine the type of file
+         # otherwise it will try to compile the libs 
+         append cmdline " -x none"
+        }
+        # add the Tk stuff
+        if {$v::options(tk)} {
+            append cmdline " $c::tkstubs"
+        }
+        if {!$option::debug_symbols} {
+            append cmdline " $c::optimize $c::noassert"
+        }
+        if {$v::options(combine) == "standalone"} {
+            regsub $c::tclstubs $cmdline { } cmdline
+            regsub $c::tkstubs $cmdline { } cmdline
+        }
+        puts $lfd $cmdline
+        set v::failed 0
+        interp transfer {} $lfd $run
+        if {[catch {
+            interp eval $run "exec $cmdline 2>@ $lfd"
+            interp transfer $run $lfd {}
+            if {!$v::options(keepsrc) && $src ne $file} { file delete $src }
+            puts $lfd "$obj: [file size $obj] bytes"
+        } err]} {
+            interp transfer $run $lfd {}
+            puts $lfd "ERROR while compiling code in $file:"
+            puts $lfd $err
+            incr v::failed 
+        }
+    }
 
+  proc cbuild {{file ""} {load 1} {prefix {}} {silent ""}} {
+    if {$file eq ""} {
+        set link 1
+        set file [file_normalize [info script]]
+    } else {
+        set link 0
+    }
+        
     # each unique set of cmds is compiled into a separate extension
     set digest [md5_hex "$file $v::code($file,list)"]
 
     set cache $v::cache
-    regsub {^~} $cache "$::env(HOME)/" cache
     set cache [file_normalize $cache]
 
     set base [file join $cache ${v::prefix}_$digest]
@@ -432,14 +561,16 @@ namespace eval ::critcl {
     }
 
     # modify the output file name if debugging symbols are requested
-    if {[lsearch -exact $hdrs "-g"] >= 0} { append libfile _g }
+    if {$option::debug_symbols} {
+        append libfile _g
+    }
 
     # choose distinct suffix so switching between them causes a rebuild
     switch -- $v::options(combine) {
-      ""         { append libfile $v::sharedlibext }
-      dynamic    { append libfile _pic.o }
-      static     { append libfile _stub.o }
-      standalone { append libfile .o }
+      ""         -
+      dynamic    { append libfile _pic$c::object }
+      static     { append libfile _stub$c::object }
+      standalone { append libfile $c::object }
     }
 
     # the init proc name takes a capitalized prefix from the package name
@@ -450,7 +581,9 @@ namespace eval ::critcl {
         set ininame "${prefix}_$ininame"
     }
 
-    if {$v::options(force) || ![file exists $libfile]} {
+    # the shared library we hope to produce
+    set target $base$c::sharedlibext 
+    if {$v::options(force) || ![file exists $target]} {
       file mkdir $cache
 
       set log [file join $cache [pid].log]
@@ -482,6 +615,8 @@ namespace eval ::critcl {
       puts $fd "/* [string repeat - 70] */"
 
       puts -nonewline $fd {
+# line 1 "MyInitTclStubs"
+
 #if USE_TCL_STUBS
   TclStubs *tclStubsPtr;
   TclPlatStubs *tclPlatStubsPtr;
@@ -523,14 +658,9 @@ namespace eval ::critcl {
   } 
 #endif
 }
-      # now do the Tk stuff
       if {$v::options(tk)} {
         setup_tk_stubs $fd
-	if {![regexp { -DUSE_TK_STUBS\M} $v::compile]} {
-	  append v::compile " -DUSE_TK_STUBS"
-	}
       }
-
       puts $fd "
 #ifdef __cplusplus
 extern \"C\" {
@@ -544,6 +674,7 @@ ${ininame}_Init(Tcl_Interp *ip)
 #endif"
       if {$v::options(tk)} {
         puts $fd "
+# line 1 \"MyInitTkStubs\"
 #if USE_TK_STUBS
   if (!MyInitTkStubs(ip)) return TCL_ERROR;
 #endif"
@@ -563,7 +694,7 @@ ${ininame}_Init(Tcl_Interp *ip)
         } else {
             set dp 0
         }
-	puts $fd "  Tcl_CreateObjCommand(ip, ns_$x, tcl_$x, $cd, $dp);"
+        puts $fd "  Tcl_CreateObjCommand(ip, ns_$x, tcl_$x, $cd, $dp);"
       }
       puts $fd "  return TCL_OK;
 }
@@ -579,16 +710,23 @@ ${ininame}_Init(Tcl_Interp *ip)
 	}
       }
 
+      # copy X11 stuff on Windows
+      if {$v::options(tk) && $::tcl_platform(platform) eq "windows"} {
+          set xdir [file join $cache X11]
+          if {![file isdirectory $xdir]} {
+              file copy [file join $v::hdrdir X11] $cache
+          }
+      }
+
       set copts [list]
       if {$v::options(language) != ""} {
-	  lappend copts -x $v::options(language)
+	lappend copts -x $v::options(language)
       }
       if {$v::options(I) != ""} {
-        lappend copts -I$v:::options(I)
+	lappend copts $c::include$v:::options(I)
       }
-      lappend copts -I$cache
+      lappend copts $c::include$cache
       set copies {}
-
       foreach x $hdrs {
 	if {[string index $x 0] == "-"} {
 	  lappend copts $x
@@ -600,49 +738,78 @@ ${ininame}_Init(Tcl_Interp *ip)
 	}
       }
 
-      set cmdline "$v::compile $copts -o $libfile $base.c $srcs"
-      if {$v::options(language) != ""} {
-# Allow the compiler to determine the type of file
-# otherwise it will try to compile the libs 
-         append cmdline " -x none"
+      compile $file $base.c $copts $lfd $libfile
+      foreach src $srcs {
+          set tail [file tail $src]
+          set srcbase [file rootname [file tail $src]]
+          if {[file dirname $base] ne [file dirname $src]} {
+              set srcbase [file tail [file dirname $src]]_$srcbase
+          }
+          set obj [file join [file normalize $cache] ${srcbase}$c::object]
+          compile $src $src $copts $lfd $obj
+          lappend v::objs $obj
       }
-
-      append cmdline " " $libs
-
-      if {$v::options(combine) == ""} {
-	if {![regexp { -g } $cmdline]} {
-	  append cmdline " -O2 -DNDEBUG -Wl,-s"
-	}
-      } else {
-        if {$::tcl_platform(os) eq "OSF1"} {
-	  regsub { -shared } $cmdline { -c } cmdline
-        } else {
-	  regsub { -shared } $cmdline { -r -nostdlib } cmdline
+      if {($load || $link) && !$v::failed} {
+        set cmdline $c::link
+        if {[llength $v::preload]} {
+            append cmdline " $c::link_preload"
         }
-	if {$v::options(combine) != "dynamic"} {
-	  regsub { -fPIC } $cmdline { } cmdline
-	  if {$v::options(combine) == "standalone"} {
-	    regsub { -DUSE_TCL_STUBS } $cmdline { } cmdline
-	  }
-	}
-      }
-
-      if {$::tcl_platform(os) == "Darwin"} {
-	regsub { -shared } $cmdline { -dynamiclib -fno-common } cmdline
-	regsub { -Wl,-s} $cmdline {} cmdline
-      } elseif {$::tcl_platform(os) eq "OSF1"} {
-	  regsub { -Wl,-s} $cmdline {} cmdline
-      }
-
-      puts $lfd $cmdline
-      set v::failed 0
-      if {[catch {
-	  eval exec $cmdline 2>@ $lfd
-	  if {!$v::options(keepsrc)} { file delete $base.c }
-	  puts $lfd "$libfile: [file size $libfile] bytes"
-      } err]} {
-	  puts $lfd "ERROR while compiling code in $file:"
-	  incr v::failed 
+        set outfile $target
+        if {[string length [set ldout [subst $c::ldoutput]]] == 0} {
+            set ldout [subst $c::output]
+        }
+        if {$option::debug_symbols} {
+            append cmdline " $c::link_debug $ldout"
+        } else {
+            append cmdline " $c::strip $c::link_release $ldout"
+        }
+        if {[string match "*-win32-cl" [platformcc]]} {
+            regsub -all -- {-l(\S+)} $libs {\1.lib} libs
+        }
+        append cmdline " $libfile "
+        if {[string match "*-win32-cl" [platformcc]]} {
+            set f [open [set rsp [file join $cache link.fil]] w]
+            puts $f [join $v::objs \n]
+            close $f
+            append cmdline @$rsp
+        } else {
+            append cmdline [join $v::objs]
+        }
+        append cmdline " $libs $v::ldflags"
+        puts $lfd "\n$cmdline"
+        variable run
+        interp transfer {} $lfd $run
+        if {[catch {
+            interp eval $run "exec $cmdline 2>@ $lfd"
+            interp transfer $run $lfd {}
+            puts $lfd "$target: [file size $target] bytes"
+        } err]} {
+            interp transfer $run $lfd {}
+            puts $lfd "ERROR while linking $target:"
+            incr v::failed 
+        }
+        if {!$v::failed && [llength $v::preload]} {
+            # compile preload if necessary
+            set outfile [file join [file dirname $base] \
+                            preload$c::sharedlibext]
+            if {![file readable $outfile]} {
+                set src [file join $v::cache preload.c]
+                set obj [file join $v::cache preload.o]
+                compile $src $src $copts $lfd $obj
+                set cmdline "$c::link $obj $c::strip [subst $c::output]"
+                puts $lfd "\n$cmdline"
+                interp transfer {} $lfd $run
+                if {[catch {
+                    interp eval $run "exec $cmdline 2>@ $lfd"
+                    interp transfer $run $lfd {}
+                    puts $lfd "$outfile: [file size $target] bytes"
+                } err]} {
+                    interp transfer $run $lfd {}
+                    puts $lfd "ERROR while linking $outfile:"
+                    incr v::failed 
+                }
+            }
+        }
       }
       # read build log
       close $lfd
@@ -663,7 +830,9 @@ ${ininame}_Init(Tcl_Interp *ip)
 	puts stderr $msgs
 	puts stderr "critcl build failed ($file)"
       }
-    } elseif {$load} { load $libfile $ininame }
+    } elseif {$load} {
+        load $target $ininame
+    }
 
     foreach {name digest} $v::code($file,list) {
       if {$name != "" && [info exists v::code($digest)]} {
@@ -672,6 +841,9 @@ ${ininame}_Init(Tcl_Interp *ip)
     }
     foreach x {hdrs srcs init} {
       array unset v::code $file,$x
+    }
+    if {$link} {
+      return [list $target $ininame]
     }
     return [list $libfile $ininame]
   }
@@ -707,11 +879,7 @@ ${ininame}_Init(Tcl_Interp *ip)
     proc compiling {} {
         # check that we can indeed run a compiler
         # should only need to do this if we have to compile the code?
-	set nul /dev/null
-	if {$::tcl_platform(platform) == "windows"} {
-	    set nul NUL
-	}
-	if {[catch {exec gcc -v 2> $nul}] && [catch {exec cc -v 2> $nul}]} {
+        if {[auto_execok [lindex $c::compile 0]] eq ""} {
             set v::compiling 0
         } else {
             set v::compiling 1
@@ -719,8 +887,8 @@ ${ininame}_Init(Tcl_Interp *ip)
         return $v::compiling
     }
 
-    proc scripting {} {
-        return [expr {$v::compiling == 0}]
+    proc compiled {} {
+        return [compiling]
     }
 
     proc done {} {
@@ -745,6 +913,7 @@ ${ininame}_Init(Tcl_Interp *ip)
     }
 
     proc check {code} {
+        variable run
         file mkdir $v::cache ;# just in case
         set pref [file normalize [file join $v::cache check_[pid]]]
         set src $pref.c
@@ -753,11 +922,16 @@ ${ininame}_Init(Tcl_Interp *ip)
         close $fd
         set copts [list]
         if {$v::options(I) != ""} {
-            lappend copts -I$v:::options(I)
+            lappend copts $c::include$v:::options(I)
         }
-        lappend copts -I$v::cache
-        set cmdline "$v::compile $copts [file normalize $src] -o $pref.o"
-        if {[catch {eval exec $cmdline} err]} {
+        lappend copts $c::include$v::cache
+        set file [file normalize [info script]]
+        # get the settings for this file into local variables
+        set hdrs [append v::code($file,hdrs) ""] ;# make sure it exists
+        set cmdline "$c::compile $v::cflags $copts $hdrs"
+        set outfile $pref$c::object
+        append cmdline " [subst $c::output] [file normalize $src]"
+        if {[catch {interp eval $run exec $cmdline} err]} {
             set result 0
         } else {
             set result 1
@@ -769,35 +943,31 @@ ${ininame}_Init(Tcl_Interp *ip)
     }
 
     proc crosscheck {} {
+        variable targets
         global tcl_platform
-	set platform ""
-        if {![catch {set machine [eval exec "$v::compile -dumpmachine"]}]} {
-            switch -glob -- $machine {
-                *mingw* {
-                    if {![string equal $tcl_platform(platform) windows]} {
-                        set tcl_platform(byteOrder) littleEndian
-                        set tcl_platform(machine) intel
-                        set tcl_platform(os) "Windows NT"
-                        set tcl_platform(osVersion) 5.0
-                        set tcl_platform(platform) windows
-                        set tcl_platform(wordSize) 4
-                        set result 1
-                        set v::sharedlibext .dll
-                        set v::cache [::critcl::cache]
-                        regsub { -fPIC} $v::compile {} v::compile
-                        set platform Windows
-                        set desc Xmingwin
+        if {![catch {
+            variable run
+            set config [interp eval $run exec "$c::version 2>@stdout"]
+        } msg]} {
+            set host ""
+            set target ""
+            foreach line $config {
+                foreach arg [split $line] {
+                    if {[string match "--*" $arg]} {
+                        lassign [split [string trim $arg -] =] cfg val
+                        set $cfg $val
                     }
                 }
             }
-        }
-        if {$platform != ""} {
-            puts stderr "Cross compiling for $platform using $desc"
+            if {$host ne $target && [info exists targets($target)]} {
+                setconfig $target
+                puts stderr "Cross compiling using $target"
+            }
         }
     }
 
     proc sharedlibext {} {
-        return $v::sharedlibext
+        return $c::sharedlibext
     }
 
     proc tsources {args} {
@@ -810,6 +980,24 @@ ${ininame}_Init(Tcl_Interp *ip)
         }
     }
 
+    proc debug {args} {
+        if {[lindex $args 0] eq "all"} {
+            set args {memory symbols}
+        }
+        foreach arg $args {
+            switch -- $arg {
+                memory  { set v::cflags [concat $v::cflags $c::debug_memory] }
+                symbols { set v::cflags [concat $v::cflags $c::debug_symbols]
+                          set option::debug_symbols 1
+                        }
+                default {
+                    puts stderr "error: unknown critcl::debug option - $arg"
+                    exit 1
+                }
+            }
+        }
+    }
+
     proc build_defines {fd file} {
         # we process the cdefines in three steps
         #   - get the list of defines by preprocessing the source using the
@@ -819,11 +1007,12 @@ ${ininame}_Init(Tcl_Interp *ip)
         #   - generate Tcl_ObjSetVar2 commands to initialise Tcl variables 
         set def [file normalize [file join $v::cache define_[pid]]]
         # first step - get list of matching defines
-        set cmd "$v::compile $v::code($file,hdrs) -E"
         set dfd [open $def.c w]
         puts $dfd $v::code(ccode)
         close $dfd
-        set efd [open "| $cmd -dM $def.c" r]
+        set hdrs $v::code($file,hdrs)
+        set cmd "$c::preproc_define $hdrs"
+        set efd [open "| $cmd $def.c" r]
         set defines [list]
         while {[gets $efd line] >= 0} {
             set fields [split [string trim $line]]
@@ -838,13 +1027,15 @@ ${ininame}_Init(Tcl_Interp *ip)
             }
         }
         # second step - get list of enums
+        set cmd "$c::preproc_enum $hdrs"
         set efd [open "| $cmd $def.c" r]
         set code [read $efd]
+        close $efd
         set matches [regexp -all -inline {enum [^\{\(\)]*{([^\}]*)}} $code]
         foreach {match submatch} $matches {
             foreach line [split $submatch \n] {
                 foreach sub [split $line ,] {
-                    set enum [lindex $sub 0]
+                    set enum [lindex [split [string trim $sub]] 0]
                     foreach {nm dfn} $v::defines {
                         if {[string match $dfn $enum]} {
                             lappend defines $nm $enum $enum
@@ -875,4 +1066,294 @@ ${ininame}_Init(Tcl_Interp *ip)
         unset v::defines
     }
 
+    proc clean_cache {} {
+        foreach file [glob -nocomplain -directory $v::cache *] {
+            file delete -force $file
+        }
+    }
+
+    # read toolchain information from config file
+    proc readconfig {config} {
+        variable run
+        variable configfile $config
+        set cfg [open $config]
+        set platforms [list]
+        set cont ""
+        set whenplat ""
+        set platform $v::generic
+        interp eval $run set platform $platform
+        set i 0
+        while {[gets $cfg line] >= 0} {
+            incr i
+            if {[set line [string trim $line]] ne ""} {
+                # config lines can be continued using trailing backslash
+                if {[string index $line end] == "\\"} {
+                    append cont " [string range $line 0 end-1]"
+                    continue
+                }
+                if {$cont ne ""} {
+                    append cont $line
+                    set line [string trim $cont]
+                    set cont ""
+                }
+                set plat [lindex [split $line] 0]
+                if {$plat eq "set" || $plat eq "if"} {
+                    while {![info complete $line] && ![eof $cfg]} {
+                        if {[gets $cfg more] == -1} {
+                            set msg "incomplete command in Critcl Config file "
+                            append msg "starting at line $i"
+                            error $msg
+                        }
+                        append line  "\n$more"
+
+                    }
+                    interp eval $run $line
+                } elseif {$plat ne "#"} {
+                    if {[lsearch -exact $v::configvars $plat] != -1} {
+                        # default config option
+                        set cmd ""
+                        if {![regexp {(\S+)\s+(.*)} $line m type cmd]} {
+                            # cmd is empty
+                            set type $plat
+                            set cmd ""
+                        }
+                        set plat ""
+                    } else {
+                        # platform config option
+                        if {![regexp {(\S+)\s+(\S+)\s+(.*)} \
+                                        $line m p type cmd]} {
+                            # cmd is empty
+                            set type [lindex $line 1]
+                            set cmd ""
+                        }
+                        # if the target matches the current platform then we
+                        # evaluate the when
+                        if {$type eq "when" \
+                            && ( [string match $platform* $plat] \
+                                 || [string match $plat* $platform]
+                                )} {
+                            set res ""
+                            catch {
+                                set res [interp eval $run expr $cmd]
+                            }
+                            switch $res {
+                                "" -
+                                0 { set whenfalse($plat) 1 }
+                                1 { set whenplat $plat }
+                            }
+                        }
+                        lappend platforms $plat
+                    }
+                    if {$type eq "target"} {
+                        # cross compile target
+                        if {$cmd eq ""} {
+                            set cmd $plat
+                        }
+                        variable targets
+                        set targets($plat) $cmd
+                    } else {
+                        set v::toolchain($plat,$type) $cmd
+                    }
+                }
+            }
+        }
+        set platforms [lsort -unique $platforms]
+        close $cfg
+        if {$whenplat ne ""} {
+            set match $whenplat
+        } else {
+            # try to match exactly
+            set match [lsearch -exact -inline $platforms $platform]
+            if {$match eq ""} {
+                # try to match pattern
+                foreach plat $platforms {
+                    if {[string match $plat $platform]} {
+                        set match $plat
+                        break
+                    }
+                }
+            }
+        }
+        setconfig ""    ;# defaults
+        if {$match ne ""} {
+            setconfig $match
+        } else {
+            setconfig $platform
+        }
+        set v::platforms $platforms
+    }
+
+    proc setconfig {plat} {
+        variable run
+        set v::config $plat
+        set gen $v::generic
+        set v::platform $plat
+        # This should probably be in the config someplace. We build with one
+        # of ix86-win32-cl | ix86-win32-gcc but we produce ix86-win32
+        if {[string match "ix86-win32-*" $plat]} {
+           set v::platform "ix86-win32"
+        }
+        set c::platform ""
+        set c::sharedlibext ""
+        foreach var $v::configvars {
+            if {[info exists v::toolchain($plat,$var)]} {
+                set c::$var $v::toolchain($plat,$var)
+                if {$var eq "platform"} {
+                    set v::platform [lindex $c::platform 0]
+                    set v::version [lindex $c::platform 1]
+                }
+            }
+        }
+        if {[info exists ::env(CFLAGS)]} {
+            variable c::compile
+            variable c::link
+            append c::compile " $::env(CFLAGS)"
+            append c::link " $::env(CFLAGS)"
+            append c::link_preload " $::env(CFLAGS)"
+        }
+        if {[info exists ::env(LDFLAGS)]} {
+            variable c::link
+            append c::link " $::env(LDFLAGS)"
+            append c::link_preload " $::env(LDFLAGS)"
+        }
+        if {[string match $v::platform $gen]} {
+            # expand platform to match host if it contains wildcards
+            set v::platform $gen
+        }
+        if {$c::platform eq ""} {
+            # default config platform (mainly for the "show" command)
+            set c::platform $plat
+        }
+        if {$c::sharedlibext eq ""} {
+            set c::sharedlibext [info sharedlibextension]
+        }
+        cache [file join ~ .critcl $v::platform]
+        #  set any Tcl variables Tcl variables
+        foreach idx [array names v::toolchain $v::platform,*] {
+            set var [lindex [split $idx ,] 1]
+            if {![info exists c::$var]} {
+                set val $v::toolchain($idx)
+                if {[llength $val] == 1} {
+                    # for when someone inevitably puts quotes around
+                    # values - e.g. "Windows NT"
+                    set val [lindex $val 0]
+                }
+                set $var $val
+            }
+        }
+    }
+
+    proc optimize {} {
+        set $option::optimize 1
+    }
+
+    proc showconfig {{fd ""}} {
+        variable run
+        set gen $v::generic
+        if {$v::platform eq ""} {
+            set plat "default"
+        } else {
+            set plat $v::platform
+        }
+        set out [list]
+        if {$plat eq $gen} {
+            lappend out "Config: $plat"
+        } else {
+            lappend out "Config: $plat (built on $gen)"
+        }
+        lappend out "    [format %-15s cache] [critcl::cache]"
+        foreach var [lsort $v::configvars] {
+            if {[catch {set val [interp eval $run [list subst [set c::$var]]]}]} {
+                set val [set c::$var]
+            }
+            set line "    [format %-15s $var]"
+            foreach word [split [string trim $val]] {
+                if {[set word [string trim $word]] eq ""} continue
+                if {[string length "$line $word"] > 70} {
+                    lappend out "$line \\"
+                    set line "    [format %-15s { }] $word"
+                } else {
+                    set line "$line $word"
+                }
+            }
+            lappend out $line
+        }
+        # Tcl variables
+        set vars [list]
+        set max 0
+        foreach idx [array names v::toolchain $v::platform,*] {
+            set var [lindex [split $idx ,] 1]
+            if {[set len [string length $var]] > $max} {
+                set max $len
+            }
+            if {$var ne "when" && ![info exists c::$var]} {
+                lappend vars $idx $var
+            }
+        }
+        if {[llength $vars]} {
+           lappend out "Tcl variables:"
+            foreach {idx var} $vars {
+                set val $v::toolchain($idx)
+                if {[llength $val] == 1} {
+                    # for when someone inevitably puts quotes around
+                    # values - e.g. "Windows NT"
+                    set val [lindex $val 0]
+                }
+                lappend out "    [format %-${max}s $var] $val"
+            }
+        }
+        set out [join $out \n]
+        if {$fd ne ""} {
+            puts $fd $out
+        } else {
+            return $out
+        }
+    }
+
+    # pre-load a shared library - will eventually be redundant when TIP #239
+    # is widely available
+    proc preload {lib} {
+        if {[llength $v::preload] == 0} {
+            file mkdir $v::cache
+            file copy -force [file join $v::hdrdir preload.c] $v::cache
+        }
+        lappend v::preload $lib
+    }
+
+    proc license {who args} {
+        if {[string trim $who] ne ""} {
+            set license "This software is copyrighted by $who.\n"
+        } else {
+            set license ""
+        }
+        if {[llength $args]} {
+            # use supplied license details
+            append license [join $args]
+        } else {
+            set dir [file dirname [file dirname [file dirname $::sourcedir]]]
+            set fd [open [file join $dir license.terms]]
+            append license [join [lrange [split [read $fd] \n] 2 end] \n]
+            close $fd
+        }
+        set libdir [file join $::libdir [file rootname $::outname]]
+        file mkdir $libdir
+        set fd [open [file join $libdir license.terms] w]
+        puts $fd $license
+        close $fd
+    }
+
+    proc showallconfig {{ofd ""}} {
+        variable configfile
+        set fd [open $configfile]
+        set txt [read $fd]
+        close $fd
+        if {$ofd ne ""} {
+            puts $ofd $txt
+        } else {
+            return $txt
+        }
+    }
+
+    # read default configuration
+    readconfig [file join [file dirname [info script]] Config]
 }

@@ -1,8 +1,11 @@
 # Set up for embedded use
 
-package provide Wikit 1.0
+package provide Wikit 1.1
 package require Tk
-package require Wikit::Utils
+
+package require Wikit::Db
+package require Wikit::Cache
+
 package require Wikit::Format
 
 if {[catch {package require Wikit::Gui}]} {

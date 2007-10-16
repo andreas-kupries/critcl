@@ -1,0 +1,199 @@
+#   Critcl configuration file
+#
+#   $Id: Config,v 1.12 2006/08/25 09:05:28 steve Exp $
+
+# some defaults - you can override these in the platform specific section
+# but shouldn't need to for typical *nix toolchains using gcc
+#
+#   platform        sets the platform (defaults to platform::generic)
+#   compile         compile a C source file to an object file
+#   version         print the compiler version number
+#   link            link one or more object files and create a shared library
+#   preproc_define  preprocess C source file (for critcl::cdefines)
+#   preproc_enum    ditto
+#   tclstubs        cflag to set USE_TCL_STUBS
+#   tkstubs         cflag to set USE_TK_STUBS
+#   debug_memory    cflag to enable memory debugging
+#   debug_symbols   cflag to add symbols to resulting library
+#   object          file extension for object files
+#   output          flag to set output file
+#   strip           cflag to tell linker to strip symbols
+#   optimize        cflag to specify optimization level
+#   include         cflag to add an include directory
+#   noassert        cflag to turn off assertions in Tcl code
+#   threadflags     cflags to enable threaded build
+#   target          indicates that this is a cross-compile target
+#   sharedlibext    the platform shared library extension
+#
+# Any other config options are assumed to refer to Tcl variables and
+# these are set when building so they can be used in the Critcl script.
+# Typically this is used when defining cross-compile environments to set
+# various tcl_platform() values.
+#
+# You can also set Tcl variables to use in "when" options (see the MacOSX
+# section for an example - "set universal ..."). These commands and the
+# "when" commands are run in a separate interpreter.
+#
+# The following will be needed/used once MS VC++ is working again
+#   link_debug      not yet used
+#   link_release    not yet used
+#   ldoutput        not yet used
+
+compile         gcc -c -fPIC
+version         gcc -v
+link            gcc -shared
+include         -I
+preproc_define  gcc -E -dM
+preproc_enum    gcc -E
+tclstubs        -DUSE_TCL_STUBS
+tkstubs         -DUSE_TK_STUBS
+debug_memory    -DTCL_MEM_DEBUG
+debug_symbols   -g
+object          .o
+output          -o $outfile
+ldoutput        
+link_debug      
+link_release    
+link_preload    --unresolved-symbols=ignore-in-shared-libs
+strip           -Wl,-s
+optimize        -O2
+noassert        -DNDEBUG
+threadflags     -DUSE_THREAD_ALLOC=1 -D_REENTRANT=1 -D_THREAD_SAFE=1    \
+                -DHAVE_PTHREAD_ATTR_SETSTACKSIZE=1 -DHAVE_READDIR_R=1   \
+                -DTCL_THREADS=1
+
+# platform specific stuff follows
+
+# OSX - check if universal binaries supported by the installed toolchain
+
+if {[string match *-macosx $platform]} {
+    if {[info exists ::env(SDKROOT)]} {
+        set SDKROOT $::env(SDKROOT)
+    } else {
+        # look for an SDK supporting universal binaries
+        set pos [string length MacOSX]
+	set sdklist {}
+        foreach dir [glob -nocomplain -tails \
+			    -directory /Developer/SDKs MacOSX*] {
+            set ver [string trimright \
+                        [file rootname [string range $dir $pos end]] u]
+            if {[package vcompare $ver 10.4] >= 0}  {
+                # 10.4 is earliest supporting universal that we support
+                set path($ver) $dir
+                lappend sdklist $ver
+            }
+        }
+        if {[llength $sdklist]} {
+            set ver [lindex [lsort -command "package vcompare" $sdklist] 0]
+            set SDKROOT /Developer/SDKs/$path($ver)
+        } else {
+            set SDKROOT  ""
+        }
+    }
+    if {$SDKROOT ne ""} {
+        # parse the SDKsettings for the min OSX value supported
+        set info [exec grep -m1 MACOSX_DEPLOYMENT_TARGET \
+                            $SDKROOT/SDKSettings.plist]
+        set osxmin [string trim [lindex [split $info =] 1] {"; }] ;#"
+    } else {
+        # use the current platform 
+        foreach {v1 v2 v3} [split $::tcl_platform(osVersion) .] break
+        incr v1 -4
+        set osxmin 10.$v1.$v2
+        # do we actually need to check if universal is supported, give then
+        # gcc check below will do it for us?
+        # set info [exec lipo -info /usr/lib/libSystem.dylib]
+        # set plats [split [string trim [lindex [split $info :] 2]]]
+    }
+    set universal 0
+    catch {
+        set universal [expr {[exec gcc -v -arch ppc > /dev/null 2>@stdout] eq "" \
+                && [exec gcc -v -arch i386 > /dev/null 2>@stdout] eq ""}]
+    }
+}
+
+# default to universal binary if available
+*-macosx when               $universal == 1
+*-macosx platform           universal-macosx $osxmin powerpc-macosx ix86-macosx
+*-macosx compile            gcc -c -arch i386 -arch ppc -isysroot $SDKROOT \
+                                    -mmacosx-version-min=$osxmin
+*-macosx link               gcc -bundle -arch i386 -arch ppc
+*-macosx link_preload       -undefined dynamic_lookup -mmacosx-version-min=10.3
+*-macosx strip     
+
+# OSX ppc - when not universal or selected via -target
+powerpc-macosx when         $universal != 1
+powerpc-macosx compile      gcc -c -arch ppc
+powerpc-macosx link         gcc -bundle -arch ppc
+powerpc-macosx link_preload -undefined dynamic_lookup -mmacosx-version-min=10.3
+powerpc-macosx strip
+
+# OSX ix86
+ix86-macosx when            $universal != 1
+ix86-macosx compile         gcc -c -arch i386
+ix86-macosx link            gcc -bundle -arch i386
+ix86-macosx link_preload    -undefined dynamic_lookup -mmacosx-version-min=10.3
+ix86-macosx strip
+
+# OSX ppc 64 bit
+ppc64-macosx when           $universal != 1
+ppc64-macosx compile        gcc -c -arch ppc64
+ppc64-macosx link           gcc -bundle -arch ppc64
+ppc64-macosx link_preload   -undefined dynamic_lookup
+ppc64-macosx strip
+
+# OSX x86 64 bit
+x86_64-macosx when          $universal != 1
+x86_64-macosx compile       gcc -c -arch x86_64
+x86_64-macosx link          gcc -bundle -arch x86_64
+x86_64-macosx link_preload  -undefined dynamic_lookup
+x86_64-macosx strip
+
+# Linux - 32 bit or 64 bit build - select using "-target" if you don't want
+#         the platform default (32 on 32, 64 on 64)
+*-32-linux  compile   gcc -c -m32
+*-64-linux  compile   gcc -c -m64
+
+# Windows - using MSVC++ 6.0
+#
+# Note: the language option for cl is -TC for c and -TP for c++ or
+#       it can treat single files -Tc<filename>
+#
+ix86-win32-cl  when            [auto_execok cl] ne ""
+ix86-win32-cl  compile         cl -nologo -c
+ix86-win32-cl  link            link -nologo
+ix86-win32-cl  preproc_define  cl -nologo -E
+ix86-win32-cl  preproc_enum    cl -nologo -E
+ix86-win32-cl  object          .obj
+ix86-win32-cl  debug_symbols   -W3 -Od -Zi -GZ -MDd -D_DEBUG
+ix86-win32-cl  optimize        -W3 -O2 -Op -Gs -MD
+ix86-win32-cl  output          -Fo$outfile
+ix86-win32-cl  ldoutput        -dll -out:$outfile
+ix86-win32-cl  link_debug      -debug:full -debugtype:cv
+ix86-win32-cl  link_release    -release -opt:ref -opt:icf,3 -ws:aggressive
+ix86-win32-cl  link_preload    
+ix86-win32-cl  strip           
+ix86-win32-cl  version         cl
+
+# Cross-compile for Windows using Xmingwin
+mingw32     target         ix86-win32
+mingw32     compile        gcc -c -nostdlib
+mingw32     link           gcc -shared
+mingw32     link_preload 
+mingw32     sharedlibext  .dll
+mingw32     tcl_platform(byteOrder)  littleEndian
+mingw32     tcl_platform(machine)    intel
+mingw32     tcl_platform(os)         Windows NT
+mingw32     tcl_platform(osVersion)  5.0
+mingw32     tcl_platform(platform)   windows
+mingw32     tcl_platform(wordSize)   4
+
+# Cross-compile for ARM (n770/Zaurus/etc) using Scratchbox et al
+arm-linux   target
+arm-linux   sharedlibext .so
+arm-linux   tcl_platform(byteOrder)  littleEndian
+arm-linux   tcl_platform(machine)    arm
+arm-linux   tcl_platform(os)         Linux
+arm-linux   tcl_platform(osVersion)  2.6
+arm-linux   tcl_platform(platform)   unix
+arm-linux   tcl_platform(wordSize)   4
