@@ -25,6 +25,16 @@
 #   target          indicates that this is a cross-compile target
 #   sharedlibext    the platform shared library extension
 #
+#   (Support for Fortran)
+#   fcompile        compile a Fortran source file to an object file
+#   fversion        print the Fortran compiler version number
+#   flink           link one or more object files and create a shared library,
+#                   if at least one object file comes from Fortran
+#   foutput         Fortran flag to set output file
+#   finclude        Fortran flag to add an include directory
+#   fextra_cflags   Extra C flags for indicating type of Fortran compiler
+#
+#
 # Any other config options are assumed to refer to Tcl variables and
 # these are set when building so they can be used in the Critcl script.
 # Typically this is used when defining cross-compile environments to set
@@ -51,9 +61,9 @@ debug_memory    -DTCL_MEM_DEBUG
 debug_symbols   -g
 object          .o
 output          -o $outfile
-ldoutput        
-link_debug      
-link_release    
+ldoutput
+link_debug
+link_release
 link_preload    --unresolved-symbols=ignore-in-shared-libs
 strip           -Wl,-s
 optimize        -O2
@@ -61,6 +71,18 @@ noassert        -DNDEBUG
 threadflags     -DUSE_THREAD_ALLOC=1 -D_REENTRANT=1 -D_THREAD_SAFE=1    \
                 -DHAVE_PTHREAD_ATTR_SETSTACKSIZE=1 -DHAVE_READDIR_R=1   \
                 -DTCL_THREADS=1
+
+#
+# Fortran-specific flags
+#
+fcompile        g95 -c
+fversion        g95 -v
+flink           g95 -shared
+finclude        -I
+foutput         -o $outfile
+foptimize       -O2
+fextra_cflags   -DFTN_UNDERSCORE -D__unix
+
 
 # platform specific stuff follows
 
@@ -96,7 +118,7 @@ if {[string match *-macosx $platform]} {
                             $SDKROOT/SDKSettings.plist]
         set osxmin [string trim [lindex [split $info =] 1] {"; }] ;#"
     } else {
-        # use the current platform 
+        # use the current platform
         foreach {v1 v2 v3} [split $::tcl_platform(osVersion) .] break
         incr v1 -4
         set osxmin 10.$v1.$v2
@@ -119,7 +141,7 @@ if {[string match *-macosx $platform]} {
                                     -mmacosx-version-min=$osxmin
 *-macosx link               gcc -bundle -arch i386 -arch ppc
 *-macosx link_preload       -undefined dynamic_lookup -mmacosx-version-min=10.3
-*-macosx strip     
+*-macosx strip
 
 # OSX ppc - when not universal or selected via -target
 powerpc-macosx when         $universal != 1
@@ -171,15 +193,15 @@ ix86-win32-cl  output          -Fo$outfile
 ix86-win32-cl  ldoutput        -dll -out:$outfile
 ix86-win32-cl  link_debug      -debug:full -debugtype:cv
 ix86-win32-cl  link_release    -release -opt:ref -opt:icf,3 -ws:aggressive
-ix86-win32-cl  link_preload    
-ix86-win32-cl  strip           
+ix86-win32-cl  link_preload
+ix86-win32-cl  strip
 ix86-win32-cl  version         cl
 
 # Cross-compile for Windows using Xmingwin
 mingw32     target         ix86-win32
 mingw32     compile        gcc -c -nostdlib
 mingw32     link           gcc -shared
-mingw32     link_preload 
+mingw32     link_preload
 mingw32     sharedlibext  .dll
 mingw32     tcl_platform(byteOrder)  littleEndian
 mingw32     tcl_platform(machine)    intel

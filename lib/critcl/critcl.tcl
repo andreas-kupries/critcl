@@ -114,7 +114,7 @@ namespace eval ::critcl {
     variable platform                       ;# target platform
     variable version ""                     ;# min version # on platform
     variable generic [critcl::platformcc]   ;# actual platform
-    variable config                         ;# the matching config 
+    variable config                         ;# the matching config
     variable hdrdir	[file join [file dirname [info script]] critcl_c]
 
     variable prefix	"v[package require critcl]"
@@ -131,15 +131,15 @@ namespace eval ::critcl {
     variable curr	     ;# current digest
     variable compiling 0 ;# indicates that the gcc/cc is available
     variable failed 0    ;# set if compile fails
-    variable ininame "" 
-    variable libfile "" 
+    variable ininame ""
+    variable libfile ""
     variable cflags ""
-    variable ldflags ""  
+    variable ldflags ""
     variable targets ""    ;# cross-compile targets
     variable objs [list] ;# compiled object for each csources
     variable preload ""  ;# list of shared libraries to pre-load
 
-    # config variables 
+    # config variables
     variable configvars { platform compile include link strip tclstubs tkstubs
                           debug_memory debug_symbols output preproc_define
                           preproc_enum object optimize noassert threadflags
@@ -150,7 +150,7 @@ namespace eval ::critcl {
   }
 
   # keep config options in a namespace
-  namespace eval c [list 
+  namespace eval c [list
       foreach var $v::configvars {
         variable $var
      }
@@ -272,7 +272,7 @@ namespace eval ::critcl {
 
     set ::auto_index($ns$name) [list [namespace current]::cbuild $file]
     #if {[info commands $name] != ""} { rename $name "" }
-    
+
     lappend v::code($file,list) $name $v::curr
     set v::code($v::curr) "#define ns_$name \"$ns$name\"\n"
     if {$v::options(lines)} {
@@ -346,7 +346,7 @@ namespace eval ::critcl {
           lappend cargs "$t $n"
       }
     }
-  
+
     switch -- $rtype {
       ok      { set rtype2 "int" }
       string -
@@ -391,7 +391,7 @@ namespace eval ::critcl {
     }
 
     if {$rtype != "void"} { emit "  $rtype2 rv;" }
-    
+
     emitln "
   if (oc != [expr {[llength $names] + 1}]) {
     Tcl_WrongNumArgs(ip, 1, ov, \"[join $names { }]\");
@@ -462,7 +462,7 @@ namespace eval ::critcl {
     }
     if {$rtype != "ok"} { emitln "  return TCL_OK;" }
     emitln \}
-    
+
     unset v::curr
   }
 
@@ -500,7 +500,7 @@ namespace eval ::critcl {
         append cmdline " [subst $c::output] $src"
         if {$v::options(language) != ""} {
          # Allow the compiler to determine the type of file
-         # otherwise it will try to compile the libs 
+         # otherwise it will try to compile the libs
          append cmdline " -x none"
         }
         # add the Tk stuff
@@ -526,7 +526,7 @@ namespace eval ::critcl {
             interp transfer $run $lfd {}
             puts $lfd "ERROR while compiling code in $file:"
             puts $lfd $err
-            incr v::failed 
+            incr v::failed
         }
     }
 
@@ -537,7 +537,7 @@ namespace eval ::critcl {
     } else {
         set link 0
     }
-        
+
     # each unique set of cmds is compiled into a separate extension
     set digest [md5_hex "$file $v::code($file,list)"]
 
@@ -546,7 +546,7 @@ namespace eval ::critcl {
 
     set base [file join $cache ${v::prefix}_$digest]
     set libfile $base
-    
+
     # the compiled library will be saved for permanent use if the outdir
     # option is set (in which case rebuilds will no longer be automatic)
     if {$v::options(outdir) != ""} {
@@ -582,7 +582,7 @@ namespace eval ::critcl {
     }
 
     # the shared library we hope to produce
-    set target $base$c::sharedlibext 
+    set target $base$c::sharedlibext
     if {$v::options(force) || ![file exists $target]} {
       file mkdir $cache
 
@@ -634,7 +634,7 @@ namespace eval ::critcl {
     } HeadOfInterp;
 
     HeadOfInterp *hoi = (HeadOfInterp*) ip;
- 
+
     if (hoi->stubTable == NULL || hoi->stubTable->magic != TCL_STUB_MAGIC) {
       ip->result = "This extension requires stubs-support.";
       ip->freeProc = TCL_STATIC;
@@ -653,9 +653,9 @@ namespace eval ::critcl {
 	tclIntStubsPtr = tclStubsPtr->hooks->tclIntStubs;
 	tclIntPlatStubsPtr = tclStubsPtr->hooks->tclIntPlatStubs;
     }
- 
+
     return 1;
-  } 
+  }
 #endif
 }
       if {$v::options(tk)} {
@@ -786,7 +786,7 @@ ${ininame}_Init(Tcl_Interp *ip)
         } err]} {
             interp transfer $run $lfd {}
             puts $lfd "ERROR while linking $target:"
-            incr v::failed 
+            incr v::failed
         }
         if {!$v::failed && [llength $v::preload]} {
             # compile preload if necessary
@@ -806,7 +806,7 @@ ${ininame}_Init(Tcl_Interp *ip)
                 } err]} {
                     interp transfer $run $lfd {}
                     puts $lfd "ERROR while linking $outfile:"
-                    incr v::failed 
+                    incr v::failed
                 }
             }
         }
@@ -870,7 +870,7 @@ ${ininame}_Init(Tcl_Interp *ip)
     tkIntStubsPtr = tkStubsPtr->hooks->tkIntStubs;
     tkIntPlatStubsPtr = tkStubsPtr->hooks->tkIntPlatStubs;
     tkIntXlibStubsPtr = tkStubsPtr->hooks->tkIntXlibStubs;
-    return 1; 
+    return 1;
   }
 #endif
 }
@@ -1001,10 +1001,10 @@ ${ininame}_Init(Tcl_Interp *ip)
     proc build_defines {fd file} {
         # we process the cdefines in three steps
         #   - get the list of defines by preprocessing the source using the
-        #     cpp -dM directive which causes any #defines to be output 
+        #     cpp -dM directive which causes any #defines to be output
         #   - extract the list of enums using regular expressions (not perfect,
         #     but will do for now)
-        #   - generate Tcl_ObjSetVar2 commands to initialise Tcl variables 
+        #   - generate Tcl_ObjSetVar2 commands to initialise Tcl variables
         set def [file normalize [file join $v::cache define_[pid]]]
         # first step - get list of matching defines
         set dfd [open $def.c w]
