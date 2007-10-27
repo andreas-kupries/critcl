@@ -49,7 +49,7 @@ namespace eval ::critcl {
         foreach {config map} $::critcl::mapping {
             if {[string match $config $platform]} {
                 set minver [lindex $map 1]
-                if {[package vcompare $::tcl_platform(osVersion) $minver] != -1} {
+                if {[package vcompare $version $minver] != -1} {
                     set platform [lindex $map 0]
                     break
                 }
