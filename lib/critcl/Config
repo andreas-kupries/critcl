@@ -139,7 +139,8 @@ if {[string match *-macosx $platform]} {
 *-macosx platform           universal-macosx $osxmin powerpc-macosx ix86-macosx
 *-macosx compile            gcc -c -arch i386 -arch ppc -isysroot $SDKROOT \
                                     -mmacosx-version-min=$osxmin
-*-macosx link               gcc -bundle -arch i386 -arch ppc
+*-macosx link               gcc -bundle -arch i386 -arch ppc -isysroot $SDKROOT \ 
+                                    -mmacosx-version-min=$osxmin
 *-macosx link_preload       -undefined dynamic_lookup -mmacosx-version-min=10.3
 *-macosx strip
 
