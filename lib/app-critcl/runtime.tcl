@@ -38,7 +38,7 @@ namespace eval ::critcl {
     proc platform {} {
         set platform [::platform::generic]
         set version $::tcl_platform(osVersion)
-        if {[string match "*-macosx" $platform]} {
+        if {[string match "macosx-*" $platform]} {
             # "normalize" the osVersion to match OSX release numbers
             set v [split $version .]
             set v1 [lindex $v 0]
