@@ -2,7 +2,7 @@
 #   Critcl - build C extensions on-the-fly
 #
 #   Copyright (c) 2001-2006 Jean-Claude Wippler
-#   Copyright (c) 2002-2006 Steve Landers
+#   Copyright (c) 2002-2007 Steve Landers
 #
 #   See http://www.purl.org/tcl/wiki/critcl
 #
@@ -12,9 +12,9 @@
 
 namespace eval ::critcl {
 
-    proc loadlib {dir package version args} {
+    proc loadlib {dir package version mapping args} {
         global tcl_platform
-        set path [file join $dir [::critcl::platform]]
+        set path [file join $dir [::critcl::platform $mapping]]
         set ext [info sharedlibextension]
         set lib [file join $path $package$ext]
         set provide [list]
@@ -35,7 +35,7 @@ namespace eval ::critcl {
     }
 
     # a version of critcl::platform that applies the platform mapping
-    proc platform {} {
+    proc platform {{mapping ""}} {
         set platform [::platform::generic]
         set version $::tcl_platform(osVersion)
         if {[string match "macosx-*" $platform]} {
@@ -46,7 +46,7 @@ namespace eval ::critcl {
             incr v1 -4
             set version 10.$v1.$v2
         }
-        foreach {config map} $::critcl::mapping {
+        foreach {config map} $mapping {
             if {[string match $config $platform]} {
                 set minver [lindex $map 1]
                 if {[package vcompare $version $minver] != -1} {

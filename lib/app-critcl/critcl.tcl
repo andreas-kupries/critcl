@@ -394,53 +394,7 @@ if {!$critcl::v::failed && ($lib || $pkg)} {
             }
             puts "Package:  $dir"
 
-            # build pkgIndex.tcl
-            set index [open [file join $pkgdir pkgIndex.tcl] w]
-            puts $index {source [file join $dir critcl.tcl]}
-            puts $index "critcl::loadlib \$dir $libname $version $preload"
-            close $index
-
-            # arrange for each Tcl source file (specified by critcl::tsources)
-            # to be copied into the Tcl subdirectory (in accordance with TIP 55)
-            if {[info exists critcl::v::tsources]} {
-                file mkdir [set tcldir [file join $pkgdir Tcl]]
-                foreach t $critcl::v::tsources {
-                    file copy -force $t $tcldir
-                }
-            }
-
-            # update the platform map
-
-            # first read in old one from critcl.tcl - this code is dependent
-            # on the structure of proc platform so be careful when changing
-            set file [file join $pkgdir critcl.tcl]
-            if {[file readable $file]} {
-                set fd [open $file]
-                set pattern "set ::critcl::mapping \{"
-                set len [string length $pattern]
-                while {[gets $fd line] != -1} {
-                    set line [string trim $line]
-                    if {[string first $pattern $line] != -1} {
-                        if {![info complete $line]} {
-                            error \
-                    "invalid ::critcl::mapping command in runtime critcl.tcl"
-                        }
-                        eval $line
-                        foreach {config plat} $::critcl::mapping {
-                            set mapping($config) $plat
-                        }
-                        break
-                    }
-                }
-                close $fd
-            }
-            if {[string match $::critcl::v::config $::critcl::v::platform]} {
-                # if the current platform matches a config then we don't
-                # need to map so we unset it in case a mapping was inherited
-                # from a previous critcl invocation 
-                array unset mapping $::critcl::v::config
-            } 
-            # create a mapping for each of the platforms listed on
+            # create the platform mapping for each of the platforms listed on
             # the Config platform line
             set map [interp eval $::critcl::run subst \"$::critcl::c::platform\"]
             set minver [lindex $map 1]
@@ -451,6 +405,27 @@ if {!$critcl::v::failed && ($lib || $pkg)} {
             }
             if {[llength $plats]} {
                 puts "Platform: [join $plats {, }] $minver and later"
+            }
+
+            set map "{"
+            foreach plat [lsort [array names mapping]] {
+                append map "$plat [list $mapping($plat)] "
+            }
+            append map "}"
+
+            # build pkgIndex.tcl
+            set index [open [file join $pkgdir pkgIndex.tcl] w]
+            puts $index {source [file join $dir critcl.tcl]}
+            puts $index "critcl::loadlib \$dir $libname $version $map $preload"
+            close $index
+
+            # arrange for each Tcl source file (specified by critcl::tsources)
+            # to be copied into the Tcl subdirectory (in accordance with TIP 55)
+            if {[info exists critcl::v::tsources]} {
+                file mkdir [set tcldir [file join $pkgdir Tcl]]
+                foreach t $critcl::v::tsources {
+                    file copy -force $t $tcldir
+                }
             }
 
             # create the critcl.tcl file in the generated package. This
@@ -491,14 +466,6 @@ if {!$critcl::v::failed && ($lib || $pkg)} {
             append txt "    proc generic {} {"
             append txt [info body ::platform::generic]
             append txt "\n    }\n}\n\n"
-
-            # write the new mapping to the end of the runtime file
-            append txt "# runtime platform mapping - please do not edit\n"
-            append txt "set ::critcl::mapping {"
-            foreach plat [lsort [array names mapping]] {
-                append txt "$plat [list $mapping($plat)] "
-            }
-            append txt "}\n"
 
             set fd [open [file join $pkgdir critcl.tcl] w]
             puts $fd $txt
