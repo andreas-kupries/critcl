@@ -63,7 +63,6 @@ namespace eval ::platform {}
 proc ::platform::generic {} {
     global tcl_platform
 
-
     set plat [string tolower [lindex $tcl_platform(os) 0]]
     set cpu  $tcl_platform(machine)
 
@@ -87,16 +86,27 @@ proc ::platform::generic {} {
 	"arm*" {
 	    set cpu arm
 	}
+	ia64 {
+	    if {$tcl_platform(wordSize) == 4} {
+		append cpu _32
+	    }
+	}
     }
 
     switch -- $plat {
 	windows {
 	    set plat win32
+	    if {$cpu eq "amd64"} {
+		# Do not check wordSize, win32-x64 is an IL32P64 platform.
+		set cpu x86_64
+	    }
 	}
 	sunos {
 	    set plat solaris
-	    if {$tcl_platform(wordSize) == 8} {
-		append cpu 64
+	    if {$cpu ne "ia64"} {
+		if {$tcl_platform(wordSize) == 8} {
+		    append cpu 64
+		}
 	    }
 	}
 	darwin {
@@ -122,7 +132,7 @@ proc ::platform::generic {} {
 	}
     }
 
-    return "${cpu}-${plat}"
+    return "${plat}-${cpu}"
 }
 
 # -- platform::identify
@@ -136,19 +146,27 @@ proc ::platform::identify {} {
     global tcl_platform
 
     set id [generic]
-    regexp {^([^-]+)-([^-]+)$} $id -> cpu plat
+    regexp {^([^-]+)-([^-]+)$} $id -> plat cpu
 
     switch -- $plat {
 	solaris {
 	    regsub {^5} $tcl_platform(osVersion) 2 text
 	    append plat $text
-	    return "${cpu}-${plat}"
+	    return "${plat}-${cpu}"
 	}
 	linux {
 	    # Look for the libc*.so and determine its version
 	    # (libc5/6, libc6 further glibc 2.X)
 
-	    set libclist [glob -nocomplain /lib/libc.so*]
+	    set v unknown
+
+	    if {[file exists /lib64] && [file isdirectory /lib64]} {
+		set base /lib64
+	    } else {
+		set base /lib
+	    }
+
+	    set libclist [lsort [glob -nocomplain -directory $base libc*]]
 	    if {[llength $libclist]} {
 		set libc [lindex $libclist 0]
 
@@ -161,39 +179,19 @@ proc ::platform::identify {} {
 		}]} {
 		    regexp {([0-9]+(\.[0-9]+)*)} $vdata -> v
 		    foreach {major minor} [split $v .] break
-		    set v ${major}.${minor}
+		    set v glibc${major}.${minor}
 		} else {
-		    # Trouble executing the library. Poke into its
-		    # symbol information using basic system utilities
-		    # to get an approximation of the information we
-		    # want.
+		    # We had trouble executing the library. We are now
+		    # inspecting its name to determine the version
+		    # number. This code by Larry McVoy.
 
-		    set vlist [exec grep @GLIBC_ $libc | \
-				   grep -v PRIVATE | \
-				   sed -e {s/^.*@//} -e {GLIBC_} | \
-				   sort | uniq]
-
-		    set maxmajor 0
-		    set maxminor 0
-		    foreach v $vlist {
-			foreach {major minor} [split $v .] break
-			if {$major > $maxmajor} {
-			    set maxmajor $major
-			    set maxminor $minor
-			} elseif {
-				  ($major == $maxmajor) &&
-				  ($minor >  $maxminor) &&
-			      } {
-			    set maxminor $minor
-			}
+		    if {[regexp -- {libc-([0-9]+)\.([0-9]+)} $libc -> major minor]} {
+			set v glibc${major}.${minor}
 		    }
-
-		    set v ${maxmajor}.${maxminor}
 		}
-
-		append plat -glibc$v
 	    }
-	    return "${cpu}-${plat}"
+	    append plat -$v
+	    return "${plat}-${cpu}"
 	}
     }
 
@@ -218,22 +216,31 @@ proc ::platform::identify {} {
 
 proc ::platform::patterns {id} {
     set res [list $id]
+    if {$id eq "tcl"} {return $res}
+
     switch -glob --  $id {
-	solaris* {
-	    if {![regexp {(.*)-solaris([^-]*)} $id -> cpu v]} {return $id}
-	    foreach {major minor} [split $v .] break
-	    incr minor -1
-	    for {set j $minor} {$j >= 6} {incr j -1} {
-		lappend res ${cpu}-solaris${major}.${j}
+	solaris*-* {
+	    if {[regexp {solaris([^-]*)-(.*)} $id -> v cpu]} {
+		if {$v eq ""} {return $id}
+		foreach {major minor} [split $v .] break
+		incr minor -1
+		for {set j $minor} {$j >= 6} {incr j -1} {
+		    lappend res solaris${major}.${j}-${cpu}
+		}
 	    }
 	}
-	linux* {
-	    if {![regexp {(.*)-linux-glibc([^-]*)} $id -> cpu v]} {return $id}
-	    foreach {major minor} [split $v .] break
-	    incr minor -1
-	    for {set j $minor} {$j >= 0} {incr j -1} {
-		lappend res ${cpu}-linux-glibc${major}.${j}
+	linux*-* {
+	    if {[regexp {linux-glibc([^-]*)-(.*)} $id -> v cpu]} {
+		foreach {major minor} [split $v .] break
+		incr minor -1
+		for {set j $minor} {$j >= 0} {incr j -1} {
+		    lappend res linux-glibc${major}.${j}-${cpu}
+		}
 	    }
+	}
+	macosx-powerpc -
+	macosx-ix86    {
+	    lappend res macosx-universal
 	}
     }
     lappend res tcl ; # Pure tcl packages are always compatible.
@@ -244,7 +251,7 @@ proc ::platform::patterns {id} {
 # ### ### ### ######### ######### #########
 ## Ready
 
-package provide platform 1.0
+package provide platform 1.0.3
 
 # ### ### ### ######### ######### #########
 ## Demo application
