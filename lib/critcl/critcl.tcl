@@ -1,6 +1,6 @@
 package provide critcl 2.0
 
-package require platform
+package require platform 1.0.2
 
 set sourcedir [info script]
 

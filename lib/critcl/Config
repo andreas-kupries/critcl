@@ -34,7 +34,6 @@
 #   finclude        Fortran flag to add an include directory
 #   fextra_cflags   Extra C flags for indicating type of Fortran compiler
 #
-#
 # Any other config options are assumed to refer to Tcl variables and
 # these are set when building so they can be used in the Critcl script.
 # Typically this is used when defining cross-compile environments to set
@@ -72,7 +71,6 @@ threadflags     -DUSE_THREAD_ALLOC=1 -D_REENTRANT=1 -D_THREAD_SAFE=1    \
                 -DHAVE_PTHREAD_ATTR_SETSTACKSIZE=1 -DHAVE_READDIR_R=1   \
                 -DTCL_THREADS=1
 
-#
 # Fortran-specific flags
 #
 fcompile        g95 -c
@@ -83,20 +81,20 @@ foutput         -o $outfile
 foptimize       -O2
 fextra_cflags   -DFTN_UNDERSCORE -D__unix
 
-
 # platform specific stuff follows
 
 # OSX - check if universal binaries supported by the installed toolchain
 
-if {[string match *-macosx $platform]} {
-    if {[info exists ::env(SDKROOT)]} {
+if {[string match macosx-* $platform]} {
+    if {[info exists ::env(SDKROOT)] && $::env(SDKROOT) ne ""} {
         set SDKROOT $::env(SDKROOT)
     } else {
         # look for an SDK supporting universal binaries
         set pos [string length MacOSX]
 	set sdklist {}
+	set base [exec xcode-select -print-path]
         foreach dir [glob -nocomplain -tails \
-			    -directory /Developer/SDKs MacOSX*] {
+			    -directory $base/SDKs MacOSX*] {
             set ver [string trimright \
                         [file rootname [string range $dir $pos end]] u]
             if {[package vcompare $ver 10.4] >= 0}  {
@@ -113,10 +111,18 @@ if {[string match *-macosx $platform]} {
         }
     }
     if {$SDKROOT ne ""} {
-        # parse the SDKsettings for the min OSX value supported
-        set info [exec grep -m1 MACOSX_DEPLOYMENT_TARGET \
-                            $SDKROOT/SDKSettings.plist]
-        set osxmin [string trim [lindex [split $info =] 1] {"; }] ;#"
+        # get the SDKsettings for the min OSX value supported
+        if [catch {
+                set info [exec defaults read /Developer/SDKs/MacOSX10.4u.sdk/SDKSettings buildSettings]
+        }] {
+            catch {
+                set info [exec defaults read $base/SDKs/MacOSX10.4u.sdk/SDKSettings DefaultProperties -dict MACOSX_DEPLOYMENT_TARGET]
+            }
+        }
+        set info [string trim $info]
+        regsub -all {[\n"\;=\{\}]+} $info "" info
+        regsub -all {\s+} $info " " info
+        set osxmin [lindex $info 1]
     } else {
         # use the current platform
         foreach {v1 v2 v3} [split $::tcl_platform(osVersion) .] break
@@ -135,42 +141,42 @@ if {[string match *-macosx $platform]} {
 }
 
 # default to universal binary if available
-*-macosx when               $universal == 1
-*-macosx platform           universal-macosx $osxmin powerpc-macosx ix86-macosx
-*-macosx compile            gcc -c -arch i386 -arch ppc -isysroot $SDKROOT \
+macosx-* when               $universal == 1
+macosx-* platform           macosx-universal $osxmin macosx-powerpc macosx-ix86
+macosx-* compile            gcc -c -arch i386 -arch ppc -isysroot $SDKROOT \
                                     -mmacosx-version-min=$osxmin
-*-macosx link               gcc -bundle -arch i386 -arch ppc -isysroot $SDKROOT \ 
+macosx-* link               gcc -bundle -arch i386 -arch ppc -isysroot $SDKROOT \
                                     -mmacosx-version-min=$osxmin
-*-macosx link_preload       -undefined dynamic_lookup -mmacosx-version-min=10.3
-*-macosx strip
+macosx-* link_preload       -undefined dynamic_lookup -mmacosx-version-min=10.3
+macosx-* strip
 
 # OSX ppc - when not universal or selected via -target
-powerpc-macosx when         $universal != 1
-powerpc-macosx compile      gcc -c -arch ppc
-powerpc-macosx link         gcc -bundle -arch ppc
-powerpc-macosx link_preload -undefined dynamic_lookup -mmacosx-version-min=10.3
-powerpc-macosx strip
+macosx-powerpc when         $universal != 1
+macosx-powerpc compile      gcc -c -arch ppc
+macosx-powerpc link         gcc -bundle -arch ppc
+macosx-powerpc link_preload -undefined dynamic_lookup -mmacosx-version-min=10.3
+macosx-powerpc strip
 
 # OSX ix86
-ix86-macosx when            $universal != 1
-ix86-macosx compile         gcc -c -arch i386
-ix86-macosx link            gcc -bundle -arch i386
-ix86-macosx link_preload    -undefined dynamic_lookup -mmacosx-version-min=10.3
-ix86-macosx strip
+macosx-ix86 when            $universal != 1
+macosx-ix86 compile         gcc -c -arch i386
+macosx-ix86 link            gcc -bundle -arch i386
+macosx-ix86 link_preload    -undefined dynamic_lookup -mmacosx-version-min=10.3
+macosx-ix86 strip
 
 # OSX ppc 64 bit
-ppc64-macosx when           $universal != 1
-ppc64-macosx compile        gcc -c -arch ppc64
-ppc64-macosx link           gcc -bundle -arch ppc64
-ppc64-macosx link_preload   -undefined dynamic_lookup
-ppc64-macosx strip
+macosx-ppc64 when           $universal != 1
+macosx-ppc64 compile        gcc -c -arch ppc64
+macosx-ppc64 link           gcc -bundle -arch ppc64
+macosx-ppc64 link_preload   -undefined dynamic_lookup
+macosx-ppc64 strip
 
 # OSX x86 64 bit
-x86_64-macosx when          $universal != 1
-x86_64-macosx compile       gcc -c -arch x86_64
-x86_64-macosx link          gcc -bundle -arch x86_64
-x86_64-macosx link_preload  -undefined dynamic_lookup
-x86_64-macosx strip
+macosx-x86_64 when          $universal != 1
+macosx-x86_64 compile       gcc -c -arch x86_64
+macosx-x86_64 link          gcc -bundle -arch x86_64
+macosx-x86_64 link_preload  -undefined dynamic_lookup
+macosx-x86_64 strip
 
 # Linux - 32 bit or 64 bit build - select using "-target" if you don't want
 #         the platform default (32 on 32, 64 on 64)
