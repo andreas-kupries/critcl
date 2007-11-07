@@ -10,11 +10,11 @@
 #   shared library when a package is requested
 #
 
-namespace eval ::critcl {
+namespace eval ::critcl2 {
 
     proc loadlib {dir package version mapping args} {
         global tcl_platform
-        set path [file join $dir [::critcl::platform $mapping]]
+        set path [file join $dir [::critcl2::platform $mapping]]
         set ext [info sharedlibextension]
         set lib [file join $path $package$ext]
         set provide [list]

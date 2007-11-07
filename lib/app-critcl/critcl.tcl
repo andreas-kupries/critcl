@@ -416,7 +416,7 @@ if {!$critcl::v::failed && ($lib || $pkg)} {
             # build pkgIndex.tcl
             set index [open [file join $pkgdir pkgIndex.tcl] w]
             puts $index {source [file join $dir critcl.tcl]}
-            puts $index "critcl::loadlib \$dir $libname $version $map $preload"
+            puts $index "critcl2::loadlib \$dir $libname $version $map $preload"
             close $index
 
             # arrange for each Tcl source file (specified by critcl::tsources)
