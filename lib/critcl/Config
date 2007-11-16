@@ -114,10 +114,10 @@ if {[string match macosx-* $platform]} {
     if {$SDKROOT ne ""} {
         # get the SDKsettings for the min OSX value supported
         if [catch {
-                set info [exec defaults read $base/SDKs/MacOSX10.4u.sdk/SDKSettings buildSettings]
+                set info [exec defaults read $SDKROOT/SDKSettings buildSettings]
         }] {
             catch {
-                set info [exec defaults read $base/SDKs/MacOSX10.4u.sdk/SDKSettings DefaultProperties -dict MACOSX_DEPLOYMENT_TARGET]
+                set info [exec defaults read $SDKROOT/SDKSettings DefaultProperties -dict MACOSX_DEPLOYMENT_TARGET]
             }
         }
         set info [string trim $info]
