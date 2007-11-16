@@ -92,7 +92,8 @@ if {[string match macosx-* $platform]} {
         # look for an SDK supporting universal binaries
         set pos [string length MacOSX]
 	set sdklist {}
-	set base [exec xcode-select -print-path]
+	set base /Developer
+	catch {set base [exec xcode-select -print-path]}
         foreach dir [glob -nocomplain -tails \
 			    -directory $base/SDKs MacOSX*] {
             set ver [string trimright \
@@ -105,7 +106,7 @@ if {[string match macosx-* $platform]} {
         }
         if {[llength $sdklist]} {
             set ver [lindex [lsort -command "package vcompare" $sdklist] 0]
-            set SDKROOT /Developer/SDKs/$path($ver)
+            set SDKROOT $base/SDKs/$path($ver)
         } else {
             set SDKROOT  ""
         }
@@ -113,7 +114,7 @@ if {[string match macosx-* $platform]} {
     if {$SDKROOT ne ""} {
         # get the SDKsettings for the min OSX value supported
         if [catch {
-                set info [exec defaults read /Developer/SDKs/MacOSX10.4u.sdk/SDKSettings buildSettings]
+                set info [exec defaults read $base/SDKs/MacOSX10.4u.sdk/SDKSettings buildSettings]
         }] {
             catch {
                 set info [exec defaults read $base/SDKs/MacOSX10.4u.sdk/SDKSettings DefaultProperties -dict MACOSX_DEPLOYMENT_TARGET]
@@ -128,7 +129,7 @@ if {[string match macosx-* $platform]} {
         foreach {v1 v2 v3} [split $::tcl_platform(osVersion) .] break
         incr v1 -4
         set osxmin 10.$v1.$v2
-        # do we actually need to check if universal is supported, give then
+        # do we actually need to check if universal is supported, given the
         # gcc check below will do it for us?
         # set info [exec lipo -info /usr/lib/libSystem.dylib]
         # set plats [split [string trim [lindex [split $info :] 2]]]
