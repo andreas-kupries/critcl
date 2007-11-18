@@ -63,7 +63,7 @@ if {[catch {package require gbutton}]} {
 			x11 {
 				set bindkey(Back)    {Alt-Key-leftarrow}
 				set bindkey(Forward) {Alt-Key-rightarrow}
-				set bindkey(Home)	 {Alt-Key-home}
+				set bindkey(Home)	 {Alt-Key-Home}
 				set bindkey(Cancel)  {Control-z}
 				set bindkey(Save)	 {Control-s}
 			}
@@ -261,7 +261,7 @@ if {[catch {package require gbutton}]} {
 			if {$id == 2} {
                 buttonState Edit disabled
 			} else {
-                buttonState Edit normal
+                catch { buttonState Edit normal }
 			}
             $D configure -cursor ""
         }
@@ -606,6 +606,7 @@ if {[catch {package require gbutton}]} {
 		proc load_geom {win} {
 			variable geomLast
 			set name [file tail $Wikit::wikifile]
+			set geom ""
 			if {$::tcl_platform(platform) eq "windows"} {
 				# load from the Registry
 				set key HKEY_CURRENT_USER\\Software\\Wikit
