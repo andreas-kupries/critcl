@@ -87,3 +87,18 @@ Preload_Init(Tcl_Interp *interp)
     Tcl_CreateObjCommand(interp, "@preload", Critcl_Preload, NULL, 0);
     return 0;
 }
+
+DLLEXPORT int
+Preload_SafeInit(Tcl_Interp *interp)
+{
+    if (!MyInitTclStubs(interp)) 
+        return TCL_ERROR;
+    Tcl_CreateObjCommand(interp, "@preload", Critcl_Preload, NULL, 0);
+    return 0;
+}
+
+DLLEXPORT int
+Preload_Unload(Tcl_Interp *interp) {}
+
+DLLEXPORT int
+Preload_SafeUnload(Tcl_Interp *interp) {}
