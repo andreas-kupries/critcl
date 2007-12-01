@@ -14,7 +14,7 @@ namespace eval ::critcl2 {
 
     proc loadlib {dir package version mapping args} {
         global tcl_platform
-        set path [file join $dir [::critcl2::platform $mapping]]
+        set path [file join $dir [::critcl::platform $mapping]]
         set ext [info sharedlibextension]
         set lib [file join $path $package$ext]
         set provide [list]
@@ -33,7 +33,9 @@ namespace eval ::critcl2 {
         package ifneeded critcl 0.0 \
          "package provide critcl 0.0; [list source [file join $dir critcl.tcl]]"
     }
+}
 
+namespace eval ::critcl {
     # a version of critcl::platform that applies the platform mapping
     proc platform {{mapping ""}} {
         set platform [::platform::generic]
