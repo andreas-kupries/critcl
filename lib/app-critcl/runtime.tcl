@@ -18,10 +18,14 @@ namespace eval ::critcl2 {
         set ext [info sharedlibextension]
         set lib [file join $path $package$ext]
         set provide [list]
-        if {[llength $args]} {
-            lappend provide [list load [file join $path preload$ext]]
-            foreach p $args {
-                lappend provide [list @preload [file join $path $p$ext]]
+	if {[llength $args]} {
+            set preload [file join $path preload$ext]
+	    set prelib [file join $path $p$ext]
+            if {[file readable $preload] && [file readable $prelib]} {
+                lappend provide [list load $preload]
+                foreach p $args {
+                    lappend provide [list @preload $prelib]
+                }
             }
         }
         lappend provide [list load $lib $package]
