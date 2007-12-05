@@ -84,7 +84,7 @@ namespace eval ::critcl {
 
     proc platformcc {} {
         set platform [::platform::generic]
-        if {[string match "*-win32" $platform]} {
+        if {[string match "win32-*" $platform]} {
             set cc gcc
             if {[info exists ::env(CC)]} {
                 set cc $::env(CC)
@@ -763,11 +763,11 @@ ${ininame}_Init(Tcl_Interp *ip)
         } else {
             append cmdline " $c::strip $c::link_release $ldout"
         }
-        if {[string match "*-win32-cl" [platformcc]]} {
+        if {[string match "win32-*-cl" [platformcc]]} {
             regsub -all -- {-l(\S+)} $libs {\1.lib} libs
         }
         append cmdline " $libfile "
-        if {[string match "*-win32-cl" [platformcc]]} {
+        if {[string match "win32-*-cl" [platformcc]]} {
             set f [open [set rsp [file join $cache link.fil]] w]
             puts $f [join $v::objs \n]
             close $f
@@ -1188,10 +1188,10 @@ ${ininame}_Init(Tcl_Interp *ip)
         set v::config $plat
         set gen $v::generic
         set v::platform $plat
-        # This should probably be in the config someplace. We build with one
-        # of ix86-win32-cl | ix86-win32-gcc but we produce ix86-win32
-        if {[string match "ix86-win32-*" $plat]} {
-           set v::platform "ix86-win32"
+        # This should probably be in the Config someplace. We build with one
+        # of win32-ix86-cl | win32-ix86-gcc but we produce win32-ix86
+        if {[string match "win32-ix86-*" $plat]} {
+           set v::platform "win32-ix86"
         }
         set c::platform ""
         set c::sharedlibext ""

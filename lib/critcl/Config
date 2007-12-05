@@ -181,29 +181,29 @@ macosx-x86_64 strip
 
 # Linux - 32 bit or 64 bit build - select using "-target" if you don't want
 #         the platform default (32 on 32, 64 on 64)
-*-32-linux  compile   gcc -c -m32
-*-64-linux  compile   gcc -c -m64
+linux-32-*  compile   gcc -c -m32
+linux-64-*  compile   gcc -c -m64
 
 # Windows - using MSVC++ 6.0
 #
 # Note: the language option for cl is -TC for c and -TP for c++ or
 #       it can treat single files -Tc<filename>
 #
-ix86-win32-cl  when            [auto_execok cl] ne ""
-ix86-win32-cl  compile         cl -nologo -c
-ix86-win32-cl  link            link -nologo
-ix86-win32-cl  preproc_define  cl -nologo -E
-ix86-win32-cl  preproc_enum    cl -nologo -E
-ix86-win32-cl  object          .obj
-ix86-win32-cl  debug_symbols   -W3 -Od -Zi -GZ -MDd -D_DEBUG
-ix86-win32-cl  optimize        -W3 -O2 -Op -Gs -MD
-ix86-win32-cl  output          -Fo$outfile
-ix86-win32-cl  ldoutput        -dll -out:$outfile
-ix86-win32-cl  link_debug      -debug:full -debugtype:cv
-ix86-win32-cl  link_release    -release -opt:ref -opt:icf,3 -ws:aggressive
-ix86-win32-cl  link_preload
-ix86-win32-cl  strip
-ix86-win32-cl  version         cl
+win32-ix86-cl  when            [auto_execok cl] ne ""
+win32-ix86-cl  compile         cl -nologo -c
+win32-ix86-cl  link            link -nologo
+win32-ix86-cl  preproc_define  cl -nologo -E
+win32-ix86-cl  preproc_enum    cl -nologo -E
+win32-ix86-cl  object          .obj
+win32-ix86-cl  debug_symbols   -W3 -Od -Zi -GZ -MDd -D_DEBUG
+win32-ix86-cl  optimize        -W3 -O2 -Op -Gs -MD
+win32-ix86-cl  output          -Fo$outfile
+win32-ix86-cl  ldoutput        -dll -out:$outfile
+win32-ix86-cl  link_debug      -debug:full -debugtype:cv
+win32-ix86-cl  link_release    -release -opt:ref -opt:icf,3 -ws:aggressive
+win32-ix86-cl  link_preload
+win32-ix86-cl  strip
+win32-ix86-cl  version         cl
 
 # Cross-compile for Windows using Xmingwin
 mingw32     target         ix86-win32
@@ -219,11 +219,11 @@ mingw32     tcl_platform(platform)   windows
 mingw32     tcl_platform(wordSize)   4
 
 # Cross-compile for ARM (n770/Zaurus/etc) using Scratchbox et al
-arm-linux   target
-arm-linux   sharedlibext .so
-arm-linux   tcl_platform(byteOrder)  littleEndian
-arm-linux   tcl_platform(machine)    arm
-arm-linux   tcl_platform(os)         Linux
-arm-linux   tcl_platform(osVersion)  2.6
-arm-linux   tcl_platform(platform)   unix
-arm-linux   tcl_platform(wordSize)   4
+linux-arm   target
+linux-arm   sharedlibext .so
+linux-arm   tcl_platform(byteOrder)  littleEndian
+linux-arm   tcl_platform(machine)    arm
+linux-arm   tcl_platform(os)         Linux
+linux-arm   tcl_platform(osVersion)  2.6
+linux-arm   tcl_platform(platform)   unix
+linux-arm   tcl_platform(wordSize)   4
