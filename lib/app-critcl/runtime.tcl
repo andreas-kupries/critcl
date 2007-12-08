@@ -20,10 +20,10 @@ namespace eval ::critcl2 {
         set provide [list]
 	if {[llength $args]} {
             set preload [file join $path preload$ext]
-	    set prelib [file join $path $p$ext]
-            if {[file readable $preload] && [file readable $prelib]} {
-                lappend provide [list load $preload]
-                foreach p $args {
+	    foreach p $args {
+		set prelib [file join $path $p$ext]
+		if {[file readable $preload] && [file readable $prelib]} {
+		    lappend provide [list load $preload]
                     lappend provide [list @preload $prelib]
                 }
             }
