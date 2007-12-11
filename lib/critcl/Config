@@ -206,7 +206,7 @@ win32-ix86-cl  strip
 win32-ix86-cl  version         cl
 
 # Cross-compile for Windows using Xmingwin
-mingw32     target         ix86-win32
+mingw32     target         win32-ix86
 mingw32     compile        gcc -c -nostdlib
 mingw32     link           gcc -shared
 mingw32     link_preload
