@@ -792,7 +792,7 @@ ${ininame}_Init(Tcl_Interp *ip)
             # compile preload if necessary
             set outfile [file join [file dirname $base] \
                             preload$c::sharedlibext]
-            if {![file readable $outfile]} {
+            if {![file exists $outfile]} {
                 set src [file join $v::cache preload.c]
                 set obj [file join $v::cache preload.o]
                 compile $src $src $copts $lfd $obj
