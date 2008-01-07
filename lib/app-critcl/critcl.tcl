@@ -56,7 +56,7 @@ You can display the built-in help wiki on most platforms using:
 proc help {} {
     if {[catch {package require Mk4tcl} msg] \
             || [catch {package require Wikit} msg]} {
-    puts $msg
+		puts $msg
         set txt "Couldn't load the Critcl help Wiki\n"
         append txt "To display the Critcl help wiki run \"critcl\" "
         append txt "without any options.\n"
@@ -155,7 +155,7 @@ if {$config ne ""} {
         # picked up the source file name
         error "-config is missing file argument"
     }
-    if {![file readable $config]} {
+    if {![file exists $config]} {
         error "can't read Config file $config"
     }
     critcl::readconfig $config
@@ -360,7 +360,7 @@ if {!$critcl::v::failed && ($lib || $pkg)} {
                     #   - dir/lib.so
                     #   - dir/plat/lib.so
                     set pre $tail$ext
-                    if {![file readable $pre]} {
+                    if {![file exists $pre]} {
                         if {[file isdirectory $p]} {
                             set dir $p
                         } else {
@@ -370,9 +370,9 @@ if {!$critcl::v::failed && ($lib || $pkg)} {
                             }
                         }
                         set pre [file join $dir $tail$ext]
-                        if {![file readable $pre]} {
+                        if {![file exists $pre]} {
                             set pre [file join $dir $platform $tail$ext]
-                            if {![file readable $pre]} {
+                            if {![file exists $pre]} {
                                 set msg "can't find preload library $tail$ext"
                                 append msg " for $platform"
                                 error $msg
@@ -434,7 +434,7 @@ if {!$critcl::v::failed && ($lib || $pkg)} {
             # the one file
 
             set runtime [file join [file dirname [info script]] runtime.tcl]
-            if {[file readable runtime]} {
+            if {[file exists runtime]} {
                 error "can't find Critcl runtime.tcl"
             }
             set fd [open $runtime]
