@@ -138,6 +138,7 @@ namespace eval ::critcl {
     variable targets ""    ;# cross-compile targets
     variable objs [list] ;# compiled object for each csources
     variable preload ""  ;# list of shared libraries to pre-load
+    variable libsrc ""
 
     # config variables
     variable configvars { platform compile include link strip tclstubs tkstubs
@@ -235,6 +236,8 @@ namespace eval ::critcl {
 
   proc ldflags {args} {
       foreach arg $args {
+	# protect any whitespace in the arg - mainly for directory names
+	regsub -all {(\s)} $arg {\\&} arg 
         append v::ldflags " -Wl,$arg"
       }
   }
@@ -497,7 +500,7 @@ namespace eval ::critcl {
         variable run
         set cmdline "$c::compile $v::cflags $c::threadflags $c::tclstubs $copts"
         set outfile $obj
-        append cmdline " [subst $c::output] $src"
+        append cmdline " [subst $c::output] [list $src]"
         if {$v::options(language) != ""} {
          # Allow the compiler to determine the type of file
          # otherwise it will try to compile the libs
@@ -766,14 +769,14 @@ ${ininame}_Init(Tcl_Interp *ip)
         if {[string match "win32-*-cl" [platformcc]]} {
             regsub -all -- {-l(\S+)} $libs {\1.lib} libs
         }
-        append cmdline " $libfile "
+        append cmdline " [list $libfile] "
         if {[string match "win32-*-cl" [platformcc]]} {
             set f [open [set rsp [file join $cache link.fil]] w]
             puts $f [join $v::objs \n]
             close $f
             append cmdline @$rsp
         } else {
-            append cmdline [join $v::objs]
+            append cmdline $v::objs
         }
         append cmdline " $libs $v::ldflags"
         puts $lfd "\n$cmdline"
@@ -796,7 +799,7 @@ ${ininame}_Init(Tcl_Interp *ip)
                 set src [file join $v::cache preload.c]
                 set obj [file join $v::cache preload.o]
                 compile $src $src $copts $lfd $obj
-                set cmdline "$c::link $obj $c::strip [subst $c::output]"
+                set cmdline "$c::link [list $obj] $c::strip [subst $c::output]"
                 puts $lfd "\n$cmdline"
                 interp transfer {} $lfd $run
                 if {[catch {

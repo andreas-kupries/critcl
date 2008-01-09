@@ -59,7 +59,7 @@ tkstubs         -DUSE_TK_STUBS
 debug_memory    -DTCL_MEM_DEBUG
 debug_symbols   -g
 object          .o
-output          -o $outfile
+output          -o [list $outfile]
 ldoutput
 link_debug
 link_release
@@ -197,7 +197,7 @@ win32-ix86-cl  preproc_enum    cl -nologo -E
 win32-ix86-cl  object          .obj
 win32-ix86-cl  debug_symbols   -W3 -Od -Zi -GZ -MDd -D_DEBUG
 win32-ix86-cl  optimize        -W3 -O2 -Op -Gs -MD
-win32-ix86-cl  output          -Fo$outfile
+win32-ix86-cl  output          [list -Fo$outfile]
 win32-ix86-cl  ldoutput        -dll -out:$outfile
 win32-ix86-cl  link_debug      -debug:full -debugtype:cv
 win32-ix86-cl  link_release    -release -opt:ref -opt:icf,3 -ws:aggressive
