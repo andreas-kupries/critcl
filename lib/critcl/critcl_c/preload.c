@@ -1,7 +1,7 @@
 /*
  * pre-load a shared library
  *   - for situations where a Tcl package depends on another library
- *   - will be superceded when by the functionality in TIP #239
+ *   - will be superceded by the functionality in TIP #239
  *   - based on tclLoad.c from Tcl 8.4.13 and MyInitTclStubs from Critcl
  */
 
@@ -56,7 +56,7 @@ Critcl_Preload(
     Tcl_Obj *CONST objv[])
 {
     int code;
-    Tcl_PackageInitProc **proc1, **proc2;
+    Tcl_PackageInitProc *proc1, *proc2;
     Tcl_LoadHandle loadHandle;
     Tcl_FSUnloadFileProc *unLoadProcPtr = NULL;
 
@@ -68,8 +68,16 @@ Critcl_Preload(
         return TCL_ERROR;
     }
     Tcl_MutexLock(&packageMutex);
-    code = Tcl_FSLoadFile(interp, objv[1], NULL, NULL, proc1, proc2,
+#ifdef notdef
+    code = TclpDlopen(interp, objv[1], &loadHandle, &unLoadProcPtr);
+    if (code == TCL_ERROR) {
+	code = Tcl_FSLoadFile(interp, objv[1], NULL, NULL, &proc1, &proc2,
                             &loadHandle, &unLoadProcPtr);
+    }
+#else 
+    code = Tcl_FSLoadFile(interp, objv[1], NULL, NULL, NULL, NULL,
+				  &loadHandle, &unLoadProcPtr);
+#endif
     Tcl_MutexUnlock(&packageMutex);
     return code;
 }
