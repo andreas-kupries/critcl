@@ -46,6 +46,34 @@ MyInitTclStubs (Tcl_Interp *ip)
     return 1;
 } 
 
+#ifdef WIN32
+
+#include <windows.h>
+
+typedef struct PreloadInfo {
+    Tcl_Obj *dir;
+    Tcl_LoadHandle handle;
+} PreloadInfo;
+
+static void
+removeDLLCopy(ClientData clientData) {
+    PreloadInfo *preload = (PreloadInfo *) clientData;
+    Tcl_Obj *dir = preload->dir;
+    Tcl_LoadHandle handle = preload->handle;
+    Tcl_Obj *errorPtr;
+
+    // no idea why, but we have to call FreeLibrary twice for the subsequent
+    // Tcl_FSRemoveDirectory to work
+    FreeLibrary((HINSTANCE) handle);
+    FreeLibrary((HINSTANCE) handle);
+
+    if (Tcl_FSRemoveDirectory(dir, 1, &errorPtr) != TCL_OK) {
+	fprintf(stderr, "error removing dir = %s\n", Tcl_GetString(errorPtr));
+    }
+}
+
+#endif
+
 TCL_DECLARE_MUTEX(packageMutex)
 
 static int
@@ -60,6 +88,7 @@ Critcl_Preload(
     Tcl_LoadHandle loadHandle;
     Tcl_FSUnloadFileProc *unLoadProcPtr = NULL;
     Tcl_Filesystem *fsPtr;
+    PreloadInfo	*preload = NULL;
 
     if (objc != 2) {
         Tcl_WrongNumArgs(interp, 1, objv, "fileName");
@@ -76,6 +105,8 @@ Critcl_Preload(
 
     if ((fsPtr = Tcl_FSGetFileSystemForPath(objv[1])) != NULL \
 		&& fsPtr->loadFileProc == NULL) {
+	int len;
+	Tcl_Obj *dirs;
 	objv[0] = Tcl_NewStringObj("::critcl2::precopy", -1);
 	if ((code = Tcl_EvalObjv(interp, 2, objv, 0)) != TCL_OK) {
 	    Tcl_SetErrorCode(interp, "could not preload ",
@@ -84,6 +115,10 @@ Critcl_Preload(
 	}
 	objv[1] = Tcl_GetObjResult(interp);
 	Tcl_IncrRefCount(objv[1]);
+	dirs = Tcl_FSSplitPath(objv[1], &len);
+	preload = (PreloadInfo *) ckalloc(sizeof(PreloadInfo));
+	preload->dir = Tcl_FSJoinPath(dirs, --len);
+	Tcl_IncrRefCount(preload->dir);
     }
 #endif
 
@@ -91,6 +126,12 @@ Critcl_Preload(
     code = Tcl_FSLoadFile(interp, objv[1], NULL, NULL, NULL, NULL,
 				  &loadHandle, &unLoadProcPtr);
     Tcl_MutexUnlock(&packageMutex);
+#ifdef WIN32
+    if (preload) {
+	preload->handle = loadHandle;
+	Tcl_CreateExitHandler(removeDLLCopy, (ClientData) preload);
+    }
+#endif
     return code;
 }
 
