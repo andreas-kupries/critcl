@@ -266,25 +266,27 @@ namespace eval ::critcl {
     append v::code(ccode) $text \n
   }
 
-  proc define {name args} {
-    set v::curr [md5_hex "$name $args"]
+  proc define {ns name args} {
+    set v::curr [md5_hex "$ns $name $args"]
     set file [file_normalize [info script]]
-
-    set ns [uplevel 2 namespace current]
-    if {$ns == "::"} { set ns "" } else { append ns :: }
+    set cns [string map {:: _} $ns]
 
     set ::auto_index($ns$name) [list [namespace current]::cbuild $file]
     #if {[info commands $name] != ""} { rename $name "" }
 
-    lappend v::code($file,list) $name $v::curr
-    set v::code($v::curr) "#define ns_$name \"$ns$name\"\n"
+    lappend v::code($file,list) $cns$name $v::curr
+    set v::code($v::curr) "#define ns_$cns$name \"$ns$name\"\n"
     if {$v::options(lines)} {
       append v::code($v::curr) "#line 1 \"[file tail $file]/$name\"\n"
     }
   }
 
   proc ccommand {name anames args} {
-    define $name $anames $args
+    set ns [uplevel 1 namespace current]
+    if {$ns == "::"} { set ns "" } else { append ns :: }
+    set cns [string map {:: _} $ns]
+
+    define $ns $name $anames $args
 
     set clientdata NULL
     set delproc 0
@@ -309,23 +311,27 @@ namespace eval ::critcl {
       set ca "(ClientData $cd, Tcl_Interp *$ip, int $oc, Tcl_Obj *CONST $ov\[])"
 
       emitln "static int"
-      emitln "tcl_$name$ca"
+      emitln "tcl_$cns$name$ca"
       emitln \{
       emit $body
       emitln \}
     } else {
       # if no body is specified, then $anames is alias for the real cmd proc
-      emitln "#define tcl_$name $anames"
+      emitln "#define tcl_$cns$name $anames"
       emitln "int $anames\(\);"
     }
     unset v::curr
   }
 
   proc cproc {name adefs rtype {body "#"}} {
-    define $name $adefs $rtype $body
+    set ns [uplevel 1 namespace current]
+    if {$ns == "::"} { set ns "" } else { append ns :: }
+    set cns [string map {:: _} $ns]
 
-    set cname c_$name
-    set wname tcl_$name
+    define $ns $name $adefs $rtype $body
+
+    set cname c_$cns$name
+    set wname tcl_$cns$name
 
     array set types {}
     set names {}
@@ -779,6 +785,7 @@ ${ininame}_Init(Tcl_Interp *ip)
             append cmdline $v::objs
         }
         append cmdline " $libs $v::ldflags"
+#       append cmdline " bufferoverflowU.lib";# msvc >=1400 && <1500 for amd64
         puts $lfd "\n$cmdline"
         variable run
         interp transfer {} $lfd $run
