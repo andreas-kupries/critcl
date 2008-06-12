@@ -1421,6 +1421,10 @@ ${ininame}_Init(Tcl_Interp *ip)
 	set comproc "    $class* $classptr;\n"
 	append comproc "    switch (objc) \{\n"
 
+	if {[llength $constructors] == 0} {
+	    set constructors {{}}
+	}
+
 	foreach adefs $constructors {
 	   array set types {}
 	    set names {}
@@ -1480,18 +1484,16 @@ ${ininame}_Init(Tcl_Interp *ip)
 	set tnames {}
 	set mnames {}
 	set adefs {}
-	foreach method $methods {
-     foreach {rt n a} $method {
-	   lappend rtypes $rt
-	      lappend tnames [lindex [split $n | ] 0]
-      set tmp [lindex [split $n | ] 1]
-      if { $tmp == ""}  {
-       lappend mnames  [lindex [split $n | ] 0]
-      } else {
-	       lappend mnames [lindex [split $n | ] 1]
-      }
-	      lappend adefs $a
-     }
+	foreach {rt n a} $methods {
+	    lappend rtypes $rt
+	    lappend tnames [lindex $n 0]
+	    set tmp [lindex $n 1]
+	    if { $tmp == ""}  {
+		lappend mnames  [lindex $n 0]
+	    } else {
+		lappend mnames [lindex $n 1]
+	    }
+	    lappend adefs $a
 	}
 	append cmdproc "    const char* cmds\[]=\{\"[join $tnames {","}]\",NULL\};\n"
 	append cmdproc "    if (objc<2) \{\n"
