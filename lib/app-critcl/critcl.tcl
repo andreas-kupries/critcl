@@ -104,7 +104,6 @@ set lib 0
 set libdir lib
 set pkg 0
 set verbose 0
-set keep 0
 set help 0
 set tcl_prefix ""
 set tk_prefix ""
@@ -129,9 +128,12 @@ while {[set result [cmdline::getopt argv $args opt arg]] != 0} {
         cache      { critcl::cache $arg }
         clean      { incr cleaning }
         config     { set config $arg }
-        debug      { critcl::debug $arg }
+        debug      { critcl::debug $arg
+	    	     critcl::config lines 0
+		   }
         force      { critcl::config force 1 ; puts stderr "Compilation forced" }
-        keep       { critcl::config keepsrc 1  ; set keep 1 }
+        keep       { critcl::config keepsrc 1 ; set keep 1
+	    	     critcl::config lines 0}
         help       { incr help }
         lib        { incr lib  ; incr verbose }
         libdir     { set libdir $arg }
