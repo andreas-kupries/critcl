@@ -254,3 +254,38 @@ linux-arm   tcl_platform(os)         Linux
 linux-arm   tcl_platform(osVersion)  2.6
 linux-arm   tcl_platform(platform)   unix
 linux-arm   tcl_platform(wordSize)   4
+
+# hpux itanium, native cc, 32 and 64bit builds.
+# +z <=> -fPIC on hpux.
+# +DD64 invokes the 64bit mode.
+
+hpux-ia64_32 compile         cc -c +z
+hpux-ia64_32 link            ld -b
+hpux-ia64_32 preproc_define  cc -E
+hpux-ia64_32 preproc_enum    cc -E
+
+hpux-ia64    compile         cc -c +z +DD64
+hpux-ia64    link            ld -b
+hpux-ia64    preproc_define  cc -E
+hpux-ia64    preproc_enum    cc -E
+
+# hpux, itanium, gcc
+# This works only if the -lgcc for 64bit is somewhere reachable.
+# hpux-ia64	gcc -c -fPIC -mlp64
+
+# aix, rs6000/powerpc, native cc, 32bit build
+# The link line is pretty much copied from Tcl.
+# NOTE: ldAix was copied from Tcl into a directory in the PATH.
+# It might make sense to stuff this file into critcl and then copy it out when
+# needed, either into a fixed place, or tempdir. In the latter case the link
+# line needs some way of getting the value substituted into it. I have no
+# idea of the critcl config allows that, and if yes, nor how.
+
+# cc_r = something with thread-enabled. better use it than cc and have things
+# fail.
+
+aix-powerpc    compile         cc_r -c -O
+aix-powerpc    link            ldAix /bin/ld -bhalt:4 -bM:SRE -bE:lib.exp -H512 -T512 -bnoentry -lm -lc
+aix-powerpc    preproc_define  cc -E
+aix-powerpc    preproc_enum    cc -E
+
