@@ -113,6 +113,7 @@ if {[string match macosx-* $platform]} {
     }
     if {$SDKROOT ne ""} {
         # get the SDKsettings for the min OSX value supported
+	set info ""
         if [catch {
                 set info [exec defaults read $SDKROOT/SDKSettings buildSettings]
         }] {
@@ -120,6 +121,11 @@ if {[string match macosx-* $platform]} {
                 set info [exec defaults read $SDKROOT/SDKSettings DefaultProperties -dict MACOSX_DEPLOYMENT_TARGET]
             }
         }
+	if {$info eq ""} {
+	    puts stderr "SDKROOT isn't configured correctly on this host"
+	    puts stderr "current setting $SDKROOT needs updating"
+	    exit 1
+	}
         set info [string trim $info]
         regsub -all {[\n"\;=\{\}]+} $info "" info
         regsub -all {\s+} $info " " info
@@ -136,48 +142,69 @@ if {[string match macosx-* $platform]} {
     }
     set universal 0
     catch {
-        set universal [expr {[exec gcc -v -arch ppc > /dev/null 2>@stdout] eq "" \
-                && [exec gcc -v -arch i386 > /dev/null 2>@stdout] eq ""}]
+	set ppc [expr {[exec gcc -v -arch ppc > /dev/null 2>@stdout] eq ""}]
+	set ppc64 [expr {[exec gcc -v -arch ppc64 > /dev/null 2>@stdout] eq ""}]
+	set i386 [expr {[exec gcc -v -arch i386 > /dev/null 2>@stdout] eq ""}]
+	set x86_64 [expr {[exec gcc -v -arch x86_64 > /dev/null 2>@stdout] eq ""}]
     }
 }
 
-# default to universal binary if available
-macosx-* when               $universal == 1
-macosx-* platform           macosx-universal $osxmin macosx-powerpc macosx-ix86
-macosx-* compile            gcc -c -arch i386 -arch ppc -isysroot $SDKROOT \
-                                    -mmacosx-version-min=$osxmin
-macosx-* link               gcc -bundle -arch i386 -arch ppc -isysroot $SDKROOT \
-                                    -mmacosx-version-min=$osxmin
-macosx-* link_preload       -undefined dynamic_lookup -mmacosx-version-min=10.3
-macosx-* strip
-
-# OSX ppc - when not universal or selected via -target
-macosx-powerpc when         $universal != 1
+# default on OSX ppc is universal containing ppc and x86 32 bit
+macosx-powerpc when         $ppc
 macosx-powerpc compile      gcc -c -arch ppc
 macosx-powerpc link         gcc -bundle -arch ppc
 macosx-powerpc link_preload -undefined dynamic_lookup -mmacosx-version-min=10.3
 macosx-powerpc strip
 
-# OSX ix86
-macosx-ix86 when            $universal != 1
-macosx-ix86 compile         gcc -c -arch i386
-macosx-ix86 link            gcc -bundle -arch i386
+# default on OSX intel is universal containing x86 32 and 64 bit
+macosx-ix86 when            $i386 && $x86_64
+macosx-ix86 compile         gcc -c -arch i386 -arch x86_64
+macosx-ix86 link            gcc -bundle -arch i386 -arch x86_64
 macosx-ix86 link_preload    -undefined dynamic_lookup -mmacosx-version-min=10.3
 macosx-ix86 strip
 
+# target for most common architectures
+macosx-most when            $ppc && $i386 && $x86_64
+macosx-most compile         gcc -c -arch i386 -arch x86_64 -arch ppc
+macosx-most link            gcc -bundle -arch i386 -arch x86_64 -arch ppc
+macosx-most link_preload    -undefined dynamic_lookup -mmacosx-version-min=10.3
+macosx-most strip
+
+# target for all architectures
+macosx-all when            $ppc && $ppc64 && $i386 && $x86_64
+macosx-all compile         gcc -c -arch i386 -arch x86_64 -arch ppc -arch ppc64
+macosx-all link            gcc -bundle -arch i386 -arch x86_64 -arch ppc -arch ppc64
+macosx-all link_preload    -undefined dynamic_lookup -mmacosx-version-min=10.3
+macosx-all strip
+
+# OSX ppc 32 bit
+macosx-ppc32 when           $ppc
+macosx-ppc32 compile        gcc -c -arch ppc
+macosx-ppc32 link           gcc -bundle -arch ppc
+macosx-ppc32 link_preload   -undefined dynamic_lookup
+macosx-ppc32 strip
+
 # OSX ppc 64 bit
-macosx-ppc64 when           $universal != 1
+macosx-ppc64 when           $ppc64
 macosx-ppc64 compile        gcc -c -arch ppc64
 macosx-ppc64 link           gcc -bundle -arch ppc64
 macosx-ppc64 link_preload   -undefined dynamic_lookup
 macosx-ppc64 strip
 
+# OSX x86 32 bit
+macosx-x86_32 when          $i386
+macosx-x86_32 compile       gcc -c -arch i386
+macosx-x86_32 link          gcc -bundle -arch i386
+macosx-x86_32 link_preload  -undefined dynamic_lookup
+macosx-x86_32 strip
+
 # OSX x86 64 bit
-macosx-x86_64 when          $universal != 1
+macosx-x86_64 when          $x86_64
 macosx-x86_64 compile       gcc -c -arch x86_64
 macosx-x86_64 link          gcc -bundle -arch x86_64
 macosx-x86_64 link_preload  -undefined dynamic_lookup
 macosx-x86_64 strip
+
 
 # Linux - 32 bit or 64 bit build - select using "-target" if you don't want
 #         the platform default (32 on 32, 64 on 64)
