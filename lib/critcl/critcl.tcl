@@ -1028,7 +1028,7 @@ ${ininame}_Init(Tcl_Interp *ip)
             set fields [split [string trim $line]]
             if {[lindex $fields 0] eq "#define"} {
                 set var [lindex $fields 1]
-                set val [lindex $fields 2]
+                set val [string trim [join [lrange $fields 2 end]] {()}]
                 foreach {nm dfn} $v::defines {
                     if {[string match $dfn $var]} {
                         lappend defines $nm $var $val
@@ -1070,7 +1070,7 @@ ${ininame}_Init(Tcl_Interp *ip)
                 # text or int - force to string
                 set val "Tcl_NewStringObj(\"$val\", -1)"
             }
-            puts $fd "  Tcl_ObjSetVar2(ip, $var, NULL, $val, TCL_GLOBAL_ONLY);"
+	    puts $fd "  Tcl_ObjSetVar2(ip, $var, NULL, $val, TCL_GLOBAL_ONLY);"
         }
         if {!$v::options(keepsrc)} { file delete $def.c }
         unset v::defines
