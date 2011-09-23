@@ -2288,7 +2288,7 @@ typedef struct TclStubs {
 #ifdef __cplusplus
 extern "C" {
 #endif
-extern TclStubs *tclStubsPtr;
+extern const TclStubs *tclStubsPtr;
 #ifdef __cplusplus
 }
 #endif

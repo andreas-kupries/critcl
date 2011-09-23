@@ -2,10 +2,10 @@
 # line 1 "MyInitTclStubs"
 
 #if USE_TCL_STUBS
-  TclStubs *tclStubsPtr;
-  TclPlatStubs *tclPlatStubsPtr;
-  struct TclIntStubs *tclIntStubsPtr;
-  struct TclIntPlatStubs *tclIntPlatStubsPtr;
+  const TclStubs *tclStubsPtr;
+  const TclPlatStubs *tclPlatStubsPtr;
+  const struct TclIntStubs *tclIntStubsPtr;
+  const struct TclIntPlatStubs *tclIntPlatStubsPtr;
 
   static int
   MyInitTclStubs (Tcl_Interp *ip)
@@ -20,8 +20,8 @@
     HeadOfInterp *hoi = (HeadOfInterp*) ip;
 
     if (hoi->stubTable == NULL || hoi->stubTable->magic != TCL_STUB_MAGIC) {
-      ip->result = "This extension requires stubs-support.";
-      ip->freeProc = TCL_STATIC;
+      hoi->result = "This extension requires stubs-support.";
+      hoi->freeProc = TCL_STATIC;
       return 0;
     }
 

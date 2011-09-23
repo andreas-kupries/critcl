@@ -1198,7 +1198,7 @@ typedef struct TkStubs {
 #ifdef __cplusplus
 extern "C" {
 #endif
-extern TkStubs *tkStubsPtr;
+extern const TkStubs *tkStubsPtr;
 #ifdef __cplusplus
 }
 #endif

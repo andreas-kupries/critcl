@@ -1,5 +1,5 @@
 '\"
-'\" Generated from file '/net/nas/data/andreask/Dev/Critcl/v21/embedded/man/files/critcl_util.n' by tcllib/doctools with format 'nroff'
+'\" Generated from file '/home/aku/Projects/Tcl/Critcl/dev-v3/embedded/man/files/critcl_util.n' by tcllib/doctools with format 'nroff'
 '\" Copyright (c) ???????????????????
 '\"
 '\" The definitions below are for supplemental macros used in Tcl/Tk

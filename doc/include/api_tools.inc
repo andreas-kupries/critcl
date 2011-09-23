@@ -150,4 +150,25 @@ current [file .critcl] file.
 [para] Multiple invokations of this command accumulate their
 information.
 
+
+[comment ---------------------------------------------------------------------]
+[call [cmd ::critcl::scan] [arg path]]
+
+This command is the main entry point to critcl's static code scanner.
+Invoked for a single [file .critcl] file it returns a dictionary providing
+the following pieces information about it:
+
+[list_begin definitions]
+[def version] Package version.
+[def org] Author(ing organization).
+
+[def files] List of the companion files. The paths in this list are
+all relative to the location (directory) of the input file.
+
+[list_end]
+
+This command and the information it returns can be used by tools to
+implement processing modes like the assembly of a directory hierachy
+containing a TEA-lookalike buildystem, etc.
+
 [list_end]

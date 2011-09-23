@@ -92,7 +92,7 @@
     }
 --></style>
 </head>
-<! -- Generated from file '/net/nas/data/andreask/Dev/Critcl/v21/embedded/www/files/critcl_apppkg.html' by tcllib/doctools with format 'html'
+<! -- Generated from file '/home/aku/Projects/Tcl/Critcl/dev-v3/embedded/www/files/critcl_apppkg.html' by tcllib/doctools with format 'html'
    -->
 <! -- Copyright &copy; ???????????????????
    -->
@@ -117,8 +117,9 @@
 <li class="section"><a href="#section4">Modes Of Operation/Use</a></li>
 <li class="section"><a href="#section5">Package Structure</a></li>
 <li class="section"><a href="#section6">Changes for version 2.1</a></li>
-<li class="section"><a href="#section7">Authors</a></li>
-<li class="section"><a href="#section8">Bugs, Ideas, Feedback</a></li>
+<li class="section"><a href="#section7">Changes for version 3</a></li>
+<li class="section"><a href="#section8">Authors</a></li>
+<li class="section"><a href="#section9">Bugs, Ideas, Feedback</a></li>
 <li class="section"><a href="#keywords">Keywords</a></li>
 <li class="section"><a href="#category">Category</a></li>
 <li class="section"><a href="#copyright">Copyright</a></li>
@@ -174,31 +175,41 @@ in the document about <i class="term"><a href="critcl_usingit.html">Using CriTcl
 <p>The following options are understood</p>
 <dl class="options">
 <dt><b class="option">-I</b> path</dt>
-<dd><p>This option specifies a single additional global include path to use
-during compilation of &quot;<b class="file">.critcl</b>&quot; files. The last value will be
-used if this is specified multiple times.</p></dd>
+<dd><p>This option specifies an additional global include path to use during
+compilation of &quot;<b class="file">.critcl</b>&quot; files. All values are used if this is
+specified multiple times.</p>
+<p>This option is irrelevant when generating a TEA package (see
+option <b class="option">-tea</b> below).</p></dd>
 <dt><b class="option">-cache</b> path</dt>
 <dd><p>This option specifies the path to the directory to use as the result
 cache. If not specified it defaults to &quot;<b class="file">~/.critcl/&lt;platform&gt;</b>&quot;,
 or, when generating a package (see option <b class="option">-pkg</b> below), to
 &quot;<b class="file">~/.critcl/&lt;pid&gt;.&lt;epoch&gt;</b>&quot;,
-When specified multiple times the last value is used.</p></dd>
+When specified multiple times the last value is used.</p>
+<p>This option is irrelevant when generating a TEA package (see
+option <b class="option">-tea</b> below).</p></dd>
 <dt><b class="option">-clean</b></dt>
 <dd><p>When specified the result cache is emptied, i.e. all files and
-directories found inside are deleted) before compilation begins.
-This option is irrelevant when generating a package (see option
+directories found inside are deleted) before compilation begins.</p>
+<p>This option is irrelevant when generating a package (see option
 <b class="option">-pkg</b> below) because this mode starts out with a unique and
-empty result cache.</p></dd>
+empty result cache.</p>
+<p>This option is irrelevant when generating a TEA package (see
+option <b class="option">-tea</b> below).</p></dd>
 <dt><b class="option">-config</b> path</dt>
 <dd><p>This option specifies the path to a custom configuration file,
 allowing the user to use their own target specifications. If not
 specified a hardwired default configuration embedded in the system
 core is used instead.
-When specified multiple times the last value is used.</p></dd>
+When specified multiple times the last value is used.</p>
+<p>This option is irrelevant when generating a TEA package (see
+option <b class="option">-tea</b> below).</p></dd>
 <dt><b class="option">-debug</b> mode</dt>
 <dd><p>This option activates compilation with debugging. It accepts the modes
 below.
 When specified multiple times the combination of all modes is used.</p>
+<p>This option is irrelevant when generating a TEA package (see
+option <b class="option">-tea</b> below).</p>
 <dl class="definitions">
 <dt><b class="const">memory</b></dt>
 <dd><p>This mode activates memory debugging of allocations made through the
@@ -209,15 +220,33 @@ symbols.</p></dd>
 <dt><b class="const">all</b></dt>
 <dd><p>This mode activates both <b class="const">memory</b> and <b class="const">symbols</b>.</p></dd>
 </dl></dd>
+<dt><b class="option">-disable</b> name</dt>
+<dd><p>This option sets the value of the custom build configuration option
+<i class="arg">name</i> to <b class="const">false</b>. It is equivalent to &quot;-with-<i class="arg">name</i> 0&quot;.</p>
+<p>The information is validated only if one of the &quot;<b class="file">.critcl</b>&quot;
+input files actually defines and uses a custom build configuration
+option with that <i class="arg">name</i>.</p>
+<p>This option is irrelevant when generating a TEA package (see
+option <b class="option">-tea</b> below).</p></dd>
+<dt><b class="option">-enable</b> name</dt>
+<dd><p>This option sets the value of the custom build configuration option
+<i class="arg">name</i> to <b class="const">true</b>. It is equivalent to &quot;-with-<i class="arg">name</i> 1&quot;.</p>
+<p>The information is validated only if one of the &quot;<b class="file">.critcl</b>&quot;
+input files actually defines and uses a custom build configuration
+option with that <i class="arg">name</i>.</p>
+<p>This option is irrelevant when generating a TEA package (see
+option <b class="option">-tea</b> below).</p></dd>
 <dt><b class="option">-force</b></dt>
 <dd><p>When specified compilation is always done, even if a shared library
 for the file exists already. This effect can be had through cleaning
 the cache (see above) as well, except that it is lazy in the
 destruction of files and will not destroy files unrelated to the ones
-we are building.
-This option is irrelevant when generating a package (see option
+we are building.</p>
+<p>This option is irrelevant when generating a package (see option
 <b class="option">-pkg</b> below) because this mode starts out with a unique and
-empty result cache.</p></dd>
+empty result cache.</p>
+<p>This option is irrelevant when generating a TEA package (see
+option <b class="option">-tea</b> below).</p></dd>
 <dt><b class="option">-help</b></dt>
 <dd><p>This option will cause the system to print a short help about command
 line syntax and options and then exit the application.</p></dd>
@@ -227,7 +256,9 @@ generated by a run in the result cache.
 When generating a package (see option <b class="option">-pkg</b> below) this also
 prevents the deletion of the unique result cache used by the run.
 This option is intended for the debugging of <b class="cmd"><a href="critcl_pkg.html">critcl</a></b> itself,
-where it may be necessary to inspect the generated C code.</p></dd>
+where it may be necessary to inspect the generated C code.</p>
+<p>This option is irrelevant when generating a TEA package (see
+option <b class="option">-tea</b> below).</p></dd>
 <dt><b class="option">-libdir</b> path</dt>
 <dd><p>This option specifies the path under which the packages generated via
 option <b class="option">-pkg</b> are saved.
@@ -235,18 +266,32 @@ When specified multiple times the last value is used.
 When not specified at all the default, &quot;<b class="file">lib</b>&quot;, is used. Note how
 this is a relative path, placing the result into the current working
 directory.</p></dd>
+<dt><b class="option">-includedir</b> path</dt>
+<dd><p>This option specifies the path under which any generated package
+headers are saved. It also specifies a path to search include files
+in, like for -I.
+When specified multiple times the last value is used as destination,
+however all previous values are kept on the include search path.
+When not specified at all the default, &quot;<b class="file">include</b>&quot;, is used. Note
+how this is a relative path, placing the result into the current
+working directory.</p>
+<p>This option is irrelevant when generating a TEA package (see
+option <b class="option">-tea</b> below).</p></dd>
 <dt><b class="option">-pkg</b></dt>
 <dd><p>The default mode of the application is to build the &quot;<b class="file">.critcl</b>&quot;
 files listed on the command line and save the results in the result
 cache. Essentially pre-filling the cache with important packages,
 cutting down on the time needed to use these packages.</p>
-<p>This option activates the other mode, package generation.
+<p>This option activates one of the other modes, package generation.
 In this mode the input files are processed first as usual, however
 after that they are bundled into a single library and additional files
 are generated to make this library usable as a regular Tcl package.</p>
+<p>The option <b class="option">-tea</b>, see below, invokes the last mode, TEA
+generation. If both options, i.e. <b class="option">-pkg</b> and <b class="option">-tea</b> are
+specified the last one specified wins.</p>
 <p>In this mode the options <b class="option">-clean</b> and <b class="option">-force</b> are
 irrelevant and ignored. In contrast, the option <b class="option">-libdir</b> is
-relevant only in this mode.</p>
+relevant in both this and <b class="option">-tea</b> mode.</p>
 <p>When this option is specified the basename of the first file argument
 after the options is used as the name of the package to generate. If
 the extension of that file indicates a shared library (&quot;<b class="file">.so</b>&quot;,
@@ -296,24 +341,79 @@ The named target must exist in the chosen configuration file.
 Use option <b class="option">-targets</b> (see below) to get a list of the
 acceptable targets.
 The choice of configuration file can be influenced through the option
-<b class="option">-config</b> (see above).</p></dd>
+<b class="option">-config</b> (see above).</p>
+<p>This option is irrelevant when generating a TEA package (see
+option <b class="option">-tea</b> below).</p></dd>
 <dt><b class="option">-targets</b></dt>
 <dd><p>This option, when specified, will cause the system to print the list
 of all known targets from the chosen configuration file to
 <b class="const">stdout</b> and then exit.
 The choice of configuration file can be influenced through the option
 <b class="option">-config</b> (see above).</p></dd>
+<dt><b class="option">-tea</b></dt>
+<dd><p>Similar to option <b class="option">-pkg</b>, except that the invoked mode does not
+generate binaries, but a directory hierarchy containing the
+&quot;<b class="file">.critcl</b>&quot; file, its companion files, and a TEA-lookalike build
+system with most of the needed support code (incliding copies of the
+critcl packages).</p>
+<p>If both options, i.e. <b class="option">-pkg</b> and <b class="option">-tea</b> are specified
+the last one specified wins.</p>
+<p>In this mode the options <b class="option">-clean</b>, <b class="option">-force</b>,
+<b class="option">-cache</b>, <b class="option">-includedir</b>, <b class="option">-enable</b>,
+<b class="option">-disable</b>, and <b class="option">-with-<b class="variable">FOO</b></b> are irrelevant and
+ignored. In contrast, the option <b class="option">-libdir</b> is relevant in both
+this and <b class="option">-pkg</b> mode.</p>
+<p>When this option is specified the basename of the first file argument
+after the options is used as the name of the package to generate. If
+the extension of that file indicates a shared library (&quot;<b class="file">.so</b>&quot;,
+&quot;<b class="file">.sl</b>&quot;, &quot;<b class="file">.dylib</b>&quot;, and &quot;<b class="file">.dll</b>&quot;) it is also removed from
+the set of input files. A &quot;<b class="file">.tcl</b>&quot; file is kept as part of the
+input. A single file without extension is assumed to actually have a
+&quot;<b class="file">.tcl</b>&quot; extension. A file without extension, but other input files
+following is treated like the name of a shared library proper, and
+removed from the set of input files.</p>
+<p>Examples:</p>
+<pre class="example">
+	... -tea ... foo
+	=&gt; Package name is: foo
+	=&gt; Input file is:   foo.tcl
+</pre>
+<pre class="example">
+	... -tea ... foo bar.tcl
+	=&gt; Package name is: foo
+	=&gt; Input file is:   bar.tcl
+</pre>
+<pre class="example">
+	... -tea ... foo.tcl
+	=&gt; Package name is: foo
+	=&gt; Input file is:   foo.tcl
+</pre>
+<pre class="example">
+	... -tea ... foo.so bar.tcl
+	=&gt; Package name is: foo
+	=&gt; Input file is:   bar.tcl
+</pre>
+</dd>
+<dt><b class="option">-with-<b class="variable">name</b></b> value</dt>
+<dd><p>This option sets the value of the custom build configuration option
+<i class="arg">name</i> to <i class="arg">value</i>.</p>
+<p>The information is validated only if one of the &quot;<b class="file">.critcl</b>&quot;
+input files actually defines and uses a custom build configuration
+option with that <i class="arg">name</i>.</p>
+<p>This option is irrelevant when generating a TEA package (see
+option <b class="option">-tea</b> above).</p></dd>
 </dl>
 </div>
 <div id="section4" class="section"><h2><a name="section4">Modes Of Operation/Use</a></h2>
-<p>CriTcl can be used in two different modes of operation, called</p>
+<p>CriTcl can be used in three different modes of operation, called</p>
 <ol class="enumerated">
 <li><p><i class="term"><a href="../index.html#key0">Compile &amp; Run</a></i>, and</p></li>
 <li><p><i class="term"><a href="../index.html#key9">Generate Package</a></i></p></li>
+<li><p><i class="term">Generate TEA Package</i></p></li>
 </ol>
-<p>Of these two <i class="term"><a href="../index.html#key0">Compile &amp; Run</a></i> came first and is the default when
-using the package directly. In that case the package collects the C
-fragments, builds them as needed, and caches the results for quick
+<p>Of these three <i class="term"><a href="../index.html#key0">Compile &amp; Run</a></i> came first and is the default
+when using the package directly. In that case the package collects the
+C fragments, builds them as needed, and caches the results for quick
 reuse when the same code is used in the future again.</p>
 <p>The second mode, <i class="term"><a href="../index.html#key9">Generate Package</a></i>, was introduced to enable
 the creation of (prebuilt) deliverable packages which do not depend on
@@ -322,6 +422,14 @@ machine.
 This was originally done through the experimental <b class="cmd">Critbind</b> tool,
 and is now handled by the <i class="term"><a href="critcl_app.html">CriTcl Application</a></i>, also named
 <b class="cmd"><a href="critcl_pkg.html">critcl</a></b>.</p>
+<p>Newly introduced with Critcl version 3 is
+<i class="term">Generate TEA Package</i>. This mode constructs a directory
+hierarchy from the package which can later be built like a regular TEA
+package, i.e. using</p>
+<pre class="example">
+	.../configure --prefix ...
+	make all isntall
+</pre>
 </div>
 <div id="section5" class="section"><h2><a name="section5">Package Structure</a></h2>
 <p>Packages generated by critcl have the following basic structure:</p>
@@ -417,13 +525,13 @@ build target, and to ignore the declaration if its not.</p></li>
 a &quot;<b class="file">.critcl</b>&quot; file. The first call forces the build, if it was not
 done already, to get the result. Further calls return the cached
 result of the first call.</p></li>
-<li><p>Extended the code handling the search for preloaded libraries
-to print the paths it searched, making debugging of a search failure
-easier.</p></li>
 <li><p>Extended the handling of environment variable CC in the code
 determining the compiler to use to deal with (i.e. remove) paths to
 the compiler, compiler file extensions, and compiler options specified
 after the compiler itself, leaving only the bare name of the compiler.</p></li>
+<li><p>Extended the code handling the search for preloaded libraries
+to print the paths it searched, making debugging of a search failure
+easier.</p></li>
 <li><p>A new command <b class="cmd">critcl::tcl</b> can be used to declare the
 version of Tcl minimally needed to build and run the &quot;<b class="file">.critcl</b>&quot;
 file and package. Defaults to 8.4 if not declared. Extended critcl to
@@ -455,7 +563,7 @@ to stdout.</p>
 <b class="cmd">critcl::check</b> and <b class="cmd">critcl::checklink</b> during building, to
 help with debugging when something goes wrong with a check.</p></li>
 <li><p>Exposed the argument processing internals of <b class="cmd">critcl::proc</b>
-for use by advanced users. New commands</p>
+for use by advanced users. The new commands are</p>
 <ol class="enumerated">
 <li><p><b class="cmd">critcl::argnames</b></p></li>
 <li><p><b class="cmd">critcl::argcnames</b></p></li>
@@ -463,17 +571,89 @@ for use by advanced users. New commands</p>
 <li><p><b class="cmd">critcl::argvardecls</b></p></li>
 <li><p><b class="cmd">critcl::argconversion</b></p></li>
 </ol>
-<p>See section <b class="sectref">Advanced Embedded C Code</b> for details.</p></li>
+<p>Please see section <em>Advanced Embedded C Code</em> of the
+<b class="package"><a href="critcl_pkg.html">critcl</a></b> package documentation for details.</p></li>
+<li><p>Extended the critclk package to intercept <b class="cmd">package
+provide</b> and record the file -&gt; package name mapping. Plus other
+internal changes now allow the use of namespaced package names while
+still using proper path names and init function.</p></li>
 <li><p>Dropped the unused commands <b class="cmd">critcl::optimize</b> and
 <b class="cmd">critcl::include</b>.</p></li>
 <li><p>Dropped <b class="option">-lib</b> mode from the critcl application.</p></li>
 <li><p>Dropped remnants of support for Tcl 8.3 and before.</p></li>
 </ol>
 </div>
-<div id="section7" class="section"><h2><a name="section7">Authors</a></h2>
+<div id="section7" class="section"><h2><a name="section7">Changes for version 3</a></h2>
+<ol class="enumerated">
+<li><p>The command <b class="cmd">critcl::platform</b> was deprecated in version
+2.1, superceded by <b class="cmd">critcl::targetplatform</b>, yet kept for
+compatibility. Now it has been removed.</p></li>
+<li><p>The command <b class="cmd">critcl::compiled</b> was kept with in version 2.1
+with semantics in contradiction to its, for compatibility. This
+contradiction has been removed, changing the visible semantics of the
+command to be in line with its name.</p></li>
+<li><p>The change to version 3 became necessary because of the two
+incompatible visible changes above.</p></li>
+<li><p>Extended the application package with code handling a new
+option <b class="option">-tea</b>. Specifying this option invokes a special mode
+where critcl generates a TEA package, i.e. wraps the input into a
+directory hierarchy and support files which provide it TEA-lookalike
+buildsystem.</p>
+<p>This new option, and <b class="option">-pkg</b>, exclude each other. If
+both are specified the last used option takes precedence.</p>
+<p>The generated package directory hierarchy is mostly
+self-contained, but not fully. It requires not only a working
+installation of Tcl, but also working installations of the packages
+<b class="package">md5</b> and <b class="package">cmdline</b>. Both of these are provided by the
+<b class="package">Tcllib</b> bundle. Not required, but recommended to have
+installed are any of the packages which can accelerate md5's
+operation, i.e. <b class="package">cryptkit</b>, <b class="package">tcllibc</b>, or
+<b class="package">Trf</b>.</p></li>
+<li><p>Extended the critcl package with a new command
+<b class="cmd">critcl::scan</b> taking the path to a &quot;<b class="file">.critcl</b>&quot; file,
+statically scanning it, and returning license, version, a list of its
+companion files, list of imported APIs, and list of
+developer-specified custom configuration options. This data is the
+foundation for the TEA wrapping described above.</p>
+<p>Note that this is a <em>static</em> scan. While the other build
+modes can (must) execute the &quot;<b class="file">.critcl</b>&quot; file and make
+platform-specific decisions regarding the assembled C code, companion
+files, etc. the TEA wrap mode is not in a position to make
+platform-specific decisions. It has to wrap everything which might
+conceivably be needed when actually building. Hence the static scan.
+This has however its own set of problems, namely the inability to
+figure out any dynamic construction of companion file paths, at least
+on its own. Thus:</p></li>
+<li><p>Extended the API used by critcl-based packages with the command
+<b class="cmd">critcl::owns</b>. While this command is ignored by the regular build
+modes the static scanner described above takes its arguments as the
+names of companion files which have to be wrapped into the TEA package
+and could not be figured by the scanner otherwise, like because of
+dynamic paths to <b class="cmd">critcl::tsources</b>, <b class="cmd">critcl::csources</b>,
+getting sourced directly, or simply being adjunct datafiles.</p></li>
+<li><p>Extended the API used by critcl-based packages with the command
+<b class="cmd">critcl::api</b> for the management of stubs tables, be it their use,
+and/or declaration and export.</p>
+<p>Please see section <em>Stubs Table Management</em> of the
+<b class="package"><a href="critcl_pkg.html">critcl</a></b> package documentation for details.</p></li>
+<li><p>Extended the API used by critcl-based packages with the command
+<b class="cmd">critcl::userconfig</b> for the management of developer-specified
+custom configuration options, be it their use and/or declaration.</p>
+<p>Please see section <em>Custom Build Configuration</em> of the
+<b class="package"><a href="critcl_pkg.html">critcl</a></b> package documentation for details.</p></li>
+<li><p>Extended the API used by critcl-based packages with the
+commands <b class="cmd">critcl::description</b>, <b class="cmd">critcl::summary</b>,
+<b class="cmd">critcl::subject</b>, <b class="cmd">critcl::meta</b>, and
+<b class="cmd">critcl::buildrequirement</b> for the declaration of TEApot meta data
+for/about the package.</p>
+<p>Please see section <em>Package Meta Data</em> of the
+<b class="package"><a href="critcl_pkg.html">critcl</a></b> package documentation for details.</p></li>
+</ol>
+</div>
+<div id="section8" class="section"><h2><a name="section8">Authors</a></h2>
 <p>Jean Claude Wippler, Steve Landers, Andreas Kupries</p>
 </div>
-<div id="section8" class="section"><h2><a name="section8">Bugs, Ideas, Feedback</a></h2>
+<div id="section9" class="section"><h2><a name="section9">Bugs, Ideas, Feedback</a></h2>
 <p>This document, and the package it describes, will undoubtedly contain
 bugs and other problems.
 Please report such at

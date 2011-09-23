@@ -11,3 +11,4 @@ the [sectref {Result Cache}] fore more details.
 [subsection {Result Cache}]		[include include/rcache.inc]
 [subsection {Preloading functionality}]	[include include/preload.inc]
 [subsection {Configuration Internals}]	[include include/iconfig.inc]
+[subsection {Stubs Tables}]		[include include/stubs.inc]

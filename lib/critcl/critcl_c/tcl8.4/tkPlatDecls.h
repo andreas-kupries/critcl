@@ -160,7 +160,7 @@ typedef struct TkPlatStubs {
 #ifdef __cplusplus
 extern "C" {
 #endif
-extern TkPlatStubs *tkPlatStubsPtr;
+extern const TkPlatStubs *tkPlatStubsPtr;
 #ifdef __cplusplus
 }
 #endif

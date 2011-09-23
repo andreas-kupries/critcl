@@ -11,7 +11,12 @@ package provide critcl::util 1
 ## Requirements.
 
 package require Tcl    8.4   ; # Min supported version.
-package require critcl 2.1 ; # Only this has the enhanced check, and checklink.
+
+if {[catch {
+    package require critcl 3
+}]} {
+    package require critcl 2.1 ; # Only this and higher has the enhanced check, and checklink.
+}
 
 namespace eval ::critcl::util {}
 

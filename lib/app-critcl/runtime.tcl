@@ -21,6 +21,8 @@ proc ::critcl::runtime::loadlib {dir package version libname initfun tsrc mappin
     set ext [info sharedlibextension]
     set lib [file join $path $libname$ext]
     set provide [list]
+
+    # Now the runtime equivalent of a series of 'preFetch' commands.
     if {[llength $args]} {
 	set preload [file join $path preload$ext]
 	foreach p $args {
@@ -31,33 +33,49 @@ proc ::critcl::runtime::loadlib {dir package version libname initfun tsrc mappin
 	    }
 	}
     }
+
     lappend provide [list load $lib $initfun]
     foreach t $tsrc {
-	set t [file join $dir tcl $t]
-	lappend provide [list ::critcl::Ignore $t]
-	# The above disables compile & run functionality.
-
-	# Background: If the regular critcl package is already loaded,
-	# and this prebuilt package uses its defining .tcl file also
-	# as a 'tsources' then critcl might try to collect data and
-	# build it because of the calls to its API, despite the
-	# necessary binaries already being present, just not in the
-	# critcl cache. That is redundant in the best case, and fails
-	# in the worst case (no compiler), preventing the use o a
-	# perfectly fine package. The 'ignore' call now tells critcl
-	# that it should ignore any calls made to it by the sourced
-	# files, and thus avoids that trouble.
-
-	# The other case, the regular critcl package getting loaded
-	# after this prebuilt package is irrelevant. At that point the
-	# tsources were already run, and used the dummy procedures
-	# defined in the critcl-rt.tcl, which ignore the calls by
-	# definition.
-
-	lappend provide [list source $t]
+	lappend loadcmd "::critcl::runtime::Fetch \$dir [list $t]"
     }
     lappend provide "package provide $package $version"
     package ifneeded $package $version [join $provide "\n"]
+    return
+}
+
+proc ::critcl::runtime::preFetch {path ext dll} {
+    set preload [file join $path preload$ext]
+    if {![file readable $preload]} return
+
+    set prelib [file join $path $dll$ext]
+    if {![file readable $prelib]} return
+
+    load $preload ; # Defines next command.
+    ::critcl::runtime::preload $prelib
+    return
+}
+
+proc ::critcl::runtime::Fetch {dir t} {
+    # The 'Ignore' disables compile & run functionality.
+
+    # Background: If the regular critcl package is already loaded, and
+    # this prebuilt package uses its defining .tcl file also as a
+    # 'tsources' then critcl might try to collect data and build it
+    # because of the calls to its API, despite the necessary binaries
+    # already being present, just not in the critcl cache. That is
+    # redundant in the best case, and fails in the worst case (no
+    # compiler), preventing the use o a perfectly fine package. The
+    # 'ignore' call now tells critcl that it should ignore any calls
+    # made to it by the sourced files, and thus avoids that trouble.
+
+    # The other case, the regular critcl package getting loaded after
+    # this prebuilt package is irrelevant. At that point the tsources
+    # were already run, and used the dummy procedures defined in the
+    # critcl-rt.tcl, which ignore the calls by definition.
+
+    set t [file join $dir tcl $t]
+    ::critcl::Ignore $t
+    uplevel #0 [list source $t]
     return
 }
 

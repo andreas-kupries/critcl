@@ -6,7 +6,7 @@
 
 # CriTcl Core.
 
-package provide critcl 2.1
+package provide critcl 3
 
 # # ## ### ##### ######## ############# #####################
 ## Requirements.
@@ -15,29 +15,35 @@ package require Tcl      8.4   ; # Min supported version.
 package require platform 1.0.2 ; # Determine current platform.
 
 # Ensure forward compatibility of commands defined in 8.5+.
-source [file join [file dirname [file normalize [info script]]] \
-	    fcompat.tcl]
+package require lassign84
+package require dict84
 
 # md5 could be a cmd or a pkg, or be in a separate namespace
 if {[catch { md5 "" }]} {
-    # do *not* use "package require md5c" since crtcl is not loaded yet,
-    # but do look for a compiled one, in case object code already exists
+    # Do *not* use "package require md5c" since critcl is not loaded
+    # yet, but do look for a compiled one, in case object code already
+    # exists.
+
     if {![catch { md5c "" }]} {
 	interp alias {} md5 {} md5c
     } elseif {[catch {package require Trf 2.0}] || [catch {::md5 -- test}]} {
-	# else try to load the Tcl version in tcllib
+	# Else try to load the Tcl version in tcllib
 	catch { package require md5 }
 	if {![catch { md5::md5 "" }]} {
 	    interp alias {} md5 {} md5::md5
 	} else {
-	    # last resort: package require or source Don Libes' md5pure script
+	    # Last resort: package require or source Don Libes'
+	    # md5pure script
+
 	    if {[catch { package require md5pure }]} {
 		if {[file exists md5pure.tcl]} {
 		    source md5pure.tcl
 		    interp alias {} md5 {} md5pure::md5
 		} else {
-		    # XXX: Note the assumption here, that the md5 package is
-		    # XXX - found relative to critcl itself, in the critcl starkit.
+		    # XXX: Note the assumption here, that the md5
+		    # XXX: package is found relative to critcl itself,
+		    # XXX: in the critcl starkit.
+
 		    source [file join [file dirname [info script]] ../md5/md5.tcl]
 		    interp alias {} md5 {} md5::md5
 		}
@@ -79,37 +85,52 @@ if {[package vsatisfies [package present Tcl] 8.5]} {
 }
 
 # # ## ### ##### ######## ############# #####################
-## Intercept 'package provide to record the versions of the built packages.
+## 
 
-rename package ::critcl::__package
-proc package {option args} {
-    if {$option eq "provide"} {
-	lassign $args name version
-	critcl::RecordPackage $name $version
-    }
-    return [eval [linsert $args 0 ::critcl::__package $option]]
+proc ::critcl::buildrequirement {script} {
+    # In regular code this does nothing. It is a marker for
+    # the static scanner to change under what key to record
+    # the 'package require' found in the script.
+    uplevel 1 $script
 }
 
-proc ::critcl::RecordPackage {name version} {
-    #puts |$name|$version|
+proc ::critcl::TeapotPlatform {} {
+    # Platform identifier HACK. Most of the data in critcl is based on
+    # 'platform::generic'. The TEApot MD however uses
+    # 'platform::identify' with its detail information (solaris kernel
+    # version, linux glibc version). But, if a cross-compile is
+    # running we are SOL, because we have no place to pull the
+    # necessary detail from, 'identify' is a purely local operation :(
 
-    # Ignore broken 'package provide' commands.
-    if {$name    eq {}} return
-    if {$version eq {}} return
-
-    # Ignore commands for non-critcl files.
-    set file [This]
-    if {![info exists v::code($file)]} {
-	set v::code($file) {}
-    } else {
-	msg -nonewline " (provide $name $version)"
+    set platform [actualtarget]
+    if {[platform::generic] eq $platform} {
+	set platform [platform::identify]
     }
 
-    #puts %$file
-    #puts ++${name}-$version
+    return $platform
+}
 
-    dict set v::code($file) config package $name
-    return
+proc ::critcl::TeapotRequire {dspec} {
+    # Syntax of dspec: (a) pname
+    #             ...: (b) pname req-version...
+    #             ...: (c) pname -exact req-version
+    #
+    # We can assume that the syntax is generally ok, because otherwise
+    # the 'package require' itself will fail in a moment, blocking the
+    # further execution of the .critcl file. So we only have to
+    # distinguish the cases.
+
+    if {([llength $dspec] == 3) &&
+	([lindex $dspec 1] eq "-exact")} {
+	# (c)
+	lassign $dspec pn _ pv
+	set spec [list $pn ${pv}-$pv]
+    } else {
+	# (a, b)
+	set spec $dspec
+    }
+
+    return $spec
 }
 
 # # ## ### ##### ######## ############# #####################
@@ -360,6 +381,8 @@ proc ::critcl::cinit {text edecls} {
 # # ## ### ##### ######## ############# #####################
 ## Implementation -- API: Control & Interface
 
+proc ::critcl::owns {args} {}
+
 proc ::critcl::cheaders {args} {
     SkipIgnored [This]
     AbortWhenCalledAfterBuild
@@ -369,7 +392,7 @@ proc ::critcl::cheaders {args} {
 proc ::critcl::csources {args} {
     SkipIgnored [This]
     AbortWhenCalledAfterBuild
-    return [SetParam csources $args]
+    return [SetParam csources $args 1 1]
 }
 
 proc ::critcl::clibraries {args} {
@@ -387,7 +410,7 @@ proc ::critcl::cobjects {args} {
 proc ::critcl::tsources {args} {
     set file [SkipIgnored [This]]
     AbortWhenCalledAfterBuild
-    # This, and 'license' are the only two places where we are not
+    # This, 'license', and 'meta' are the only places where we are not
     # extending the UUID. Because the companion Tcl sources (count,
     # order, and content) have no bearing on the binary at all.
     InitializeFile $file
@@ -396,6 +419,7 @@ proc ::critcl::tsources {args} {
 	foreach f $args {
 	    foreach e [Expand $file $f] {
 		dict lappend c tsources $e
+	        ScanDependencies $file $e
 	    }
 	}
     }
@@ -460,6 +484,12 @@ proc ::critcl::tcl {version} {
 
     UUID.extend $file .mintcl $version
     dict set v::code($file) config mintcl $version
+
+    # This is also a dependency to record in the meta data. A 'package
+    # require' is not needed. This can be inside of the generated and
+    # loaded C code.
+
+    ImetaAdd $file require [list Tcl $version]
     return
 }
 
@@ -469,6 +499,12 @@ proc ::critcl::tk {} {
 
     UUID.extend $file .tk 1
     dict set v::code($file) config tk 1
+
+    # This is also a dependency to record in the meta data. A 'package
+    # require' is not needed. This can be inside of the generated and
+    # loaded C code.
+
+    ImetaAdd $file require Tk
     return
 }
 
@@ -498,9 +534,25 @@ proc ::critcl::license {who args} {
     } else {
 	set license ""
     }
-    if {[llength $args]} {
-	# Use the supplied license details
-	append license [join $args]
+
+    set elicense [LicenseText $args]
+
+    append license $elicense
+
+    # This, 'tsources', and 'meta' are the only places where we are
+    # not extending the UUID. Because the license text has no bearing
+    # on the binary at all.
+    InitializeFile $file
+
+    ImetaSet $file license [Text2Words   $elicense]
+    ImetaSet $file author  [Text2Authors $who]
+    return
+}
+
+proc ::critcl::LicenseText {words} {
+    if {[llength $words]} {
+	# Use the supplied license details as our suffix.
+	return [join $words]
     } else {
 	# No details were supplied, fall back to the critcl license as
 	# template for the generated package. This is found in a
@@ -512,16 +564,509 @@ proc ::critcl::license {who args} {
 
 	variable mydir
 	set f [file join $mydir license.terms]
-	append license [join [lrange [split [Cat $f] \n] 2 end] \n]
+	return [join [lrange [split [Cat $f] \n] 2 end] \n]
     }
+}
 
-    # This, and 'tsources' are the only two places where we are not
-    # extending the UUID. Because the license text has no bearing on
+# # ## ### ##### ######## ############# #####################
+## Implementation -- API: meta data (teapot)
+
+proc ::critcl::description {text} {
+    set file [SkipIgnored [This]]
+    AbortWhenCalledAfterBuild
+    InitializeFile $file
+
+    ImetaSet $file description [Text2Words $text]
+    return
+}
+
+proc ::critcl::summary {text} {
+    set file [SkipIgnored [This]]
+    AbortWhenCalledAfterBuild
+    InitializeFile $file
+
+    ImetaSet $file summary [Text2Words $text]
+    return
+}
+
+proc ::critcl::subject {args} {
+    set file [SkipIgnored [This]]
+    AbortWhenCalledAfterBuild
+    InitializeFile $file
+
+    ImetaAdd $file subject $args
+    return
+}
+
+proc ::critcl::meta {key args} {
+    set file [SkipIgnored [This]]
+    AbortWhenCalledAfterBuild
+
+    # This, 'license', and 'tsources' are the only places where we are
+    # not extending the UUID. Because the meta data has no bearing on
     # the binary at all.
     InitializeFile $file
 
-    dict set v::code($file) config license $license
+    dict update v::code($file) config c {
+	dict update c meta m {
+	    foreach v $args { dict lappend m $key $v }
+	}
+    }
     return
+}
+
+proc ::critcl::ImetaSet {file key words} {
+    dict set v::code($file) config package $key $words
+    #puts |||$key|%|[dict get $v::code($file) config package $key]|
+    return
+}
+
+proc ::critcl::ImetaAdd {file key words} {
+    dict update v::code($file) config c {
+	dict update c package p {
+	    foreach word $words {
+		dict lappend p $key $word
+	    }
+	}
+    }
+    #puts |||$key|+|[dict get $v::code($file) config package $key]|
+    return
+}
+
+proc ::critcl::Text2Words {text} {
+    regsub -all {[ \t\n]+} $text { } text
+    return [split [string trim $text]]
+}
+
+proc ::critcl::Text2Authors {text} {
+    regsub -all {[ \t\n]+} $text { } text
+    set authors {}
+    foreach a [split [string trim $text] ,] {
+	lappend authors [string trim $a]
+    }
+    return $authors
+}
+
+proc ::critcl::GetMeta {file} {
+    if {![dict exists $v::code($file) config meta]} {
+	set result {}
+    } else {
+	set result [dict get $v::code($file) config meta]
+    }
+
+    # Merge the package information (= system meta data) with the
+    # user's meta data. The system information overrides anything the
+    # user may have declared for the reserved keys (name, version,
+    # platform, as::author, as::build::date, license, description,
+    # summary, require). Note that for the internal bracketing code
+    # the system information may not exist, hence the catch. Might be
+    # better to indicate the bracket somehow and make it properly
+    # conditional.
+
+    #puts %$file
+
+    catch {
+	set result [dict merge $result [dict get $v::code($file) config package]]
+    }
+
+    return $result
+}
+
+# # ## ### ##### ######## ############# #####################
+## Implementation -- API: user configuration options.
+
+proc ::critcl::userconfig {cmd args} {
+    set file [SkipIgnored [This]]
+    AbortWhenCalledAfterBuild
+    InitializeFile $file
+
+    if {![llength [info commands ::critcl::UC$cmd]]} {
+	return -code error "Unknown method \"$cmd\""
+    }
+
+    # Dispatch
+    return [eval [linsert $args 0 ::critcl::UC$cmd $file]]
+}
+
+proc ::critcl::UCdefine {file oname odesc otype {odefault {}}} {
+    # When declared without a default determine one of our own. Bool
+    # flag default to true, whereas enum flags, which is the rest,
+    # default to their first value.
+
+    # The actual definition ignores the config description. This
+    # argument is only used by the static code scanner supporting
+    # TEA. See ::critcl::scan::userconfig.
+
+    if {[llength [info level 0]] < 6} {
+	set odefault [UcDefault $otype]
+    }
+
+    # Validate the default against the type too, before saving
+    # everything.
+    UcValidate $oname $otype $odefault
+
+    UUID.extend $file .uc-def [list $oname $otype $odefault]
+
+    dict set v::code($file) config userflag $oname type    $otype
+    dict set v::code($file) config userflag $oname default $odefault
+    return
+}
+
+proc ::critcl::UCset {file oname value} {
+    # NOTE: We can set any user flag we choose, even if not declared
+    # yet. Validation of the value happens on query, at which time the
+    # flag must be declared.
+
+    dict set v::code($file) config userflag $oname value $value
+    return
+}
+
+proc ::critcl::UCquery {file oname} {
+    # Prefer cached data. This is known as declared, defaults merged,
+    # validated.
+    if {[dict exists $v::code($file) config userflag $oname =]} {
+	return [dict get $v::code($file) config userflag $oname =]
+    }
+
+    # Reject use of undeclared user flags.
+    if {![dict exists $v::code($file) config userflag $oname type]} {
+	error "Unknown user flag \"$oname\""
+    }
+
+    # Check if a value was supplied by the calling app. If not, fall
+    # back to the declared default.
+
+    if {[dict exists $v::code($file) config userflag $oname value]} {
+	set value [dict get $v::code($file) config userflag $oname value]
+    } else {
+	set value [dict get $v::code($file) config userflag $oname default]
+    }
+
+    # Validate value against the flag's type.
+    set otype [dict get $v::code($file) config userflag $oname type]
+    UcValidate $oname $otype $value
+
+    # Fill cache
+    dict set v::code($file) config userflag $oname = $value
+    return $value
+}
+
+proc ::critcl::UcValidate {oname otype value} {
+    switch -exact -- $otype {
+	bool {
+	    if {![string is bool -strict $value]} {
+		error "Expected boolean for user flag \"$oname\", got \"$value\""
+	    }
+	}
+	default {
+	    if {[lsearch -exact $otype $value] < 0} {
+		error "Expected one of [linsert [join $otype {, }] end-1 or] for user flag \"$oname\", got \"$value\""
+	    }
+	}
+    }
+}
+
+proc ::critcl::UcDefault {otype} {
+    switch -exact -- $otype {
+	bool {
+	    return 1
+	}
+	default {
+	    return [lindex $otype 0]
+	}
+    }
+}
+
+# # ## ### ##### ######## ############# #####################
+## Implementation -- API: API (stubs) management
+
+proc ::critcl::api {cmd args} {
+    set file [SkipIgnored [This]]
+    AbortWhenCalledAfterBuild
+
+    if {![llength [info commands ::critcl::API$cmd]]} {
+	return -code error "Unknown method \"$cmd\""
+    }
+
+    # Dispatch
+    return [eval [linsert $args 0 ::critcl::API$cmd $file]]
+}
+
+proc ::critcl::APIscspec {file scspec} {
+    UUID.extend $file .api-scspec $scspec
+    dict set v::code($file) config api_scspec $scspec
+    return
+}
+
+proc ::critcl::APIimport {file name version} {
+    # First we request the imported package, giving it a chance to
+    # generate the headers searched for in a moment (maybe it was
+    # critcl based as well, and generates things dynamically).
+
+    package require $name $version
+    ImetaAdd $file require [list [list $name $version]]
+
+    # Now we check that the relevant headers of the imported package
+    # can be found in the specified search paths.
+
+    set cname [string map {:: _} $name]
+
+    set at [API_locate $cname]
+    if {$at eq {}} {
+	error "Headers for API $name not found"
+    } else {
+	msg -nonewline " (stubs import $name $version @ $at/$name)"
+    }
+
+    set def [list $name $version]
+    UUID.extend $file .api-import $def
+    dict update v::code($file) config c {
+	dict lappend c api_use $def
+    }
+
+    # At last look for the optional .decls file. Ignore if there is
+    # none. Decode and return contained stubs table otherwise.
+
+    set decls $at/$cname/$cname.decls
+    if {[file exists $decls]} {
+	package require stubs::reader
+	set T [stubs::container::new]
+	stubs::reader::file T $decls
+	return $T
+    }
+    return
+}
+
+proc ::critcl::APIexport {file name} {
+    msg -nonewline " (stubs export $name)"
+
+    UUID.extend $file .api-self $name
+    return [dict set v::code($file) config api_self $name]
+}
+
+proc ::critcl::APIheader {file args} {
+    UUID.extend $file .api-headers $args
+    return [SetParam api_hdrs $args]
+}
+
+proc ::critcl::APIextheader {file args} {
+    UUID.extend $file .api-eheaders $args
+    return [SetParam api_ehdrs $args 0]
+}
+
+proc ::critcl::APIfunction {file rtype name arguments} {
+    package require stubs::reader
+
+    # Generate a declaration as it would have come straight out of the
+    # stubs reader. To this end we generate a C code fragment as it
+    # would be have been written inside of a .decls file.
+
+    # TODO: We should record this as well, and later generate a .decls
+    # file as part of the export. Or regenerate it from the internal
+    # representation.
+
+    if {[llength $arguments]} {
+	foreach {t a} $arguments {
+	    lappend ax "$t $a"
+	}
+    } else {
+	set ax void
+    }
+    set decl [stubs::reader::ParseDecl "$rtype $name ([join $ax ,])"]
+
+    UUID.extend $file .api-fun $decl
+    dict update v::code($file) config c {
+	dict lappend c api_fun $decl
+    }
+    return
+}
+
+proc ::critcl::API_locate {name} {
+    foreach dir [SystemIncludePaths [This]] {
+	if {[API_at $dir $name]} { return $dir }
+    }
+    return {}
+}
+
+proc ::critcl::API_at {dir name} {
+    foreach suffix {
+	Decls.h StubLib.h
+    } {
+	if {![file exists [file join $dir $name $name$suffix]]} { return 0 }
+    }
+    return 1
+}
+
+proc ::critcl::API_setup {file} {
+    package require stubs::gen
+
+    lassign [API_setup_import $file] iprefix idefines
+    dict set v::code($file) result apidefines $idefines
+
+    append prefix $iprefix
+    append prefix [API_setup_export $file]
+
+    # Save prefix to result dictionary for pickup by Compile.
+    if {$prefix eq ""} return
+
+    dict set v::code($file) result apiprefix  $prefix\n
+    return
+}
+
+proc ::critcl::API_setup_import {file} {
+    if {![dict exists $v::code($file) config api_use]} {
+	return ""
+    }
+
+    #msg -nonewline " (stubs import)"
+
+    set prefix ""
+    set defines {}
+
+    foreach def [dict get $v::code($file) config api_use] {
+	lassign $def iname iversion
+
+	set cname   [string map {:: _} $iname]
+	set upname  [string toupper  $cname]
+	set capname [stubs::gen::cap $cname]
+
+	set import [subst -nocommands {
+	    /* Import API: $iname */
+	    #define USE_${upname}_STUBS 1
+	    #include <$cname/${cname}Decls.h>
+	}]
+	append prefix \n$import
+	ccode $import
+
+	# TODO :: DOCUMENT environment of the cinit code.
+	cinit [subst -nocommands {
+	    if (!${capname}_InitStubs (ip, "$iversion", 0)) {
+		return TCL_ERROR;
+	    }
+	}] [subst -nocommands {
+	    #include <$cname/${cname}StubLib.h>
+	}]
+
+	lappend defines -DUSE_${upname}_STUBS=1
+    }
+
+    return [list $prefix $defines]
+}
+
+proc ::critcl::API_setup_export {file} {
+    if {![dict exists $v::code($file) config api_hdrs] &&
+	![dict exists $v::code($file) config api_ehdrs] &&
+	![dict exists $v::code($file) config api_fun]} return
+
+    if {[dict exists $v::code($file) config api_self]} {
+	# API name was declared explicitly
+	set ename [dict get $v::code($file) config api_self]
+    } else {
+	# API name is implicitly defined, is package name.
+	set ename [dict get $v::code($file) config package name]
+    }
+
+    set prefix ""
+
+    #msg -nonewline " (stubs export)"
+
+    set cname   [string map {:: _} $ename]
+    set upname  [string toupper  $cname]
+    set capname [stubs::gen::cap $cname]
+
+    set import [subst -nocommands {
+	/* Import our own exported API: $ename, mapping disabled */
+	#undef USE_${upname}_STUBS
+	#include <$cname/${cname}Decls.h>
+    }]
+    append prefix \n$import
+    ccode $import
+
+    # Generate the necessary header files.
+
+    append sdecls "\#ifndef ${cname}_DECLS_H\n"
+    append sdecls "\#define ${cname}_DECLS_H\n"
+    append sdecls "\n"
+    append sdecls "\#include <tcl.h>\n"
+
+    if {[dict exists $v::code($file) config api_ehdrs]} {
+	append sdecls "\n"
+	file mkdir $v::cache/$cname
+	foreach hdr [dict get $v::code($file) config api_ehdrs] {
+	    append sdecls "\#include \"[file tail $hdr]\"\n"
+	}
+    }
+
+    if {[dict exists $v::code($file) config api_hdrs]} {
+	append sdecls "\n"
+	file mkdir $v::cache/$cname
+	foreach hdr [dict get $v::code($file) config api_hdrs] {
+	    Copy $hdr $v::cache/$cname
+	    append sdecls "\#include \"[file tail $hdr]\"\n"
+	}
+    }
+
+    package require stubs::container
+    package require stubs::reader
+    package require stubs::gen
+    package require stubs::gen::header
+    package require stubs::gen::init
+    package require stubs::gen::lib
+    package require stubs::writer
+
+    # Implied .decls file. Not actually written, only implied in the
+    # stubs container invokations, as if read from such a file.
+
+    set T [stubs::container::new]
+    stubs::container::library   T $ename
+    stubs::container::interface T $cname
+
+    if {[dict exists $v::code($file) config api_scspec]} {
+	stubs::container::scspec T \
+	    [dict get $v::code($file) config api_scspec]
+    }
+
+    if {[dict exists $v::code($file) config api_fun]} {
+	set index 0
+	foreach decl [dict get $v::code($file) config api_fun] {
+	    #puts D==|$decl|
+	    stubs::container::declare T $cname $index generic $decl
+	    incr index
+	}
+	append sdecls "\n"
+	append sdecls [stubs::gen::header::gen $T $cname]
+    } 
+
+    append sdecls "\#endif /* ${cname}_DECLS_H */\n"
+
+    set comment "/* Stubs API Export: $ename */"
+
+    set    thedecls [stubs::writer::gen $T]
+    set    slib     [stubs::gen::lib::gen $T]
+    set    sinitstatic "  $comment\n  "
+    append sinitstatic [stubs::gen::init::gen $T]
+
+    set pn [dict get $v::code($file) config package name]
+    set pv [dict get $v::code($file) config package version]
+
+    set    sinitrun $comment\n
+    append sinitrun "Tcl_PkgProvideEx (ip, \"$pn\", \"$pv\", (ClientData) &${cname}Stubs);"
+
+    # Save the header files to the result cache for pickup (importers
+    # in mode "compile & run", or by the higher-level code doing a
+    # "generate package")
+
+    WriteCache $cname/${cname}Decls.h   $sdecls
+    WriteCache $cname/${cname}StubLib.h $slib
+    WriteCache $cname/${cname}.decls    $thedecls
+
+    dict update v::code($file) result r {
+	dict lappend r apiheader [file join $v::cache $cname]
+    }
+
+    cinit $sinitrun $sinitstatic
+
+    return $prefix
 }
 
 # # ## ### ##### ######## ############# #####################
@@ -552,8 +1097,7 @@ proc ::critcl::check {args} {
 
     set         cmdline [getconfigvalue compile]
     lappendlist cmdline [GetParam $file cflags]
-    lappendlist cmdline [SystemIncludes]
-    lappendlist cmdline [GetHeaders $file]
+    lappendlist cmdline [SystemIncludes $file]
     lappendlist cmdline [CompileResult $obj]
     lappend     cmdline $src
 
@@ -593,8 +1137,7 @@ proc ::critcl::checklink {args} {
 
     set         cmdline [getconfigvalue compile]
     lappendlist cmdline [GetParam $file cflags]
-    lappendlist cmdline [SystemIncludes]
-    lappendlist cmdline [GetHeaders $file]
+    lappendlist cmdline [SystemIncludes $file]
     lappendlist cmdline [CompileResult $obj]
     lappend     cmdline $src
 
@@ -635,10 +1178,6 @@ proc ::critcl::checklink {args} {
 }
 
 proc ::critcl::compiled {} {
-    # Keeping v2.0 backward compatibility.
-    return [compiling]
-
-    # Incompatible v3 definition to be.
     SkipIgnored [This] 1
     AbortWhenCalledAfterBuild
     return 0
@@ -660,7 +1199,7 @@ proc ::critcl::compiling {} {
 proc ::critcl::done {} {
     set file [SkipIgnored [This] 1]
     return [expr {[info exists  v::code($file)] &&
-		  [dict exists $v::code($file) result]}]
+		  [dict exists $v::code($file) result closed]}]
 }
 
 proc ::critcl::failed {} {
@@ -1132,7 +1671,9 @@ proc ::critcl::crosscheck {} {
     variable run
     global tcl_platform
     if {![catch {
-	set config [interp eval $run exec "$c::version 2>@stdout"]
+	set     cmd [linsert $c::version 0 exec]
+	lappend cmd 2>@stdout
+	set config [interp eval $run $cmd]
     } msg]} {
 	set host ""
 	set target ""
@@ -1157,12 +1698,6 @@ proc ::critcl::crosscheck {} {
 
 # See (XX) at the end of the file (package state variable setup)
 # for explanations of the exact differences between these.
-
-# Keeping v2.0 backward compatibility.
-# This will be deleted in v3.
-proc ::critcl::platform {} {
-    return $v::targetplatform
-}
 
 proc ::critcl::knowntargets {} {
     return $v::knowntargets
@@ -1233,15 +1768,21 @@ proc ::critcl::cbuild {file {load 1}} {
 	set base   [BaseOf              $file]
 	set object [DetermineObjectName $file]
 
+	API_setup $file
+
 	# Generate the main C file
 	CollectEmbeddedSources $file $base.c $object $initname
+
+	# Set the marker for critcl::done and its user, AbortWhenCalledAfterBuild.
+	dict set v::code($file) result closed mark
 
 	# Compile main file
         lappend objects [Compile $file $file $base.c $object]
 
 	# Compile the companion C sources as well, if there are any.
         foreach src [GetParam $file csources] {
-	    lappend objects [Compile $file $src $src [CompanionObject $src]]
+	    lappend objects [Compile $file $src $src \
+				 [CompanionObject $src]]
 	}
 
 	# NOTE: The data below has to be copied into the result even
@@ -1258,6 +1799,7 @@ proc ::critcl::cbuild {file {load 1}} {
 	dict set v::code($file) result preload    [GetParam $file preload]
 	dict set v::code($file) result license    [GetParam $file license <<Undefined>>]
 	dict set v::code($file) result log        {}
+	dict set v::code($file) result meta       [GetMeta $file]
 
 	# Link and load steps.
         if {$load || !$buildforpackage} {
@@ -1439,7 +1981,7 @@ proc ::critcl::c++command {tclname class constructors methods} {
 	    string -
 	    dstring  { append cmdproc "Tcl_SetResult(ip, rv, TCL_DYNAMIC);" }
 	    vstring  { append cmdproc "Tcl_SetResult(ip, rv, TCL_VOLATILE);" }
-	    default  { append cmdproc "Tcl_SetObjResult(ip, rv); Tcl_DecrRefCount(rv);" }
+	    default  { append cmdproc "if (rv == NULL) \{ return TCL_ERROR ; \}\n  Tcl_SetObjResult(ip, rv); Tcl_DecrRefCount(rv);" }
 	}
 	append cmdproc "\n"
 	append cmdproc "                "
@@ -1512,6 +2054,436 @@ proc ::critcl::ProcessArgs {typesArray names cnames}  {
 	}
     }
     return $body
+}
+
+proc ::critcl::scan {file} {
+    set fd    [open $file r]
+    set lines [split [read $fd] \n]
+    close $fd
+
+    set scan::rkey    require
+    set scan::base    [file dirname [file normalize $file]]
+    set scan::capture {
+	org         {}
+	version     {}
+	files       {}
+	imported    {}
+	config      {}
+	meta-user   {}
+	meta-system {}
+	tsources    {}
+    }
+
+    ScanCore $lines {
+	critcl::api			sub
+	critcl::api/extheader		ok
+	critcl::api/function		ok
+	critcl::api/header		warn
+	critcl::api/import		ok
+	critcl::cheaders		warn
+	critcl::csources		warn
+	critcl::license			warn
+	critcl::meta			warn
+	critcl::owns			warn
+	critcl::tcl			ok
+	critcl::tk			ok
+	critcl::tsources		warn
+	critcl::userconfig		sub
+	critcl::userconfig/define	ok
+	critcl::userconfig/query	ok
+	critcl::userconfig/set		ok
+	package				warn
+    }
+
+    set version [dict get $scan::capture version]
+    puts "\tVersion:      $version"
+
+    # TODO : Report requirements.
+    # TODO : tsources - Scan files for dependencies!
+
+    set n [llength [dict get $scan::capture files]]
+    puts -nonewline "\tInput:        $file"
+    if {$n} {
+	puts -nonewline " + $n Companion"
+	if {$n > 1} { puts -nonewline s }
+    }
+    puts ""
+
+    # Merge the system and user meta data, with system overriding the
+    # user. See 'GetMeta' for same operation when actually builing the
+    # package. Plus scan any Tcl companions for more requirements.
+
+    set     md {}
+    lappend md [dict get $scan::capture meta-user]
+    lappend md [dict get $scan::capture meta-system]
+
+    foreach ts [dict get $scan::capture tsources] {
+	lappend md [dict get [ScanDependencies $file \
+				  [file join [file dirname $file] $ts] \
+				  capture] meta-system]
+    }
+
+    dict unset scan::capture meta-user
+    dict unset scan::capture meta-system
+    dict unset scan::capture tsources
+
+    dict set scan::capture meta \
+	[eval [linsert $md 0 dict merge]]
+    # meta = dict merge {*}$md
+
+    if {[dict exists $scan::capture meta require]} {
+	foreach r [dict get $scan::capture meta require] {
+	    puts "\tRequired:     $r"
+	}
+    }
+
+    return $scan::capture
+}
+
+proc ::critcl::ScanDependencies {dfile file {mode plain}} {
+    set fd    [open $file r]
+    set lines [split [read $fd] \n]
+    close $fd
+
+    catch {
+	set saved $scan::capture
+    }
+
+    set scan::rkey    require
+    set scan::base    [file dirname [file normalize $file]]
+    set scan::capture {
+	name        {}
+	version     {}
+	meta-system {}
+    }
+
+    ScanCore $lines {
+	critcl::buildrequirement	warn
+	package				warn
+    }
+
+    if {$mode eq "capture"} {
+	set result $scan::capture
+	set scan::capture $saved
+	return $result
+    }
+
+    dict with scan::capture {
+	if {$mode eq "provide"} {
+	    msg -nonewline " (provide $name $version)"
+
+	    ImetaSet $dfile name     $name
+	    ImetaSet $dfile version  $version
+	}
+
+	dict for {k vlist} [dict get $scan::capture meta-system] {
+	    if {$k eq "name"}    continue
+	    if {$k eq "version"} continue
+
+	    ImetaAdd $dfile $k $vlist
+
+	    if {$k ne "require"} continue
+	    msg -nonewline " ($k [join $vlist {}])"
+	}
+
+	# The above information also goes into the teapot meta data of
+	# the file in question. This however is defered until the meta
+	# data is actually pulled for delivery to the tool using the
+	# package. See 'GetMeta' for where the merging happens.
+    }
+
+    return
+}
+
+proc critcl::ScanCore {lines theconfig} {
+    # config = dictionary
+    # - <cmdname> => mode (ok, warn, sub)
+    # Unlisted commands are ignored.
+
+    variable scan::config $theconfig
+
+    set collect 0
+    set buf {}
+    set lno -1
+    foreach line $lines {
+	#puts |$line|
+
+	incr lno
+	if {$collect} {
+	    if {![info complete $buf]} {
+		append buf $line \n
+		continue
+	    }
+	    set collect 0
+
+	    #puts %%$buf%%
+
+	    # Prevent heavily dynamic code from stopping the scan.
+	    # WARN the user.
+	    regexp {^(\S+)} $buf -> cmd
+	    if {[dict exists $config $cmd]} {
+		set mode [dict get $config $cmd]
+
+		if {[catch {
+		    # Run in the scan namespace, with its special
+		    # command implementations.
+		    namespace eval ::critcl::scan $buf
+		} msg]} {
+		    if {$mode eq "sub"} {
+			regexp {^(\S+)\s+(\S+)} $buf -> _ method
+			append cmd /$method
+			set mode [dict get $config $cmd]
+		    }
+		    if {$mode eq "warn"} {
+			msg "Line $lno, $cmd: Failed execution of dynamic command may"
+			msg "Line $lno, $cmd: cause incorrect TEA results. Please check."
+			msg "Line $lno, $cmd: $msg"
+		    }
+		}
+	    }
+
+	    set buf ""
+	    # fall through, to handle the line which just got NOT
+	    # added to the buf.
+	}
+
+	set line [string trimleft $line " \t:"]
+	if {[string trim $line] eq {}} continue
+
+	regexp {^(\S+)} $line -> cmd
+	if {[dict exists $config $cmd]} {
+	    append buf $line \n
+	    set collect 1
+	}
+    }
+}
+
+# Handle the extracted commands
+namespace eval ::critcl::scan::critcl {}
+
+proc ::critcl::scan::critcl::buildrequirement {script} {
+    # Recursive scan of the script, same configuration, except
+    # switched to record 'package require's under the build::reqire
+    # key.
+
+    variable ::critcl::scan::config
+    variable ::critcl::scan::rkey
+
+    set saved $rkey
+    set rkey build::require
+
+    ::critcl::ScanCore [split $script \n] $config
+
+    set rkey $saved
+    return
+}
+
+# Meta data.
+# Capture specific dependencies
+proc ::critcl::scan::critcl::tcl {version} {
+    variable ::critcl::scan::capture
+    dict update capture meta-system m {
+	dict lappend m require [list Tcl $version]
+    }
+    return
+}
+
+proc ::critcl::scan::critcl::tk {} {
+    variable ::critcl::scan::capture
+    dict update capture meta-system m {
+	dict lappend m require Tk
+    }
+    return
+}
+
+proc ::critcl::scan::critcl::description {text} {
+    variable ::critcl::scan::capture
+    dict set capture meta-system description \
+	[::critcl::Text2Words $text]
+    return
+}
+
+proc ::critcl::scan::critcl::summary {text} {
+    variable ::critcl::scan::capture
+    dict set capture meta-system summary \
+	[::critcl::Text2Words $text]
+    return
+}
+
+proc ::critcl::scan::critcl::subject {args} {
+    variable ::critcl::scan::capture
+    dict update capture meta-system m {
+	foreach word $args {
+	    dict lappend m subject $word
+	}
+    }
+    return
+}
+
+proc ::critcl::scan::critcl::meta {key args} {
+    variable ::critcl::scan::capture
+    dict update capture meta-user m {
+	foreach word $args {
+	    dict lappend m $key $word
+	}
+    }
+    return
+}
+
+# Capture files
+proc ::critcl::scan::critcl::owns     {args} { eval [linsert $args 0 Files] }
+proc ::critcl::scan::critcl::cheaders {args} { eval [linsert $args 0 Files] }
+proc ::critcl::scan::critcl::csources {args} { eval [linsert $args 0 Files] }
+proc ::critcl::scan::critcl::tsources {args} {
+    variable ::critcl::scan::capture
+    foreach ts [eval [linsert $args 0 Files]] {
+	dict lappend capture tsources $ts
+    }
+    return
+}
+
+proc ::critcl::scan::critcl::Files {args} {
+    variable ::critcl::scan::capture
+    set res {}
+    foreach v $args {
+	if {[string match "-*" $v]} continue
+	foreach f [Expand $v] {
+	    dict lappend capture files $f
+	    lappend res $f
+	}
+    }
+    return $res
+}
+
+proc ::critcl::scan::critcl::Expand {pattern} {
+    variable ::critcl::scan::base
+
+    # Note: We cannot use -directory here. The PATTERN may already be
+    # an absolute path, in which case the join will return the
+    # unmodified PATTERN to glob on, whereas with -directory the final
+    # pattern will be BASE/PATTERN which won't find anything, even if
+    # PATTERN actually exists.
+
+    set prefix [file split $base]
+
+    set files {}
+    foreach vfile [glob [file join $base $pattern]] {
+	set xfile [file normalize $vfile]
+	if {![file exists $xfile]} {
+	    error "$vfile: not found"
+	}
+
+	# Constrain to be inside of the base directory.
+	# Snarfed from fileutil::stripPath
+
+	set npath [file split $xfile]
+
+	if {![string match -nocase "${prefix} *" $npath]} {
+	    error "$vfile: Not inside of $base"
+	}
+
+	set xfile [eval [linsert [lrange $npath [llength $prefix] end] 0 file join ]]
+	lappend files $xfile
+    }
+    return $files
+}
+
+# Capture license (org name)
+proc ::critcl::scan::critcl::license {who args} {
+    variable ::critcl::scan::capture
+    dict set capture org $who
+
+    puts "\tOrganization: $who"
+
+    # Meta data.
+    set elicense [::critcl::LicenseText $args]
+
+    dict set capture meta-system license \
+	[::critcl::Text2Words $elicense]
+    dict set capture meta-system author \
+	[::critcl::Text2Authors $who]
+    return
+}
+
+# Capture version of the provided package.
+proc ::critcl::scan::package {cmd args} {
+    if {$cmd eq "provide"} {
+	# Syntax: package provide <name> <version>
+
+	variable capture
+	lassign $args name version
+	dict set capture name    $name
+	dict set capture version $version
+
+	# Save as meta data as well.
+
+	dict set capture meta-system name     $name
+	dict set capture meta-system version  $version
+	dict set capture meta-system platform source
+	dict set capture meta-system generated::by \
+	    [list \
+		 [list critcl [::package present critcl]] \
+		 $::tcl_platform(user)]
+	dict set capture meta-system generated::date \
+	    [list [clock format [clock seconds] -format {%Y-%m-%d}]]
+	return
+    } elseif {$cmd eq "require"} {
+	# Syntax: package require <name> ?-exact? <version>
+	#       : package require <name> <version-range>...
+
+	# Save dependencies as meta data.
+
+	# Ignore the critcl core
+	if {[lindex $args 0] eq "critcl"} return
+
+	variable capture
+	variable rkey
+	dict update capture meta-system m {
+	    dict lappend m $rkey [::critcl::TeapotRequire $args]
+	}
+	return
+    }
+
+    # ignore anything else.
+    return
+}
+
+# Capture the APIs imported by the package
+proc ::critcl::scan::critcl::api {cmd args} {
+    variable ::critcl::scan::capture
+    switch -exact -- $cmd {
+	header {
+	    eval [linsert $args 0 Files]
+	}
+	import {
+	    # Syntax: critcl::api import <name> <version>
+	    lassign $args name _
+	    dict lappend capture imported $name
+	    puts "\tImported:     $name"
+	}
+	default {}
+    }
+    return
+}
+
+# Capture the user config options declared by the package
+proc ::critcl::scan::critcl::userconfig {cmd args} {
+    variable ::critcl::scan::capture
+    switch -exact -- $cmd {
+	define {
+	    # Syntax: critcl::userconfig define <name> <description> <type> ?<default>?
+	    lassign $args oname odesc otype odefault
+	    set odesc [string trim $odesc]
+	    if {[llength $args] < 4} {
+		set odefault [::critcl::UcDefault $otype]
+	    }
+	    dict lappend capture config [list $oname $odesc $otype $odefault]
+	    puts "\tUser Config:  $oname ([join $otype { }] -> $odefault) $odesc"
+	}
+	set - query -
+	default {}
+    }
+    return
 }
 
 # # ## ### ##### ######## ############# #####################
@@ -1606,7 +2578,7 @@ proc ::critcl::ResultCType {type} {
 
 proc ::critcl::ResultConversion {type} {
     if {[info exists v::rconv($type)]} { return $v::rconv($type) }
-    return "  Tcl_SetObjResult(ip, rv); Tcl_DecrRefCount(rv);"
+    return "  if (rv == NULL) \{ return TCL_ERROR ; \}\n  Tcl_SetObjResult(ip, rv); Tcl_DecrRefCount(rv);"
 }
 
 # # ## ### ##### ######## ############# #####################
@@ -1621,11 +2593,11 @@ proc ::critcl::GetParam {file type {default {}}} {
     }
 }
 
-proc ::critcl::SetParam {type values} {
+proc ::critcl::SetParam {type values {expand 1} {uuid 0}} {
     set file [This]
     if {![llength $values]} return
 
-    set digest [UUID.extend $file .$type $values]
+    UUID.extend $file .$type $values
 
     if {[llength $values]} {
 	# Process the list of flags, treat non-option arguments as
@@ -1636,7 +2608,18 @@ proc ::critcl::SetParam {type values} {
 	    if {[string match "-*" $v]} {
 		lappend tmp $v
 	    } else {
-		lappendlist tmp [Expand $file $v]
+		if {$expand} {
+		    if {$uuid} {
+			foreach f [Expand $file $v] {
+			    lappend tmp $f
+			    UUID.extend $file .$type.$f [Cat $f]
+			}
+		    } else {
+			lappendlist tmp [Expand $file $v]
+		    }
+		} else {
+		    lappend tmp $v
+		}
 	    }
 	}
 
@@ -1673,7 +2656,23 @@ proc ::critcl::Expand {file pattern} {
 
 proc ::critcl::InitializeFile {file} {
     if {![info exists v::code($file)]} {
-	set v::code($file) {}
+	set      v::code($file) {}
+
+	# Initialize the meta data sections (user (meta) and system
+	# (package)).
+
+	dict set v::code($file) config meta    {}
+
+	dict set v::code($file) config package platform \
+	    [TeapotPlatform]
+	dict set v::code($file) config package build::date \
+	    [list [clock format [clock seconds] -format {%Y-%m-%d}]]
+
+	# May not exist, bracket code.
+	if {![file exists $file]} return
+
+	ScanDependencies $file $file provide
+	return
     }
 
     if {![dict exists $v::code($file) config]} {
@@ -1798,9 +2797,15 @@ proc ::critcl::LinePragma {level file {name {}}} {
 proc ::critcl::CollectEmbeddedSources {file destination libfile ininame} {
     set fd [open $destination w]
 
+    if {[dict exists $v::code($file) result apiprefix]} {
+	set api [dict get $v::code($file) result apiprefix]
+    } else {
+	set api ""
+    }
+
     # Boilerplate header.
     puts $fd [subst [Cat [Template header.c]]]
-    #         ^=> file, libfile
+    #         ^=> file, libfile, api
 
     # Make Tk available, if requested
     if {[UsingTk $file]} {
@@ -1896,13 +2901,45 @@ proc ::critcl::TclIncludes {file} {
     return [list $c::include$path]
 }
 
-proc ::critcl::SystemIncludes {} {
+proc ::critcl::SystemIncludes {file} {
     set includes {}
-    if {$v::options(I) ne ""} {
-	lappend includes $c::include$v:::options(I)
+    foreach dir [SystemIncludePaths $file] {
+	lappend includes $c::include$dir
     }
-    lappend includes $c::include$v::cache
     return $includes
+}
+
+proc ::critcl::SystemIncludePaths {file} {
+    set paths {}
+    set has {}
+
+    # critcl -I options.
+    foreach dir $v::options(I) {
+	if {[dict exists $has $dir]} continue
+	dict set has $dir yes
+	lappend paths $dir
+    }
+
+    # Result cache.
+    lappend paths $v::cache
+
+    # critcl::cheaders
+    foreach flag [GetParam $file cheaders] {
+	if {![string match "-*" $flag]} {
+	    # flag = normalized absolute path to a header file.
+	    # Transform into a -I directory reference.
+	    set dir [file dirname $flag]
+	} else {
+	    # Chop leading -I
+	    set dir [string range $flag 2 end]
+	}
+
+	if {[dict exists $has $dir]} continue
+	dict set has $dir yes
+	lappend paths $dir
+    }
+
+    return $paths
 }
 
 proc ::critcl::Compile {tclfile origin cfile obj} {
@@ -1930,9 +2967,13 @@ proc ::critcl::Compile {tclfile origin cfile obj} {
 	# See also -x none below.
 	lappend cmdline -x $v::options(language)
     }
-    lappendlist cmdline [SystemIncludes]
     lappendlist cmdline [TclIncludes $tclfile]
-    lappendlist cmdline [GetHeaders $tclfile]
+    lappendlist cmdline [SystemIncludes $tclfile]
+
+    if {[dict exists $v::code($tclfile) result apidefines]} {
+	lappendlist cmdline [dict get $v::code($tclfile) result apidefines]
+    }
+
     lappendlist cmdline [CompileResult $obj]
     lappend     cmdline $cfile
 
@@ -2086,24 +3127,6 @@ proc ::critcl::GetObjects {file} {
 
     set rsp [WriteCache link.fil \"[join $objects \"\n\"]\"]
     return [list @$rsp]
-}
-
-proc ::critcl::GetHeaders {file} {
-    set result {}
-    array set mark {}
-
-    foreach flag [GetParam $file cheaders] {
-	if {![string match "-*" $flag]} {
-	    # flag = normalized absolute path to a header file.
-	    # Transform into a -I directory reference.
-	    set flag $c::include[file dirname $flag]
-	}
-
-	if {[info exists mark($flag)]} continue
-	set mark($flag) .
-	lappend result $flag
-    }
-    return $result
 }
 
 proc ::critcl::GetLibraries {file} {
@@ -2267,7 +3290,9 @@ proc ::critcl::Load {f} {
     set tsrc  [dict get $v::code($f) result tsources]
     set minv  [dict get $v::code($f) result mintcl]
 
-    package require Tcl $minv
+    # Using the renamed builtin. While this is a dependency it was
+    # recorded already. See 'critcl::tcl', and 'critcl::tk'.
+    #package require Tcl $minv
     ::load $shlib $init
 
     # See the critcl application for equivalent code placing the
@@ -2365,7 +3390,7 @@ proc ::critcl::DetermineInitName {file prefix} {
 
     catch {
 	dict set v::code($file) result pkgname \
-	    [dict get $v::code($file) config package]
+	    [dict get $v::code($file) config package name]
     }
 
     return $ininame
@@ -2490,8 +3515,9 @@ proc ::critcl::Cat {path} {
 }
 
 proc ::critcl::WriteCache {name content} {
-    file mkdir $v::cache ;# just in case
-    return [Write [file normalize [file join $v::cache $name]] $content]
+    set dst [file join $v::cache $name]
+    file mkdir [file dirname $dst] ;# just in case
+    return [Write [file normalize $dst] $content]
 }
 
 proc ::critcl::Write {path content} {
@@ -2736,8 +3762,8 @@ namespace eval ::critcl {
 	set options(force)    0  ;# - Boolean. If set (re)compilation is
 				  #   forced, regardless of the state of
 				  #   the cache.
-	set options(I)        "" ;# - String. Additional include
-				  #   directory, globally specified by
+	set options(I)        "" ;# - List. Additional include
+				  #   directories, globally specified by
 				  #   the user for mode 'generate
 				  #   package', for all components put
 				  #   into the package's library.
@@ -2869,6 +3895,18 @@ namespace eval ::critcl {
 	#				  packages with preload can't be used
 	#				  in mode 'compile & run'.
 	#		license		- String. License text.
+	#		api_self	- String. Name of our API. Defaults to package name.
+	#		api_hdrs	- List. Exported public headers of the API.
+	#		api_ehdrs	- List. Exported external public headers of the API.
+	#		api_fun		- List. Exported functions (signatures of result type, name, and arguments (C syntax))
+	#		meta		- Dictionary. Arbitrary keys to values, the user meta-data for the package.
+	#		package		- Dictionary. Keys, see below. System meta data for the package. Values are lists.
+	#			name		- Name of current package
+	#			version		- Version of same.
+	#			description	- Long description.
+	#			summary		- Short description (one line).
+	#			subject		- Keywords and -phrases.
+	#			as::build::date	- Date-stamp for the build.
 	#
 	# ---------------------------------------------------------------------
 	#
@@ -2981,7 +4019,7 @@ namespace eval ::critcl {
 	cache ccode ccommand cdata cdefines cflags cheaders \
 	check cinit clibraries compiled compiling config cproc \
 	csources debug done failed framework ldflags platform \
-	tk tsources preload license load tcl
+	tk tsources preload license load tcl api userconfig meta
     # This is exported for critcl::app to pick up when generating the
     # dummy commands in the runtime support of a generated package.
     namespace export Ignore

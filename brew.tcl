@@ -82,6 +82,20 @@ proc _install {{dst {}}} {
 
     puts "Installed package:     $dstl/critcl-app$version"
 
+    # Package: dict84, lassign84, both under util84
+    file copy   -force [file dirname $::me]/lib/util84 $dstl/util84-new
+    file delete -force $dstl/util84
+    file rename        $dstl/util84-new $dstl/util84
+
+    puts "Installed package:     $dstl/util84 (dict84, lassign84 bundle)"
+
+    # Package: stubs::*, all under stubs
+    file copy   -force [file dirname $::me]/lib/stubs $dstl/stubs-new
+    file delete -force $dstl/stubs
+    file rename        $dstl/stubs-new $dstl/stubs
+
+    puts "Installed package:     $dstl/stubs (stubs::* bundle)"
+
     set    c [open $dsta/critcl w]
     puts  $c "#!/bin/sh\n# -*- tcl -*- \\\nexec tclsh \"\$0\" \$\{1+\"\$@\"\}\npackage require critcl::app\ncritcl::app::main \$argv"
     close $c

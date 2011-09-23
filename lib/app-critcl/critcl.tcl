@@ -40,11 +40,11 @@ namespace eval ::critcl::app {}
 # intercepted command checks for this situation, and forces Tcl to
 # forget the previously registered package.
 
-rename package _package
+rename package ::critcl::app::__package
 proc package {option args} {
     if {$option eq "provide"} {
         if {![catch {
-	    set v [_package present [lindex $args 0]]
+	    set v [::critcl::app::__package present [lindex $args 0]]
 	}] &&
 	    ([llength $args] > 1) &&
 	    ($v ne [lindex $args 1])
@@ -54,11 +54,11 @@ proc package {option args} {
 	    # of the new package is different from what is
 	    # known. Force Tcl to forget the previous package, this is
 	    # not truly a conflict.
-            _package forget [lindex $args 0]
+            ::critcl::app::__package forget [lindex $args 0]
         }
     }
 
-    return [eval [linsert $args 0 _package $option]]
+    return [eval [linsert $args 0 ::critcl::app::__package $option]]
 }
 
 # # ## ### ##### ######## ############# #####################
@@ -70,6 +70,7 @@ proc package {option args} {
 proc ::critcl::error {msg} {
     global argv0
     puts stderr "$argv0 error: $msg"
+    flush stderr
     exit 1
 }
 
@@ -77,6 +78,7 @@ proc ::critcl::msg {args} {
     switch -exact -- [llength $args] {
 	1 {
 	    puts stdout [lindex $args 0]
+	    flush stdout
 	}
 	2 {
 	    lassign $args o m
@@ -84,6 +86,7 @@ proc ::critcl::msg {args} {
 		return -code error "wrong\#args, expected: ?-nonewline? msg"
 	    }
 	    puts -nonewline stdout $m
+	    flush stdout
 	}
 	default {
 	    return -code error "wrong\#args, expected: ?-nonewline? msg"
@@ -101,7 +104,7 @@ proc ::critcl::app::main {argv} {
     # conflict with "compile & run", or other instances of the critcl
     # application.
 
-    if {$v::pkg} {
+    if {$v::mode eq "pkg"} {
 	set pkgcache [PackageCache]
 	critcl::cache $pkgcache
     }
@@ -114,7 +117,7 @@ proc ::critcl::app::main {argv} {
     # Foo_Init() functions, i.e. the code which provides a single
     # initialization function for the whole set of input files.
 
-    if {$v::pkg} {
+    if {$v::mode eq "pkg"} {
 	# Create a merged shared library and put a proper Tcl package
 	# around it.
 
@@ -122,9 +125,11 @@ proc ::critcl::app::main {argv} {
 	StopOnFailed
 	AssemblePackage
 
-	if {$v::pkg && !$v::keep} {
+	if {!$v::keep} {
 	    file delete -force $pkgcache
 	}
+    } elseif {$v::mode eq "tea"} {
+	AssembleTEA
     }
 
     StopOnFailed
@@ -159,39 +164,55 @@ proc ::critcl::app::Cmdline {argv} {
     set ::argv0 [cmdline::getArgv0]
 
     # Semi-global application configuration.
-    set v::verbose  0  ; # Default, no logging.
-    set v::src     {}  ; # No files to process.
-    set v::pkg      0  ; # Fill cache. When set build a package.
-    set v::shlname ""  ; # Name of shlib to build.
-    set v::outname ""  ; # Name of shlib dir to create.
-    set v::libdir  lib ; # Directory to put the -pkg directory into.
-    set v::keep    0   ; # Default: Do not keep generated .c files.
+    set v::verbose  0      ; # Default, no logging.
+    set v::src     {}      ; # No files to process.
+    set v::mode    cache   ; # Fill cache. Alternatively build a
+			     # package, or TEA hierarchy.
+    set v::shlname ""      ; # Name of shlib to build.
+    set v::outname ""      ; # Name of shlib dir to create.
+    set v::libdir  lib     ; # Directory to put the -pkg or -tea
+			     # directory into.
+    set v::incdir  include ; # Directory to put the -pkg include files into (stubs export),
+                             # and search in (stubs import)
+    set v::keep    0       ; # Default: Do not keep generated .c files.
 
     # Local actions.
-    set selftest 0 ;# Invoke the application selftest, which simply
-                    # runs whatever test/*.tst files are found in the
-                    # starkit or starpack. IOW, this functionality is
-                    # usable only for a wrapped critcl application.
-    set cleaning 0 ;# Clean the critcl cache. Default: no.
-    set showall  0 ;# Show all configurations in full. Default: no.
-    set show     0 ;# Show the chosen build configuration. Default: no.
-    set targets  0 ;# Show the available targets.
-    set help     0 ;# Show the application's help text.
+    set selftest   0 ;# Invoke the application selftest, which simply
+                      # runs whatever test/*.tst files are found in the
+                      # starkit or starpack. IOW, this functionality is
+                      # usable only for a wrapped critcl application.
+    set cleaning   0 ;# Clean the critcl cache. Default: no.
+    set showall    0 ;# Show all configurations in full. Default: no.
+    set show       0 ;# Show the chosen build configuration. Default: no.
+    set showtarget 0 ;# Show the chosen build target only. Default: no.
+    set targets    0 ;# Show the available targets.
+    set help       0 ;# Show the application's help text.
 
     # Local configuration. Seen outside of this procedure only
     # directly, through the chosen build configuration.
 
     set target     "" ;# The user-specified build target, if any.
-    set configfile "" ;# The user-specified custom configuration file, if any
+    set configfile "" ;# The user-specified custom configuration file,
+		       # if any
 
     # Process the command line...
 
     while {[set result [cmdline::getopt argv $options opt arg]] != 0} {
 	if {$result == -1} {
-	    Usage "Unknown option \"$opt\""
+	    switch -glob -- $opt {
+		with-* {
+		    set argv [lassign $argv opt arg]
+		    regsub {^-with-} $opt {} opt
+		    lappend v::uc $opt $arg
+		    continue
+		}
+		default {
+		    Usage "Unknown option \"$opt\""
+		}
+	    }
 	}
 	switch -exact -- $opt {
-	    I          { critcl::config I $arg }
+	    I          { AddIncludePath $arg }
 	    cache      { set v::cache $arg }
 	    clean      { incr cleaning }
 	    config     { set configfile $arg }
@@ -210,9 +231,17 @@ proc ::critcl::app::Cmdline {argv} {
 	    }
 	    help       { incr help }
 	    libdir     { set v::libdir $arg }
-	    pkg        { incr v::pkg ; incr v::verbose }
+	    includedir {
+		set v::incdir  $arg
+		AddIncludePath $arg
+	    }
+	    enable     { lappend v::uc $arg 1 }
+	    disable    { lappend v::uc $arg 0 }
+	    pkg        { set v::mode pkg ; incr v::verbose }
+	    tea        { set v::mode tea ; incr v::verbose }
 	    show       { incr show }
 	    showall    { incr showall }
+	    showtarget { incr showtarget }
 	    target     { set target $arg }
 	    targets    { incr targets }
 	    test       { set selftest 1 }
@@ -264,7 +293,7 @@ proc ::critcl::app::Cmdline {argv} {
 	}
     }
 
-    if {$v::pkg || $show} {
+    if {($v::mode eq "pkg") || $show} {
 	critcl::crosscheck
     }
 
@@ -273,6 +302,9 @@ proc ::critcl::app::Cmdline {argv} {
     }
 
     if {$show} {
+	if {$v::mode eq "pkg"} {
+	    critcl::cache [PackageCache]
+	}
 	critcl::showconfig stdout
     }
 
@@ -280,11 +312,15 @@ proc ::critcl::app::Cmdline {argv} {
 	critcl::showallconfig stdout
     }
 
+    if {$showtarget} {
+	puts stdout [critcl::targetplatform]
+    }
+
     if {$targets} {
 	puts [critcl::knowntargets]
     }
 
-    if {$show || $showall || $targets} {
+    if {$show || $showall || $targets || $showtarget} {
 	exit
     }
 
@@ -312,7 +348,7 @@ proc ::critcl::app::Cmdline {argv} {
     # (%) Determine the name of the shared library to generate from
     # the input files. This location is referenced by (=).
 
-    if {$v::pkg} {
+    if {$v::mode ne "cache"} {
 	set name [lindex $argv 0]
 
 	# Split a version number off the package name.
@@ -381,6 +417,13 @@ proc ::critcl::app::Cmdline {argv} {
     return
 }
 
+proc ::critcl::app::AddIncludePath {path} {
+    set dirs [critcl::config I]
+    lappend dirs [file normalize $path]
+    critcl::config I $dirs
+    return
+}
+
 proc ::critcl::app::Log {text} {
     if {!$v::verbose} return
     puts -nonewline $text
@@ -407,6 +450,9 @@ proc ::critcl::app::Usage {args} {
 To compile and build a package
     @ options -pkg ?name? [files...]
 
+To repackage for TEA
+    @ options -tea ?name? [files...]
+
 Options include:
     -debug [symbols|memory|all] enable debugging
     -force          force compilation of C files
@@ -419,6 +465,7 @@ Other options that may be useful:
     -keep           keep intermediate C files in the Critcl cache
     -config file    read the Critcl configuration options from file
     -libdir dir     location of generated library/package
+    -includedir dir location of generated package headers (stubs)
     -showall        show configuration for all supported platforms
     -targets        show all available target platforms
 
@@ -475,15 +522,32 @@ proc ::critcl::app::ProcessInput {} {
     set v::failed      0  ;# Number of build failures encountered.
     set v::borken     {}  ;# List of files which failed to build.
     set v::log        {}  ;# List of log messages for the failed files
+    set v::headers    {}  ;# List of header directories (in the result cache)
+                           # to export.
     set v::pkgs       {}  ;# List of package names for the pieces.
     set v::inits      {}  ;# Init function names for the pieces, list.
+    set v::meta       {}  ;# All meta data declared by the input files.
 
     # Other loop status information.
 
     set first  1  ;# Flag, reset after first round, helps with output formatting.
     set missing 0
 
-    if {[llength $v::src]} {
+    if {$v::mode eq "tea"} {
+	LogLn "Config:   TEA Generation"
+	Log   "Source:   "
+
+	# Initialize the accumulator variables for various per-file
+	# information.
+
+	set v::org      {} ; # Organization the package is licensed by.
+	set v::ver      {} ; # Version of the package.
+	set v::cfiles   {} ; # Companion files (.tcl, .c, .h, etc).
+	set v::teasrc   {} ; # Input file(s) transformed for use in the Makefile.in. 
+	set v::imported {} ; # List of stubs APIs imported from elsewhere.
+	set v::config   {} ; # List of user-specified configuration settings.
+
+    } elseif {[llength $v::src]} {
 	LogLn "Config:   [::critcl::targetconfig]"
 	LogLn "Build:    [::critcl::buildplatform]"
 
@@ -500,14 +564,18 @@ proc ::critcl::app::ProcessInput {} {
 	# Avoid reloading itself.
 	if {[file rootname [file tail $f]] eq "critcl"} continue
 
-	# Canonicalize input argument, and search in a few places.
-	set f [file normalize $f]
+	if {$v::mode eq "tea"} {
+	    lappend v::teasrc "\${srcdir}/src/[file tail $f]"
+	}
 
-	set found [file exists $f]
+	# Canonicalize input argument, and search in a few places.
+	set fn [file normalize $f]
+
+	set found [file exists $fn]
 	if {!$found} {
-	    if {[file extension $f] ne ".tcl"} {
-		append f .tcl
-		set found [file exists $f]
+	    if {[file extension $fn] ne ".tcl"} {
+		append fn .tcl
+		set found [file exists $fn]
 	    }
 	    if {!$found} {
 		if {!$first} { puts stderr "" }
@@ -518,14 +586,42 @@ proc ::critcl::app::ProcessInput {} {
 	}
 
 	set first 0
-	Log "[file tail $f] "
-	set dir [file dirname $f]
+	Log "[file tail $fn] "
+	set dir [file dirname $fn]
+
+	if {$v::mode eq "tea"} {
+	    # In TEA mode we are not building anything at all. We only
+	    # wish to know and scan for the declarations of companion
+	    # files, so that we know what to put these into the TEA
+	    # directory hierarchy. This also provides us with the
+	    # version number to use.
+
+	    LogLn ""
+	    array set r [critcl::scan $fn]
+	    lappend v::cfiles $f $r(files)
+	    if {$r(org) ne {}} {
+		lappend v::org $r(org)
+	    }
+	    if {$r(version) ne {}} {
+		lappend v::ver $r(version)
+	    }
+	    if {$r(imported) ne {}} {
+		critcl::lappendlist v::imported $r(imported)
+	    }
+	    if {$r(config) ne {}} {
+		critcl::lappendlist v::config $r(config)
+	    }
+	    if {$r(meta) ne {}} {
+		lappend v::meta $r(meta)
+	    }
+	    continue
+	}
 
 	# Execute the input file and collect all the crit(i)c(a)l :)
 	# information. Depending on the use of 'critcl::failed' this
 	# may or may not have generated the internal object file.
 
-	if {$v::pkg} {
+	if {$v::mode eq "pkg"} {
 	    critcl::buildforpackage
 	}
 
@@ -535,8 +631,26 @@ proc ::critcl::app::ProcessInput {} {
 	    # force things here, faking the proper path information.
 
 	    set save [info script]
-	    info script $f
-	    eval [linsert $v::debug 0 critcl::debug ]
+	    info script $fn
+	    eval [linsert $v::debug 0 critcl::debug]
+	    info script $save
+	}
+
+	#puts ||$v::uc||
+	if {[llength $v::uc]} {
+	    # As the user-config settings are stored per file we now
+	    # take the information from the application's commandline
+	    # and force things here, faking the proper path information.
+	    # Full checking of the data happens only if the setting is
+	    # actually used by the file.
+
+	    set save [info script]
+	    info script $fn
+
+	    foreach {k v} $v::uc {
+		#puts UC($k)=|$v|
+		critcl::userconfig set $k $v
+	    }
 	    info script $save
 	}
 
@@ -544,9 +658,9 @@ proc ::critcl::app::ProcessInput {} {
 	# correctly, and not thinking that 'critcl::app' is the
 	# namespace to use for the user's commands.
 
-	uplevel #0 [list source $f]
+	uplevel #0 [list source $fn]
 
-	if {[critcl::cnothingtodo $f]} {
+	if {[critcl::cnothingtodo $fn]} {
 	    puts stderr "nothing to build for $f"
 	    continue
 	}
@@ -561,8 +675,8 @@ proc ::critcl::app::ProcessInput {} {
 	# automatically.
 
 	set save [info script]
-	info script $f
-	set failed [critcl::cbuild $f 0]
+	info script $fn
+	set failed [critcl::cbuild $fn 0]
 	incr v::failed $failed
 	info script $save
 
@@ -578,12 +692,12 @@ proc ::critcl::app::ProcessInput {} {
 
 	if {$failed} {
 	    lappend v::borken $f
-	    lappend v::log    [dict get [critcl::cresults $f] log]
+	    lappend v::log    [dict get [critcl::cresults $fn] log]
 	    Log "(FAILED) "
 	}
-	if {$v::failed || !$v::pkg} continue
+	if {$v::failed || ($v::mode ne "pkg")} continue
 
-	array set r [critcl::cresults $f]
+	array set r [critcl::cresults $fn]
 
 	append v::edecls    "extern Tcl_AppInitProc $r(initname)_Init;\n"
 	append v::initnames "    if ($r(initname)_Init(ip) != TCL_OK) return TCL_ERROR;\n"
@@ -591,6 +705,7 @@ proc ::critcl::app::ProcessInput {} {
 
 	lappend v::pkgs  $r(pkgname)
 	lappend v::inits $r(initname)
+	lappend v::meta  $r(meta)
 
 	# The overall minimum version of Tcl required by the combined
 	# packages is the maximum over all of their minima.
@@ -601,6 +716,10 @@ proc ::critcl::app::ProcessInput {} {
 	critcl::lappendlist v::clibraries $r(clibraries)
 	critcl::lappendlist v::ldflags    $r(ldflags)
 	critcl::lappendlist v::preload    $r(preload)
+
+	if {[info exists r(apiheader)]} {
+	    lappend v::headers $r(apiheader)
+	}
     }
 
     if {$missing} {
@@ -683,10 +802,9 @@ proc ::critcl::app::BuildBracket {} {
 
 proc ::critcl::app::PlaceShlib {} {
     # Copy the generated shlib from the cache to its final resting
-    # place. For -lib that is wherever the user specified, wheras for
-    # -pkg this was set be inside the directory hierarchy of the
-    # newly-minted package. To prevent hassle a previously existing
-    # file gets deleted.
+    # place. For -pkg this was set be inside the directory hierarchy
+    # of the newly-minted package. To prevent hassle a previously
+    # existing file gets deleted.
 
     if {[file exists $v::shlname]} {
 	file delete -force $v::shlname
@@ -703,6 +821,27 @@ proc ::critcl::app::PlaceShlib {} {
 	file copy -force $pdb [file root $v::shlname].pdb
     }
 
+    # Record shlib in the meta data, list of package files.
+    set d [file tail [file dirname $v::shlname]]
+    set f [file tail $v::shlname]
+    lappend v::meta [list included [file join $d $f]]
+    return
+}
+
+proc ::critcl::app::ExportHeaders {} {
+    set incdir [CreateIncludeDirectory]
+
+    foreach dir $v::headers {
+	set stem [file tail $dir]
+	set dst  [file join $incdir $stem]
+
+	puts "Headers:  $v::incdir/$stem"
+
+	file mkdir $dst
+	foreach f [glob -nocomplain -directory $dir *] {
+	    file copy -force $f $dst
+	}
+    }
     return
 }
 
@@ -714,14 +853,9 @@ proc ::critcl::app::AssemblePackage {} {
     # library. This allows us to later merge the packages for
     # different platforms into a single multi-platform package.
 
-    set libdir [file normalize $v::libdir]
-    if {[file isfile $libdir]} {
-	critcl::error "can't package $v::shlname - $libdir is not a directory"
-    } elseif {![file isdirectory $libdir]} {
-	file mkdir $libdir
-    }
+    set libdir [CreateLibDirectory]
 
-    set libname  [file rootname [file tail $v::outname]]
+    set libname  [file tail $v::outname]
     set pkgdir   [file join $libdir $libname]
     set shlibdir [file join $pkgdir $v::actualplatform]
 
@@ -744,41 +878,40 @@ proc ::critcl::app::AssemblePackage {} {
     CreateLicenseTerms     $pkgdir
     CreateRuntimeSupport   $pkgdir
 
-    # At last, place the shlib generated by BuildBracket into its
-    # final resting place, in the directory hierarchy of the
-    # just-assembled package.
+    # Place the shlib generated by BuildBracket into its final resting
+    # place, in the directory hierarchy of the just-assembled package.
 
     set v::shlname [file join $shlibdir $shl]
     PlaceShlib
+
+    # At last we can generate and write the meta data. Many of the
+    # commands before added application-level information (like
+    # included files, entrytclcommand, ...) to the information
+    # collected from the input files
+
+    CreateTeapotMetadata $pkgdir
+    ExportHeaders
     return
 }
 
 proc ::critcl::app::CreatePackageIndex {shlibdir libname tsources} {
     # Build pkgIndex.tcl
 
-    # XXX Consider doing more here than defering to the runtime.
-    # XXX See ticket (38bf01b26e).
-
-    set pkgdir  [file dirname $shlibdir]
-    set map     [Mapping]
-    set preload [Preload $shlibdir]
-
-    # (=) This works because (a) 'ProcessInput' sources the package
-    # files in its own context, this process, and (b) the package
-    # files (are expected to) contain the proper 'package provide'
-    # commands (for compile & run mode), and we expect that at least
-    # one of the input files specifies the overall package built from
-    # all the inputs. See also (%) in Cmdline, where the application
-    # determines shlib name and package name, often from the first
-    # input file, and/or working backwards from package name to input
-    # file.
-
     set version [package present $v::pkgs]
 
-    set    index [open [file join $pkgdir pkgIndex.tcl] w]
-    puts  $index [::critcl::app::PackageGuard $v::mintcl]
-    puts  $index {source [file join $dir critcl-rt.tcl]}
-    puts  $index "::critcl::runtime::loadlib \$dir [list $v::pkgs $version $libname $v::inits $tsources $map] $preload"
+    # (=) The 'package present' works because (a) 'ProcessInput'
+    # sources the package files in its own context, this process, and
+    # (b) the package files (are expected to) contain the proper
+    # 'package provide' commands (for compile & run mode), and we
+    # expect that at least one of the input files specifies the
+    # overall package built from all the inputs. See also (%) in
+    # Cmdline, where the application determines shlib name and package
+    # name, often from the first input file, and/or working backwards
+    # from package name to input file.
+
+    set    index [open [file join [file dirname $shlibdir] pkgIndex.tcl] w]
+    puts  $index [PackageGuard $v::mintcl]
+    puts  $index [IndexCommand $version $libname $tsources $shlibdir]
     close $index
     return
 }
@@ -896,6 +1029,78 @@ proc ::critcl::app::PackageGuard {v} {
 	{if {![package vsatisfies [package provide Tcl] @]} {return}}]
 }
 
+proc ::critcl::app::IndexCommand {version libname tsources shlibdir} {
+    # We precompute as much as possible instead of wholesale defering
+    # to the runtime and dynamic code. See ticket (38bf01b26e). That
+    # makes it easier to debug the index command, as it is immediately
+    # visible in the pkgIndex.tcl file. And supports placement into
+    # the meta data.
+
+    set loadcmd [LoadCommand $version $libname $tsources $shlibdir]
+    return "package ifneeded [list $v::pkgs $version] $loadcmd"
+}
+
+proc ::critcl::app::LoadCommand {version libname tsources shlibdir} {
+    # New style. Precompute as much as possible.
+
+    set map [Mapping]
+    if {$map ne {}} { set map " $map" }
+    set platform "\[::critcl::runtime::MapPlatform$map\]"
+
+    set     loadcmd {}
+    lappend loadcmd {source [file join $dir critcl-rt.tcl]}
+    lappend loadcmd "set path \[file join \$dir $platform\]"
+    lappend loadcmd "set ext \[info sharedlibextension\]"
+    lappend loadcmd "set lib \[file join \$path \"$libname\$ext\"\]"
+
+    foreach p [Preload $shlibdir] {
+	lappend loadcmd "::critcl::runtime::preFetch \$path \$ext [list $p]"
+    }
+
+    lappend loadcmd "load \$lib [list $v::inits]"
+
+    foreach t $tsources {
+	lappend loadcmd "::critcl::runtime::Fetch \$dir [list $t]"
+    }
+
+    lappend loadcmd [list package provide $v::pkgs $version]
+
+    # Wrap the load command for use by the index command.
+    # First make it a proper script, indented, i.e. proc body.
+
+    set loadcmd "\n    [join $loadcmd "\n    "]"
+
+    if {[package vsatisfies $v::mintcl 8.5]} {
+	# 8.5+: Put the load command into an ::apply, i.e. make it
+	# an anonymous procedure.
+
+	set loadcmd "\[list ::apply \{dir \{$loadcmd\n\}\} \$dir\]"
+    } else {
+	# 8.4: Use a named, transient procedure. Name is chosen
+	# for low probability of collision with anything else.
+	# NOTE: We have to catch the auto-delete command because
+	# the procedure may have been redefined and destroyed by
+	# recursive package require's.
+	set n __critcl_load__
+	append loadcmd "\n    catch \{rename $n {}\}";# auto delete
+	set loadcmd "\"\[list proc $n \{dir\} \{$loadcmd\n\}\] ; \[list $n \$dir\]\""
+    }
+
+    lappend v::meta [list entrytclcommand [list "eval $loadcmd"]]
+
+    return $loadcmd
+}
+
+proc ::critcl::app::IndexCommandXXXXX {version libname tsources shlibdir} {
+    # Old style critcl. Ifneeded and loading is entirely and
+    # dynamically handled in the runtime support code.
+
+    set map       [Mapping]
+    set preload   [Preload $shlibdir]
+    set arguments [list $v::pkgs $version $libname $v::inits $tsources $map]
+    return "source \[file join \$dir critcl-rt.tcl\]\n::critcl::runtime::loadlib \$dir $arguments $preload"
+}
+
 proc ::critcl::app::CreateLicenseTerms {pkgdir} {
     # Create a license.terms file.
 
@@ -907,6 +1112,90 @@ proc ::critcl::app::CreateLicenseTerms {pkgdir} {
     set    license [open [file join $pkgdir license.terms] w]
     puts  $license $v::license
     close $license
+    return
+}
+
+proc ::critcl::app::CreateTeapotMetadata {pkgdir} {
+    if {![llength $v::meta]} {
+	critcl::error "Meta data missing"
+	return
+    }
+
+    # Merge the data from all input files, creating a list of words
+    # per key. Note: Data from later input files does not replace
+    # previous words, they get added instead.
+
+    set umd {}
+    foreach md $v::meta {
+	foreach {k vlist} $md {
+	    foreach v $vlist {
+		dict lappend umd $k $v
+	    }
+	}
+    }
+
+    # Check the identifying keys, i.e. package name, version, and
+    # platform for existence.
+
+    foreach k {name version platform} {
+	if {![dict exists $umd $k]} {
+	    critcl::error "Package $k missing in meta data"
+	}
+    }
+
+
+    # Collapse the data of various keys which must have only one,
+    # unique, element.
+
+    foreach k {name version platform build::date generated::date} {
+	if {![dict exists $umd $k]} continue
+	dict set umd $k [lindex [dict get $umd $k] 0]
+    }
+
+    # Add the entity information, and format the data for writing,
+    # using the "external" format for TEApot meta data. This writer
+    # limits lines to 72 characters, roughly. Beyond that nothing is
+    # done to make the output look pretty.
+
+    set md {}
+    lappend md "Package [dict get $umd name] [dict get $umd version]"
+    dict unset umd name
+    dict unset umd version
+
+    dict for {k vlist} $umd {
+	set init 1
+	foreach v $vlist {
+	    if {$init} {
+		# The first element of the value list is always added,
+		# regardless of length, to avoid infinite looping
+		# without progress.
+		set line {}
+		lappend line Meta $k $v
+		set init 0
+		continue
+	    }
+	    if {[string length [linsert $line end $v]] > 72} {
+		# If the next element brings us beyond the limit we
+		# flush the current state and re-initialize.
+		lappend md $line
+		set line {}
+		lappend line Meta $k $v
+		set init 0
+		continue
+	    }
+	    # Add the current element, extending the line.
+	    lappend line $v
+	}
+
+	# Flush the last line.
+	lappend md $line
+    }
+
+    # Last step, write the formatted meta data to the associated file.
+
+    set    teapot [open [file join $pkgdir teapot.txt] w]
+    puts  $teapot [join $md \n]
+    close $teapot
     return
 }
 
@@ -922,7 +1211,12 @@ proc ::critcl::app::PlaceTclCompanionFiles {pkgdir} {
     set files {}
     foreach t $v::tsources {
 	file copy -force $t $tcldir
-	lappend files [file tail $t]
+
+	set t [file tail $t]
+	lappend files $t
+
+	# Metadata management
+	lappend v::meta [list included tcl/$t]
     }
     return $files
 }
@@ -950,6 +1244,8 @@ proc ::critcl::app::CreateRuntimeSupport {pkgdir} {
     set    fd [open [file join $pkgdir critcl-rt.tcl] w]
     puts  $fd $txt
     close $fd
+
+    lappend v::meta [list included critcl-rt.tcl]
     return
 }
 
@@ -971,8 +1267,6 @@ proc ::critcl::app::DummyCritclPackage {} {
     append txt "\n\# Dummy implementation of the critcl package, if not present\n"
 
     foreach name [lsort [namespace eval ::critcl {namespace export}]] {
-	# XXX BUG?: compiled is alias of compiling, should return the same ?!
-	# XXX Use an array ?
 	switch $name {
 	    compiled  { set result 1 }
 	    compiling { set result 0 }
@@ -980,19 +1274,24 @@ proc ::critcl::app::DummyCritclPackage {} {
 	    check     { set result 0 }
 	    failed    { set result 0 }
 	    load      { set result 1 }
-	    default   { set result {}}
+	    Ignore    { append txt [DummyCritclCommand $name {
+		namespace eval ::critcl::v {}
+		set ::critcl::v::ignore([file normalize [lindex $args 0]]) .
+	    }]
+		continue
+	    }
+	    default   {
+		append txt [DummyCritclCommand $name {}]
+		continue
+	    }
 	}
-	append txt [DummyCritclCommand $name $result]
+	append txt [DummyCritclCommand $name "return $result"]
     }
 
     return $txt
 }
 
 proc ::critcl::app::DummyCritclCommand {name result} {
-    if {$result ne {}} {
-	set result "return $result"
-    }
-
     append txt "if \{!\[llength \[info commands ::critcl::$name\]\]\} \{\n"
     append txt "    namespace eval ::critcl \{\}\n"
     append txt "    proc ::critcl::$name \{args\} \{$result\}\n"
@@ -1021,6 +1320,339 @@ proc ::critcl::app::PlatformGeneric {} {
     return $txt
 }
 
+proc ::critcl::app::AssembleTEA {} {
+    LogLn {Assembling TEA hierarchy...}
+
+    set libdir  [CreateLibDirectory]
+    set libname [file rootname [file tail $v::outname]]
+    set pkgdir  [file join $libdir $libname]
+
+    LogLn "\tPackage: $pkgdir"
+
+    file mkdir $pkgdir
+
+    # Get a proper version number
+    set ver 0.0
+    if {[llength $v::ver]} {
+	set ver [lindex $v::ver 0] 
+    }
+    # Get a proper organization this is licensed by
+    set org Unknown
+    if {[llength $v::org]} {
+	set org [lindex $v::org 0] 
+    }
+
+    PlaceTEASupport    $pkgdir $libname $ver $org
+    PlaceCritclSupport $pkgdir
+    PlaceInputFiles    $pkgdir
+
+    # Last, meta data for the TEA setup.
+    CreateTeapotMetadata $pkgdir
+    return
+}
+
+proc ::critcl::app::CreateLibDirectory {} {
+    set libdir [file normalize $v::libdir]
+    if {[file isfile $libdir]} {
+	critcl::error "can't package $v::shlname - $libdir is not a directory"
+    } elseif {![file isdirectory $libdir]} {
+	file mkdir $libdir
+    }
+
+    return $libdir
+}
+
+proc ::critcl::app::CreateIncludeDirectory {} {
+    set incdir [file normalize $v::incdir]
+    if {[file isfile $incdir]} {
+	::critcl::error "can't package $v::shlname headers - $incdir is not a directory"
+    } elseif {![file isdirectory $incdir]} {
+	file mkdir $incdir
+    }
+
+    return $incdir
+}
+
+proc ::critcl::app::PlaceTEASupport {pkgdir pkgname pversion porg} {
+    # Create the configure.in file in the generated TEA
+    # hierarchy.
+
+    LogLn "\tPlacing TEA support..."
+
+    foreach {pmajor pminor} [split $pversion .] break
+    if {$pminor eq {}} { set pminor 0 }
+    if {$pmajor eq {}} { set pmajor 0 }
+
+    variable mydir
+    set tea [file join $mydir tea]
+
+    if {![file exists $tea]} {
+	critcl::error "can't find Critcl's TEA support files"
+    }
+
+    # Copy the raw support files over.
+    foreach f [glob -directory $tea *] {
+	file copy $f $pkgdir
+
+	if {[file tail $f] eq "tclconfig"} {
+	    foreach f [glob -directory $tea/tclconfig *] {
+		lappend v::meta [list included tclconfig/[file tail $f]]
+	    }
+	} else {
+	    lappend v::meta [list included [file tail $f]]
+	}
+    }
+
+    # Basic map for the placeholders in the templates
+
+    set now  [clock seconds]
+    set year [clock format $now -format {%Y}]
+    set now  [clock format $now]
+    set map  [list \
+		 @@CRITCL@@     "\"$::argv0 $::argv\"" \
+		 @@PNAME@@   $pkgname \
+		 @@PMAJORV@@ $pmajor  \
+		 @@PMINORV@@ $pminor  \
+		 @@PFILES@@  "\\\n\t[join $v::teasrc " \\\n\t"]" \
+		 @@PORG@@    $porg \
+		 @@YEAR@@    $year \
+		 @@NOW@@     $now]
+    set cmap $map
+    set mmap $map
+
+    # Extend map with stubs API data
+
+    if {![llength $v::imported]} {
+	lappend cmap @@API@@ {}
+	lappend mmap @@API@@ {} @@APIUSE@@ {}
+    } else {
+	set macros {}
+	# Creating the --with-foo-include options for imported APIs.
+
+	lappend macros "#-----------------------------------------------------------------------"
+	lappend macros "## TEA stubs header setup"
+	lappend macros ""
+	foreach api $v::imported {
+	    set capi [string map {:: _} $api]
+
+	    lappend macros  "CRITCL_TEA_PUBLIC_PACKAGE_HEADERS(\[$capi\])"
+	    lappend mvardef "CRITCL_API_${capi}_INCLUDE = @CRITCL_API_${capi}_INCLUDE@"
+	    lappend mvaruse "-I \$(CRITCL_API_${capi}_INCLUDE)"
+	}
+	lappend cmap @@API@@    \n[join $macros \n]\n
+	lappend mmap @@API@@    \n[join $mvardef \n]\n
+	lappend mmap @@APIUSE@@ " \\\n\t\t[join $mvaruse " \\\n\t\t"]"
+    }
+
+    # Extend map with custom user configuration data.
+
+    if {![llength $v::config]} {
+	lappend cmap @@UCONFIG@@ {}
+	lappend mmap @@UCONFIG@@ {} @@UCONFIGUSE@@ {}
+    } else {
+
+	# Note: While we could assume that the user-specified
+	# configuration options of a single file are consistent with
+	# each other here we have a union of options from multiple
+	# files. No such assumption can be made. Thus, we unique the
+	# list, and then check that each option name left has a unique
+	# definition as well.
+
+	set ok 1
+	array set udef {}
+	set uclist [lsort -unique $v::config]
+	foreach uc $uclist {
+	    set oname [lindex $uc 0]
+	    if {[info exists udef($oname)]} {
+		LogLn "\t    Inconsistent definition for $oname"
+		LogLn "\t    (1) $uc"
+		LogLn "\t    (2) $udef($oname)"
+		set ok 0
+		continue
+	    }
+	    set udef($oname) $uc
+	}
+	if {!$ok} {
+	    ::critcl::error "Conflicting user-specified configuration settings."
+	}
+
+	# Creating the --(with,enable,disable)-foo options for
+	# user-specified configuration options.
+
+	lappend macros "#-----------------------------------------------------------------------"
+	lappend macros "## TEA user option setup"
+	lappend macros ""
+	foreach uc $uclist {
+	    lassign $uc oname odesc otype odefault
+
+	    if {$otype eq "bool"} {
+		set odefault [expr {$odefault ? "yes" : "no"}]
+		if {$odesc eq {}} {
+		    set odesc "--enable-$oname"
+		}
+		append odesc " (default: $odefault)"
+
+		lappend macros  "CRITCL_TEA_BOOL_CONFIG(\[$oname\],\n\t\[$odefault\],\n\t\[$odesc\])"
+	    } else {
+		if {$odesc eq {}} {
+		    set odesc "--with-$oname"
+		}
+		append odesc " (default: $odefault, of [join $otype {, }])"
+
+		lappend macros  "CRITCL_TEA_WITH_CONFIG(\[$oname\],\n\t\[[join $otype { }]\],\n\t\[$odefault\],\n\t\[$odesc\])"
+	    }
+
+	    lappend mvardef "CRITCL_UCONFIG_${oname} = @CRITCL_UCONFIG_${oname}@"
+	    lappend mvaruse "\$(CRITCL_UCONFIG_${oname})"
+	}
+	lappend cmap @@UCONFIG@@    \n[join $macros \n]\n
+	lappend mmap @@UCONFIG@@    \n[join $mvardef \n]\n
+	lappend mmap @@UCONFIGUSE@@ " \\\n\t\t[join $mvaruse " \\\n\t\t"]"
+    }
+
+    # Postprocess a few files (configure.in, Makefile.in).
+
+    Map  [file join $pkgdir configure.in] $cmap
+    Map  [file join $pkgdir Makefile.in]  $mmap
+    Map  [file join $pkgdir Config.in]    $map
+
+    # At last locate a suitable autoconf (2.59+), and generate
+    # configure from the configure.in.
+
+    set here [pwd]
+    cd $pkgdir
+    exec [LocateAutoconf]
+    file delete -force autom4te.cache
+
+    lappend v::meta [list included configure]
+
+    cd $here
+
+    return
+}
+
+proc ::critcl::app::Map {path map} {
+    set fd  [open $path r]
+    set txt [read $fd]
+    close $fd
+
+    set txt [string map $map $txt]
+
+    set    fd  [open $path w]
+    puts -nonewline $fd $txt
+    close $fd
+
+    return
+}
+
+proc ::critcl::app::PlaceCritclSupport {pkgdir} {
+    LogLn "\tPlacing Critcl support..."
+
+    set c [file join $pkgdir critcl]
+    set l [file join $c lib]
+    file mkdir $l
+
+    # Locate the critcl packages, and their forward compatibility
+    # support packages, and copy them into the TEA hierarchy for use
+    # by the generated Makefile.
+    foreach {pkg dir} {
+	critcl           critcl
+	critcl::app      app-critcl
+	critcl::util     critcl-util
+	dict84           util84
+	stubs::container stubs
+    } {
+	set cmd      [package ifneeded $pkg [package require $pkg]]
+	set location [file dirname [lindex $cmd end]]
+
+	# Squash any soft-links, which Tcl would copy as links.
+	set location [file dirname [file normalize $location/__]]
+	file copy $location $l/$dir
+    }
+
+    # Generate a suitable main.tcl. Note that this main file sources
+    # the critcl packages directly, to ensure that the build uses the
+    # code put into the generated TEA hierarchy, and is not influenced
+    # by whatever is installed outside.
+
+    set     pfiles {}
+    lappend pfiles util84/lassign util84/dict
+    lappend pfiles stubs/container  stubs/reader    stubs/genframe
+    lappend pfiles stubs/gen_decl   stubs/gen_macro stubs/gen_slot
+    lappend pfiles stubs/gen_header stubs/gen_init  stubs/gen_lib
+    lappend pfiles stubs/writer
+    lappend pfiles critcl/critcl app-critcl/critcl critcl-util/util
+
+    set fd [open [file join $pkgdir critcl main.tcl] w]
+    puts $fd [join \
+		  [list \
+		       "# Required packages: cmdline, md5" \
+		       "# Optional: tcllibc, Trf, md5c, cryptkit (md5 acceleration)" \
+		       "# Enforce usage of the local critcl packages." \
+		       "foreach p \{\n\t[join $pfiles \n\t]\n\} \{" \
+		       {    source [file dirname [info script]]/lib/$p.tcl} \
+		       "\}" \
+		       {critcl::app::main $argv}] \n]
+    close $fd
+
+    # Add to set of included files.
+    lappend v::meta [list included critcl/main.tcl]
+    foreach p $pfiles {
+	lappend v::meta [list included critcl/lib/$p.tcl]
+    }
+    return
+}
+
+proc ::critcl::app::PlaceInputFiles {pkgdir} {
+    LogLn "\tPlacing input files..."
+
+    # Main critcl source file(s), plus companions
+
+    foreach f $v::src {
+	#LogLn "\tB   $f"
+
+	set dst [file join src [file tail $f]]
+	lappend v::meta [list included $dst]
+
+	set dst [file join $pkgdir $dst]
+	file mkdir [file dirname $dst]
+	file copy $f $dst
+    }
+
+    foreach {f cf} $v::cfiles {
+	set base [file dirname $f]
+	foreach f [lsort -unique $cf] {
+	    set fs [file join $base $f]
+
+	    #LogLn "\tC   $fs"
+
+	    set dst [file join src $f]
+	    lappend v::meta [list included $dst]
+
+	    set dst [file join $pkgdir $dst]
+
+	    file mkdir [file dirname $dst]
+	    file copy $fs $dst
+	}
+    }
+    return
+}
+
+proc ::critcl::app::LocateAutoconf {} {
+    set ac [auto_execok autoconf]
+
+    if {$ac eq {}} {
+	return -code error "autoconf 2.59 or higher required, not found"
+    }
+
+    set v [lindex [split [eval [linsert [linsert $ac 0 exec] end --version]] \n] 0 end]
+
+    if {![package vsatisfies $v 2.59]} {
+	return -code error "$ac $v is not 2.59 or higher, as required"
+    }
+
+    return $ac
+}
 
 # # ## ### ##### ######## ############# #####################
 
@@ -1032,7 +1664,7 @@ namespace eval ::critcl::app {
     variable options {
 	I.arg cache.arg clean config.arg debug.arg force help
 	keep libdir.arg pkg show showall target.arg targets
-	test
+	test tea showtarget includedir.arg enable.arg disable.arg
     }
 
     # Application state
@@ -1045,18 +1677,21 @@ namespace eval ::critcl::app {
 
 	variable actualplatform {} ;# Target platform, with x-compile information resolved.
 
-	variable shlname   "" ;# Name of the shlib to generate (-lib, -pkg).
-	variable outname   "" ;# Name of the shlib dir to use (-lib, -pkg).
-	variable libdir   lib ;# Place for the package (-pkg).
+	variable shlname   "" ;# Name of the shlib to generate (-pkg, -tea).
+	variable outname   "" ;# Name of the shlib dir to use (-pkg, -tea).
+	variable libdir   lib ;# Place for the package (-pkg, -tea).
+	variable incdir   include ; # Directory to put the -pkg include files into (stubs export),
+                                    # and search in (stubs import)
 	variable keep       0 ;# Boolean flag. Default: Do not keep generated .c files.
 	variable debug     {} ;# List of debug modes to activate.
 	variable cache     {} ;# User specified path to the directory for the result cache.
+	variable uc        {} ;# List. User specified configuration data.
 
-	# Build mode. Default, as below is 'build and link input
-	# files, do not load, fill cache'. If the flag is set a
-	# package is made instead.
+	# Build mode. Default is to fill the result
+	# cache. Alternatives are building a package (-pkg), or
+	# assembling/repackaging for TEWA (-tea).
 
-	variable pkg 0
+	variable mode cache ;# pkg, tea
 
 	# - -- --- ----- -------- ------------- ---------------------
 	# Data accumulated while processing the input files.
@@ -1073,6 +1708,16 @@ namespace eval ::critcl::app {
 	variable license    {}  ;# Accumulated licenses, if any.
 	variable pkgs       {}  ;# List of package names for the pieces.
 	variable inits      {}  ;# Init function names for the pieces, list.
+	variable meta       {}  ;# All meta data declared by the input files.
+
+	# critcl::scan results
+	variable org        {}  ;# Organization package is licensed by
+	variable ver        {}  ;# Version of the package.
+	variable cfiles     {}  ;# Companion files (.tcl, .c, .h, etc).
+	variable teasrc     {}  ;# Input file(s) transformed for use in the Makefile.in.
+	variable imported   {}  ;# List of stubs APIs imported from elsewhere.
+	variable config     {}  ;# List of user-specified configuration settings.
+	# variable meta         ;# See above.
     }
 }
 

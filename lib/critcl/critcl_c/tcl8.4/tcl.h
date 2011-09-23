@@ -184,6 +184,11 @@ extern "C" {
 #   define TCL_VARARGS_START(type, name, list) \
 	(va_start(list), va_arg(list, type))
 #endif
+#if defined(__GNUC__) && (__GNUC__ > 2)
+#   define TCL_FORMAT_PRINTF(a,b) __attribute__ ((__format__ (__printf__, a, b)))
+#else
+#   define TCL_FORMAT_PRINTF(a,b)
+#endif
 
 /*
  * Macros used to declare a function to be exported by a DLL.
