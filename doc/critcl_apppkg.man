@@ -1,0 +1,61 @@
+[comment {-*- tcl -*- doctools manpage}]
+[manpage_begin critcl::app n 2.1]
+[include include/module.inc]
+[titledesc {CriTcl Application Package Reference}]
+[require Tcl 8.4]
+[require critcl::app [opt 2.1]]
+[require critcl [opt 2]]
+[require platform [opt 1.0.2]]
+[require cmdline]
+[description]
+[para]
+[include include/welcome.inc]
+[para]
+
+This document is the reference manpage for the [package critcl::app]
+package. Its intended audience are developers working on critcl's
+internals.  Writers of packages with embedded C code can ignore this
+document.
+
+If you are in need of an overview of the whole system instead, please
+go and read the [manpage {Introduction To CriTcl}].
+
+[para]
+
+This package resides in the Application Layer of CriTcl.
+[para][image arch_application][para],
+
+implementing the functionality of the [manpage {CriTcl Application}],
+and through this, the mode [sectref {Modes Of Operation/Use} {generate package}].
+
+The actual application is (only) a shim wrapping around this
+package. It itself is build on top of the core package
+[package critcl].
+
+[comment {===================================================================}]
+[section API]
+
+The package exports a single command
+
+[list_begin definitions]
+[call [cmd ::critcl::app::main] [arg commandline]]
+
+The [arg commandline] is a list of options and input files, in this order,
+with both parts possibly empty.
+
+The exact set of options supported, their meaning, and interaction is
+detailed in section [sectref Options] below.
+
+For a larger set of examples please see section "Building Critcl Packages"
+in the document about [manpage {Using CriTcl}].
+
+[list_end]
+
+[section {Options}]			[include include/aoptions.inc]
+[section {Modes Of Operation/Use}]	[include include/modes.inc]
+[section {Package Structure}]		[include include/pstructure.inc]
+
+[comment {===================================================================}]
+[include include/changes.inc]
+[include include/feedback.inc]
+[manpage_end]

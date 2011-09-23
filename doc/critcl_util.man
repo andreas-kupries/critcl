@@ -1,0 +1,40 @@
+[comment {-*- tcl -*- doctools manpage}]
+[manpage_begin critcl::util n 1]
+[include include/module.inc]
+[titledesc {CriTcl Utilities}]
+[require Tcl 8.4]
+[require critcl [opt 2.1]]
+[require critcl::util [opt 1]]
+[description]
+[para]
+[include include/welcome.inc]
+[para]
+
+This document is the reference manpage for the [package critcl::util]
+package. This package provides convenience commands for advanced
+functionality built on top of the core.
+
+Its intended audience are mainly developers wishing to write Tcl
+packages with embedded C code.
+[para]
+
+This package resides in the Core Package Layer of CriTcl.
+[para][image arch_core][para]
+
+[comment {===================================================================}]
+
+[section API]
+
+[list_begin definitions]
+[call [cmd ::critcl::util::checkfun] [arg name] [opt [arg label]]]
+
+This command checks the build-time environment for the existence of
+the C function [arg name].
+
+It returns [const true] on success, and [const false] otherwise.
+
+[list_end]
+
+[comment {===================================================================}]
+[include include/feedback.inc]
+[manpage_end]

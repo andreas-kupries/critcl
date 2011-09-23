@@ -1,0 +1,648 @@
+'\"
+'\" Generated from file '/net/nas/data/andreask/Dev/Critcl/v21/embedded/man/files/critcl_app.n' by tcllib/doctools with format 'nroff'
+'\" Copyright (c) ???????????????????
+'\"
+'\" The definitions below are for supplemental macros used in Tcl/Tk
+'\" manual entries.
+'\"
+'\" .AP type name in/out ?indent?
+'\"	Start paragraph describing an argument to a library procedure.
+'\"	type is type of argument (int, etc.), in/out is either "in", "out",
+'\"	or "in/out" to describe whether procedure reads or modifies arg,
+'\"	and indent is equivalent to second arg of .IP (shouldn't ever be
+'\"	needed;  use .AS below instead)
+'\"
+'\" .AS ?type? ?name?
+'\"	Give maximum sizes of arguments for setting tab stops.  Type and
+'\"	name are examples of largest possible arguments that will be passed
+'\"	to .AP later.  If args are omitted, default tab stops are used.
+'\"
+'\" .BS
+'\"	Start box enclosure.  From here until next .BE, everything will be
+'\"	enclosed in one large box.
+'\"
+'\" .BE
+'\"	End of box enclosure.
+'\"
+'\" .CS
+'\"	Begin code excerpt.
+'\"
+'\" .CE
+'\"	End code excerpt.
+'\"
+'\" .VS ?version? ?br?
+'\"	Begin vertical sidebar, for use in marking newly-changed parts
+'\"	of man pages.  The first argument is ignored and used for recording
+'\"	the version when the .VS was added, so that the sidebars can be
+'\"	found and removed when they reach a certain age.  If another argument
+'\"	is present, then a line break is forced before starting the sidebar.
+'\"
+'\" .VE
+'\"	End of vertical sidebar.
+'\"
+'\" .DS
+'\"	Begin an indented unfilled display.
+'\"
+'\" .DE
+'\"	End of indented unfilled display.
+'\"
+'\" .SO
+'\"	Start of list of standard options for a Tk widget.  The
+'\"	options follow on successive lines, in four columns separated
+'\"	by tabs.
+'\"
+'\" .SE
+'\"	End of list of standard options for a Tk widget.
+'\"
+'\" .OP cmdName dbName dbClass
+'\"	Start of description of a specific option.  cmdName gives the
+'\"	option's name as specified in the class command, dbName gives
+'\"	the option's name in the option database, and dbClass gives
+'\"	the option's class in the option database.
+'\"
+'\" .UL arg1 arg2
+'\"	Print arg1 underlined, then print arg2 normally.
+'\"
+'\" RCS: @(#) $Id: man.macros,v 1.1 2009/01/30 04:56:47 andreas_kupries Exp $
+'\"
+'\"	# Set up traps and other miscellaneous stuff for Tcl/Tk man pages.
+.if t .wh -1.3i ^B
+.nr ^l \n(.l
+.ad b
+'\"	# Start an argument description
+.de AP
+.ie !"\\$4"" .TP \\$4
+.el \{\
+.   ie !"\\$2"" .TP \\n()Cu
+.   el          .TP 15
+.\}
+.ta \\n()Au \\n()Bu
+.ie !"\\$3"" \{\
+\&\\$1	\\fI\\$2\\fP	(\\$3)
+.\".b
+.\}
+.el \{\
+.br
+.ie !"\\$2"" \{\
+\&\\$1	\\fI\\$2\\fP
+.\}
+.el \{\
+\&\\fI\\$1\\fP
+.\}
+.\}
+..
+'\"	# define tabbing values for .AP
+.de AS
+.nr )A 10n
+.if !"\\$1"" .nr )A \\w'\\$1'u+3n
+.nr )B \\n()Au+15n
+.\"
+.if !"\\$2"" .nr )B \\w'\\$2'u+\\n()Au+3n
+.nr )C \\n()Bu+\\w'(in/out)'u+2n
+..
+.AS Tcl_Interp Tcl_CreateInterp in/out
+'\"	# BS - start boxed text
+'\"	# ^y = starting y location
+'\"	# ^b = 1
+.de BS
+.br
+.mk ^y
+.nr ^b 1u
+.if n .nf
+.if n .ti 0
+.if n \l'\\n(.lu\(ul'
+.if n .fi
+..
+'\"	# BE - end boxed text (draw box now)
+.de BE
+.nf
+.ti 0
+.mk ^t
+.ie n \l'\\n(^lu\(ul'
+.el \{\
+.\"	Draw four-sided box normally, but don't draw top of
+.\"	box if the box started on an earlier page.
+.ie !\\n(^b-1 \{\
+\h'-1.5n'\L'|\\n(^yu-1v'\l'\\n(^lu+3n\(ul'\L'\\n(^tu+1v-\\n(^yu'\l'|0u-1.5n\(ul'
+.\}
+.el \}\
+\h'-1.5n'\L'|\\n(^yu-1v'\h'\\n(^lu+3n'\L'\\n(^tu+1v-\\n(^yu'\l'|0u-1.5n\(ul'
+.\}
+.\}
+.fi
+.br
+.nr ^b 0
+..
+'\"	# VS - start vertical sidebar
+'\"	# ^Y = starting y location
+'\"	# ^v = 1 (for troff;  for nroff this doesn't matter)
+.de VS
+.if !"\\$2"" .br
+.mk ^Y
+.ie n 'mc \s12\(br\s0
+.el .nr ^v 1u
+..
+'\"	# VE - end of vertical sidebar
+.de VE
+.ie n 'mc
+.el \{\
+.ev 2
+.nf
+.ti 0
+.mk ^t
+\h'|\\n(^lu+3n'\L'|\\n(^Yu-1v\(bv'\v'\\n(^tu+1v-\\n(^Yu'\h'-|\\n(^lu+3n'
+.sp -1
+.fi
+.ev
+.\}
+.nr ^v 0
+..
+'\"	# Special macro to handle page bottom:  finish off current
+'\"	# box/sidebar if in box/sidebar mode, then invoked standard
+'\"	# page bottom macro.
+.de ^B
+.ev 2
+'ti 0
+'nf
+.mk ^t
+.if \\n(^b \{\
+.\"	Draw three-sided box if this is the box's first page,
+.\"	draw two sides but no top otherwise.
+.ie !\\n(^b-1 \h'-1.5n'\L'|\\n(^yu-1v'\l'\\n(^lu+3n\(ul'\L'\\n(^tu+1v-\\n(^yu'\h'|0u'\c
+.el \h'-1.5n'\L'|\\n(^yu-1v'\h'\\n(^lu+3n'\L'\\n(^tu+1v-\\n(^yu'\h'|0u'\c
+.\}
+.if \\n(^v \{\
+.nr ^x \\n(^tu+1v-\\n(^Yu
+\kx\h'-\\nxu'\h'|\\n(^lu+3n'\ky\L'-\\n(^xu'\v'\\n(^xu'\h'|0u'\c
+.\}
+.bp
+'fi
+.ev
+.if \\n(^b \{\
+.mk ^y
+.nr ^b 2
+.\}
+.if \\n(^v \{\
+.mk ^Y
+.\}
+..
+'\"	# DS - begin display
+.de DS
+.RS
+.nf
+.sp
+..
+'\"	# DE - end display
+.de DE
+.fi
+.RE
+.sp
+..
+'\"	# SO - start of list of standard options
+.de SO
+.SH "STANDARD OPTIONS"
+.LP
+.nf
+.ta 4c 8c 12c
+.ft B
+..
+'\"	# SE - end of list of standard options
+.de SE
+.fi
+.ft R
+.LP
+See the \\fBoptions\\fR manual entry for details on the standard options.
+..
+'\"	# OP - start of full description for a single option
+.de OP
+.LP
+.nf
+.ta 4c
+Command-Line Name:	\\fB\\$1\\fR
+Database Name:	\\fB\\$2\\fR
+Database Class:	\\fB\\$3\\fR
+.fi
+.IP
+..
+'\"	# CS - begin code excerpt
+.de CS
+.RS
+.nf
+.ta .25i .5i .75i 1i
+..
+'\"	# CE - end code excerpt
+.de CE
+.fi
+.RE
+..
+.de UL
+\\$1\l'|0\(ul'\\$2
+..
+.TH "critcl_app" n 1 doc "C Runtime In Tcl (CriTcl)"
+.BS
+.SH NAME
+critcl_app \- CriTcl Application
+.SH SYNOPSIS
+\fBcritcl\fR ?\fIoption\fR...? ?\fIfile\fR...?
+.sp
+.BE
+.SH DESCRIPTION
+.PP
+Welcome to the \fIC Runtime In Tcl\fR, \fICriTcl\fR for short, a
+system to build C extension packages for Tcl on the fly, from C code
+embedded within Tcl scripts, for all who wish to make their code go
+faster.
+.PP
+This document is the reference manpage for the \fBcritcl\fR command.
+Its intended audience are people having to build packages using
+\fBcritcl\fR for deployment. Writers of packages with embedded C
+code can ignore this document.
+If you are in need of an overview of the whole system instead, please
+go and read the \fIIntroduction To CriTcl\fR.
+.PP
+This application resides in the Application Layer of CriTcl.
+.PP
+IMAGE: arch_application
+.PP
+.
+The application supports the following general command line:
+.TP
+\fBcritcl\fR ?\fIoption\fR...? ?\fIfile\fR...?
+The exact set of options supported, their meaning, and interaction is
+detailed in section \fBApplication Options\fR below.
+For a larger set of examples please see section "Building Critcl Packages"
+in the document about \fIUsing CriTcl\fR.
+.PP
+.SH "APPLICATION OPTIONS"
+The following options are understood
+.TP
+\fB-I\fR path
+This option specifies a single additional global include path to use
+during compilation of "\fI.critcl\fR" files. The last value will be
+used if this is specified multiple times.
+.TP
+\fB-cache\fR path
+This option specifies the path to the directory to use as the result
+cache. If not specified it defaults to "\fI~/.critcl/<platform>\fR",
+or, when generating a package (see option \fB-pkg\fR below), to
+"\fI~/.critcl/<pid>.<epoch>\fR",
+When specified multiple times the last value is used.
+.TP
+\fB-clean\fR
+When specified the result cache is emptied, i.e. all files and
+directories found inside are deleted) before compilation begins.
+This option is irrelevant when generating a package (see option
+\fB-pkg\fR below) because this mode starts out with a unique and
+empty result cache.
+.TP
+\fB-config\fR path
+This option specifies the path to a custom configuration file,
+allowing the user to use their own target specifications. If not
+specified a hardwired default configuration embedded in the system
+core is used instead.
+When specified multiple times the last value is used.
+.TP
+\fB-debug\fR mode
+This option activates compilation with debugging. It accepts the modes
+below.
+When specified multiple times the combination of all modes is used.
+.RS
+.TP
+\fBmemory\fR
+This mode activates memory debugging of allocations made through the
+Tcl core.
+.TP
+\fBsymbols\fR
+This mode activates building of all "\fI.c\fR" files with debugging
+symbols.
+.TP
+\fBall\fR
+This mode activates both \fBmemory\fR and \fBsymbols\fR.
+.RE
+.TP
+\fB-force\fR
+When specified compilation is always done, even if a shared library
+for the file exists already. This effect can be had through cleaning
+the cache (see above) as well, except that it is lazy in the
+destruction of files and will not destroy files unrelated to the ones
+we are building.
+This option is irrelevant when generating a package (see option
+\fB-pkg\fR below) because this mode starts out with a unique and
+empty result cache.
+.TP
+\fB-help\fR
+This option will cause the system to print a short help about command
+line syntax and options and then exit the application.
+.TP
+\fB-keep\fR
+This option will cause the system to keep the "\fI.c\fR" files
+generated by a run in the result cache.
+When generating a package (see option \fB-pkg\fR below) this also
+prevents the deletion of the unique result cache used by the run.
+This option is intended for the debugging of \fBcritcl\fR itself,
+where it may be necessary to inspect the generated C code.
+.TP
+\fB-libdir\fR path
+This option specifies the path under which the packages generated via
+option \fB-pkg\fR are saved.
+When specified multiple times the last value is used.
+When not specified at all the default, "\fIlib\fR", is used. Note how
+this is a relative path, placing the result into the current working
+directory.
+.TP
+\fB-pkg\fR
+The default mode of the application is to build the "\fI.critcl\fR"
+files listed on the command line and save the results in the result
+cache. Essentially pre-filling the cache with important packages,
+cutting down on the time needed to use these packages.
+.sp
+This option activates the other mode, package generation.
+In this mode the input files are processed first as usual, however
+after that they are bundled into a single library and additional files
+are generated to make this library usable as a regular Tcl package.
+.sp
+In this mode the options \fB-clean\fR and \fB-force\fR are
+irrelevant and ignored. In contrast, the option \fB-libdir\fR is
+relevant only in this mode.
+.sp
+When this option is specified the basename of the first file argument
+after the options is used as the name of the package to generate. If
+the extension of that file indicates a shared library ("\fI.so\fR",
+"\fI.sl\fR", "\fI.dylib\fR", and "\fI.dll\fR") it is also removed from
+the set of input files. A "\fI.tcl\fR" file is kept as part of the
+input. A single file without extension is assumed to actually have a
+"\fI.tcl\fR" extension. A file without extension, but other input files
+following is treated like the name of a shared library proper, and
+removed from the set of input files.
+.sp
+Examples:
+.nf
+
+	... -pkg ... foo
+
+	=> Package name is: foo
+	=> Input file is:   foo.tcl
+
+.fi
+.nf
+
+	... -pkg ... foo bar.tcl
+
+	=> Package name is: foo
+	=> Input file is:   bar.tcl
+
+.fi
+.nf
+
+	... -pkg ... foo.tcl
+
+	=> Package name is: foo
+	=> Input file is:   foo.tcl
+
+.fi
+.nf
+
+	... -pkg ... foo.so bar.tcl
+
+	=> Package name is: foo
+	=> Input file is:   bar.tcl
+
+.fi
+.TP
+\fB-show\fR
+This option, when specified, will cause the system to print the
+configuration of the chosen target to \fBstdout\fR and then exit.
+The choice of target can be influenced through the option
+\fB-target\fR (see below).
+.TP
+\fB-showall\fR
+This option, when specified, will cause the system to print the whole
+chosen configuration file to \fBstdout\fR and then exit.
+The choice of configuration file can be influenced through the option
+\fB-config\fR (see above).
+.TP
+\fB-target\fR name
+This option overrides the default choice of build target with
+the user's choice.
+When specified multiple times the last value is used.
+The named target must exist in the chosen configuration file.
+Use option \fB-targets\fR (see below) to get a list of the
+acceptable targets.
+The choice of configuration file can be influenced through the option
+\fB-config\fR (see above).
+.TP
+\fB-targets\fR
+This option, when specified, will cause the system to print the list
+of all known targets from the chosen configuration file to
+\fBstdout\fR and then exit.
+The choice of configuration file can be influenced through the option
+\fB-config\fR (see above).
+.PP
+.SH "PACKAGE STRUCTURE"	Packages generated by critcl have the following basic structure:
+.nf
+
+<TOP>
++- pkgIndex.tcl
++- critcl-rt.tcl
++- license.terms (optional)
+|
++- tcl (optional)
+|  +- <tsources files>
+|
++- <platform>
+   +- <shared library>
+
+.fi
+.PP
+\fINotes\fR
+.IP [1]
+The file "\fIpkgIndex.tcl\fR" is the standard package index file
+expected by Tcl's package management. It is sourced during a search
+for packages, and declares the package to Tcl with its files, and how
+to handle them.
+.IP [2]
+The file "\fIcritcl-rt.tcl\fR" is a helper file containing the
+common code used by "\fIpkgIndex.tcl\fR" to perform its tasks.
+.IP [3]
+The file "\fIlicense.terms\fR" is optional and appears only if
+the "\fI.critcl\fR" file the package is generated from used the command
+\fBcritcl::license\fR to declare package author and license.
+.IP [4]
+All files declared with the command \fBcritcl::tsources\fR are
+put into the sub-directory "\fItcl\fR".
+.IP [5]
+The shared library generated by critcl is put into a
+platform-specific sub-directory.
+.PP
+.PP
+The whole structure, and especially the last point, enable us
+to later merge the results (for the same package, and version) for
+multiple target platforms into a single directory structure without
+conflict, by simply copying the top directories over each other. The
+only files which can conflict are in the <TOP> and "\fItcl\fR"
+directories, and for these we know that they are identical across
+targets. The result of such a merge would look like:
+.nf
+
+<TOP>
++- pkgIndex.tcl
++- critcl-rt.tcl
++- license.terms (optional)
+|
++- tcl (optional)
+|  +- <tsources files>
+|
++- <platform1>
+|  +- <shared library1>
++- <platform2>
+|  +- <shared library2>
+...
++- <platformN>
+   +- <shared libraryN>
+
+.fi
+.SH "CHANGES FOR VERSION 2.1"
+.IP [1]
+Fixed bug where \fBcritcl::tsources\fR interpreted relative
+paths as relative to the current working directory instead of
+relative to the "\fI.critcl\fR" file using the command, as all other
+commands of this type do.
+.IP [2]
+Fixed internals, preventing information collected for multiple
+"\fI.critcl\fR" files to leak between them. Notably, \fBcritcl::tk\fR
+is not a global configuration option anymore.
+.IP [3]
+Fixed the command \fBcritcl::license\fR to be a null-operation
+in mode "compile & run", instead of throwing an error.
+.IP [4]
+Fixed the critcl application's interference with the "compile &
+run" result cache in \fB-pkg\fR mode by having it use a wholly
+separate (and by default transient) directory for that mode.
+.IP [5]
+Fixed bug where changes to a "\fI.critcl\fR" file did not result
+in a rebuild for mode "compile & run". All relevant API commands now
+ensure UUID changes.
+.IP [6]
+Fixed bug in the backend handling of \fBcritcl::debug\fR where
+the companion c-sources of a "\fI.critcl\fR" file were not compiled
+with debug options, although the "\fI.critcl\fR" file was.
+.IP [7]
+Fixed bug in \fBcritcl::debug\fR which prevented recognition of
+mode "all" when it was not the first argument to the command.
+.IP [8]
+Fixed bug in "\fIpreload.c\fR" preventing its compilation on
+non-windows platforms.
+.IP [9]
+Fixed long-standing bug in the handling of namespace qualifiers
+in the command name argument of \fBcritcl::cproc\fR and
+\fBcritcl::ccommand\fR. It is now possible to specify a fully
+qualified command name without issues.
+.IP [10]
+Extended/reworked \fBcritcl::tsources\fR to be the canonical
+way of declaring "\fI.tcl\fR" companion files even for mode "compile &
+run".
+.IP [11]
+Extended/reworked \fBcritcl::tsources\fR to allow the use of a
+"\fI.critcl\fR" file as its own Tcl companion file.
+.IP [12]
+Extended \fBcritcl::framework\fR to internally check for OS X
+build target, and to ignore the declaration if its not.
+.IP [13]
+Extended \fBcritcl::failed\fR to be callable more than once in
+a "\fI.critcl\fR" file. The first call forces the build, if it was not
+done already, to get the result. Further calls return the cached
+result of the first call.
+.IP [14]
+Extended the code handling the search for preloaded libraries
+to print the paths it searched, making debugging of a search failure
+easier.
+.IP [15]
+Extended the handling of environment variable CC in the code
+determining the compiler to use to deal with (i.e. remove) paths to
+the compiler, compiler file extensions, and compiler options specified
+after the compiler itself, leaving only the bare name of the compiler.
+.IP [16]
+A new command \fBcritcl::tcl\fR can be used to declare the
+version of Tcl minimally needed to build and run the "\fI.critcl\fR"
+file and package. Defaults to 8.4 if not declared. Extended critcl to
+have the stubs and headers for all of Tcl 8.4, 8.5, and 8.6.
+.IP [17]
+A new command \fBcritcl::load\fR forces the build and load of a
+"\fI.critcl\fR" file. This is the official way for overriding critcl's
+default lazy-build-&-load-on-demand scheme for mode "compile & run".
+.sp
+\fINote\fR that after using \fBcritcl::load\fR /
+\fBcritcl::failed\fR in a "\fI.critcl\fR" file it is not possible to
+use critcl commands in that file anymore. Doing so will throw an
+error.
+.IP [18]
+Extended the generation of '#line' pragmas to use
+\fBinfo frame\fR (if available) to provide the C compiler with exact
+line numbers into the "\fI.critcl\fR" file for the reporting of
+warnings and errors.
+.IP [19]
+Extended \fBcritcl::check\fR with logging to help with
+debugging build-time checks of the environment, plus an additional
+optional argument to provide labeling.
+.IP [20]
+Added a new command \fBcritcl::checklink\fR which not only
+tries to check the environment via compiling the code, but also
+its linkability.
+.IP [21]
+Added a new command \fBcritcl::msg\fR for messaging, like
+command \fBcritcl::error\fR is for error reporting. Likewise this is a
+hook a user of the package is allowed to override. The default
+implementation, used by mode \fIcompile & run\fR does nothing. The
+implementation for mode \fIgenerate package\fR prints the message
+to stdout.
+.sp
+Envisioned use is for the reporting of results determined by
+\fBcritcl::check\fR and \fBcritcl::checklink\fR during building, to
+help with debugging when something goes wrong with a check.
+.IP [22]
+Exposed the argument processing internals of \fBcritcl::proc\fR
+for use by advanced users. New commands
+.RS
+.IP [1]
+\fBcritcl::argnames\fR
+.IP [2]
+\fBcritcl::argcnames\fR
+.IP [3]
+\fBcritcl::argcsignature\fR
+.IP [4]
+\fBcritcl::argvardecls\fR
+.IP [5]
+\fBcritcl::argconversion\fR
+.RE
+See section \fBAdvanced Embedded C Code\fR for details.
+.IP [23]
+Dropped the unused commands \fBcritcl::optimize\fR and
+\fBcritcl::include\fR.
+.IP [24]
+Dropped \fB-lib\fR mode from the critcl application.
+.IP [25]
+Dropped remnants of support for Tcl 8.3 and before.
+.PP
+.SH AUTHORS
+Jean Claude Wippler, Steve Landers, Andreas Kupries
+.SH "BUGS, IDEAS, FEEDBACK"
+This document, and the package it describes, will undoubtedly contain
+bugs and other problems.
+Please report such at
+\fIhttps://chiselapp.com/user/andreas_kupries/repository/CriTcl/reportlist\fR.
+Please also report any ideas for enhancements you may have for either
+package and/or documentation.
+.PP
+\fINote\fR that this is not critcl's official bug tracker, but
+the repository where inofficial and experimental development of critcl
+is taking place. It is the best which can be done because an official
+bug tracker does not exist.
+.SH KEYWORDS
+C code, Embedded C Code, code generator, compile & run, compiler, dynamic code generation, dynamic compilation, generate package, linker, on demand compilation, on-the-fly compilation
+.SH CATEGORY
+Glueing C code
+.SH COPYRIGHT
+.nf
+Copyright (c) ???????????????????
+
+.fi

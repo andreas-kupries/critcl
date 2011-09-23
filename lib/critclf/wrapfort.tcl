@@ -70,7 +70,7 @@ proc ::Wrapfort::Output {code} {
     if { ! $incritcl } {
         puts $srcout $code
     } else {
-        ::critcl::emitln $code
+        ::critcl::Emitln $code
     }
 }
 proc ::Wrapfort::Output2 {code} {
@@ -80,6 +80,7 @@ proc ::Wrapfort::Output2 {code} {
     if { ! $incritcl } {
         puts $cmdout $code
     } else {
+	return -code error "Cmdemit does not exist!!"
         ::critcl::Cmdemit $code
     }
 }
