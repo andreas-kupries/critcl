@@ -20,7 +20,18 @@ proc usage {{status 1}} {
     }
 
     global argv0
-    puts stderr "Usage: $argv0 ?install ?dst?|starkit ?dst? ?interp?|starpack prefix ?dst?|help|recipes?"
+    set prefix "Usage: "
+    foreach c [lsort -dict [info commands _*]] {
+	set c [string range $c 1 end]
+	if {[catch {
+	    H${c}
+	} res]} {
+	    puts stderr "$prefix$argv0 $c args...\n"
+	} else {
+	    puts stderr "$prefix$argv0 $c $res\n"
+	}
+	set prefix "       "
+    }
     exit $status
 }
 proc +x {path} {
@@ -37,10 +48,12 @@ proc version {file} {
     #puts /$provisions/
     return [lindex $provisions 0 3]
 }
+proc Hhelp {} { return "\n\tPrint this help" }
 proc _help {} {
     usage 0
     return
 }
+proc Hrecipes {} { return "\n\tList all brew commands, without details." }
 proc _recipes {} {
     set r {}
     foreach c [info commands _*] {
@@ -49,6 +62,7 @@ proc _recipes {} {
     puts [lsort -dict $r]
     return
 }
+proc Hinstall {} { return "?destination?\n\tInstall all packages, and application.\n\tdestination = path of package directory, default \[info library\]." }
 proc _install {{dst {}}} {
     set version  [version [file dirname $::me]/lib/critcl/critcl.tcl]
 
@@ -104,6 +118,7 @@ proc _install {{dst {}}} {
     puts "Installed application: $dsta/critcl"
     return
 }
+proc Hstarkit {} { return "?destination? ?interpreter?\n\tGenerate a starkit\n\tdestination = path of result file, default 'critcl.kit'\n\tinterpreter = (path) name of tcl shell to use for execution, default 'tclkit'" }
 proc _starkit {{dst critcl.kit} {interp tclkit}} {
     package require vfs::mk4
 
@@ -120,6 +135,7 @@ proc _starkit {{dst critcl.kit} {interp tclkit}} {
     puts "Created starkit: $dst"
     return
 }
+proc Hstarpack {} { return "prefix ?destination?\n\tGenerate a fully-selfcontained executable, i.e. a starpack\n\tprefix      = path of tclkit/basekit runtime to use\n\tdestination = path of result file, default 'critcl'" }
 proc _starpack {prefix {dst critcl}} {
     package require vfs::mk4
 
