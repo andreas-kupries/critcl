@@ -3,6 +3,13 @@ The following options are understood
 
 [list_begin options]
 [comment %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%]
+[opt_def -v]
+[opt_def --version]
+
+These options cause critcl to print its version to [const stdout] and
+then exit.
+
+[comment %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%]
 [opt_def -I path]
 
 This option specifies an additional global include path to use during

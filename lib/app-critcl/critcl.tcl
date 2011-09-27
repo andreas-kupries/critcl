@@ -212,6 +212,10 @@ proc ::critcl::app::Cmdline {argv} {
 	    }
 	}
 	switch -exact -- $opt {
+	    v - -version {
+		puts stdout [package present critcl]
+		::exit 0
+	    }
 	    I          { AddIncludePath $arg }
 	    cache      { set v::cache $arg }
 	    clean      { incr cleaning }
@@ -1665,6 +1669,7 @@ namespace eval ::critcl::app {
 	I.arg cache.arg clean config.arg debug.arg force help
 	keep libdir.arg pkg show showall target.arg targets
 	test tea showtarget includedir.arg enable.arg disable.arg
+	v -version
     }
 
     # Application state
