@@ -150,4 +150,29 @@ proc _starpack {prefix {dst critcl}} {
     puts "Created starpack: $dst"
     return
 }
+proc Hexamples {} { return "?args...?\n\tWithout arguments, list the examples.\n\tOtherwise run the recipe with its arguments on the examples." }
+proc _examples {args} {
+    global me
+    set selfdir [file dirname $me]
+    set self    [file tail    $me]
+
+    # List examples, or run the build code on the examples, passing any arguments.
+
+    set examples [glob -directory $selfdir/examples */$self]
+
+    puts ""
+    if {![llength $args]} {
+	foreach b $examples {
+	    puts "* [file dirname $b]"
+	}
+    } else {
+	foreach b $examples {
+	    puts "$b _______________________________________________"
+	    eval [linsert $args 0 exec 2>@ stderr >@ stdout [info nameofexecutable] $b]
+	    puts ""
+	    puts ""
+	}
+    }
+    return
+}
 main

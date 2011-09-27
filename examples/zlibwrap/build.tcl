@@ -28,7 +28,18 @@ proc usage {{status 1}} {
     }
 
     global argv0
-    puts stderr "Usage: $argv0 ?install ?mode? ?dst?|help|recipes|wrap4tea ?dst??"
+    set prefix "Usage: "
+    foreach c [lsort -dict [info commands _*]] {
+	set c [string range $c 1 end]
+	if {[catch {
+	    H${c}
+	} res]} {
+	    puts stderr "$prefix$argv0 $c args...\n"
+	} else {
+	    puts stderr "$prefix$argv0 $c $res\n"
+	}
+	set prefix "       "
+    }
     exit $status
 }
 proc tag {t} {
@@ -85,10 +96,12 @@ proc version {file} {
     #puts /$provisions/
     return [lindex $provisions 0 3]
 }
+proc Hhelp {} { return "\n\tPrint this help" }
 proc _help {} {
     usage 0
     return
 }
+proc Hrecipes {} { return "\n\tList all brew commands, without details." }
 proc _recipes {} {
     set r {}
     foreach c [info commands _*] {
@@ -97,7 +110,8 @@ proc _recipes {} {
     puts [lsort -dict $r]
     return
 }
-proc _install {{mode {}} {ldir {}}} {
+proc Hinstall {} { return "?destination? ?mode?\n\tInstall all packages, and application.\n\tdestination = path of package directory, default \[info library\].\n\tmode        = Build mode, one of system, system-static, or local. Default is system." }
+proc _install {{ldir {}} {mode {}}} {
     global packages
     if {$ldir eq {}} {
 	set ldir [info library]
@@ -129,6 +143,7 @@ proc _install {{mode {}} {ldir {}}} {
     }
     return
 }
+proc Hgui {} { return "\n\tInstall all packages, and application.\n\tDone from a small GUI." }
 proc _gui {} {
     global INSTALLPATH
     package require Tk
@@ -191,6 +206,7 @@ proc Install {} {
     }
     return
 }
+proc Hwrap4tea {} { return "?destination?\n\tGenerate a source package with TEA-based build system wrapped around critcl.\n\tdestination = path of source package directory, default is sub-directory 'tea' of the CWD." }
 proc _wrap4tea {{dst {}}} {
     global packages
 
