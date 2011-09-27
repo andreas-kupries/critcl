@@ -6,44 +6,44 @@
 
 # Building Critcl
 
- *  The toplevel directory contains a Tcl script **brew.tcl** for
+ *  The toplevel directory contains a Tcl script **build.tcl** for
     building and installing Critcl in various forms. Here we describe
     only building and installation of the necessary packages, and the
     creation of critcl starkits. For more information run
 
-    ```% ./brew.tcl help```
+    ```% ./build.tcl help```
 
  *  Building and installing the package, and its support:
 
-    ```% ./brew.tcl install```
+    ```% ./build.tcl install```
 
     builds and installs the critcl package, and all supporting packages
     in the **[info library]** directory of the **tclsh** found in PATH and
-    used to run brew.tcl.
+    used to run build.tcl.
 
     Explicitly using a specific **tclsh**, like
 
-    ```% /path/to/tclsh ./brew.tcl install```
+    ```% /path/to/tclsh ./build.tcl install```
 
     will install the packages in the **[info library]** directory of
     that shell.
 
     Explicitly using a specific installation directory, like
 
-    ```% ./brew.tcl install /path/to/chosen/package/directory/```
+    ```% ./build.tcl install /path/to/chosen/package/directory/```
 
     will install all the packages there.
 
  *  Building a starkit is don via
 
-    ```% ./brew.tcl starkit```
+    ```% ./build.tcl starkit```
 
     This places the resulting file **critcl.kit** in the current
     working directory.
 
     Explicitly using a specific installation path, like
 
-    ```% ./brew.tcl starkit /path/to/chosen/critcl.kit```
+    ```% ./build.tcl starkit /path/to/chosen/critcl.kit```
 
     will put the generated starkit there.
 
