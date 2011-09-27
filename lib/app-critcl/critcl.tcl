@@ -191,6 +191,10 @@ proc ::critcl::app::Cmdline {argv} {
 	    Usage "Unknown option \"$opt\""
 	}
 	switch -exact -- $opt {
+	    v - -version {
+		puts stdout [package present critcl]
+		::exit 0
+	    }
 	    I          { critcl::config I $arg }
 	    cache      { set v::cache $arg }
 	    clean      { incr cleaning }
@@ -1032,7 +1036,7 @@ namespace eval ::critcl::app {
     variable options {
 	I.arg cache.arg clean config.arg debug.arg force help
 	keep libdir.arg pkg show showall target.arg targets
-	test
+	test v -version
     }
 
     # Application state
