@@ -68,12 +68,12 @@
 
  *  The source of the reference manpages for the main packages can be
     found in the sub-directory "doc/", with various (shared) text blocks
-    under "doc/include/". They written using 'doctools' markup (See
+    under "doc/include/". They are written using *doctools* markup (See
     Tcllib's doctools packages). The files match the pattern
     "doc/\*.man", and "doc/include/\*.inc".
 
  *  The files matching the pattern "doc/include/\*.dia" are diagram
-    specifications using the 'dia' markup language (See Tklib's diagram
+    specifications using the *dia* markup language (See Tklib's diagram
     packages). The files matching the pattern "doc/include/\*.png" are
     the diagrams saved as raster images in the PNG format.
 
