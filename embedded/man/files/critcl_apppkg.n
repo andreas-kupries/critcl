@@ -1,6 +1,8 @@
 '\"
-'\" Generated from file '/net/nas/data/andreask/Dev/Critcl/v21/embedded/man/files/critcl_apppkg.n' by tcllib/doctools with format 'nroff'
-'\" Copyright (c) ???????????????????
+'\" Generated from file '/net/nas/data/andreask/Dev/Critcl/github-ak-scratch/embedded/man/files/critcl_apppkg.n' by tcllib/doctools with format 'nroff'
+'\" Copyright (c) Jean-Claude Wippler
+'\" Copyright (c) Steve Landers
+'\" Copyright (c) 2011 Andreas Kupries
 '\"
 '\" The definitions below are for supplemental macros used in Tcl/Tk
 '\" manual entries.
@@ -294,10 +296,19 @@ in the document about \fIUsing CriTcl\fR.
 .SH OPTIONS
 The following options are understood
 .TP
+\fB-v\fR
+.TP
+\fB--version\fR
+These options cause critcl to print its version to \fBstdout\fR and
+then exit.
+.TP
 \fB-I\fR path
-This option specifies a single additional global include path to use
-during compilation of "\fI.critcl\fR" files. The last value will be
-used if this is specified multiple times.
+This option specifies an additional global include path to use during
+compilation of "\fI.critcl\fR" files. All values are used if this is
+specified multiple times.
+.sp
+This option is irrelevant when generating a TEA package (see
+option \fB-tea\fR below).
 .TP
 \fB-cache\fR path
 This option specifies the path to the directory to use as the result
@@ -305,13 +316,20 @@ cache. If not specified it defaults to "\fI~/.critcl/<platform>\fR",
 or, when generating a package (see option \fB-pkg\fR below), to
 "\fI~/.critcl/<pid>.<epoch>\fR",
 When specified multiple times the last value is used.
+.sp
+This option is irrelevant when generating a TEA package (see
+option \fB-tea\fR below).
 .TP
 \fB-clean\fR
 When specified the result cache is emptied, i.e. all files and
 directories found inside are deleted) before compilation begins.
+.sp
 This option is irrelevant when generating a package (see option
 \fB-pkg\fR below) because this mode starts out with a unique and
 empty result cache.
+.sp
+This option is irrelevant when generating a TEA package (see
+option \fB-tea\fR below).
 .TP
 \fB-config\fR path
 This option specifies the path to a custom configuration file,
@@ -319,11 +337,17 @@ allowing the user to use their own target specifications. If not
 specified a hardwired default configuration embedded in the system
 core is used instead.
 When specified multiple times the last value is used.
+.sp
+This option is irrelevant when generating a TEA package (see
+option \fB-tea\fR below).
 .TP
 \fB-debug\fR mode
 This option activates compilation with debugging. It accepts the modes
 below.
 When specified multiple times the combination of all modes is used.
+.sp
+This option is irrelevant when generating a TEA package (see
+option \fB-tea\fR below).
 .RS
 .TP
 \fBmemory\fR
@@ -338,15 +362,41 @@ symbols.
 This mode activates both \fBmemory\fR and \fBsymbols\fR.
 .RE
 .TP
+\fB-disable\fR name
+This option sets the value of the custom build configuration option
+\fIname\fR to \fBfalse\fR. It is equivalent to "-with-\fIname\fR 0".
+.sp
+The information is validated only if one of the "\fI.critcl\fR"
+input files actually defines and uses a custom build configuration
+option with that \fIname\fR.
+.sp
+This option is irrelevant when generating a TEA package (see
+option \fB-tea\fR below).
+.TP
+\fB-enable\fR name
+This option sets the value of the custom build configuration option
+\fIname\fR to \fBtrue\fR. It is equivalent to "-with-\fIname\fR 1".
+.sp
+The information is validated only if one of the "\fI.critcl\fR"
+input files actually defines and uses a custom build configuration
+option with that \fIname\fR.
+.sp
+This option is irrelevant when generating a TEA package (see
+option \fB-tea\fR below).
+.TP
 \fB-force\fR
 When specified compilation is always done, even if a shared library
 for the file exists already. This effect can be had through cleaning
 the cache (see above) as well, except that it is lazy in the
 destruction of files and will not destroy files unrelated to the ones
 we are building.
+.sp
 This option is irrelevant when generating a package (see option
 \fB-pkg\fR below) because this mode starts out with a unique and
 empty result cache.
+.sp
+This option is irrelevant when generating a TEA package (see
+option \fB-tea\fR below).
 .TP
 \fB-help\fR
 This option will cause the system to print a short help about command
@@ -359,6 +409,9 @@ When generating a package (see option \fB-pkg\fR below) this also
 prevents the deletion of the unique result cache used by the run.
 This option is intended for the debugging of \fBcritcl\fR itself,
 where it may be necessary to inspect the generated C code.
+.sp
+This option is irrelevant when generating a TEA package (see
+option \fB-tea\fR below).
 .TP
 \fB-libdir\fR path
 This option specifies the path under which the packages generated via
@@ -368,20 +421,37 @@ When not specified at all the default, "\fIlib\fR", is used. Note how
 this is a relative path, placing the result into the current working
 directory.
 .TP
+\fB-includedir\fR path
+This option specifies the path under which any generated package
+headers are saved. It also specifies a path to search include files
+in, like for -I.
+When specified multiple times the last value is used as destination,
+however all previous values are kept on the include search path.
+When not specified at all the default, "\fIinclude\fR", is used. Note
+how this is a relative path, placing the result into the current
+working directory.
+.sp
+This option is irrelevant when generating a TEA package (see
+option \fB-tea\fR below).
+.TP
 \fB-pkg\fR
 The default mode of the application is to build the "\fI.critcl\fR"
 files listed on the command line and save the results in the result
 cache. Essentially pre-filling the cache with important packages,
 cutting down on the time needed to use these packages.
 .sp
-This option activates the other mode, package generation.
+This option activates one of the other modes, package generation.
 In this mode the input files are processed first as usual, however
 after that they are bundled into a single library and additional files
 are generated to make this library usable as a regular Tcl package.
 .sp
+The option \fB-tea\fR, see below, invokes the last mode, TEA
+generation. If both options, i.e. \fB-pkg\fR and \fB-tea\fR are
+specified the last one specified wins.
+.sp
 In this mode the options \fB-clean\fR and \fB-force\fR are
 irrelevant and ignored. In contrast, the option \fB-libdir\fR is
-relevant only in this mode.
+relevant in both this and \fB-tea\fR mode.
 .sp
 When this option is specified the basename of the first file argument
 after the options is used as the name of the package to generate. If
@@ -448,6 +518,9 @@ Use option \fB-targets\fR (see below) to get a list of the
 acceptable targets.
 The choice of configuration file can be influenced through the option
 \fB-config\fR (see above).
+.sp
+This option is irrelevant when generating a TEA package (see
+option \fB-tea\fR below).
 .TP
 \fB-targets\fR
 This option, when specified, will cause the system to print the list
@@ -455,17 +528,90 @@ of all known targets from the chosen configuration file to
 \fBstdout\fR and then exit.
 The choice of configuration file can be influenced through the option
 \fB-config\fR (see above).
+.TP
+\fB-tea\fR
+Similar to option \fB-pkg\fR, except that the invoked mode does not
+generate binaries, but a directory hierarchy containing the
+"\fI.critcl\fR" file, its companion files, and a TEA-lookalike build
+system with most of the needed support code (incliding copies of the
+critcl packages).
+.sp
+If both options, i.e. \fB-pkg\fR and \fB-tea\fR are specified
+the last one specified wins.
+.sp
+In this mode the options \fB-clean\fR, \fB-force\fR,
+\fB-cache\fR, \fB-includedir\fR, \fB-enable\fR,
+\fB-disable\fR, and \fB-with-\fBFOO\fR\fR are irrelevant and
+ignored. In contrast, the option \fB-libdir\fR is relevant in both
+this and \fB-pkg\fR mode.
+.sp
+When this option is specified the basename of the first file argument
+after the options is used as the name of the package to generate. If
+the extension of that file indicates a shared library ("\fI.so\fR",
+"\fI.sl\fR", "\fI.dylib\fR", and "\fI.dll\fR") it is also removed from
+the set of input files. A "\fI.tcl\fR" file is kept as part of the
+input. A single file without extension is assumed to actually have a
+"\fI.tcl\fR" extension. A file without extension, but other input files
+following is treated like the name of a shared library proper, and
+removed from the set of input files.
+.sp
+Examples:
+.nf
+
+	... -tea ... foo
+
+	=> Package name is: foo
+	=> Input file is:   foo.tcl
+
+.fi
+.nf
+
+	... -tea ... foo bar.tcl
+
+	=> Package name is: foo
+	=> Input file is:   bar.tcl
+
+.fi
+.nf
+
+	... -tea ... foo.tcl
+
+	=> Package name is: foo
+	=> Input file is:   foo.tcl
+
+.fi
+.nf
+
+	... -tea ... foo.so bar.tcl
+
+	=> Package name is: foo
+	=> Input file is:   bar.tcl
+
+.fi
+.TP
+\fB-with-\fBname\fR\fR value
+This option sets the value of the custom build configuration option
+\fIname\fR to \fIvalue\fR.
+.sp
+The information is validated only if one of the "\fI.critcl\fR"
+input files actually defines and uses a custom build configuration
+option with that \fIname\fR.
+.sp
+This option is irrelevant when generating a TEA package (see
+option \fB-tea\fR above).
 .PP
 .SH "MODES OF OPERATION/USE"
-CriTcl can be used in two different modes of operation, called
+CriTcl can be used in three different modes of operation, called
 .IP [1]
 \fICompile & Run\fR, and
 .IP [2]
 \fIGenerate Package\fR
+.IP [3]
+\fIGenerate TEA Package\fR
 .PP
-Of these two \fICompile & Run\fR came first and is the default when
-using the package directly. In that case the package collects the C
-fragments, builds them as needed, and caches the results for quick
+Of these three \fICompile & Run\fR came first and is the default
+when using the package directly. In that case the package collects the
+C fragments, builds them as needed, and caches the results for quick
 reuse when the same code is used in the future again.
 .PP
 The second mode, \fIGenerate Package\fR, was introduced to enable
@@ -475,7 +621,19 @@ machine.
 This was originally done through the experimental \fBCritbind\fR tool,
 and is now handled by the \fICriTcl Application\fR, also named
 \fBcritcl\fR.
-.SH "PACKAGE STRUCTURE"		Packages generated by critcl have the following basic structure:
+.PP
+Newly introduced with Critcl version 3 is
+\fIGenerate TEA Package\fR. This mode constructs a directory
+hierarchy from the package which can later be built like a regular TEA
+package, i.e. using
+.nf
+
+	.../configure --prefix ...
+	make all isntall
+
+.fi
+.SH "PACKAGE STRUCTURE"
+Packages generated by critcl have the following basic structure:
 .nf
 
 <TOP>
@@ -590,14 +748,14 @@ a "\fI.critcl\fR" file. The first call forces the build, if it was not
 done already, to get the result. Further calls return the cached
 result of the first call.
 .IP [14]
-Extended the code handling the search for preloaded libraries
-to print the paths it searched, making debugging of a search failure
-easier.
-.IP [15]
 Extended the handling of environment variable CC in the code
 determining the compiler to use to deal with (i.e. remove) paths to
 the compiler, compiler file extensions, and compiler options specified
 after the compiler itself, leaving only the bare name of the compiler.
+.IP [15]
+Extended the code handling the search for preloaded libraries
+to print the paths it searched, making debugging of a search failure
+easier.
 .IP [16]
 A new command \fBcritcl::tcl\fR can be used to declare the
 version of Tcl minimally needed to build and run the "\fI.critcl\fR"
@@ -638,7 +796,7 @@ Envisioned use is for the reporting of results determined by
 help with debugging when something goes wrong with a check.
 .IP [22]
 Exposed the argument processing internals of \fBcritcl::proc\fR
-for use by advanced users. New commands
+for use by advanced users. The new commands are
 .RS
 .IP [1]
 \fBcritcl::argnames\fR
@@ -651,35 +809,117 @@ for use by advanced users. New commands
 .IP [5]
 \fBcritcl::argconversion\fR
 .RE
-See section \fBAdvanced Embedded C Code\fR for details.
+Please see section \fIAdvanced Embedded C Code\fR of the
+\fBcritcl\fR package documentation for details.
 .IP [23]
+Extended the critclk package to intercept \fBpackage
+provide\fR and record the file -> package name mapping. Plus other
+internal changes now allow the use of namespaced package names while
+still using proper path names and init function.
+.IP [24]
 Dropped the unused commands \fBcritcl::optimize\fR and
 \fBcritcl::include\fR.
-.IP [24]
-Dropped \fB-lib\fR mode from the critcl application.
 .IP [25]
+Dropped \fB-lib\fR mode from the critcl application.
+.IP [26]
 Dropped remnants of support for Tcl 8.3 and before.
+.PP
+.SH "CHANGES FOR VERSION 3"
+.IP [1]
+The command \fBcritcl::platform\fR was deprecated in version
+2.1, superceded by \fBcritcl::targetplatform\fR, yet kept for
+compatibility. Now it has been removed.
+.IP [2]
+The command \fBcritcl::compiled\fR was kept with in version 2.1
+with semantics in contradiction to its, for compatibility. This
+contradiction has been removed, changing the visible semantics of the
+command to be in line with its name.
+.IP [3]
+The change to version 3 became necessary because of the two
+incompatible visible changes above.
+.IP [4]
+Extended the application package with code handling a new
+option \fB-tea\fR. Specifying this option invokes a special mode
+where critcl generates a TEA package, i.e. wraps the input into a
+directory hierarchy and support files which provide it TEA-lookalike
+buildsystem.
+.sp
+This new option, and \fB-pkg\fR, exclude each other. If
+both are specified the last used option takes precedence.
+.sp
+The generated package directory hierarchy is mostly
+self-contained, but not fully. It requires not only a working
+installation of Tcl, but also working installations of the packages
+\fBmd5\fR and \fBcmdline\fR. Both of these are provided by the
+\fBTcllib\fR bundle. Not required, but recommended to have
+installed are any of the packages which can accelerate md5's
+operation, i.e. \fBcryptkit\fR, \fBtcllibc\fR, or
+\fBTrf\fR.
+.IP [5]
+Extended the critcl package with a new command
+\fBcritcl::scan\fR taking the path to a "\fI.critcl\fR" file,
+statically scanning it, and returning license, version, a list of its
+companion files, list of imported APIs, and list of
+developer-specified custom configuration options. This data is the
+foundation for the TEA wrapping described above.
+.sp
+Note that this is a \fIstatic\fR scan. While the other build
+modes can (must) execute the "\fI.critcl\fR" file and make
+platform-specific decisions regarding the assembled C code, companion
+files, etc. the TEA wrap mode is not in a position to make
+platform-specific decisions. It has to wrap everything which might
+conceivably be needed when actually building. Hence the static scan.
+This has however its own set of problems, namely the inability to
+figure out any dynamic construction of companion file paths, at least
+on its own. Thus:
+.IP [6]
+Extended the API used by critcl-based packages with the command
+\fBcritcl::owns\fR. While this command is ignored by the regular build
+modes the static scanner described above takes its arguments as the
+names of companion files which have to be wrapped into the TEA package
+and could not be figured by the scanner otherwise, like because of
+dynamic paths to \fBcritcl::tsources\fR, \fBcritcl::csources\fR,
+getting sourced directly, or simply being adjunct datafiles.
+.IP [7]
+Extended the API used by critcl-based packages with the command
+\fBcritcl::api\fR for the management of stubs tables, be it their use,
+and/or declaration and export.
+.sp
+Please see section \fIStubs Table Management\fR of the
+\fBcritcl\fR package documentation for details.
+.IP [8]
+Extended the API used by critcl-based packages with the command
+\fBcritcl::userconfig\fR for the management of developer-specified
+custom configuration options, be it their use and/or declaration.
+.sp
+Please see section \fICustom Build Configuration\fR of the
+\fBcritcl\fR package documentation for details.
+.IP [9]
+Extended the API used by critcl-based packages with the
+commands \fBcritcl::description\fR, \fBcritcl::summary\fR,
+\fBcritcl::subject\fR, \fBcritcl::meta\fR, and
+\fBcritcl::buildrequirement\fR for the declaration of TEApot meta data
+for/about the package.
+.sp
+Please see section \fIPackage Meta Data\fR of the
+\fBcritcl\fR package documentation for details.
 .PP
 .SH AUTHORS
 Jean Claude Wippler, Steve Landers, Andreas Kupries
 .SH "BUGS, IDEAS, FEEDBACK"
 This document, and the package it describes, will undoubtedly contain
 bugs and other problems.
-Please report such at
-\fIhttps://chiselapp.com/user/andreas_kupries/repository/CriTcl/reportlist\fR.
+Please report such at \fIhttps://github.com/jcw/critcl\fR.
 Please also report any ideas for enhancements you may have for either
 package and/or documentation.
-.PP
-\fINote\fR that this is not critcl's official bug tracker, but
-the repository where inofficial and experimental development of critcl
-is taking place. It is the best which can be done because an official
-bug tracker does not exist.
 .SH KEYWORDS
 C code, Embedded C Code, code generator, compile & run, compiler, dynamic code generation, dynamic compilation, generate package, linker, on demand compilation, on-the-fly compilation
 .SH CATEGORY
-Glueing C code
+Glueing/Embedded C code
 .SH COPYRIGHT
 .nf
-Copyright (c) ???????????????????
+Copyright (c) Jean-Claude Wippler
+Copyright (c) Steve Landers
+Copyright (c) 2011 Andreas Kupries
 
 .fi

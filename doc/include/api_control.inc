@@ -1,5 +1,5 @@
 
-The package provides eleven commands to control the details of
+The package provides twelve commands to control the details of
 compilation and linking, enabling [file .critcl] files to provide
 custom information about their environment and dependencies.
 
@@ -24,7 +24,7 @@ and header locations.
 forwarded to the compiler's command line when it is invoked for the
 current [file .critcl] file.
 
-[para] All other arguments are interpreted glob pattern and the
+[para] All other arguments are interpreted as glob pattern and the
 matching files are made available to the compiler when it is invoked
 for the current [file .critcl] file. Patterns matching no file or
 non-existing files cause the command to throw an error.
@@ -90,8 +90,9 @@ information.
 [comment ---------------------------------------------------------------------]
 [call [cmd ::critcl::tsources] [arg pattern]...]
 
-This command provides the critcl with additional Tcl script files to
-source when the shared library is loaded.
+This command provides the critcl package with information about
+additional Tcl script files to source when the shared library is
+loaded.
 
 [para] All arguments are considered as glob patterns and the matching
 files are made available to generated shared library when it is loaded
@@ -107,6 +108,21 @@ information.
 
 [para] The declared files are sourced after the shared library has
 been loaded, in the same order they were provided to [cmd critcl::tsources].
+
+[comment ---------------------------------------------------------------------]
+[call [cmd ::critcl::owns] [arg pattern]...]
+
+This command is ignored by the regular build modes, i.e. both "compile
+and run", and "generate package". It is present to support the static
+code scanner of critcl v3's new mode to "generate TEA" packages.
+
+[para] In that situation it provides the critcl package with
+information about any files which have to be wrapped and could not be
+figured out from the previous commands (i.e. [cmd critcl::csources],
+[cmd critcl::tsources]) because of getting specified dynamically, or
+getting directly sourced and this not visible to critcl in any other
+way.
+
 
 [comment ---------------------------------------------------------------------]
 [call [cmd ::critcl::cflags] [opt [arg arg]...]]
@@ -178,23 +194,6 @@ If you are a developer wishing to understand or modify the internals
 of the [package critcl] package then you possibly should read the
 section explaining how the [sectref {Preloading functionality}] is
 implemented.
-
-[comment ---------------------------------------------------------------------]
-[call [cmd ::critcl::license] [arg author] [opt [arg text]...]]
-
-This command provides information about the author of the package, and
-its license.
-
-[para] If no [arg text] is present the command expects to find a file
-[file license.terms] in the same directory as the [file .critcl] file
-and reads the license from that. Otherwise the license is the joined
-[arg text]s.
-
-[para] This information, the license, is ignored in mode "compile &
-run", only mode "generate package" uses it. In that case the
-information is written to a file [file license.terms], a sibling to
-the [file pkgIndex.tcl] file in the directory hierarchy of the
-generated package.
 
 [comment ---------------------------------------------------------------------]
 [call [cmd ::critcl::debug] [arg area]...]

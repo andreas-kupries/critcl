@@ -1403,7 +1403,7 @@ typedef struct TkIntXlibStubs {
 #ifdef __cplusplus
 extern "C" {
 #endif
-extern TkIntXlibStubs *tkIntXlibStubsPtr;
+extern const TkIntXlibStubs *tkIntXlibStubsPtr;
 #ifdef __cplusplus
 }
 #endif

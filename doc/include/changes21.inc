@@ -51,14 +51,14 @@ a [file .critcl] file. The first call forces the build, if it was not
 done already, to get the result. Further calls return the cached
 result of the first call.
 
-[enum] Extended the code handling the search for preloaded libraries
-to print the paths it searched, making debugging of a search failure
-easier.
-
 [enum] Extended the handling of environment variable CC in the code
 determining the compiler to use to deal with (i.e. remove) paths to
 the compiler, compiler file extensions, and compiler options specified
 after the compiler itself, leaving only the bare name of the compiler.
+
+[enum] Extended the code handling the search for preloaded libraries
+to print the paths it searched, making debugging of a search failure
+easier.
 
 [enum] A new command [cmd critcl::tcl] can be used to declare the
 version of Tcl minimally needed to build and run the [file .critcl]

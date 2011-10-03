@@ -250,6 +250,9 @@ critcl_app
 \fBfiles/critcl_apppkg.n\fR
 critcl::app
 .TP
+\fBfiles/critcl_introduction.n\fR
+critcl_introduction
+.TP
 \fBfiles/critcl_pkg.n\fR
 critcl
 .TP
@@ -267,6 +270,9 @@ critcl_app
 .TP
 \fBfiles/critcl_apppkg.n\fR
 critcl::app
+.TP
+\fBfiles/critcl_introduction.n\fR
+critcl_introduction
 .TP
 \fBfiles/critcl_pkg.n\fR
 critcl
@@ -286,6 +292,9 @@ critcl_app
 \fBfiles/critcl_apppkg.n\fR
 critcl::app
 .TP
+\fBfiles/critcl_introduction.n\fR
+critcl_introduction
+.TP
 \fBfiles/critcl_pkg.n\fR
 critcl
 .TP
@@ -303,6 +312,9 @@ critcl_app
 .TP
 \fBfiles/critcl_apppkg.n\fR
 critcl::app
+.TP
+\fBfiles/critcl_introduction.n\fR
+critcl_introduction
 .TP
 \fBfiles/critcl_pkg.n\fR
 critcl
@@ -322,6 +334,9 @@ critcl_app
 \fBfiles/critcl_apppkg.n\fR
 critcl::app
 .TP
+\fBfiles/critcl_introduction.n\fR
+critcl_introduction
+.TP
 \fBfiles/critcl_pkg.n\fR
 critcl
 .TP
@@ -339,6 +354,9 @@ critcl_app
 .TP
 \fBfiles/critcl_apppkg.n\fR
 critcl::app
+.TP
+\fBfiles/critcl_introduction.n\fR
+critcl_introduction
 .TP
 \fBfiles/critcl_pkg.n\fR
 critcl
@@ -358,6 +376,9 @@ critcl_app
 \fBfiles/critcl_apppkg.n\fR
 critcl::app
 .TP
+\fBfiles/critcl_introduction.n\fR
+critcl_introduction
+.TP
 \fBfiles/critcl_pkg.n\fR
 critcl
 .TP
@@ -375,6 +396,9 @@ critcl_app
 .TP
 \fBfiles/critcl_apppkg.n\fR
 critcl::app
+.TP
+\fBfiles/critcl_introduction.n\fR
+critcl_introduction
 .TP
 \fBfiles/critcl_pkg.n\fR
 critcl
@@ -394,6 +418,9 @@ critcl_app
 \fBfiles/critcl_apppkg.n\fR
 critcl::app
 .TP
+\fBfiles/critcl_introduction.n\fR
+critcl_introduction
+.TP
 \fBfiles/critcl_pkg.n\fR
 critcl
 .TP
@@ -412,6 +439,9 @@ critcl_app
 \fBfiles/critcl_apppkg.n\fR
 critcl::app
 .TP
+\fBfiles/critcl_introduction.n\fR
+critcl_introduction
+.TP
 \fBfiles/critcl_pkg.n\fR
 critcl
 .TP
@@ -429,6 +459,9 @@ critcl_app
 .TP
 \fBfiles/critcl_apppkg.n\fR
 critcl::app
+.TP
+\fBfiles/critcl_introduction.n\fR
+critcl_introduction
 .TP
 \fBfiles/critcl_pkg.n\fR
 critcl

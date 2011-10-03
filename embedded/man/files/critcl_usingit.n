@@ -1,6 +1,8 @@
 '\"
-'\" Generated from file '/net/nas/data/andreask/Dev/Critcl/v21/embedded/man/files/critcl_usingit.n' by tcllib/doctools with format 'nroff'
-'\" Copyright (c) ???????????????????
+'\" Generated from file '/net/nas/data/andreask/Dev/Critcl/github-ak-scratch/embedded/man/files/critcl_usingit.n' by tcllib/doctools with format 'nroff'
+'\" Copyright (c) Jean-Claude Wippler
+'\" Copyright (c) Steve Landers
+'\" Copyright (c) 2011 Andreas Kupries
 '\"
 '\" The definitions below are for supplemental macros used in Tcl/Tk
 '\" manual entries.
@@ -1461,21 +1463,17 @@ Jean Claude Wippler, Steve Landers, Andreas Kupries
 .SH "BUGS, IDEAS, FEEDBACK"
 This document, and the package it describes, will undoubtedly contain
 bugs and other problems.
-Please report such at
-\fIhttps://chiselapp.com/user/andreas_kupries/repository/CriTcl/reportlist\fR.
+Please report such at \fIhttps://github.com/jcw/critcl\fR.
 Please also report any ideas for enhancements you may have for either
 package and/or documentation.
-.PP
-\fINote\fR that this is not critcl's official bug tracker, but
-the repository where inofficial and experimental development of critcl
-is taking place. It is the best which can be done because an official
-bug tracker does not exist.
 .SH KEYWORDS
 C code, Embedded C Code, code generator, compile & run, compiler, dynamic code generation, dynamic compilation, generate package, linker, on demand compilation, on-the-fly compilation
 .SH CATEGORY
-Glueing C code
+Glueing/Embedded C code
 .SH COPYRIGHT
 .nf
-Copyright (c) ???????????????????
+Copyright (c) Jean-Claude Wippler
+Copyright (c) Steve Landers
+Copyright (c) 2011 Andreas Kupries
 
 .fi

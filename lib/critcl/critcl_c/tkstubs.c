@@ -1,11 +1,11 @@
 
 #if USE_TK_STUBS
 
-    TkStubs *tkStubsPtr;
-    struct TkPlatStubs *tkPlatStubsPtr;
-    struct TkIntStubs *tkIntStubsPtr;
-    struct TkIntPlatStubs *tkIntPlatStubsPtr;
-    struct TkIntXlibStubs *tkIntXlibStubsPtr;
+    const TkStubs *tkStubsPtr;
+    const struct TkPlatStubs *tkPlatStubsPtr;
+    const struct TkIntStubs *tkIntStubsPtr;
+    const struct TkIntPlatStubs *tkIntPlatStubsPtr;
+    const struct TkIntXlibStubs *tkIntXlibStubsPtr;
 
   static int
   MyInitTkStubs (Tcl_Interp *ip)

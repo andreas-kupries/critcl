@@ -1,8 +1,8 @@
 # Compiled Runtime In Tcl
 
- *  This is version 2.1 of Critcl. It is API-compatible with Critcl
-    version 2, with some extensions. It is a bug fix release with
-    a major reworking of the internals hidden underneath.
+ *  This is version 3 of Critcl, with several new features, listed
+    below. This version has changes to the public API which make it
+    incompatible with packages using Critcl version 2.x, or earlier.
 
 # Building Critcl
 
@@ -47,22 +47,33 @@
 
     will put the generated starkit there.
 
-# Changes
+# New Features
 
- *  Please read the 'Changes' sections in the reference manpages, or
-    the files "doc/include/changes\*.inc" which are the shared source
-    of said sections.
+ *  Here we provide only a short list of the features. For more details
+    see the 'Changes' sections in the reference manpages, or the files
+    "doc/include/changes\*.inc" which are the shared source of said
+    sections.
+
+ *  Declaration, export and import of C-APIs through stubs tables.
+
+ *  Generation of source packages from critcl-based code containing a
+    TEA-based buildsystem wrapped around the raw critcl.
+
+ *  Declaration, initializaton and use of user-specified configuration
+    options. An important use is the declaration and use of custom
+    build configurations, like 'link a 3rd party library dynamically,
+    statically, build it from copy of its sources, etc.', etc.
 
 # Documentation
 
  *  The source of the reference manpages for the main packages can be
     found in the sub-directory "doc/", with various (shared) text blocks
-    under "doc/include/". They written using 'doctools' markup (See
+    under "doc/include/". They are written using *doctools* markup (See
     Tcllib's doctools packages). The files match the pattern
     "doc/\*.man", and "doc/include/\*.inc".
 
  *  The files matching the pattern "doc/include/\*.dia" are diagram
-    specifications using the 'dia' markup language (See Tklib's diagram
+    specifications using the *dia* markup language (See Tklib's diagram
     packages). The files matching the pattern "doc/include/\*.png" are
     the diagrams saved as raster images in the PNG format.
 

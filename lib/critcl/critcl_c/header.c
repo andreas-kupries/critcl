@@ -2,5 +2,5 @@
  * source: $file
  * binary: $libfile
  */
-
+$api
 #include "tcl.h"

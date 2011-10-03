@@ -17,6 +17,8 @@ regardless of their file extension.
 }]
 
 [subsection {Embedded C Code}]		[include include/api_embedc.inc]
+[subsection {Stubs Table Management}]	[include include/api_stubs.inc]
+[subsection {Package Meta Data}]	[include include/api_meta.inc]
 [subsection {Control & Interface}]	[include include/api_control.inc]
 [subsection {Introspection}]		[include include/api_introspection.inc]
 [subsection {Build Management}]		[include include/api_bmgmt.inc]
@@ -24,3 +26,4 @@ regardless of their file extension.
 [subsection {Build Configuration}]	[include include/api_bconfig.inc]
 [subsection {Tool API}]			[include include/api_tools.inc]
 [subsection {Advanced Embedded C Code}]	[include include/api_aembedc.inc]
+[subsection {Custom Build Configuration}][include include/api_cbconfig.inc]

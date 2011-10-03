@@ -96,6 +96,20 @@ proc _install {{dst {}}} {
 
     puts "Installed package:     $dstl/critcl-app$version"
 
+    # Package: dict84, lassign84, both under util84
+    file copy   -force [file dirname $::me]/lib/util84 $dstl/util84-new
+    file delete -force $dstl/util84
+    file rename        $dstl/util84-new $dstl/util84
+
+    puts "Installed package:     $dstl/util84 (dict84, lassign84 bundle)"
+
+    # Package: stubs::*, all under stubs
+    file copy   -force [file dirname $::me]/lib/stubs $dstl/stubs-new
+    file delete -force $dstl/stubs
+    file rename        $dstl/stubs-new $dstl/stubs
+
+    puts "Installed package:     $dstl/stubs (stubs::* bundle)"
+
     set    c [open $dsta/critcl w]
     puts  $c "#!/bin/sh\n# -*- tcl -*- \\\nexec tclsh \"\$0\" \$\{1+\"\$@\"\}\npackage require critcl::app\ncritcl::app::main \$argv"
     close $c
@@ -134,6 +148,31 @@ proc _starpack {prefix {dst critcl}} {
     +x $dst
 
     puts "Created starpack: $dst"
+    return
+}
+proc Hexamples {} { return "?args...?\n\tWithout arguments, list the examples.\n\tOtherwise run the recipe with its arguments on the examples." }
+proc _examples {args} {
+    global me
+    set selfdir [file dirname $me]
+    set self    [file tail    $me]
+
+    # List examples, or run the build code on the examples, passing any arguments.
+
+    set examples [glob -directory $selfdir/examples */$self]
+
+    puts ""
+    if {![llength $args]} {
+	foreach b $examples {
+	    puts "* [file dirname $b]"
+	}
+    } else {
+	foreach b $examples {
+	    puts "$b _______________________________________________"
+	    eval [linsert $args 0 exec 2>@ stderr >@ stdout [info nameofexecutable] $b]
+	    puts ""
+	    puts ""
+	}
+    }
     return
 }
 main
