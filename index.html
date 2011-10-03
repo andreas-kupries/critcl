@@ -32,10 +32,12 @@
 
 <body>
   <a href="http://github.com/jcw/critcl"><img style="position: absolute; top: 0; right: 0; border: 0;" src="http://s3.amazonaws.com/github/ribbons/forkme_right_darkblue_121621.png" alt="Fork me on GitHub" /></a>
+  <img style="position: absolute; top: 0; left: 1%; border: 0;" src="artwork/critcl.gif">
 
   <div id="container">
-
     <div class="download">
+      <a href="download/critcl3.kit">
+        <img border="0" width="90" src="artwork/starkit_download.png"></a>
       <a href="http://github.com/jcw/critcl/zipball/master">
         <img border="0" width="90" src="http://github.com/images/modules/download/zip.png"></a>
       <a href="http://github.com/jcw/critcl/tarball/master">
@@ -46,32 +48,71 @@
       <span class="small">by <a href="http://github.com/jcw">jcw</a></span></h1>
 
     <div class="description">
-      Critcl lets you easily embed C code in Tcl
+      Critcl lets you easily embed C code in Tcl.
+      <p>For more background see
+      <a href="http://equi4.com/starkit/critcl.html">http://equi4.com/starkit/critcl.html</a></p>
     </div>
 
-    <h2>Authors</h2>
-<p>Arjen Markus (arjen.markus@wldelft.nl)<br/>Jean-Claude Wippler (jc@wippler.nl)<br/>Pat Thoyts (patthoyts@users.sourceforge.net)<br/>Steve Landers (steve@digitalsmarties.com)<br/><br/>      </p>
+    <p>.
+
+</p><h2>Dependencies</h2>
+<p><ul>
+<li><a href="http://core.tcl.tk/">Tcl</a>
+<li><a href="http://core.tcl.tk/">platform</a> (part of newer Tcl distributions)
+<li><a href="http://sourceforge.net/projects/tcllib">md5</a>
+<li><a href="http://sourceforge.net/projects/tcllib">cmdline</a>
+<li><a href="http://sourceforge.net/projects/tcllib">md5c</a> (accelerator for md5)
+<li><a href="http://sourceforge.net/projects/tcltrf">Trf</a> (alternate accelerator for md5)
+</ul></p>
+<p>The repository contains copies of the sources of most of these dependencies.
+The exceptions are Tcl itself, and Trf.
+</p>
+<h2>Install</h2>
+<p>
+Just run<br/>
+<pre>$ ./build.tcl install</pre><br/>
+This is the most simple form. More forms are explained in the README.md.
+</p>
+<h2>License</h2>
+<p>BSD</p>
+<h2>Authors</h2>
+<p>
+Andreas Kupries (akupries@shaw.ca)<br/>
+Arjen Markus (arjen.markus@wldelft.nl)<br/>
+Jean-Claude Wippler (jc@wippler.nl)<br/>
+Pat Thoyts (patthoyts@users.sourceforge.net)<br/>
+Steve Landers (steve@digitalsmarties.com)<br/><br/>
+</p>
 <h2>Contact</h2>
-<p>Jean-Claude Wippler (jc@wippler.nl)<br/>      </p>
+<p>Andreas Kupries (akupries@shaw.ca)<br/>      </p>
+
+<h2>Documentation</h2>
+
+<p><a href="doc/toc.html">Introduction, and reference manpages</a>
+</p>
+
+<h2>Download</h2>
+<p>Get a <a href="http://wiki.tcl.tk/starkit">starkit</a> of the application, with all but the C accelerator packages:
+<ul>
+<li><a href="download/critcl3.kit">Critcl 3 [8c19cbe]</a>
+</li>
+</ul>
+</p>
+<p>
+  You can download this project in either
+  <a href="http://github.com/jcw/critcl/zipball/master">zip</a> or
+  <a href="http://github.com/jcw/critcl/tarball/master">tar</a> formats.
+</p>
+<p>You can also clone the project with <a href="http://git-scm.com">Git</a>
+  by running:
+  <pre>$ git clone git://github.com/jcw/critcl</pre>
+</p>
 
 
-    <h2>Download</h2>
-    <p>
-      You can download this project in either
-      <a href="http://github.com/jcw/critcl/zipball/master">zip</a> or
-      <a href="http://github.com/jcw/critcl/tarball/master">tar</a> formats.
-    </p>
-    <p>You can also clone the project with <a href="http://git-scm.com">Git</a>
-      by running:
-      <pre>$ git clone git://github.com/jcw/critcl</pre>
-    </p>
-
-    <div class="footer">
-      get the source code on GitHub : <a href="http://github.com/jcw/critcl">jcw/critcl</a>
-    </div>
-
+  <div class="footer">
+    Get the source code on GitHub : <a href="http://github.com/jcw/critcl">jcw/critcl</a>
   </div>
+</div>
 
-  
 </body>
 </html>
