@@ -18,7 +18,7 @@
 ## Implementation.
 
 namespace eval ::clist {
-    namespace export map foldr filter
+    namespace export map foldl filter
     namespace ensemble create
 }
 

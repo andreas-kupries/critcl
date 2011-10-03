@@ -7,12 +7,14 @@
 
 # Example of using a Tcl companion file to put a layer of structure
 # (and/or policy) on top of a set of C primitives.
+#
+# Here: Export of the primitives as an ensemble.
 
 # # ## ### ##### ######## ############# #####################
 ## Requirements
 
 package require Tcl 8.5
-package require critcl 3 ;# stubs management
+package require critcl 3
 
 # # ## ### ##### ######## ############# #####################
 ## Administrivia
@@ -29,8 +31,8 @@ critcl::description {
 }
 
 critcl::subject {list processing} {extended list processing}
-critcl::subject map foldr filter
-critcl::subject {list map} {list foldr} {list filter}
+critcl::subject map foldl filter
+critcl::subject {list map} {list foldl} {list filter}
 
 # # ## ### ##### ######## ############# #####################
 ## Configuration
@@ -194,7 +196,7 @@ abort:
 
 # # ## ### ##### ######## ############# #####################
 
-critcl::cproc ::clist::foldr {
+critcl::cproc ::clist::foldl {
     Tcl_Interp* interp
     Tcl_Obj* cmdprefix
     Tcl_Obj* initial
@@ -204,7 +206,7 @@ critcl::cproc ::clist::foldr {
      * -----------------------------------------------------
      * set result $initial
      * foreach e $list {
-     *     set result [{*}$cmdprefix $initial $e]
+     *     set result [{*}$cmdprefix $result $e]
      * }
      * return $result
      * -----------------------------------------------------
