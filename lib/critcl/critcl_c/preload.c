@@ -88,7 +88,9 @@ Critcl_Preload(
     Tcl_LoadHandle loadHandle;
     Tcl_FSUnloadFileProc *unLoadProcPtr = NULL;
     Tcl_Filesystem *fsPtr;
+#ifdef WIN32
     PreloadInfo	*preload = NULL;
+#endif
 
     if (objc != 2) {
         Tcl_WrongNumArgs(interp, 1, objv, "fileName");
@@ -101,13 +103,15 @@ Critcl_Preload(
 #ifdef WIN32
     // if the filesystem holding the dll doesn't support direct loading
     // we need to copy it to a temporary directory and load it from there
-    //  - critcl2::precopy is defined in critcl/lib/app-critcl/runtime.tcl
+    //  - The command "critcl::runtime::precopy" is defined by the support
+    //    file "critcl/lib/app-critcl/runtime.tcl". At load time this is
+    //    the file "critcl-rt.tcl", sibling to "pkgIndex.tcl".
 
     if ((fsPtr = Tcl_FSGetFileSystemForPath(objv[1])) != NULL \
 		&& fsPtr->loadFileProc == NULL) {
 	int len;
 	Tcl_Obj *dirs;
-	objv[0] = Tcl_NewStringObj("::critcl2::precopy", -1);
+	objv[0] = Tcl_NewStringObj("::critcl::runtime::precopy", -1);
 	if ((code = Tcl_EvalObjv(interp, 2, objv, 0)) != TCL_OK) {
 	    Tcl_SetErrorCode(interp, "could not preload ",
 				      Tcl_GetString(objv[1]), 0);
@@ -140,12 +144,12 @@ Preload_Init(Tcl_Interp *interp)
 {
     if (!MyInitTclStubs(interp)) 
         return TCL_ERROR;
-    // the Tcl command can't be "preload" because the Tcl source
-    // might be copied into the target package (so Tcl procs are
-    // available) and we want critcl::preload to then be a no-op
-    // because the preloading is done from the loadlib command when
-    // the target package is loaded
-    Tcl_CreateObjCommand(interp, "::critcl2::preload", Critcl_Preload, NULL, 0);
+    // The Tcl command can't be "preload" because the Tcl source might
+    // be copied into the target package (so Tcl procs are available)
+    // and we want critcl::runtime::preload to then be a no-op because
+    // the preloading is done from the loadlib command when the target
+    // package is loaded
+    Tcl_CreateObjCommand(interp, "::critcl::runtime::preload", Critcl_Preload, NULL, 0);
     return 0;
 }
 
@@ -154,7 +158,7 @@ Preload_SafeInit(Tcl_Interp *interp)
 {
     if (!MyInitTclStubs(interp)) 
         return TCL_ERROR;
-    Tcl_CreateObjCommand(interp, "::critcl2::preload", Critcl_Preload, NULL, 0);
+    Tcl_CreateObjCommand(interp, "::critcl::runtime::preload", Critcl_Preload, NULL, 0);
     return 0;
 }
 

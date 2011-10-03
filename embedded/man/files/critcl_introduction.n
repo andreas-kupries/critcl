@@ -1,0 +1,551 @@
+'\"
+'\" Generated from file '/net/nas/data/andreask/Dev/Critcl/github-ak-scratch/embedded/man/files/critcl_introduction.n' by tcllib/doctools with format 'nroff'
+'\" Copyright (c) Jean-Claude Wippler
+'\" Copyright (c) Steve Landers
+'\" Copyright (c) 2011 Andreas Kupries
+'\"
+'\" The definitions below are for supplemental macros used in Tcl/Tk
+'\" manual entries.
+'\"
+'\" .AP type name in/out ?indent?
+'\"	Start paragraph describing an argument to a library procedure.
+'\"	type is type of argument (int, etc.), in/out is either "in", "out",
+'\"	or "in/out" to describe whether procedure reads or modifies arg,
+'\"	and indent is equivalent to second arg of .IP (shouldn't ever be
+'\"	needed;  use .AS below instead)
+'\"
+'\" .AS ?type? ?name?
+'\"	Give maximum sizes of arguments for setting tab stops.  Type and
+'\"	name are examples of largest possible arguments that will be passed
+'\"	to .AP later.  If args are omitted, default tab stops are used.
+'\"
+'\" .BS
+'\"	Start box enclosure.  From here until next .BE, everything will be
+'\"	enclosed in one large box.
+'\"
+'\" .BE
+'\"	End of box enclosure.
+'\"
+'\" .CS
+'\"	Begin code excerpt.
+'\"
+'\" .CE
+'\"	End code excerpt.
+'\"
+'\" .VS ?version? ?br?
+'\"	Begin vertical sidebar, for use in marking newly-changed parts
+'\"	of man pages.  The first argument is ignored and used for recording
+'\"	the version when the .VS was added, so that the sidebars can be
+'\"	found and removed when they reach a certain age.  If another argument
+'\"	is present, then a line break is forced before starting the sidebar.
+'\"
+'\" .VE
+'\"	End of vertical sidebar.
+'\"
+'\" .DS
+'\"	Begin an indented unfilled display.
+'\"
+'\" .DE
+'\"	End of indented unfilled display.
+'\"
+'\" .SO
+'\"	Start of list of standard options for a Tk widget.  The
+'\"	options follow on successive lines, in four columns separated
+'\"	by tabs.
+'\"
+'\" .SE
+'\"	End of list of standard options for a Tk widget.
+'\"
+'\" .OP cmdName dbName dbClass
+'\"	Start of description of a specific option.  cmdName gives the
+'\"	option's name as specified in the class command, dbName gives
+'\"	the option's name in the option database, and dbClass gives
+'\"	the option's class in the option database.
+'\"
+'\" .UL arg1 arg2
+'\"	Print arg1 underlined, then print arg2 normally.
+'\"
+'\" RCS: @(#) $Id: man.macros,v 1.1 2009/01/30 04:56:47 andreas_kupries Exp $
+'\"
+'\"	# Set up traps and other miscellaneous stuff for Tcl/Tk man pages.
+.if t .wh -1.3i ^B
+.nr ^l \n(.l
+.ad b
+'\"	# Start an argument description
+.de AP
+.ie !"\\$4"" .TP \\$4
+.el \{\
+.   ie !"\\$2"" .TP \\n()Cu
+.   el          .TP 15
+.\}
+.ta \\n()Au \\n()Bu
+.ie !"\\$3"" \{\
+\&\\$1	\\fI\\$2\\fP	(\\$3)
+.\".b
+.\}
+.el \{\
+.br
+.ie !"\\$2"" \{\
+\&\\$1	\\fI\\$2\\fP
+.\}
+.el \{\
+\&\\fI\\$1\\fP
+.\}
+.\}
+..
+'\"	# define tabbing values for .AP
+.de AS
+.nr )A 10n
+.if !"\\$1"" .nr )A \\w'\\$1'u+3n
+.nr )B \\n()Au+15n
+.\"
+.if !"\\$2"" .nr )B \\w'\\$2'u+\\n()Au+3n
+.nr )C \\n()Bu+\\w'(in/out)'u+2n
+..
+.AS Tcl_Interp Tcl_CreateInterp in/out
+'\"	# BS - start boxed text
+'\"	# ^y = starting y location
+'\"	# ^b = 1
+.de BS
+.br
+.mk ^y
+.nr ^b 1u
+.if n .nf
+.if n .ti 0
+.if n \l'\\n(.lu\(ul'
+.if n .fi
+..
+'\"	# BE - end boxed text (draw box now)
+.de BE
+.nf
+.ti 0
+.mk ^t
+.ie n \l'\\n(^lu\(ul'
+.el \{\
+.\"	Draw four-sided box normally, but don't draw top of
+.\"	box if the box started on an earlier page.
+.ie !\\n(^b-1 \{\
+\h'-1.5n'\L'|\\n(^yu-1v'\l'\\n(^lu+3n\(ul'\L'\\n(^tu+1v-\\n(^yu'\l'|0u-1.5n\(ul'
+.\}
+.el \}\
+\h'-1.5n'\L'|\\n(^yu-1v'\h'\\n(^lu+3n'\L'\\n(^tu+1v-\\n(^yu'\l'|0u-1.5n\(ul'
+.\}
+.\}
+.fi
+.br
+.nr ^b 0
+..
+'\"	# VS - start vertical sidebar
+'\"	# ^Y = starting y location
+'\"	# ^v = 1 (for troff;  for nroff this doesn't matter)
+.de VS
+.if !"\\$2"" .br
+.mk ^Y
+.ie n 'mc \s12\(br\s0
+.el .nr ^v 1u
+..
+'\"	# VE - end of vertical sidebar
+.de VE
+.ie n 'mc
+.el \{\
+.ev 2
+.nf
+.ti 0
+.mk ^t
+\h'|\\n(^lu+3n'\L'|\\n(^Yu-1v\(bv'\v'\\n(^tu+1v-\\n(^Yu'\h'-|\\n(^lu+3n'
+.sp -1
+.fi
+.ev
+.\}
+.nr ^v 0
+..
+'\"	# Special macro to handle page bottom:  finish off current
+'\"	# box/sidebar if in box/sidebar mode, then invoked standard
+'\"	# page bottom macro.
+.de ^B
+.ev 2
+'ti 0
+'nf
+.mk ^t
+.if \\n(^b \{\
+.\"	Draw three-sided box if this is the box's first page,
+.\"	draw two sides but no top otherwise.
+.ie !\\n(^b-1 \h'-1.5n'\L'|\\n(^yu-1v'\l'\\n(^lu+3n\(ul'\L'\\n(^tu+1v-\\n(^yu'\h'|0u'\c
+.el \h'-1.5n'\L'|\\n(^yu-1v'\h'\\n(^lu+3n'\L'\\n(^tu+1v-\\n(^yu'\h'|0u'\c
+.\}
+.if \\n(^v \{\
+.nr ^x \\n(^tu+1v-\\n(^Yu
+\kx\h'-\\nxu'\h'|\\n(^lu+3n'\ky\L'-\\n(^xu'\v'\\n(^xu'\h'|0u'\c
+.\}
+.bp
+'fi
+.ev
+.if \\n(^b \{\
+.mk ^y
+.nr ^b 2
+.\}
+.if \\n(^v \{\
+.mk ^Y
+.\}
+..
+'\"	# DS - begin display
+.de DS
+.RS
+.nf
+.sp
+..
+'\"	# DE - end display
+.de DE
+.fi
+.RE
+.sp
+..
+'\"	# SO - start of list of standard options
+.de SO
+.SH "STANDARD OPTIONS"
+.LP
+.nf
+.ta 4c 8c 12c
+.ft B
+..
+'\"	# SE - end of list of standard options
+.de SE
+.fi
+.ft R
+.LP
+See the \\fBoptions\\fR manual entry for details on the standard options.
+..
+'\"	# OP - start of full description for a single option
+.de OP
+.LP
+.nf
+.ta 4c
+Command-Line Name:	\\fB\\$1\\fR
+Database Name:	\\fB\\$2\\fR
+Database Class:	\\fB\\$3\\fR
+.fi
+.IP
+..
+'\"	# CS - begin code excerpt
+.de CS
+.RS
+.nf
+.ta .25i .5i .75i 1i
+..
+'\"	# CE - end code excerpt
+.de CE
+.fi
+.RE
+..
+.de UL
+\\$1\l'|0\(ul'\\$2
+..
+.TH "critcl_introduction" n 2 doc "C Runtime In Tcl (CriTcl)"
+.BS
+.SH NAME
+critcl_introduction \- Introduction To CriTcl
+.SH DESCRIPTION
+.PP
+Welcome to the \fIC Runtime In Tcl\fR, \fICriTcl\fR for short, a
+system to build C extension packages for Tcl on the fly, from C code
+embedded within Tcl scripts, for all who wish to make their code go
+faster.
+.PP
+CriTcl started life as an experiment by Jean-Claude Wippler and was a
+self-contained Tcl package to build C code into a Tcl/Tk extension on
+the fly. It was somewhat inspired by Brian Ingerson's \fIInline\fR
+for \fIPerl\fR, but is considerably more lightweight.
+.PP
+It is for the last 5% to 10% when pure Tcl, which does go a long way,
+is not sufficient anymore. I.e. for
+.IP [1]
+when the last bits of performance are needed,
+.IP [2]
+access to 3rd party libraries,
+.IP [3]
+hiding critical pieces of your library or application, and
+.IP [4]
+simply needing features provided only by C.
+.PP
+.SH "MODES OF OPERATION/USE"
+CriTcl can be used in three different modes of operation, called
+.IP [1]
+\fICompile & Run\fR, and
+.IP [2]
+\fIGenerate Package\fR
+.IP [3]
+\fIGenerate TEA Package\fR
+.PP
+Of these three \fICompile & Run\fR came first and is the default
+when using the package directly. In that case the package collects the
+C fragments, builds them as needed, and caches the results for quick
+reuse when the same code is used in the future again.
+.PP
+The second mode, \fIGenerate Package\fR, was introduced to enable
+the creation of (prebuilt) deliverable packages which do not depend on
+the existence of a build system, i.e. C compiler, on the target
+machine.
+This was originally done through the experimental \fBCritbind\fR tool,
+and is now handled by the \fICriTcl Application\fR, also named
+\fBcritcl\fR.
+.PP
+Newly introduced with Critcl version 3 is
+\fIGenerate TEA Package\fR. This mode constructs a directory
+hierarchy from the package which can later be built like a regular TEA
+package, i.e. using
+.nf
+
+	.../configure --prefix ...
+	make all isntall
+
+.fi
+.SH "SYSTEM ARCHITECTURE"
+The whole system consist of two pieces, as seen in the figure below
+.PP
+IMAGE: architecture
+.PP
+.IP [1]
+At the top we have an application built on top of the core package,
+providing higher-level features than just compiling embedded C on the
+fly.
+.RS
+.TP
+\fBcritcl::app\fR
+.RE
+.IP [2]
+Below is the core package providing the essential functionality of the
+system.
+.RS
+.TP
+\fBcritcl\fR
+.RE
+.PP
+.SH REFERENCES
+.PP
+.SH "CHANGES FOR VERSION 2.1"
+.IP [1]
+Fixed bug where \fBcritcl::tsources\fR interpreted relative
+paths as relative to the current working directory instead of
+relative to the "\fI.critcl\fR" file using the command, as all other
+commands of this type do.
+.IP [2]
+Fixed internals, preventing information collected for multiple
+"\fI.critcl\fR" files to leak between them. Notably, \fBcritcl::tk\fR
+is not a global configuration option anymore.
+.IP [3]
+Fixed the command \fBcritcl::license\fR to be a null-operation
+in mode "compile & run", instead of throwing an error.
+.IP [4]
+Fixed the critcl application's interference with the "compile &
+run" result cache in \fB-pkg\fR mode by having it use a wholly
+separate (and by default transient) directory for that mode.
+.IP [5]
+Fixed bug where changes to a "\fI.critcl\fR" file did not result
+in a rebuild for mode "compile & run". All relevant API commands now
+ensure UUID changes.
+.IP [6]
+Fixed bug in the backend handling of \fBcritcl::debug\fR where
+the companion c-sources of a "\fI.critcl\fR" file were not compiled
+with debug options, although the "\fI.critcl\fR" file was.
+.IP [7]
+Fixed bug in \fBcritcl::debug\fR which prevented recognition of
+mode "all" when it was not the first argument to the command.
+.IP [8]
+Fixed bug in "\fIpreload.c\fR" preventing its compilation on
+non-windows platforms.
+.IP [9]
+Fixed long-standing bug in the handling of namespace qualifiers
+in the command name argument of \fBcritcl::cproc\fR and
+\fBcritcl::ccommand\fR. It is now possible to specify a fully
+qualified command name without issues.
+.IP [10]
+Extended/reworked \fBcritcl::tsources\fR to be the canonical
+way of declaring "\fI.tcl\fR" companion files even for mode "compile &
+run".
+.IP [11]
+Extended/reworked \fBcritcl::tsources\fR to allow the use of a
+"\fI.critcl\fR" file as its own Tcl companion file.
+.IP [12]
+Extended \fBcritcl::framework\fR to internally check for OS X
+build target, and to ignore the declaration if its not.
+.IP [13]
+Extended \fBcritcl::failed\fR to be callable more than once in
+a "\fI.critcl\fR" file. The first call forces the build, if it was not
+done already, to get the result. Further calls return the cached
+result of the first call.
+.IP [14]
+Extended the handling of environment variable CC in the code
+determining the compiler to use to deal with (i.e. remove) paths to
+the compiler, compiler file extensions, and compiler options specified
+after the compiler itself, leaving only the bare name of the compiler.
+.IP [15]
+Extended the code handling the search for preloaded libraries
+to print the paths it searched, making debugging of a search failure
+easier.
+.IP [16]
+A new command \fBcritcl::tcl\fR can be used to declare the
+version of Tcl minimally needed to build and run the "\fI.critcl\fR"
+file and package. Defaults to 8.4 if not declared. Extended critcl to
+have the stubs and headers for all of Tcl 8.4, 8.5, and 8.6.
+.IP [17]
+A new command \fBcritcl::load\fR forces the build and load of a
+"\fI.critcl\fR" file. This is the official way for overriding critcl's
+default lazy-build-&-load-on-demand scheme for mode "compile & run".
+.sp
+\fINote\fR that after using \fBcritcl::load\fR /
+\fBcritcl::failed\fR in a "\fI.critcl\fR" file it is not possible to
+use critcl commands in that file anymore. Doing so will throw an
+error.
+.IP [18]
+Extended the generation of '#line' pragmas to use
+\fBinfo frame\fR (if available) to provide the C compiler with exact
+line numbers into the "\fI.critcl\fR" file for the reporting of
+warnings and errors.
+.IP [19]
+Extended \fBcritcl::check\fR with logging to help with
+debugging build-time checks of the environment, plus an additional
+optional argument to provide labeling.
+.IP [20]
+Added a new command \fBcritcl::checklink\fR which not only
+tries to check the environment via compiling the code, but also
+its linkability.
+.IP [21]
+Added a new command \fBcritcl::msg\fR for messaging, like
+command \fBcritcl::error\fR is for error reporting. Likewise this is a
+hook a user of the package is allowed to override. The default
+implementation, used by mode \fIcompile & run\fR does nothing. The
+implementation for mode \fIgenerate package\fR prints the message
+to stdout.
+.sp
+Envisioned use is for the reporting of results determined by
+\fBcritcl::check\fR and \fBcritcl::checklink\fR during building, to
+help with debugging when something goes wrong with a check.
+.IP [22]
+Exposed the argument processing internals of \fBcritcl::proc\fR
+for use by advanced users. The new commands are
+.RS
+.IP [1]
+\fBcritcl::argnames\fR
+.IP [2]
+\fBcritcl::argcnames\fR
+.IP [3]
+\fBcritcl::argcsignature\fR
+.IP [4]
+\fBcritcl::argvardecls\fR
+.IP [5]
+\fBcritcl::argconversion\fR
+.RE
+Please see section \fIAdvanced Embedded C Code\fR of the
+\fBcritcl\fR package documentation for details.
+.IP [23]
+Extended the critclk package to intercept \fBpackage
+provide\fR and record the file -> package name mapping. Plus other
+internal changes now allow the use of namespaced package names while
+still using proper path names and init function.
+.IP [24]
+Dropped the unused commands \fBcritcl::optimize\fR and
+\fBcritcl::include\fR.
+.IP [25]
+Dropped \fB-lib\fR mode from the critcl application.
+.IP [26]
+Dropped remnants of support for Tcl 8.3 and before.
+.PP
+.SH "CHANGES FOR VERSION 3"
+.IP [1]
+The command \fBcritcl::platform\fR was deprecated in version
+2.1, superceded by \fBcritcl::targetplatform\fR, yet kept for
+compatibility. Now it has been removed.
+.IP [2]
+The command \fBcritcl::compiled\fR was kept with in version 2.1
+with semantics in contradiction to its, for compatibility. This
+contradiction has been removed, changing the visible semantics of the
+command to be in line with its name.
+.IP [3]
+The change to version 3 became necessary because of the two
+incompatible visible changes above.
+.IP [4]
+Extended the application package with code handling a new
+option \fB-tea\fR. Specifying this option invokes a special mode
+where critcl generates a TEA package, i.e. wraps the input into a
+directory hierarchy and support files which provide it TEA-lookalike
+buildsystem.
+.sp
+This new option, and \fB-pkg\fR, exclude each other. If
+both are specified the last used option takes precedence.
+.sp
+The generated package directory hierarchy is mostly
+self-contained, but not fully. It requires not only a working
+installation of Tcl, but also working installations of the packages
+\fBmd5\fR and \fBcmdline\fR. Both of these are provided by the
+\fBTcllib\fR bundle. Not required, but recommended to have
+installed are any of the packages which can accelerate md5's
+operation, i.e. \fBcryptkit\fR, \fBtcllibc\fR, or
+\fBTrf\fR.
+.IP [5]
+Extended the critcl package with a new command
+\fBcritcl::scan\fR taking the path to a "\fI.critcl\fR" file,
+statically scanning it, and returning license, version, a list of its
+companion files, list of imported APIs, and list of
+developer-specified custom configuration options. This data is the
+foundation for the TEA wrapping described above.
+.sp
+Note that this is a \fIstatic\fR scan. While the other build
+modes can (must) execute the "\fI.critcl\fR" file and make
+platform-specific decisions regarding the assembled C code, companion
+files, etc. the TEA wrap mode is not in a position to make
+platform-specific decisions. It has to wrap everything which might
+conceivably be needed when actually building. Hence the static scan.
+This has however its own set of problems, namely the inability to
+figure out any dynamic construction of companion file paths, at least
+on its own. Thus:
+.IP [6]
+Extended the API used by critcl-based packages with the command
+\fBcritcl::owns\fR. While this command is ignored by the regular build
+modes the static scanner described above takes its arguments as the
+names of companion files which have to be wrapped into the TEA package
+and could not be figured by the scanner otherwise, like because of
+dynamic paths to \fBcritcl::tsources\fR, \fBcritcl::csources\fR,
+getting sourced directly, or simply being adjunct datafiles.
+.IP [7]
+Extended the API used by critcl-based packages with the command
+\fBcritcl::api\fR for the management of stubs tables, be it their use,
+and/or declaration and export.
+.sp
+Please see section \fIStubs Table Management\fR of the
+\fBcritcl\fR package documentation for details.
+.IP [8]
+Extended the API used by critcl-based packages with the command
+\fBcritcl::userconfig\fR for the management of developer-specified
+custom configuration options, be it their use and/or declaration.
+.sp
+Please see section \fICustom Build Configuration\fR of the
+\fBcritcl\fR package documentation for details.
+.IP [9]
+Extended the API used by critcl-based packages with the
+commands \fBcritcl::description\fR, \fBcritcl::summary\fR,
+\fBcritcl::subject\fR, \fBcritcl::meta\fR, and
+\fBcritcl::buildrequirement\fR for the declaration of TEApot meta data
+for/about the package.
+.sp
+Please see section \fIPackage Meta Data\fR of the
+\fBcritcl\fR package documentation for details.
+.PP
+.SH AUTHORS
+Jean Claude Wippler, Steve Landers, Andreas Kupries
+.SH "BUGS, IDEAS, FEEDBACK"
+This document, and the package it describes, will undoubtedly contain
+bugs and other problems.
+Please report such at \fIhttps://github.com/jcw/critcl\fR.
+Please also report any ideas for enhancements you may have for either
+package and/or documentation.
+.SH KEYWORDS
+C code, Embedded C Code, code generator, compile & run, compiler, dynamic code generation, dynamic compilation, generate package, linker, on demand compilation, on-the-fly compilation
+.SH CATEGORY
+Glueing/Embedded C code
+.SH COPYRIGHT
+.nf
+Copyright (c) Jean-Claude Wippler
+Copyright (c) Steve Landers
+Copyright (c) 2011 Andreas Kupries
+
+.fi
