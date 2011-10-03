@@ -1,4 +1,4 @@
-#   Critcl configuration file
+# -*- tcl -*- Critcl configuration file
 #
 #   $Id: Config,v 1.12 2006/08/25 09:05:28 steve Exp $
 
@@ -8,7 +8,11 @@
 #   platform        sets the platform (defaults to platform::generic)
 #   compile         compile a C source file to an object file
 #   version         print the compiler version number
+#   ldout           See below
 #   link            link one or more object files and create a shared library
+#   link_debug      See below
+#   link_preload    Linker flags to use when dependent libraries are pre-loaded.
+#   link_release    See below
 #   preproc_define  preprocess C source file (for critcl::cdefines)
 #   preproc_enum    ditto
 #   tclstubs        cflag to set USE_TCL_STUBS
@@ -16,7 +20,7 @@
 #   debug_memory    cflag to enable memory debugging
 #   debug_symbols   cflag to add symbols to resulting library
 #   object          file extension for object files
-#   output          flag to set output file
+#   output          flags to set output file
 #   strip           cflag to tell linker to strip symbols
 #   optimize        cflag to specify optimization level
 #   include         cflag to add an include directory
@@ -30,7 +34,7 @@
 #   fversion        print the Fortran compiler version number
 #   flink           link one or more object files and create a shared library,
 #                   if at least one object file comes from Fortran
-#   foutput         Fortran flag to set output file
+#   foutput         Fortran flag(s) to set output file
 #   finclude        Fortran flag to add an include directory
 #   fextra_cflags   Extra C flags for indicating type of Fortran compiler
 #
@@ -70,16 +74,6 @@ noassert        -DNDEBUG
 threadflags     -DUSE_THREAD_ALLOC=1 -D_REENTRANT=1 -D_THREAD_SAFE=1    \
                 -DHAVE_PTHREAD_ATTR_SETSTACKSIZE=1 -DHAVE_READDIR_R=1   \
                 -DTCL_THREADS=1
-
-# Fortran-specific flags
-#
-fcompile        g95 -c
-fversion        g95 -v
-flink           g95 -shared
-finclude        -I
-foutput         -o $outfile
-foptimize       -O2
-fextra_cflags   -DFTN_UNDERSCORE -D__unix
 
 # platform specific stuff follows
 
@@ -127,7 +121,7 @@ if {[string match macosx-* $platform]} {
 	    exit 1
 	}
         set info [string trim $info]
-        regsub -all {[\n"\;=\{\}]+} $info "" info
+        regsub -all {[\n"\;=\{\}]+} $info "" info ;#" help emacs hilighting
         regsub -all {\s+} $info " " info
         set osxmin [lindex $info 1]
     } else {
@@ -140,42 +134,93 @@ if {[string match macosx-* $platform]} {
         # set info [exec lipo -info /usr/lib/libSystem.dylib]
         # set plats [split [string trim [lindex [split $info :] 2]]]
     }
+    if {[info exists ::env(osxmin)] && $::env(osxmin) ne ""} {
+        set osxmin $::env(osxmin)
+    }
     set universal 0
     catch {
-	set ppc [expr {[exec gcc -v -arch ppc > /dev/null 2>@stdout] eq ""}]
-	set ppc64 [expr {[exec gcc -v -arch ppc64 > /dev/null 2>@stdout] eq ""}]
-	set i386 [expr {[exec gcc -v -arch i386 > /dev/null 2>@stdout] eq ""}]
+	set ppc    [expr {[exec gcc -v -arch ppc    > /dev/null 2>@stdout] eq ""}]
+	set ppc64  [expr {[exec gcc -v -arch ppc64  > /dev/null 2>@stdout] eq ""}]
+	set i386   [expr {[exec gcc -v -arch i386   > /dev/null 2>@stdout] eq ""}]
 	set x86_64 [expr {[exec gcc -v -arch x86_64 > /dev/null 2>@stdout] eq ""}]
     }
 }
 
+# Note: The result of 'platform::generic' is used to restrict which of
+# the following blocks will be considered.
+
+# Note 2: The platform declarations are required to set up a proper
+# mapping in pkgIndex.tcl of a -pkg.
+
 # default on OSX ppc is universal containing ppc and x86 32 bit
 macosx-powerpc when         $ppc
-macosx-powerpc compile      gcc -c -arch ppc
-macosx-powerpc link         gcc -bundle -arch ppc
+macosx-powerpc compile      gcc -c -arch ppc \
+    -isysroot $SDKROOT \
+    -mmacosx-version-min=$osxmin
+macosx-powerpc link         gcc -bundle -arch ppc \
+    -isysroot $SDKROOT \
+    -mmacosx-version-min=$osxmin
 macosx-powerpc link_preload -undefined dynamic_lookup -mmacosx-version-min=10.3
 macosx-powerpc strip
 
 # default on OSX intel is universal containing x86 32 and 64 bit
 macosx-ix86 when            $i386 && $x86_64
-macosx-ix86 compile         gcc -c -arch i386 -arch x86_64
-macosx-ix86 link            gcc -bundle -arch i386 -arch x86_64
+macosx-ix86 compile         gcc -c -arch i386 -arch x86_64 \
+    -isysroot $SDKROOT \
+    -mmacosx-version-min=$osxmin
+macosx-ix86 link            gcc -bundle -arch i386 -arch x86_64 \
+    -isysroot $SDKROOT \
+    -mmacosx-version-min=$osxmin
 macosx-ix86 link_preload    -undefined dynamic_lookup -mmacosx-version-min=10.3
 macosx-ix86 strip
+macosx-ix86 platform        macosx-ix86 $osxmin \
+	    macosx-ix86 \
+	    macosx-x86_64
 
 # target for most common architectures
 macosx-most when            $ppc && $i386 && $x86_64
-macosx-most compile         gcc -c -arch i386 -arch x86_64 -arch ppc
-macosx-most link            gcc -bundle -arch i386 -arch x86_64 -arch ppc
+macosx-most compile         gcc -c -arch i386 -arch x86_64 -arch ppc \
+    -isysroot $SDKROOT \
+    -mmacosx-version-min=$osxmin
+macosx-most link            gcc -bundle -arch i386 -arch x86_64 -arch ppc \
+    -isysroot $SDKROOT \
+    -mmacosx-version-min=$osxmin
 macosx-most link_preload    -undefined dynamic_lookup -mmacosx-version-min=10.3
 macosx-most strip
+macosx-most platform        macosx-most $osxmin \
+	    macosx-powerpc \
+	    macosx-ix86 \
+	    macosx-x86_64
+
+# target for old universal, ppc and x86 32.
+macosx-universal when            $ppc && $i386
+macosx-universal compile         gcc -c -arch i386 -arch ppc \
+    -isysroot $SDKROOT \
+    -mmacosx-version-min=$osxmin
+macosx-universal link            gcc -bundle -arch i386 -arch ppc \
+    -isysroot $SDKROOT \
+    -mmacosx-version-min=$osxmin
+macosx-universal link_preload    -undefined dynamic_lookup -mmacosx-version-min=10.3
+macosx-universal strip
+macosx-universal platform        macosx-universal $osxmin \
+	    macosx-powerpc \
+	    macosx-ix86
 
 # target for all architectures
 macosx-all when            $ppc && $ppc64 && $i386 && $x86_64
-macosx-all compile         gcc -c -arch i386 -arch x86_64 -arch ppc -arch ppc64
-macosx-all link            gcc -bundle -arch i386 -arch x86_64 -arch ppc -arch ppc64
+macosx-all compile         gcc -c -arch i386 -arch x86_64 -arch ppc -arch ppc64 \
+    -isysroot $SDKROOT \
+    -mmacosx-version-min=$osxmin
+macosx-all link            gcc -bundle -arch i386 -arch x86_64 -arch ppc -arch ppc64 \
+    -isysroot $SDKROOT \
+    -mmacosx-version-min=$osxmin
 macosx-all link_preload    -undefined dynamic_lookup -mmacosx-version-min=10.3
 macosx-all strip
+macosx-all platform        macosx-all $osxmin \
+	    macosx-powerpc \
+	    macosx-powerpc64 \
+	    macosx-ix86 \
+	    macosx-x86_64
 
 # OSX ppc 32 bit
 macosx-ppc32 when           $ppc
@@ -225,12 +270,35 @@ win32-ix86-cl  object          .obj
 win32-ix86-cl  debug_symbols   -W3 -Od -Zi -GZ -MDd -D_DEBUG
 win32-ix86-cl  optimize        -W3 -O2 -Op -Gs -MD
 win32-ix86-cl  output          [list -Fo$outfile]
-win32-ix86-cl  ldoutput        -dll -out:$outfile
-win32-ix86-cl  link_debug      -debug:full -debugtype:cv
-win32-ix86-cl  link_release    -release -opt:ref -opt:icf,3 -ws:aggressive
+win32-ix86-cl  ldoutput        -dll [list -out:$outfile]
+win32-ix86-cl  link_debug      -debug:full -debugtype:cv                   -verbose:lib -nodefaultlib:libc
+win32-ix86-cl  link_release    -release -opt:ref -opt:icf,3 -ws:aggressive -verbose:lib
 win32-ix86-cl  link_preload
 win32-ix86-cl  strip
 win32-ix86-cl  version         cl
+win32-ix86-cl  platform        win32-ix86
+
+# Windows 64 - using Platform SDK
+#
+# Note: the language option for cl is -TC for c and -TP for c++ or
+#       it can treat single files -Tc<filename>
+#
+win32-x86_64-cl  when            [auto_execok cl] ne ""
+win32-x86_64-cl  compile         cl -nologo -c
+win32-x86_64-cl  link            link -nologo
+win32-x86_64-cl  preproc_define  cl -nologo -E
+win32-x86_64-cl  preproc_enum    cl -nologo -E
+win32-x86_64-cl  object          .obj
+win32-x86_64-cl  debug_symbols   -W3 -Od -Zi -GZ -MDd -D_DEBUG
+win32-x86_64-cl  optimize        -W3 -O2 -Op -Gs -MD
+win32-x86_64-cl  output          [list -Fo$outfile]
+win32-x86_64-cl  ldoutput        -dll [list -out:$outfile]
+win32-x86_64-cl  link_debug      -debug:full -debugtype:cv                   -verbose:lib bufferoverflowU.lib
+win32-x86_64-cl  link_release    -release -opt:ref -opt:icf,3 -ws:aggressive -verbose:lib bufferoverflowU.lib
+win32-x86_64-cl  link_preload
+win32-x86_64-cl  strip
+win32-x86_64-cl  version         cl
+win32-x86_64-cl  platform        win32-x86_64
 
 # Cross-compile for Windows using Xmingwin
 mingw32     target         win32-ix86
@@ -259,33 +327,128 @@ linux-arm   tcl_platform(wordSize)   4
 # +z <=> -fPIC on hpux.
 # +DD64 invokes the 64bit mode.
 
-hpux-ia64_32 compile         cc -c +z
-hpux-ia64_32 link            ld -b
-hpux-ia64_32 preproc_define  cc -E
-hpux-ia64_32 preproc_enum    cc -E
+hpux-ia64_32-cc compile         cc -c +z
+hpux-ia64_32-cc link            ld -b
+hpux-ia64_32-cc preproc_define  cc -E
+hpux-ia64_32-cc preproc_enum    cc -E
+hpux-ia64_32-cc link_preload
+hpux-ia64_32-cc strip
 
-hpux-ia64    compile         cc -c +z +DD64
-hpux-ia64    link            ld -b
-hpux-ia64    preproc_define  cc -E
-hpux-ia64    preproc_enum    cc -E
+hpux-ia64-cc    compile         cc -c +z +DD64
+hpux-ia64-cc    link            ld -b
+hpux-ia64-cc    preproc_define  cc -E
+hpux-ia64-cc    preproc_enum    cc -E
+hpux-ia64-cc    link_preload
+hpux-ia64-cc    strip
 
 # hpux, itanium, gcc
 # This works only if the -lgcc for 64bit is somewhere reachable.
 # hpux-ia64	gcc -c -fPIC -mlp64
 
+hpux-parisc-cc    compile         cc -c +z +DAportable
+hpux-parisc-cc    link            ld -b
+hpux-parisc-cc    preproc_define  cc -E
+hpux-parisc-cc    preproc_enum    cc -E
+hpux-parisc-cc    link_preload
+hpux-parisc-cc    strip
+
+hpux-parisc64-cc  compile         cc -c +z +DA2.0W
+hpux-parisc64-cc  link            ld -b
+hpux-parisc64-cc  preproc_define  cc -E
+hpux-parisc64-cc  preproc_enum    cc -E
+hpux-parisc64-cc  link_preload
+hpux-parisc64-cc  strip
+
+# hpux-parisc, 64bit, gcc
+#
+# For this architecture gcc does not have compiler switches for change
+# between 32/64 results. Rather, gcc has to be built specifically to
+# produce either 32 or 64 bit binaries. And if both results are
+# wanted, it has to be built and installed twice (in different
+# directories).
+#
+# HP provides precompiled binaries of these two variants at
+# http://www.hp.com/go/gcc. Install the desired compiler(s). In case
+# of having both ensure that the desired one is first in the PATH.
+
 # aix, rs6000/powerpc, native cc, 32bit build
 # The link line is pretty much copied from Tcl.
+
 # NOTE: ldAix was copied from Tcl into a directory in the PATH.
-# It might make sense to stuff this file into critcl and then copy it out when
-# needed, either into a fixed place, or tempdir. In the latter case the link
-# line needs some way of getting the value substituted into it. I have no
-# idea of the critcl config allows that, and if yes, nor how.
 
-# cc_r = something with thread-enabled. better use it than cc and have things
-# fail.
+# It might make sense to stuff this file into critcl and then copy it
+# out when needed, either into a fixed place, or tempdir. In the
+# latter case the link line needs some way of getting the value
+# substituted into it. I have no idea of the critcl config allows
+# that, and if yes, nor how.
 
-aix-powerpc    compile         cc_r -c -O
-aix-powerpc    link            ldAix /bin/ld -bhalt:4 -bM:SRE -bE:lib.exp -H512 -T512 -bnoentry -lm -lc
-aix-powerpc    preproc_define  cc -E
-aix-powerpc    preproc_enum    cc -E
+# cc_r = something with thread-enabled. better use it than cc and have
+# things fail.
 
+aix-powerpc-cc    compile         cc_r -c -O
+aix-powerpc-cc    link            ldAix /bin/ld -bhalt:4 -bM:SRE -bE:lib.exp -H512 -T512 -bnoentry -lm -lc
+aix-powerpc-cc    preproc_define  cc -E
+aix-powerpc-cc    preproc_enum    cc -E
+aix-powerpc-cc    link_preload
+aix-powerpc-cc    strip
+
+aix-powerpc64-cc  compile         cc_r -c -O -q64
+aix-powerpc64-cc  link            ldAix /bin/ld -b64 -bhalt:4 -bM:SRE -bE:lib.exp -H512 -T512 -bnoentry -lm -lc
+aix-powerpc64-cc  preproc_define  cc -E
+aix-powerpc64-cc  preproc_enum    cc -E
+aix-powerpc64-cc  link_preload
+aix-powerpc64-cc  strip
+
+aix-powerpc-xlc    compile         xlc_r -c -O
+aix-powerpc-xlc    link            ldAix /bin/ld -bhalt:4 -bM:SRE -bE:lib.exp -H512 -T512 -bnoentry -lm -lc
+aix-powerpc-xlc    preproc_define  xlc -E
+aix-powerpc-xlc    preproc_enum    xlc -E
+aix-powerpc-xlc    link_preload
+aix-powerpc-xlc    strip
+
+aix-powerpc64-xlc  compile         xlc_r -c -O -q64
+aix-powerpc64-xlc  link            ldAix /bin/ld -b64 -bhalt:4 -bM:SRE -bE:lib.exp -H512 -T512 -bnoentry -lm -lc
+aix-powerpc64-xlc  preproc_define  xlc -E
+aix-powerpc64-xlc  preproc_enum    xlc -E
+aix-powerpc64-xlc  link_preload
+aix-powerpc64-xlc  strip
+
+# Solaris, Sparc and Intel platforms, 32 and 64 bit
+
+solaris-x86_64-cc   compile         cc -m64 -c -KPIC
+solaris-x86_64-cc   link            /usr/ccs/bin/ld -L/lib/64 -G -lc -lnsl
+solaris-x86_64-cc   preproc_define  cc -E
+solaris-x86_64-cc   preproc_enum    cc -E
+solaris-x86_64-cc   version         cc -V
+solaris-x86_64-cc   link_preload
+solaris-x86_64-cc   strip
+
+solaris-x86_64-gcc  compile         gcc -m64 -c -fPIC
+solaris-x86_64-gcc  link            gcc -m64 -shared
+
+solaris-ix86-cc     compile         cc -m32 -c -KPIC
+solaris-ix86-cc     link            /usr/ccs/bin/ld -G -lc -lnsl
+solaris-ix86-cc     preproc_define  cc -E
+solaris-ix86-cc     preproc_enum    cc -E
+solaris-ix86-cc     version         cc -V
+solaris-ix86-cc     link_preload
+solaris-ix86-cc     strip
+
+solaris-sparc-cc    compile         cc -KPIC -c
+solaris-sparc-cc    link            /usr/ccs/bin/ld -G -lc -lnsl
+solaris-sparc-cc    preproc_define  cc -E
+solaris-sparc-cc    preproc_enum    cc -E
+solaris-sparc-cc    version         cc -V
+solaris-sparc-cc    link_preload
+solaris-sparc-cc    strip
+
+solaris-sparc64-cc  compile         cc -KPIC -xarch=v9 -c
+solaris-sparc64-cc  link            /usr/ccs/bin/ld -G -lc -lnsl
+solaris-sparc64-cc  preproc_define  cc -E
+solaris-sparc64-cc  preproc_enum    cc -E
+solaris-sparc64-cc  version         cc -V
+solaris-sparc64-cc  link_preload
+solaris-sparc64-cc  strip
+
+solaris-sparc64-gcc compile         gcc -m64 -c -fPIC -mcpu=v9
+solaris-sparc64-gcc link            gcc -m64 -shared -mcpu=v9

@@ -75,7 +75,7 @@ proc ::critcl::Cmdemit {s} {
 #
 proc ::critcl::Fdefine {name args} {
     set v::curr [md5_hex "$name $args"]
-    set file [file_normalize [info script]]
+    set file [file normalize [info script]]
 
     set ns [uplevel 2 namespace current]
     if {$ns == "::"} { set ns "" } else { append ns :: }
@@ -276,7 +276,7 @@ proc ::critcl::fcompile {file src fopts lfd obj} {
 proc ::critcl::fbuild {{file ""} {load 1} {prefix {}} {silent ""}} {
     if {$file eq ""} {
         set link 1
-        set file [file_normalize [info script]]
+        set file [file normalize [info script]]
     } else {
         set link 0
     }
@@ -286,7 +286,7 @@ proc ::critcl::fbuild {{file ""} {load 1} {prefix {}} {silent ""}} {
     set digest [md5_hex "$file $v::code($file,list)"]
 
     set cache $v::cache
-    set cache [file_normalize $cache]
+    set cache [file normalize $cache]
 
     set base [file join $cache ${v::prefix}_$digest]
     set libfile $base
@@ -296,7 +296,7 @@ proc ::critcl::fbuild {{file ""} {load 1} {prefix {}} {silent ""}} {
     if {$v::options(outdir) != ""} {
       set odir [file join [file dirname $file] $v::options(outdir)]
       set oroot [file root [file tail $file]]
-      set libfile [file_normalize [file join $odir $oroot]]
+      set libfile [file normalize [file join $odir $oroot]]
       file mkdir $odir
     }
     # get the settings for this file into local variables
@@ -437,11 +437,11 @@ proc ::critcl::fbuild {{file ""} {load 1} {prefix {}} {silent ""}} {
         } else {
             append cmdline " $c::strip $c::link_release $ldout"
         }
-        if {[string match "*-win32-cl" [platformcc]]} {
+        if {[string match "win32-*-cl" [Platform]]} {
             regsub -all -- {-l(\S+)} $libs {\1.lib} libs
         }
         append cmdline " $libfile "
-#AM     if {[string match "*-win32-cl" [platformcc]]} {
+#AM     if {[string match "win32-*-cl" [Platform]]} {
 #           set f [open [set rsp [file join $cache link.fil]] w]
 #           puts $f [join $v::objs \n]
 #           close $f
