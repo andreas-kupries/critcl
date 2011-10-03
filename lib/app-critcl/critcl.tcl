@@ -234,7 +234,15 @@ proc ::critcl::app::Cmdline {argv} {
 		set v::keep 1
 	    }
 	    help       { incr help }
-	    libdir     { set v::libdir $arg }
+	    libdir     {
+		set v::libdir $arg
+
+		# In case critcl is wrapped Tcl must be told about the
+		# outside location for packages.
+
+		lappend ::auto_path $arg
+		lappend ::auto_path [file dirname $arg]
+	    }
 	    includedir {
 		set v::incdir  $arg
 		AddIncludePath $arg
