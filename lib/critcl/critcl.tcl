@@ -815,7 +815,7 @@ proc ::critcl::APIimport {file name version} {
     if {$at eq {}} {
 	error "Headers for API $name not found"
     } else {
-	msg -nonewline " (stubs import $name $version @ $at/$name)"
+	msg -nonewline " (stubs import $name $version @ $at/$cname)"
     }
 
     set def [list $name $version]
