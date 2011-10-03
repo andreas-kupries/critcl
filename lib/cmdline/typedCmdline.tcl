@@ -7,7 +7,7 @@
 # See the file "license.terms" for information on usage and redistribution
 # of this file, and for a DISCLAIMER OF ALL WARRANTIES.
 # 
-# RCS: @(#) $Id$
+# RCS: @(#) $Id: typedCmdline.tcl 1239 2007-03-09 16:17:14Z jcw $
 
 namespace eval cmdline {
     namespace export typedGetopt typedGetoptions typedUsage

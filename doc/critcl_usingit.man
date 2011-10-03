@@ -1,0 +1,33 @@
+[comment {-*- tcl -*- doctools manpage}]
+[manpage_begin critcl_use n 1]
+[include include/module.inc]
+[titledesc {Using CriTcl}]
+[description]
+[para]
+[include include/welcome.inc]
+[para]
+
+This document is a (hopefully) gentle introduction to it by way of a
+series of examples, both for how to embed C into Tcl with it, and how
+to build the distributable packages.
+
+As such the intended audience are both writers of packages with
+embedded C, and people building such packages.
+
+To make things easier the two themes each have their own section in
+this document, enabling all readers to quickly skip the part they are
+not interested in.
+
+[para] For those readers which came directly to this document through
+a search or similar and thus are in need of an overview of the whole
+system, please go and read the [manpage {Introduction To CriTcl}].
+
+[comment {===================================================================}]
+
+[section {Embedding C}]			[include include/using_embed.inc]
+[section {Building Critcl Packages}]	[include include/using_build.inc]
+
+[comment {===================================================================}]
+
+[include include/feedback.inc]
+[manpage_end]

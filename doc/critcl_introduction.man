@@ -1,0 +1,78 @@
+[comment {-*- tcl -*- doctools manpage}]
+[manpage_begin critcl_introduction n 2]
+[include include/module.inc]
+[titledesc {Introduction To CriTcl}]
+[description]
+[para]
+[include include/welcome.inc]
+[para]
+
+CriTcl started life as an experiment by Jean-Claude Wippler and was a
+self-contained Tcl package to build C code into a Tcl/Tk extension on
+the fly. It was somewhat inspired by Brian Ingerson's [term Inline]
+for [term Perl], but is considerably more lightweight.
+
+[para]
+
+It is for the last 5% to 10% when pure Tcl, which does go a long way,
+is not sufficient anymore. I.e. for
+
+[list_begin enumerated]
+[enum] when the last bits of performance are needed,
+[enum] access to 3rd party libraries,
+[enum] hiding critical pieces of your library or application, and
+[enum] simply needing features provided only by C.
+[list_end]
+
+[comment {
+	Should I discuss the alternatives? And why they are not good?
+}]
+
+
+[section {Modes Of Operation/Use}]
+[include include/modes.inc]
+
+[section {System Architecture}]
+
+The whole system consist of two pieces, as seen in the figure below
+
+[para][image architecture][para]
+
+[list_begin enumerated]
+[enum]
+
+At the top we have an application built on top of the core package,
+providing higher-level features than just compiling embedded C on the
+fly.
+
+[list_begin definitions][comment {----- application ---}]
+[def [package critcl::app]]
+[list_end][comment {------------------- application ---}]
+
+[enum]
+
+Below is the core package providing the essential functionality of the
+system.
+
+[list_begin definitions][comment {----- core ---}]
+[def [package critcl]]
+[list_end][comment {------------------- core ---}]
+[list_end]
+
+[section References]
+
+[list_begin enumerated]
+
+[comment {===================================================
+[enum]
+    "Advanced Encryption Standard",
+    Federal Information Processing Standards Publication 197, 2001
+    ([uri http://csrc.nist.gov/publications/fips/fips197/fips-197.pdf])
+=============================================================}]
+
+[list_end]
+
+[comment {===================================================================}]
+[include include/changes.inc]
+[include include/feedback.inc]
+[manpage_end]

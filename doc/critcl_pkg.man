@@ -1,0 +1,51 @@
+[comment {-*- tcl -*- doctools manpage}]
+[manpage_begin critcl n 2.1]
+[include include/module.inc]
+[titledesc {CriTcl Package Reference}]
+[require Tcl 8.4]
+[require critcl [opt 2.1]]
+[require platform [opt 1.0.2]]
+[require md5 [opt 2]]
+[description]
+[para]
+[include include/welcome.inc]
+[para]
+
+This document is the reference manpage for the [package critcl]
+package. This package is the system's core, i.e. it provides the
+essential functionality on top of which everything else is built.
+
+Its intended audience are mainly developers wishing to write Tcl
+packages with embedded C code. Some of its sections are however
+for developers wishing to understand the package internals, and
+the API it provides to the [manpage {CriTcl Application}]. These
+sections will be marked, allowing package writers to skip them.
+
+Users of [cmd critcl] on the other hand are hereby refered to the
+applications' manpage, i.e. [manpage {CriTcl Application}].
+
+If you are in need of an overview of the whole system instead, please
+go and read the [manpage {Introduction To CriTcl}].
+
+[para]
+
+This package resides in the Core Package Layer of CriTcl.
+[para][image arch_core][para]
+
+[comment {===================================================================}]
+
+[section API]		[include include/api.inc]
+[section {Concepts}]	[include include/concepts.inc]
+
+[comment {===================================================================}]
+
+[section Examples]
+
+As the set of examples is a bit large, and growing, it has been put
+into a separate document. Please see section "Embedding C" in the
+document about [manpage {Using CriTcl}].
+
+[comment {===================================================================}]
+[include include/changes.inc]
+[include include/feedback.inc]
+[manpage_end]
