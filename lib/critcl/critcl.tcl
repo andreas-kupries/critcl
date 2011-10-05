@@ -799,11 +799,19 @@ proc ::critcl::APIscspec {file scspec} {
 }
 
 proc ::critcl::APIimport {file name version} {
+
     # First we request the imported package, giving it a chance to
     # generate the headers searched for in a moment (maybe it was
     # critcl based as well, and generates things dynamically).
 
-    package require $name $version
+    # Note that this can fail, for example in a cross-compilation
+    # environment. Such a failure however does not imply that the
+    # required API headers are not present, so we can continue.
+
+    catch {
+	package require $name $version
+    }
+
     ImetaAdd $file require [list [list $name $version]]
 
     # Now we check that the relevant headers of the imported package
