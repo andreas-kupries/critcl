@@ -1056,7 +1056,7 @@ proc ::critcl::app::LoadCommand {version libname tsources shlibdir} {
     # New style. Precompute as much as possible.
 
     set map [Mapping]
-    if {$map ne {}} { set map " $map" }
+    if {$map ne {}} { set map " [list $map]" }
     set platform "\[::critcl::runtime::MapPlatform$map\]"
 
     set     loadcmd {}
