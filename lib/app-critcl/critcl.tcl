@@ -730,7 +730,7 @@ proc ::critcl::app::ProcessInput {} {
 	critcl::lappendlist v::preload    $r(preload)
 
 	if {[info exists r(apiheader)]} {
-	    lappend v::headers $r(apiheader)
+	    critcl::lappendlist v::headers $r(apiheader)
 	}
     }
 
