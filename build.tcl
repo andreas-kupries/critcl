@@ -74,6 +74,10 @@ proc _install {{dst {}}} {
 	set dsta [file dirname $dst]/bin
     }
 
+    # Create directories, might not exist.
+    file mkdir $dstl
+    file mkdir $dsta
+
     # Package: critcl
     file copy   -force [file dirname $::me]/lib/critcl     $dstl/critcl-new
     file delete -force $dstl/critcl$version

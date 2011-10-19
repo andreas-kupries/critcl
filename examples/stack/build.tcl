@@ -122,6 +122,10 @@ proc _install {{ldir {}}} {
 	set idir [file dirname $ldir]/include
     }
 
+    # Create directories, might not exist.
+    file mkdir $idir
+    file mkdir $ldir
+
     package require critcl::app
 
     foreach p $packages {
