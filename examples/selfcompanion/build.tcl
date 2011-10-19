@@ -70,6 +70,10 @@ proc log {args} {
 	set chan stdout
     }
     # chan <=> tag, if not overriden
+    if {[string match {Files left*} $text]} {
+	set tag warn
+	set text \n$text
+    }
     if {$tag eq {}} { set tag $chan }
     #::_puts $tag/$text
 
@@ -133,6 +137,11 @@ proc _install {{ldir {}}} {
 	file delete -force             [pwd]/BUILD
 	critcl::app::main [list -cache [pwd]/BUILD -libdir $ldir -includedir $idir -pkg $src]
 
+	if {![file exists $ldir/$p]} {
+	    set ::NOTE {warn {DONE, with FAILURES}}
+	    break
+	}
+
 	file delete -force $ldir/$p$version
 	file rename        $ldir/$p $ldir/$p$version
 
@@ -159,8 +168,9 @@ proc _gui {} {
     .st setwidget .t
 
     .t tag configure stdout -font {Helvetica 8}
-    .t tag configure stderr -background red   -font {Helvetica 12}
-    .t tag configure ok     -background green -font {Helvetica 8}
+    .t tag configure stderr -background red    -font {Helvetica 12}
+    .t tag configure ok     -background green  -font {Helvetica 8}
+    .t tag configure warn   -background yellow -font {Helvetica 12}
 
     grid .l  -row 0 -column 0 -sticky new
     grid .e  -row 0 -column 1 -sticky new
@@ -187,15 +197,16 @@ proc _gui {} {
     return
 }
 proc Install {} {
-    global INSTALLPATH
+    global INSTALLPATH NOTE
     .i configure -state disabled
 
+    set NOTE {ok DONE}
     set fail [catch {
 	_install $INSTALLPATH
 
 	puts ""
-	tag ok
-	puts DONE
+	tag  [lindex $NOTE 0]
+	puts [lindex $NOTE 1]
     } e o]
 
     .i configure -state normal
