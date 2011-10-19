@@ -489,7 +489,7 @@ proc ::critcl::tcl {version} {
     # require' is not needed. This can be inside of the generated and
     # loaded C code.
 
-    ImetaAdd $file require [list Tcl $version]
+    ImetaAdd $file require [list [list Tcl $version]]
     return
 }
 
