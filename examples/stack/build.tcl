@@ -228,6 +228,8 @@ proc _wrap4tea {{dst {}}} {
 	set dst [file join [pwd] tea]
     }
 
+    file mkdir $dst
+
     package require critcl::app
 
     foreach p $packages {
