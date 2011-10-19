@@ -153,6 +153,8 @@ proc _gui {} {
     package require Tk
     package require widget::scrolledwindow
 
+    wm protocol . WM_DELETE_WINDOW ::_exit
+
     label  .l -text {Install Path: }
     entry  .e -textvariable ::INSTALLPATH
     button .i -command Install -text Install
