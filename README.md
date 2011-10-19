@@ -47,6 +47,14 @@
 
     will put the generated starkit there.
 
+# Using Critcl
+
+ *  It is expected that the system you wish to use critcl on has a
+    working C compiler. Installation and setup of such a compiler is
+    platform and vendor specific, and instructions for doing so are
+    very much outside of the scope of this document. Please read the
+    documentation, how-tos, etc. for your platform or vendor.
+
 # New Features
 
  *  Here we provide only a short list of the features. For more details
