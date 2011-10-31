@@ -133,6 +133,8 @@ proc _install {{ldir {}}} {
     package require critcl::app
 
     foreach p $packages {
+	puts ""
+
 	set src     [file dirname $::me]/$p.tcl
 	set version [version $src]
 
