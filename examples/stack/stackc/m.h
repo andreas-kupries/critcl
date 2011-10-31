@@ -6,7 +6,7 @@
 #define _M_H 1
 
 #include "tcl.h"
-#include <cstack/cstack.h>
+#include <cstack/cstackDecls.h>
 
 int stm_CLEAR   (CSTACK s, Tcl_Interp* interp, int objc, Tcl_Obj* CONST* objv);
 int stm_DESTROY (CSTACK s, Tcl_Interp* interp, int objc, Tcl_Obj* CONST* objv);
