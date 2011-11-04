@@ -3093,11 +3093,39 @@ proc ::critcl::Link {file} {
 	{$shlib: [file size $shlib] bytes} \
 	{ERROR while linking $shlib:}
 
+    # Now, if there is a manifest file around, and the
+    # 'embed_manifest' command defined we use its command to merge the
+    # manifest into the shared library. This is pretty much only
+    # happening on Windows platforms, and with newer dev environments
+    # actually using manifests.
+
+    set em [getconfigvalue embed_manifest]
+
+    critcl::Log "Manifest Command: $em"
+    critcl::Log "Manifest File:    [expr {[file exists $shlib.manifest]
+	   ? "$shlib.manifest"
+	   : "<<not present>>, ignored"}]"
+
+    if {[llength $em] && [file exists $shlib.manifest]} {
+	set cmdline [ManifestCommand $em $shlib]
+
+	# Run the manifest tool
+	ExecWithLogging $cmdline \
+	    {$shlib: [file size $shlib] bytes, with manifest} \
+	    {ERROR while embedding the manifest into $shlib:}
+    }
+
     # At last, build the preload support library, if necessary.
     if {[llength $preload]} {
 	MakePreloadLibrary $file
     }
     return
+}
+
+proc ::critcl::ManifestCommand {em shlib} {
+    # Variable used by the subst'able config setting.
+    set outfile $shlib
+    return [subst $em]
 }
 
 proc ::critcl::CompanionObject {src} {
@@ -4001,6 +4029,7 @@ namespace eval ::critcl {
 	    debug_symbols
 	    include
 	    ldoutput
+	    embed_manifest
 	    link
 	    link_debug
 	    link_preload
@@ -4035,6 +4064,7 @@ namespace eval ::critcl {
 	# include         Compiler flag to add an include directory
 	# ldoutput       - ? See 'Config'
 	# link            Command to link one or more object files and create a shared library
+	# embed_manifest  Command to embed a manifest into a DLL. (Win-specific)
 	# link_debug     - ? See 'Config'
 	# link_preload   Linker flags to use when dependent libraries are pre-loaded.
 	# link_release   - ? See 'Config'

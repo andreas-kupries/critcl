@@ -9,7 +9,8 @@
 #   compile         compile a C source file to an object file
 #   version         print the compiler version number
 #   ldout           See below
-#   link            link one or more object files and create a shared library
+#   link            Command to link one or more object files and create a shared library
+#   embed_manifest  Command to embed a manifest into a DLL. (Win-specific)
 #   link_debug      See below
 #   link_preload    Linker flags to use when dependent libraries are pre-loaded.
 #   link_release    See below
@@ -64,6 +65,7 @@ debug_memory    -DTCL_MEM_DEBUG
 debug_symbols   -g
 object          .o
 output          -o [list $outfile]
+embed_manifest  
 ldoutput
 link_debug
 link_release
@@ -264,6 +266,7 @@ linux-64-*  compile   gcc -c -m64
 win32-ix86-cl  when            [auto_execok cl] ne ""
 win32-ix86-cl  compile         cl -nologo -c
 win32-ix86-cl  link            link -nologo
+win32-ix86-cl  embed_manifest  mt -manifest [list $outfile] -outputresource:[list $outfile]\;2
 win32-ix86-cl  preproc_define  cl -nologo -E
 win32-ix86-cl  preproc_enum    cl -nologo -E
 win32-ix86-cl  object          .obj
@@ -286,6 +289,7 @@ win32-ix86-cl  platform        win32-ix86
 win32-x86_64-cl  when            [auto_execok cl] ne ""
 win32-x86_64-cl  compile         cl -nologo -c
 win32-x86_64-cl  link            link -nologo
+win32-x86_64-cl  embed_manifest  mt -manifest [list $outfile] -outputresource:[list $outfile]\;2
 win32-x86_64-cl  preproc_define  cl -nologo -E
 win32-x86_64-cl  preproc_enum    cl -nologo -E
 win32-x86_64-cl  object          .obj
