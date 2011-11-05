@@ -331,7 +331,7 @@ win32-x86_64-cl-buf  platform        win32-x86_64
 win32-x86_64-cl-nobuf  when            $msvc && !$winbufferoverflowu
 win32-x86_64-cl-nobuf  compile         cl -nologo -c
 win32-x86_64-cl-nobuf  link            link -nologo
-win32-x86_64-cl-nobuf  embed_manifest  mt -manifest [list $outfile] -outputresource:[list $outfile]\;2
+win32-x86_64-cl-nobuf  embed_manifest  mt -manifest [list $outfile].manifest -outputresource:[list $outfile]\;2
 win32-x86_64-cl-nobuf  preproc_define  cl -nologo -E
 win32-x86_64-cl-nobuf  preproc_enum    cl -nologo -E
 win32-x86_64-cl-nobuf  object          .obj
