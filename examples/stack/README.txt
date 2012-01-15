@@ -5,6 +5,10 @@ A larger example written to demonstrate
 	Export of an API as Tcl stubs table	(Package "cstack")
 	Import of an API defined as stubs-table	(Package "stackc")
 
+	Easy writing of C classes, with class and instances
+	represented as commands, through the utility package
+	critcl::class
+
 Package "cstack" also demonstrate the export of a companion header
 file containing declarations of package specific data structures and
 macros which are not expressible in the basic .decls file and header
@@ -23,6 +27,6 @@ Notes:
 *	"cstack" implements an abstract stack data type and exports
 	a C-level API for it, as a stubs table.
 
-*	"stackc" wraps the abstract staclk data type of "cstack" into
+*	"stackc" wraps the abstract stack data type of "cstack" into
 	a Tcl class/object system where stacks are objects, each
 	represented as a Tcl command.
