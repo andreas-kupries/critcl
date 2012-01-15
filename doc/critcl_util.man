@@ -36,5 +36,5 @@ It returns [const true] on success, and [const false] otherwise.
 [list_end]
 
 [comment {===================================================================}]
-[include include/feedback.inc]
+[include include/feedback2.inc]
 [manpage_end]
