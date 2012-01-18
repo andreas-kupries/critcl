@@ -61,13 +61,30 @@ proc _help {} {
     usage 0
     return
 }
-proc Hrecipes {} { return "\n\tList all brew commands, without details." }
+proc Hrecipes {} { return "\n\tList all build commands, without details." }
 proc _recipes {} {
     set r {}
     foreach c [info commands _*] {
 	lappend r [string range $c 1 end]
     }
     puts [lsort -dict $r]
+    return
+}
+proc Hdoc {} { return "\n\t(Re)Generate the embedded documentation." }
+proc _doc {} {
+    cd [file dirname $::me]/doc
+
+    puts "Removing old documentation..."
+    file delete -force ../embedded/man
+    file delete -force ../embedded/www
+
+    puts "Generating man pages..."
+    exec 2>@ stderr >@ stdout dtplite        -o ../embedded/man -ext n nroff .
+    puts "Generating 1st html..."
+    exec 2>@ stderr >@ stdout dtplite -merge -o ../embedded/www html .
+    puts "Generating 2nd html, resolving cross-references..."
+    exec 2>@ stderr >@ stdout dtplite -merge -o ../embedded/www html .
+
     return
 }
 proc Hinstall {} { return "?destination?\n\tInstall all packages, and application.\n\tdestination = path of package directory, default \[info library\]." }
