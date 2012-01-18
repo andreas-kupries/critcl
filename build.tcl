@@ -122,8 +122,8 @@ proc _install {{dst {}}} {
     puts "Installed application: $dsta/critcl"
     return
 }
-proc Huninstall {} { return "?destination?\n\tRemove all packages, and application.\n\tdestination = path of package directory, default \[info library\]." }
-proc _uninstall {{dst {}}} {
+proc Hdrop {} { return "?destination?\n\tRemove all packages, and application.\n\tdestination = path of package directory, default \[info library\]." }
+proc _drop {{dst {}}} {
     global packages
 
     if {[llength [info level 0]] < 2} {
