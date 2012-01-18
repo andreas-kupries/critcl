@@ -361,7 +361,7 @@ implictly contain the assignment
 .CS
 
 
-    instrance->cmd = cmd;
+    instance->cmd = cmd;
 
 .CE
 .TP

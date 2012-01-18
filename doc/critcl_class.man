@@ -119,7 +119,7 @@ instance structure and instance command. And the [arg postbody] will
 implictly contain the assignment
 
 [example {
-    instrance->cmd = cmd;
+    instance->cmd = cmd;
 }]
 
 [call [cmd include] [arg path]]
