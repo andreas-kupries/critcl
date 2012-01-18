@@ -1,5 +1,5 @@
 '\"
-'\" Generated from file '/net/nas/data/andreask/Dev/Critcl/github-ak-scratch/embedded/man/files/critcl_introduction.n' by tcllib/doctools with format 'nroff'
+'\" Generated from file '/home/aku/Projects/Critcl/dev-critcl/embedded/man/files/critcl_introduction.n' by tcllib/doctools with format 'nroff'
 '\" Copyright (c) Jean-Claude Wippler
 '\" Copyright (c) Steve Landers
 '\" Copyright (c) 2011 Andreas Kupries
@@ -293,12 +293,13 @@ Newly introduced with Critcl version 3 is
 \fIGenerate TEA Package\fR. This mode constructs a directory
 hierarchy from the package which can later be built like a regular TEA
 package, i.e. using
-.nf
+.CS
+
 
 	.../configure --prefix ...
 	make all isntall
 
-.fi
+.CE
 .SH "SYSTEM ARCHITECTURE"
 The whole system consist of two pieces, as seen in the figure below
 .PP
@@ -435,6 +436,7 @@ for use by advanced users. The new commands are
 .IP [5]
 \fBcritcl::argconversion\fR
 .RE
+.IP
 Please see section \fIAdvanced Embedded C Code\fR of the
 \fBcritcl\fR package documentation for details.
 .IP [23]
@@ -529,6 +531,19 @@ for/about the package.
 .sp
 Please see section \fIPackage Meta Data\fR of the
 \fBcritcl\fR package documentation for details.
+.PP
+.SH "CHANGES FOR VERSION 3.1"
+.IP [1]
+Extended the API for handling TEApot metadata. Added the
+command \fBmeta?\fR to query the stored infomration. Main use
+currently envisioned is retreieval of the current package's name by
+utility command, for use in constructed names. This particular
+infomration is always available due to the static scan of the package
+file on execution of the first critcl command.
+.IP [2]
+Extended the API with a command, \fBname2c\fR exposing the
+process of converting a Tcl name into base name, namespace, and C
+namespace.
 .PP
 .SH AUTHORS
 Jean Claude Wippler, Steve Landers, Andreas Kupries

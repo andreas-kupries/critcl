@@ -254,6 +254,9 @@ doc
 \fBcritcl::util\fR
 \fIfiles/critcl_util.n\fR: CriTcl Utilities
 .TP
+\fBcritcl::class\fR
+\fIfiles/critcl_class.n\fR: CriTcl Utilities: C Classes
+.TP
 \fBcritcl_introduction\fR
 \fIfiles/critcl_introduction.n\fR: Introduction To CriTcl
 .TP

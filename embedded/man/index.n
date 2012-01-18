@@ -241,6 +241,12 @@ Database Class:	\\fB\\$3\\fR
 .SH INDEX
 doc
 .RS
+C class
+.RS
+.TP
+\fBfiles/critcl_class.n\fR
+critcl::class
+.RE
 C code
 .RS
 .TP
@@ -249,6 +255,9 @@ critcl_app
 .TP
 \fBfiles/critcl_apppkg.n\fR
 critcl::app
+.TP
+\fBfiles/critcl_class.n\fR
+critcl::class
 .TP
 \fBfiles/critcl_introduction.n\fR
 critcl_introduction
@@ -262,6 +271,18 @@ critcl_use
 \fBfiles/critcl_util.n\fR
 critcl::util
 .RE
+C instance
+.RS
+.TP
+\fBfiles/critcl_class.n\fR
+critcl::class
+.RE
+C object
+.RS
+.TP
+\fBfiles/critcl_class.n\fR
+critcl::class
+.RE
 code generator
 .RS
 .TP
@@ -270,6 +291,9 @@ critcl_app
 .TP
 \fBfiles/critcl_apppkg.n\fR
 critcl::app
+.TP
+\fBfiles/critcl_class.n\fR
+critcl::class
 .TP
 \fBfiles/critcl_introduction.n\fR
 critcl_introduction
@@ -292,6 +316,9 @@ critcl_app
 \fBfiles/critcl_apppkg.n\fR
 critcl::app
 .TP
+\fBfiles/critcl_class.n\fR
+critcl::class
+.TP
 \fBfiles/critcl_introduction.n\fR
 critcl_introduction
 .TP
@@ -312,6 +339,9 @@ critcl_app
 .TP
 \fBfiles/critcl_apppkg.n\fR
 critcl::app
+.TP
+\fBfiles/critcl_class.n\fR
+critcl::class
 .TP
 \fBfiles/critcl_introduction.n\fR
 critcl_introduction
@@ -334,6 +364,9 @@ critcl_app
 \fBfiles/critcl_apppkg.n\fR
 critcl::app
 .TP
+\fBfiles/critcl_class.n\fR
+critcl::class
+.TP
 \fBfiles/critcl_introduction.n\fR
 critcl_introduction
 .TP
@@ -354,6 +387,9 @@ critcl_app
 .TP
 \fBfiles/critcl_apppkg.n\fR
 critcl::app
+.TP
+\fBfiles/critcl_class.n\fR
+critcl::class
 .TP
 \fBfiles/critcl_introduction.n\fR
 critcl_introduction
@@ -376,6 +412,9 @@ critcl_app
 \fBfiles/critcl_apppkg.n\fR
 critcl::app
 .TP
+\fBfiles/critcl_class.n\fR
+critcl::class
+.TP
 \fBfiles/critcl_introduction.n\fR
 critcl_introduction
 .TP
@@ -396,6 +435,9 @@ critcl_app
 .TP
 \fBfiles/critcl_apppkg.n\fR
 critcl::app
+.TP
+\fBfiles/critcl_class.n\fR
+critcl::class
 .TP
 \fBfiles/critcl_introduction.n\fR
 critcl_introduction
@@ -418,6 +460,9 @@ critcl_app
 \fBfiles/critcl_apppkg.n\fR
 critcl::app
 .TP
+\fBfiles/critcl_class.n\fR
+critcl::class
+.TP
 \fBfiles/critcl_introduction.n\fR
 critcl_introduction
 .TP
@@ -439,6 +484,9 @@ critcl_app
 \fBfiles/critcl_apppkg.n\fR
 critcl::app
 .TP
+\fBfiles/critcl_class.n\fR
+critcl::class
+.TP
 \fBfiles/critcl_introduction.n\fR
 critcl_introduction
 .TP
@@ -459,6 +507,9 @@ critcl_app
 .TP
 \fBfiles/critcl_apppkg.n\fR
 critcl::app
+.TP
+\fBfiles/critcl_class.n\fR
+critcl::class
 .TP
 \fBfiles/critcl_introduction.n\fR
 critcl_introduction
