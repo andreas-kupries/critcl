@@ -1,6 +1,6 @@
 [comment {-*- tcl -*- doctools manpage}]
 [manpage_begin critcl::class n 1]
-[include include/module.inc]
+[include include/module2.inc]
 [keywords {C class} {C object} {C instance}]
 [titledesc {CriTcl Utilities: C Classes}]
 [require Tcl 8.4]
@@ -53,24 +53,40 @@ commands available to the developer.
 This command specifies the C code for the construction,
 i.e. allocation of instance structures.
 
-[para] The [arg body] has to contain the code initializing the instance
-structure, accessible through the variable [var instance].
+While technically optional in practice it should be specified.
 
-The [arg postbody] is then responsible for conecting the instance with
-the created Tcl command, accessible through the variable [var cmd], of
-type [const Tcl_Command].
+[para] The C code in [arg body] has to contain the statements
+initializing the instance structure, which is accessible through the
+variable [var instance].
+
+It further has access to the variable [var interp], a pointer to the
+Tcl interpreter the command is created in, enabling it to set an error
+message should the construction fail.
+
+The C code in [arg postbody] is then responsible for connecting the
+[var instance] with the created Tcl command, accessible through the
+variable [var cmd], of type [const Tcl_Command].
 
 [para] If the instance structure is specified as a series of
 [cmd field]s then the system will automatically generate code to
 allocate the instance structure.
 
-Otherwise, i.e. for an external [cmd type] it is the responsibility of
-the [arg body] to do so.
+It will also provide a label [const error:] to jump to in case of a
+failure, at which point the instance will be cleaned up and NULL
+returned as the result of the constructor, to notify the calling
+environment of that failure.
+
+[para] Otherwise, i.e. for an external [cmd type] all of this,
+i.e. allocation, possible deallocation on failure, etc. will be the
+responsibility of the [arg body] and writer of the class.
+
 
 [call [cmd destructor] [arg body]]
 
 This command specifies the C code for the destruction, i.e. release of
 instance structures.
+
+While technically optional in practice it should be specified.
 
 [para] The [arg body] has to contain the code releasing the contents
 of the instance structure, accessible through the variable
@@ -149,6 +165,9 @@ passed into the C code as is, i.e. are considered to be C expressions.
 
 This command specifies the [arg support]ing C code, i.e. any
 definitions (types, functions, etc.) needed by the [emph whole] class.
+
+It is optional, i.e. if the class doesn't need supporting code, this
+command can be left out of the specification.
 
 [call [cmd type] [arg name]]
 
