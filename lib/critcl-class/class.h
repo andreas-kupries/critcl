@@ -61,13 +61,14 @@ static CONST char*
 /* # # ## ### ##### ######## */
 
 static @instancetype@
-@stem@_Constructor (void)
+@stem@_Constructor (Tcl_Interp* interp)
 {
     @ivardecl@;
     /* # # ## ### ##### ######## User: Constructor */
     @constructor@;
     /* # # ## ### ##### ######## */
     return instance;
+@ivarerror@;
 }
 
 static void
@@ -219,7 +220,10 @@ int
      * Construct instance state, and command.
      */
 
-    instance = @stem@_Constructor ();
+    instance = @stem@_Constructor (interp);
+    if (!instance) {
+	return TCL_ERROR;
+    }
 
     cmd = Tcl_CreateObjCommand (interp, Tcl_GetString (fqn),
 				@stem@_InstanceCommand,

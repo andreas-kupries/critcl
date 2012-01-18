@@ -67,6 +67,7 @@ proc ::critcl::class::def {classname script} {
 	set itype [dict get $data instancetype]
 	dict set data ivardecl    "$itype instance"
 	dict set data ivarrelease ""
+	dict set data ivarerror   ""
 	dict set data itypedecl   "/* External type for instance state: $itype */"
     } elseif {[dict exists $data instancefields]} {
 	# Convert fields into instance type declaration and name.
@@ -87,6 +88,7 @@ proc ::critcl::class::def {classname script} {
 
 	dict set data instancetype $itype
 	dict set data ivardecl    "$itype instance = ($itype) ckalloc (sizeof (${itype}__))"
+	dict set data ivarerror   "error:\n    ckfree ((char*) instance);\n    return NULL;"
 	dict set data ivarrelease "ckfree ((char*) instance)"
 	dict set data itypedecl   [join $decl \n]
 
