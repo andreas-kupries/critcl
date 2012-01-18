@@ -99,25 +99,41 @@ proc ::critcl::class::def {classname script} {
     # Process the method declarations. Ensure that the names are
     # listed in alphabetical order, to be nice.
 
-    set map [list @stem@ $stem @instancetype@ $itype]
-    foreach name [lsort -dict [dict get $data method_names]] {
-	set mname                  [dict get $data method $name enum]
-	set mcase [string map $map [dict get $data method $name case]]
-	set mcode [string map $map [dict get $data method $name code]]
+    if {[dict exists $data method_names]} {
+	set map [list @stem@ $stem @instancetype@ $itype]
+	foreach name [lsort -dict [dict get $data method_names]] {
+	    set mname                  [dict get $data method $name enum]
+	    set mcase [string map $map [dict get $data method $name case]]
+	    set mcode [string map $map [dict get $data method $name code]]
 
-	lappend mnames \"$name\",
-	lappend menums $mname
-	lappend mcases $mcase
-	lappend mcodes $mcode
+	    lappend mnames \"$name\",
+	    lappend menums $mname
+	    lappend mcases $mcase
+	    lappend mcodes $mcode
+	}
+
+	dict unset data method_names
+	dict unset data method
+    } else {
+	set mnames {}
+	set menums {M_EMPTY}
+	set mcases {}
+	set mcodes {}
     }
-
-    dict unset data method_names
-    dict unset data method
 
     dict set data method_names           \t[join $mnames \n\t]
     dict set data method_enumeration     \t[join $menums ",\n\t"]
     dict set data method_dispatch        \t[join $mcases \n\t]
     dict set data method_implementations   [join $mcodes \n]
+
+    foreach k {
+	constructor
+	destructor
+	support
+    } {
+	if {[dict exists $data $k]} continue
+	dict set data $k {}
+    }
 
     #array set CLASS $data
     #parray CLASS
@@ -126,7 +142,7 @@ proc ::critcl::class::def {classname script} {
     set map [MakeMap $data]
     MakeSupport $data $map
 
-    critcl::ccommand $classname ${stem}_ClassCommand
+    uplevel 1 [list critcl::ccommand $classname ${stem}_ClassCommand]
     return
 }
 
