@@ -51,7 +51,7 @@ static CONST char*
     }
 	    
     class->counter ++;
-    sprintf (class->buf, "@class@%d", class->counter);
+    sprintf (class->buf, "@class@%ld", class->counter);
     return class->buf;
 #undef KEY
 }
