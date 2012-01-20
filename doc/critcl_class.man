@@ -96,6 +96,10 @@ of the instance structure, accessible through the variable
 [cmd field]s then the system will automatically generate code to free
 the instance structure (not the fields) after the [arg body] was run.
 
+It will further generate a [method destroy] method too, owing to its
+knowledge of the instance structure, i.e. the existence of field
+[const cmd].
+
 Otherwise, i.e. for an external [cmd type] it is the responsibility of
 the [arg body] to free the structure itself as well.
 
@@ -160,6 +164,10 @@ represent the parameters
 
 Any additional arguments specified will be added after these and are
 passed into the C code as is, i.e. are considered to be C expressions.
+
+[para] Note that the system automatically generates a method
+[method destroy] when the instance structure is specified as a series
+of [cmd field]s.
 
 [call [cmd support] [arg code]]
 

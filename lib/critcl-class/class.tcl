@@ -253,7 +253,26 @@ proc ::critcl::class::spec::field {ctype name {comment {}}} {
 	    "Field is in conflict with external instance type already declared."
     }
 
+    if {[dict exists $state IF $name]} {
+	return -code error "Duplicate definition of field \"$name\""
+    }
+
     dict lappend state instancefields [list $ctype $name $comment]
+    dict set state IF $name .
+
+    if {[llength [dict get $state instancefields]] == 1} {
+	# Generate a destroy method. We can do that, because we know
+	# that the instance structure will have a field named 'cmd'.
+	dict set state IF cmd 1
+	mdef destroy {
+	    if (objc != 2) {
+		Tcl_WrongNumArgs (interp, 2, objv, NULL);
+		return TCL_ERROR;
+	    }
+	    Tcl_DeleteCommandFromToken(interp, instance->cmd);
+	    return TCL_OK;
+	}
+    }
     return
 }
 
@@ -278,6 +297,10 @@ proc ::critcl::class::spec::destructor {code} {
 
 proc ::critcl::class::spec::mdef {name args} {
     variable state
+
+    if {[dict exists $state method $name]} {
+	return -code error "Duplicate definition of method \"$name\""
+    }
 
     set mname M_[string toupper $name]
     set case  "case $mname: @function@ (instance, interp, objc, objv); break;"
