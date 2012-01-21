@@ -868,10 +868,10 @@ Please see section \fIPackage Meta Data\fR of the
 .SH "CHANGES FOR VERSION 3.1"
 .IP [1]
 Extended the API for handling TEApot metadata. Added the
-command \fBmeta?\fR to query the stored infomration. Main use
-currently envisioned is retreieval of the current package's name by
+command \fBmeta?\fR to query the stored information. Main use
+currently envisioned is retrieval of the current package's name by
 utility command, for use in constructed names. This particular
-infomration is always available due to the static scan of the package
+information is always available due to the static scan of the package
 file on execution of the first critcl command.
 .IP [2]
 Extended the API with a command, \fBname2c\fR exposing the
