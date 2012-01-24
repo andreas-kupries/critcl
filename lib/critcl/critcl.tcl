@@ -383,6 +383,20 @@ proc ::critcl::cinit {text edecls} {
 
 proc ::critcl::owns {args} {}
 
+proc ::critcl::source {path} {
+    # Source a critcl file in the context of the current file,
+    # i.e. [This]. Enables the factorization of a large critcl
+    # file into smaller, easier to read pieces.
+    SkipIgnored [set file [This]]
+    AbortWhenCalledAfterBuild
+
+    msg -nonewline " (importing $path)"
+    foreach f [Expand $file $path] {
+	uplevel 1 [Cat $f]
+    }
+    return
+}
+
 proc ::critcl::cheaders {args} {
     SkipIgnored [This]
     AbortWhenCalledAfterBuild
@@ -2091,9 +2105,7 @@ proc ::critcl::ProcessArgs {typesArray names cnames}  {
 }
 
 proc ::critcl::scan {file} {
-    set fd    [open $file r]
-    set lines [split [read $fd] \n]
-    close $fd
+    set lines [split [Cat $file] \n]
 
     set scan::rkey    require
     set scan::base    [file dirname [file normalize $file]]
@@ -2114,6 +2126,7 @@ proc ::critcl::scan {file} {
 	critcl::api/function		ok
 	critcl::api/header		warn
 	critcl::api/import		ok
+	critcl::source                  warn
 	critcl::cheaders		warn
 	critcl::csources		warn
 	critcl::license			warn
@@ -2175,9 +2188,7 @@ proc ::critcl::scan {file} {
 }
 
 proc ::critcl::ScanDependencies {dfile file {mode plain}} {
-    set fd    [open $file r]
-    set lines [split [read $fd] \n]
-    close $fd
+    set lines [split [Cat $file] \n]
 
     catch {
 	set saved $scan::capture
@@ -2365,6 +2376,17 @@ proc ::critcl::scan::critcl::meta {key args} {
 }
 
 # Capture files
+proc ::critcl::scan::critcl::source   {path} {
+    # Recursively scan the imported file.
+    # Keep the current context.
+    variable ::critcl::scan::config
+
+    foreach f [Files $path] {
+	set lines [split [::critcl::Cat $f] \n]
+	ScanCore $lines $config
+    }
+    return
+}
 proc ::critcl::scan::critcl::owns     {args} { eval [linsert $args 0 Files] }
 proc ::critcl::scan::critcl::cheaders {args} { eval [linsert $args 0 Files] }
 proc ::critcl::scan::critcl::csources {args} { eval [linsert $args 0 Files] }

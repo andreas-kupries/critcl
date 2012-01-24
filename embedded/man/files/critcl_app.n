@@ -868,15 +868,20 @@ Please see section \fIPackage Meta Data\fR of the
 .SH "CHANGES FOR VERSION 3.1"
 .IP [1]
 Extended the API for handling TEApot metadata. Added the
-command \fBmeta?\fR to query the stored information. Main use
+command \fBcritcl::meta?\fR to query the stored information. Main use
 currently envisioned is retrieval of the current package's name by
 utility command, for use in constructed names. This particular
 information is always available due to the static scan of the package
 file on execution of the first critcl command.
 .IP [2]
-Extended the API with a command, \fBname2c\fR exposing the
-process of converting a Tcl name into base name, namespace, and C
+Extended the API with a command, \fBcritcl::name2c\fR exposing
+the process of converting a Tcl name into base name, namespace, and C
 namespace.
+.IP [3]
+Extended the API with a command, \fBcritcl::source\fR executing
+critcl commands in a separate file in the context of the current file,
+allowing for easier management of larger bodies of code by splitting
+it up.
 .PP
 .SH AUTHORS
 Jean Claude Wippler, Steve Landers, Andreas Kupries

@@ -297,6 +297,8 @@ package require \fBmd5  ?2?\fR
 .sp
 \fB::critcl::clibraries\fR ?\fIarg\fR...?
 .sp
+\fB::critcl::source\fR \fIpath\fR
+.sp
 \fB::critcl::tsources\fR \fIpattern\fR...
 .sp
 \fB::critcl::owns\fR \fIpattern\fR...
@@ -904,7 +906,7 @@ dependencies declared within are ignored, i.e. not recorded in the
 meta data.
 .PP
 .SS "CONTROL & INTERFACE"
-The package provides twelve commands to control the details of
+The package provides thirteen commands to control the details of
 compilation and linking, enabling "\fI.critcl\fR" files to provide
 custom information about their environment and dependencies.
 .PP
@@ -981,6 +983,18 @@ current "\fI.critcl\fR" file.
 .sp
 Multiple invokations of this command accumulate their
 information.
+.TP
+\fB::critcl::source\fR \fIpath\fR
+This command evaluates the critcl commands in the file specified by
+\fIpath\fR in the context of the current "\fI.critcl\fR" file.
+.sp
+The argument is actually considered as glob pattern and all
+matching files are evaluated. A pattern matching no file or
+non-existing files cause the command to throw an error.
+.sp
+\fINote\fR that a pattern not beginning with an absolute path
+is interpreted relative to the directory containing the current
+"\fI.critcl\fR" file.
 .TP
 \fB::critcl::tsources\fR \fIpattern\fR...
 This command provides the critcl package with information about
@@ -2517,15 +2531,20 @@ Please see section \fIPackage Meta Data\fR of the
 .SH "CHANGES FOR VERSION 3.1"
 .IP [1]
 Extended the API for handling TEApot metadata. Added the
-command \fBmeta?\fR to query the stored information. Main use
+command \fBcritcl::meta?\fR to query the stored information. Main use
 currently envisioned is retrieval of the current package's name by
 utility command, for use in constructed names. This particular
 information is always available due to the static scan of the package
 file on execution of the first critcl command.
 .IP [2]
-Extended the API with a command, \fBname2c\fR exposing the
-process of converting a Tcl name into base name, namespace, and C
+Extended the API with a command, \fBcritcl::name2c\fR exposing
+the process of converting a Tcl name into base name, namespace, and C
 namespace.
+.IP [3]
+Extended the API with a command, \fBcritcl::source\fR executing
+critcl commands in a separate file in the context of the current file,
+allowing for easier management of larger bodies of code by splitting
+it up.
 .PP
 .SH AUTHORS
 Jean Claude Wippler, Steve Landers, Andreas Kupries
