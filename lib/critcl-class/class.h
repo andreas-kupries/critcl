@@ -10,13 +10,43 @@
 @includes@
 
 /*
+ * Instance method names and enumeration.
+ */
+
+static CONST char* @stem@_methodnames [] = {
+@method_names@
+    NULL
+};
+
+typedef enum @stem@_methods {
+@method_enumeration@
+} @stem@_methods;
+
+/*
+ * Class method names and enumeration.
+ */
+
+static CONST char* @stem@_class_methodnames [] = {
+    "create",
+    "new",@class_method_names@
+    NULL
+};
+
+typedef enum @stem@_classmethods {
+    @stem@_CM_create,
+    @stem@_CM_new@class_method_enumeration@
+} @stem@_class_methods;
+
+/*
  * Class structure. Instance counter.
  */
 
-typedef struct @classtype@ {
-    long int counter;
-    char buf [50];
-} @classtype@;
+typedef struct @classtype@__ {
+    const char* name;  /* Class name, for debugging */
+    long int counter;  /* Id generation counter */
+    char     buf [50]; /* Stash for the auto-generated object names. */
+@ctypedecl@} @classtype@__;
+typedef struct @classtype@__* @classtype@;
 
 /*
  * Instance structure.
@@ -24,46 +54,67 @@ typedef struct @classtype@ {
 
 @itypedecl@
 
+/* # # ## ### ##### ######## User: General support */
+@support@
+/* # # ## ### ##### ######## */
+
 /*
  * Class support functions.
  */
 
 static void
-@stem@_ReleaseClass (ClientData cd, Tcl_Interp* interp)
+@stem@_ClassRelease (ClientData cd, Tcl_Interp* interp)
 {
+    @classtype@ class = (@classtype@) cd;
+@classdestructor@
     ckfree((char*) cd);
 }
 
-static CONST char*
-@stem@_NewInstanceName (Tcl_Interp* interp)
+static @classtype@
+@stem@_Class (Tcl_Interp* interp)
 {
 #define KEY "@package@/@class@"
 
-    Tcl_InterpDeleteProc* proc = @stem@_ReleaseClass;
-    @classtype@ * class;
+    Tcl_InterpDeleteProc* proc = @stem@_ClassRelease;
+    @classtype@ class;
 
     class = Tcl_GetAssocData (interp, KEY, &proc);
 
-    if (class  == NULL) {
-	class = (@classtype@ *) ckalloc (sizeof (@classtype@));
-	class->counter = 0;
-	Tcl_SetAssocData (interp, KEY, proc, (ClientData) class);
+    if (class) {
+	return class;
     }
-	    
-    class->counter ++;
-    sprintf (class->buf, "@class@%ld", class->counter);
-    return class->buf;
+
+    class = (@classtype@) ckalloc (sizeof (@classtype@__));
+    class->name = "@stem@";
+    class->counter = 0;
+
+@classconstructor@
+
+    Tcl_SetAssocData (interp, KEY, proc, (ClientData) class);
+    return class;
+ error:
+    ckfree ((char*) class);
+    return NULL;
 #undef KEY
 }
 
-/* # # ## ### ##### ######## User: General support */
-@support@
+static CONST char*
+@stem@_NewInstanceName (@classtype@ class)
+{
+    class->counter ++;
+    sprintf (class->buf, "@class@%ld", class->counter);
+    return class->buf;
+}
+
 /* # # ## ### ##### ######## */
 
 static @instancetype@
-@stem@_Constructor (Tcl_Interp* interp)
+@stem@_Constructor (Tcl_Interp* interp,
+		    @classtype@ class,
+		    int            objc,
+		    Tcl_Obj*const* objv)
 {
-    @ivardecl@;
+@ivardecl@;
     /* # # ## ### ##### ######## User: Constructor */
     @constructor@;
     /* # # ## ### ##### ######## */
@@ -85,9 +136,9 @@ static void
 {
     @instancetype@ instance = (@instancetype@) clientData;
     /* # # ## ### ##### ######## User: Destructor */
-    @destructor@;
+@destructor@;
     /* # # ## ### ##### ######## */
-    @ivarrelease@;
+@ivarrelease@;
 }
 
 /* # # ## ### ##### ######## User: Methods */
@@ -100,26 +151,19 @@ static void
 
 static int
 @stem@_InstanceCommand (ClientData      clientData,
-			      Tcl_Interp*     interp,
-			      int             objc,
-			      Tcl_Obj* CONST* objv)
+			Tcl_Interp*     interp,
+			int             objc,
+			Tcl_Obj* CONST* objv)
 {
     @instancetype@ instance = (@instancetype@) clientData;
     int mcode;
 
-    static CONST char* methods [] = {
-@method_names@
-	NULL
-    };
-    enum methods {
-@method_enumeration@
-    };
-
     if (objc < 2) {
 	Tcl_WrongNumArgs (interp, objc, objv, "option ?arg arg ...?");
 	return TCL_ERROR;
-    } else if (Tcl_GetIndexFromObj (interp, objv [1], methods, "option",
-				    0, &mcode) != TCL_OK) {
+    } else if (Tcl_GetIndexFromObj (interp, objv [1],
+				    (const char**) @stem@_methodnames,
+				    "option", 0, &mcode) != TCL_OK) {
 	return TCL_ERROR;
     }
 
@@ -128,52 +172,25 @@ static int
      * the requested functionality
      */
 
-    switch (mcode) {
+    switch ((@stem@_methods) mcode) {
 @method_dispatch@
     }
     /* Not coming to this place */
 }
 
-/*
- * Class command, instance construction.
- */
+/* # # ## ### ##### ########: Predefined class methods */
 
-int
-@stem@_ClassCommand (ClientData      clientData,
-		     Tcl_Interp*     interp,
-		     int             objc,
-		     Tcl_Obj* CONST* objv)
+static int
+@stem@_NewInstance (char*           name,
+		    @classtype@ class,
+		    Tcl_Interp*     interp,
+		    int             objc,
+		    Tcl_Obj* CONST* objv)
 {
-    /* Syntax
-     *  - epsilon                         |1
-     *  - name                            |2
-     *
-     * FUTURE: Allow for additional arguments. See (%%) for relevant places.
-     */
-
-    CONST char* name;
     @instancetype@ instance;
     Tcl_Obj*    fqn;
     Tcl_CmdInfo ci;
     Tcl_Command cmd;
-
-#define USAGE "?name?"
-
-    /* (%%) */
-    if ((objc != 2) && (objc != 1)) {
-	Tcl_WrongNumArgs (interp, 1, objv, USAGE);
-	return TCL_ERROR;
-    }
-
-    /*
-     * Extract user specified name, or generate one ourselves.
-     */
-
-    if (objc < 2) {
-	name = @stem@_NewInstanceName (interp);
-    } else {
-	name = Tcl_GetString (objv [1]);
-    }
 
     /*
      * Compute the fully qualified command name to use, putting
@@ -220,7 +237,7 @@ int
      * Construct instance state, and command.
      */
 
-    instance = @stem@_Constructor (interp);
+    instance = @stem@_Constructor (interp, class, objc, objv);
     if (!instance) {
 	return TCL_ERROR;
     }
@@ -235,7 +252,92 @@ int
     Tcl_SetObjResult (interp, fqn);
     Tcl_DecrRefCount (fqn);
     return TCL_OK;
-#undef USAGE
+}
+
+static int
+@stem@_CM_createCmd (@classtype@ class,
+		     Tcl_Interp*     interp,
+		     int             objc,
+		     Tcl_Obj* CONST* objv)
+{
+    /* <class> create <name> ... */
+    char* name;
+
+    if (objc < 3) {
+	Tcl_WrongNumArgs (interp, 1, objv, "name ?args...?");
+	return TCL_ERROR;
+    }
+
+    name = Tcl_GetString (objv [2]);
+
+    objc -= 2;
+    objv += 2;
+
+    return @stem@_NewInstance (name, class, interp, objc, objv);
+}
+
+static int
+@stem@_CM_newCmd (@classtype@ class,
+		  Tcl_Interp*     interp,
+		  int             objc,
+		  Tcl_Obj* CONST* objv)
+{
+    /* <class> new ... */
+    char* name;
+
+    if (objc < 2) {
+	Tcl_WrongNumArgs (interp, 1, objv, "?args...?");
+	return TCL_ERROR;
+    }
+
+    name = @stem@_NewInstanceName (class);
+    return @stem@_NewInstance (name, class, interp, objc, objv);
+}
+
+/* # # ## ### ##### ######## User: Class Methods */
+@class_method_implementations@
+/* # # ## ### ##### ######## */
+
+/*
+ * Class command, class method, especially instance construction.
+ */
+
+int
+@stem@_ClassCommand (ClientData      clientData,
+		     Tcl_Interp*     interp,
+		     int             objc,
+		     Tcl_Obj* CONST* objv)
+{
+    @classtype@ class;
+    int mcode;
+
+    if (objc < 2) {
+	Tcl_WrongNumArgs (interp, 0, objv, "method ?args...?");
+	return TCL_ERROR;
+    }
+
+    if (Tcl_GetIndexFromObj (interp, objv [1],
+			     (const char**) @stem@_class_methodnames,
+			     "option", 0, &mcode) != TCL_OK) {
+	return TCL_ERROR;
+    }
+
+    class = @stem@_Class (interp);
+    if (!class) {
+	return TCL_ERROR;
+    }
+
+    /*
+     * Dispatch to methods. They check the #args in detail before performing
+     * the requested functionality
+     */
+
+    switch ((@stem@_methods) mcode) {
+	case @stem@_CM_create: @stem@_CM_createCmd (class, interp, objc, objv); break;
+	case @stem@_CM_new:    @stem@_CM_newCmd    (class, interp, objc, objv); break;
+@class_method_dispatch@
+    }
+    /* Not coming to this place */
 }
 
 /* # # ## ### ##### ######## ############# ##################### */
