@@ -95,7 +95,7 @@ proc ::critcl::class::def {classname script} {
 	dict set data ivarrelease "    ckfree ((char*) instance)"
 	dict set data itypedecl   [join $decl \n]
 
-	dict append data postconstructor "instance->cmd = cmd;"
+	dict lappend data postconstructor "instance->cmd = cmd;"
 
 	if {[dict exists $data field def class]} {
 	    dict append data ivardecl ";\n    instance->class = class"
@@ -191,10 +191,28 @@ proc ::critcl::class::def {classname script} {
 	dict set data classconstructor "\{\n[join $cc "\n\}\n    \{\n"]\n\}"
     }
 
-    # Process the class cdestructor fragments, if any.
+    # Process the class destructor fragments, if any.
     if {[dict exists $data classdestructor]} {
 	set cc [dict get $data classdestructor]
 	dict set data classdestructor "\{\n[join $cc "\n\}\n    \{\n"]\n\}"
+    }
+
+    # Process the constructor fragments, if any.
+    if {[dict exists $data constructor]} {
+	set cc [dict get $data constructor]
+	dict set data constructor "\{\n[join $cc "\n\}\n    \{\n"]\n\}"
+    }
+
+    # Process the constructor fragments, if any.
+    if {[dict exists $data postconstructor]} {
+	set cc [dict get $data postconstructor]
+	dict set data postconstructor "\{\n[join $cc "\n\}\n    \{\n"]\n\}"
+    }
+
+    # Process the destructor fragments, if any.
+    if {[dict exists $data destructor]} {
+	set cc [dict get $data destructor]
+	dict set data destructor "\{\n[join $cc "\n\}\n    \{\n"]\n\}"
     }
 
     # Process the support code fragments, if any.
@@ -208,6 +226,7 @@ proc ::critcl::class::def {classname script} {
     foreach k {
 	classconstructor
 	constructor
+	postconstructor
 	destructor
 	support
     } {
@@ -455,39 +474,39 @@ ComputeMethodList (CONST char** table)
     return
 }
 
-proc ::critcl::class::spec::constructor {code {postcode {}}} {
-    variable state
-    set loc {};#[critcl::LinePragma -2 [critcl::This]]
-    dict set state constructor        $loc[string trim $code]
-    dict set state postconstructor    $loc[string trim $postcode]
-    return
-}
-
 proc ::critcl::class::spec::classconstructor {code} {
     variable state
     set loc {};#[critcl::LinePragma -2 [critcl::This]]
-    dict lappend state classconstructor $loc[string trim $code]
+    dict lappend state classconstructor $loc[string trim $code \n]
     return
 }
 
 proc ::critcl::class::spec::classdestructor {code} {
     variable state
     set loc {};#[critcl::LinePragma -2 [critcl::This]]
-    dict lappend state classdestructor $loc[string trim $code]
+    dict lappend state classdestructor $loc[string trim $code \n]
     return
 }
 
-proc ::critcl::class::spec::support {code} {
+proc ::critcl::class::spec::constructor {code {postcode {}}} {
     variable state
     set loc {};#[critcl::LinePragma -2 [critcl::This]]
-    dict lappend state support $loc[string trim $code]
+    dict lappend state constructor        $loc[string trim $code     \n]
+    dict lappend state postconstructor    $loc[string trim $postcode \n]
     return
 }
 
 proc ::critcl::class::spec::destructor {code} {
     variable state
     set loc {};#[critcl::LinePragma -2 [critcl::This]]
-    dict set state destructor $loc[string trim $code]
+    dict lappend state destructor $loc[string trim $code \n]
+    return
+}
+
+proc ::critcl::class::spec::support {code} {
+    variable state
+    set loc {};#[critcl::LinePragma -2 [critcl::This]]
+    dict lappend state support $loc[string trim $code \n]
     return
 }
 
