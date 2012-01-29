@@ -181,7 +181,7 @@ static int
 /* # # ## ### ##### ########: Predefined class methods */
 
 static int
-@stem@_NewInstance (char*           name,
+@stem@_NewInstance (const char*     name,
 		    @classtype@ class,
 		    Tcl_Interp*     interp,
 		    int             objc,
@@ -283,7 +283,7 @@ static int
 		  Tcl_Obj* CONST* objv)
 {
     /* <class> new ... */
-    char* name;
+    const char* name;
 
     if (objc < 2) {
 	Tcl_WrongNumArgs (interp, 1, objv, "?args...?");
