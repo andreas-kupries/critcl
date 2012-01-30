@@ -225,6 +225,7 @@ proc ::critcl::class::def {classname script} {
     # optional in the class declaration.
     foreach k {
 	classconstructor
+	classdestructor
 	constructor
 	postconstructor
 	destructor
