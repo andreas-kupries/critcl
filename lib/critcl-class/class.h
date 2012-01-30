@@ -176,6 +176,7 @@ static int
 @method_dispatch@
     }
     /* Not coming to this place */
+    return TCL_ERROR;
 }
 
 /* # # ## ### ##### ########: Predefined class methods */
@@ -333,11 +334,12 @@ int
      */
 
     switch ((@stem@_methods) mcode) {
-	case @stem@_CM_create: @stem@_CM_createCmd (class, interp, objc, objv); break;
-	case @stem@_CM_new:    @stem@_CM_newCmd    (class, interp, objc, objv); break;
+	case @stem@_CM_create: return @stem@_CM_createCmd (class, interp, objc, objv); break;
+	case @stem@_CM_new:    return @stem@_CM_newCmd    (class, interp, objc, objv); break;
 @class_method_dispatch@
     }
     /* Not coming to this place */
+    return TCL_ERROR;
 }
 
 /* # # ## ### ##### ######## ############# ##################### */
