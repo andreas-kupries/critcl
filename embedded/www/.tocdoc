@@ -4,6 +4,7 @@
 [item doc/files/critcl_pkg.html          critcl              {CriTcl Package Reference}]
 [item doc/files/critcl_util.html         critcl::util        {CriTcl Utilities}]
 [item doc/files/critcl_class.html        critcl::class       {CriTcl Utilities: C Classes}]
+[item doc/files/critcl_iassoc.html       critcl::iassoc      {CriTcl Utilities: Tcl Interp Associations}]
 [item doc/files/critcl_introduction.html critcl_introduction {Introduction To CriTcl}]
 [item doc/files/critcl_usingit.html      critcl_use          {Using CriTcl}]
 [toc_end]

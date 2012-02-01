@@ -874,7 +874,7 @@ generated log.</p></dd>
 <dt><a name="35"><b class="cmd">::critcl::msg</b> <span class="opt">?<b class="option">-nonewline</b>?</span> <i class="arg">msg</i></a></dt>
 <dd><p>This command can be used by to report results from <b class="cmd">critcl::check</b>
 and <b class="cmd">critcl::checklink</b>. The default implementation used by mode
-<i class="term"><a href="../../index.html#key4">compile &amp; run</a></i> ignores any calls.</p>
+<i class="term"><a href="../../index.html#key0">compile &amp; run</a></i> ignores any calls.</p>
 <p>Tools like the <i class="term"><a href="critcl_app.html">CriTcl Application</a></i> are allowed to
 redefine this procedure to perform their own way of message
 reporting. The package <b class="package"><a href="critcl_apppkg.html">critcl::app</a></b> and the application on
@@ -1242,15 +1242,15 @@ defined and used later on.</p></dd>
 <div id="subsection12" class="subsection"><h3><a name="subsection12">Modes Of Operation/Use</a></h3>
 <p>CriTcl can be used in three different modes of operation, called</p>
 <ol class="enumerated">
-<li><p><i class="term"><a href="../../index.html#key4">Compile &amp; Run</a></i>, and</p></li>
-<li><p><i class="term"><a href="../../index.html#key5">Generate Package</a></i></p></li>
+<li><p><i class="term"><a href="../../index.html#key0">Compile &amp; Run</a></i>, and</p></li>
+<li><p><i class="term"><a href="../../index.html#key9">Generate Package</a></i></p></li>
 <li><p><i class="term">Generate TEA Package</i></p></li>
 </ol>
-<p>Of these three <i class="term"><a href="../../index.html#key4">Compile &amp; Run</a></i> came first and is the default
+<p>Of these three <i class="term"><a href="../../index.html#key0">Compile &amp; Run</a></i> came first and is the default
 when using the package directly. In that case the package collects the
 C fragments, builds them as needed, and caches the results for quick
 reuse when the same code is used in the future again.</p>
-<p>The second mode, <i class="term"><a href="../../index.html#key5">Generate Package</a></i>, was introduced to enable
+<p>The second mode, <i class="term"><a href="../../index.html#key9">Generate Package</a></i>, was introduced to enable
 the creation of (prebuilt) deliverable packages which do not depend on
 the existence of a build system, i.e. C compiler, on the target
 machine.
@@ -1848,8 +1848,8 @@ its linkability.</p></li>
 <li><p>Added a new command <b class="cmd">critcl::msg</b> for messaging, like
 command <b class="cmd">critcl::error</b> is for error reporting. Likewise this is a
 hook a user of the package is allowed to override. The default
-implementation, used by mode <i class="term"><a href="../../index.html#key4">compile &amp; run</a></i> does nothing. The
-implementation for mode <i class="term"><a href="../../index.html#key5">generate package</a></i> prints the message
+implementation, used by mode <i class="term"><a href="../../index.html#key0">compile &amp; run</a></i> does nothing. The
+implementation for mode <i class="term"><a href="../../index.html#key9">generate package</a></i> prints the message
 to stdout.</p>
 <p>Envisioned use is for the reporting of results determined by
 <b class="cmd">critcl::check</b> and <b class="cmd">critcl::checklink</b> during building, to
@@ -1970,7 +1970,7 @@ Please also report any ideas for enhancements you may have for either
 package and/or documentation.</p>
 </div>
 <div id="keywords" class="section"><h2><a name="keywords">Keywords</a></h2>
-<p><a href="../../index.html#key13">C code</a>, <a href="../../index.html#key6">Embedded C Code</a>, <a href="../../index.html#key8">code generator</a>, <a href="../../index.html#key4">compile &amp; run</a>, <a href="../../index.html#key9">compiler</a>, <a href="../../index.html#key3">dynamic code generation</a>, <a href="../../index.html#key10">dynamic compilation</a>, <a href="../../index.html#key5">generate package</a>, <a href="../../index.html#key12">linker</a>, <a href="../../index.html#key11">on demand compilation</a>, <a href="../../index.html#key7">on-the-fly compilation</a></p>
+<p><a href="../../index.html#key8">C code</a>, <a href="../../index.html#key3">Embedded C Code</a>, <a href="../../index.html#key6">code generator</a>, <a href="../../index.html#key0">compile &amp; run</a>, <a href="../../index.html#key10">compiler</a>, <a href="../../index.html#key1">dynamic code generation</a>, <a href="../../index.html#key2">dynamic compilation</a>, <a href="../../index.html#key9">generate package</a>, <a href="../../index.html#key4">linker</a>, <a href="../../index.html#key5">on demand compilation</a>, <a href="../../index.html#key7">on-the-fly compilation</a></p>
 </div>
 <div id="category" class="section"><h2><a name="category">Category</a></h2>
 <p>Glueing/Embedded C code</p>

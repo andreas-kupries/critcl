@@ -259,6 +259,9 @@ critcl::app
 \fBfiles/critcl_class.n\fR
 critcl::class
 .TP
+\fBfiles/critcl_iassoc.n\fR
+critcl::iassoc
+.TP
 \fBfiles/critcl_introduction.n\fR
 critcl_introduction
 .TP
@@ -295,6 +298,9 @@ critcl::app
 \fBfiles/critcl_class.n\fR
 critcl::class
 .TP
+\fBfiles/critcl_iassoc.n\fR
+critcl::iassoc
+.TP
 \fBfiles/critcl_introduction.n\fR
 critcl_introduction
 .TP
@@ -318,6 +324,9 @@ critcl::app
 .TP
 \fBfiles/critcl_class.n\fR
 critcl::class
+.TP
+\fBfiles/critcl_iassoc.n\fR
+critcl::iassoc
 .TP
 \fBfiles/critcl_introduction.n\fR
 critcl_introduction
@@ -343,6 +352,9 @@ critcl::app
 \fBfiles/critcl_class.n\fR
 critcl::class
 .TP
+\fBfiles/critcl_iassoc.n\fR
+critcl::iassoc
+.TP
 \fBfiles/critcl_introduction.n\fR
 critcl_introduction
 .TP
@@ -366,6 +378,9 @@ critcl::app
 .TP
 \fBfiles/critcl_class.n\fR
 critcl::class
+.TP
+\fBfiles/critcl_iassoc.n\fR
+critcl::iassoc
 .TP
 \fBfiles/critcl_introduction.n\fR
 critcl_introduction
@@ -391,6 +406,9 @@ critcl::app
 \fBfiles/critcl_class.n\fR
 critcl::class
 .TP
+\fBfiles/critcl_iassoc.n\fR
+critcl::iassoc
+.TP
 \fBfiles/critcl_introduction.n\fR
 critcl_introduction
 .TP
@@ -414,6 +432,9 @@ critcl::app
 .TP
 \fBfiles/critcl_class.n\fR
 critcl::class
+.TP
+\fBfiles/critcl_iassoc.n\fR
+critcl::iassoc
 .TP
 \fBfiles/critcl_introduction.n\fR
 critcl_introduction
@@ -439,6 +460,9 @@ critcl::app
 \fBfiles/critcl_class.n\fR
 critcl::class
 .TP
+\fBfiles/critcl_iassoc.n\fR
+critcl::iassoc
+.TP
 \fBfiles/critcl_introduction.n\fR
 critcl_introduction
 .TP
@@ -462,6 +486,9 @@ critcl::app
 .TP
 \fBfiles/critcl_class.n\fR
 critcl::class
+.TP
+\fBfiles/critcl_iassoc.n\fR
+critcl::iassoc
 .TP
 \fBfiles/critcl_introduction.n\fR
 critcl_introduction
@@ -487,6 +514,9 @@ critcl::app
 \fBfiles/critcl_class.n\fR
 critcl::class
 .TP
+\fBfiles/critcl_iassoc.n\fR
+critcl::iassoc
+.TP
 \fBfiles/critcl_introduction.n\fR
 critcl_introduction
 .TP
@@ -511,6 +541,9 @@ critcl::app
 \fBfiles/critcl_class.n\fR
 critcl::class
 .TP
+\fBfiles/critcl_iassoc.n\fR
+critcl::iassoc
+.TP
 \fBfiles/critcl_introduction.n\fR
 critcl_introduction
 .TP
@@ -522,4 +555,16 @@ critcl_use
 .TP
 \fBfiles/critcl_util.n\fR
 critcl::util
+.RE
+singleton
+.RS
+.TP
+\fBfiles/critcl_iassoc.n\fR
+critcl::iassoc
+.RE
+Tcl Interp Association
+.RS
+.TP
+\fBfiles/critcl_iassoc.n\fR
+critcl::iassoc
 .RE

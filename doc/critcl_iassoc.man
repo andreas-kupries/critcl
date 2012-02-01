@@ -1,0 +1,85 @@
+[comment {-*- tcl -*- doctools manpage}]
+[manpage_begin critcl::iassoc n 1]
+[include include/module2.inc]
+[keywords singleton {Tcl Interp Association}]
+[titledesc {CriTcl Utilities: Tcl Interp Associations}]
+[require Tcl 8.4]
+[require critcl [opt 3.1]]
+[require critcl::iassoc [opt 1]]
+[description]
+[para]
+[include include/welcome.inc]
+[para]
+
+This document is the reference manpage for the [package critcl::iassoc]
+package. This package provides convenience commands for advanced
+functionality built on top of the core.
+
+Namely, the specification of structures associated with Tcl interpreters
+through their association mechanism and accessor functions for these
+structures, without having to write all the required boilerplate.
+
+Its intended audience are mainly developers wishing to write Tcl
+packages with embedded C code.
+[para]
+
+This package resides in the Core Package Layer of CriTcl.
+[para][image arch_core][para]
+
+[comment {===================================================================}]
+
+[section API]
+
+[list_begin definitions]
+[call [cmd ::critcl::iassoc::def] [arg name] [arg struct] [arg constructor] [arg destructor]]
+
+This command defines a C function with the given [arg name] which
+provides access to a structure associated with a Tcl interpreter.
+
+[para] The C code code fragment [arg struct] defines the elements of said
+structure, whereas the fragments [arg constructor] and [arg destructor] are
+C code blocks executed to initialize and release any dynamically allocated
+parts of the structure, when needed.
+
+[para] The new function takes a single argument, a [const Tcl_Interp*] pointer
+refering to the interpreter whose structure we wish to obtain, and returns a
+pointer to the structure, of yupe "[arg name]_data" (see below).
+
+[para] The relevant interpreter is also accessible in the [arg constructor]
+and [arg destructor] blocks, under the name [var interp].
+
+[para] The C types associated with the structure are derived from [arg name],
+with "[arg name]_data__" the type of the structure itself, and "[arg name]_data"
+representing a pointer to the structure.
+
+[list_end]
+
+[comment {===================================================================}]
+[section Example]
+
+The example shown below is the specification of a simple interpreter-associated
+counter. The full example, with meta data and other incidentals, can be found
+in the directory [file examples/queue] of the critcl source
+distribution/repository.
+
+[example {
+package require Tcl 8.4
+package require critcl 3.1
+
+critcl::buildrequirement {
+    package require critcl::iassoc
+}
+
+critcl::iassoc::def icounter {
+    int counter; /* The counter variable */
+} {
+    counter = 0;
+} {
+    /* Nothing to release */
+}
+package provide icounter 1
+}]
+
+[comment {===================================================================}]
+[include include/feedback2.inc]
+[manpage_end]
