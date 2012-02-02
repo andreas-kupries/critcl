@@ -13,6 +13,7 @@
 
 typedef struct @type@__ {
 @struct@
+} @type@__;
 typedef struct @type@__* @type@;
 
 /*

@@ -37,7 +37,7 @@ critcl::subject counter
 critcl::iassoc::def icounter {
     int counter; /* The counter variable */
 } {
-    counter = 0;
+    data->counter = 0;
 } {
     /* Nothing to release */
 }
@@ -45,7 +45,7 @@ critcl::iassoc::def icounter {
 # # ## ### ##### ######## ############# #####################
 ## Access and expose the per-interp structure to scripts.
 
-critcl::cproc icounter {} int {
+critcl::cproc icounter {Tcl_Interp* interp} int {
     icounter_data d = icounter (interp);
     d->counter ++;
     return d->counter;

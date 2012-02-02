@@ -51,7 +51,7 @@ proc ::critcl::iassoc::def {name struct constructor destructor} {
     lappend map @name@        $name
     lappend map @stem@        $stem
     lappend map @label@       $label
-    lappend map @typename@    $type
+    lappend map @type@        $type
     lappend map @struct@      $struct
     lappend map @constructor@ $constructor
     lappend map @destructor@  $destructor
