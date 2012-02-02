@@ -29,7 +29,7 @@ static void
 }
 
 static @type@
-@stem@_Init (Tcl_Interp* interp)
+@stem@_Init (Tcl_Interp* interp@argdecls@)
 {
     @type@ data = (@type@) ckalloc (sizeof (@type@__));
 
@@ -48,7 +48,7 @@ static @type@
  */
 
 static @type@
-@name@ (Tcl_Interp* interp)
+@name@ (Tcl_Interp* interp@argdecls@)
 {
 #define KEY "@label@"
 
@@ -60,7 +60,7 @@ static @type@
 	return data;
     }
 
-    data = @stem@_Init (interp);
+    data = @stem@_Init (interp@argnames@);
 
     if (data) {
 	Tcl_SetAssocData (interp, KEY, proc, (ClientData) data);

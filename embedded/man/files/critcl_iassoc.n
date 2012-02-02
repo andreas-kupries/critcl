@@ -249,7 +249,7 @@ package require \fBcritcl  ?3.1?\fR
 .sp
 package require \fBcritcl::iassoc  ?1?\fR
 .sp
-\fB::critcl::iassoc::def\fR \fIname\fR \fIstruct\fR \fIconstructor\fR \fIdestructor\fR
+\fB::critcl::iassoc::def\fR \fIname\fR \fIarguments\fR \fIstruct\fR \fIconstructor\fR \fIdestructor\fR
 .sp
 .BE
 .SH DESCRIPTION
@@ -274,7 +274,7 @@ IMAGE: arch_core
 .PP
 .SH API
 .TP
-\fB::critcl::iassoc::def\fR \fIname\fR \fIstruct\fR \fIconstructor\fR \fIdestructor\fR
+\fB::critcl::iassoc::def\fR \fIname\fR \fIarguments\fR \fIstruct\fR \fIconstructor\fR \fIdestructor\fR
 This command defines a C function with the given \fIname\fR which
 provides access to a structure associated with a Tcl interpreter.
 .sp
@@ -284,10 +284,16 @@ said structure, whereas the fragments \fIconstructor\fR and
 any dynamically allocated parts of the structure, when needed. Note
 that the structure itself is managed by the system.
 .sp
-The new function takes a single argument, a \fBTcl_Interp*\fR
-pointer refering to the interpreter whose structure we wish to obtain,
-and returns a pointer to the structure, of type "\fIname\fR_data" (see
-below).
+The new function takes a \fBTcl_Interp*\fR pointer refering
+to the interpreter whose structure we wish to obtain as the first
+argument, plus the specified \fIarguments\fR and returns a pointer to
+the associated structure, of type "\fIname\fR_data" (see below).
+.sp
+The \fIarguments\fR are a dictionary-like list of C types and
+identifiers specifying additional arguments for the accessor function,
+and, indirectly, the \fIconstructor\fR C code block. This is useful
+for the supplication of initialization values, or the return of more
+complex error information in case of a construction failure.
 .sp
 The C types associated with the structure are derived from
 \fIname\fR, with "\fIname\fR_data__" the type of the structure itself,
@@ -309,6 +315,10 @@ error
 A C code label the constructor can jump to to signal a
 construction failure. It is the responsibility of the constructor to
 release any fields already initialized before jumping to this label.
+.TP
+...
+The names of the constructor arguments specified with
+\fIarguments\fR.
 .RE
 .TP
 \fIdestructor\fR
@@ -338,7 +348,7 @@ critcl::buildrequirement {
     package require critcl::iassoc
 }
 
-critcl::iassoc::def icounter {
+critcl::iassoc::def icounter {} {
     int counter; /* The counter variable */
 } {
     data->counter = 0;

@@ -31,7 +31,7 @@ This package resides in the Core Package Layer of CriTcl.
 [section API]
 
 [list_begin definitions]
-[call [cmd ::critcl::iassoc::def] [arg name] [arg struct] [arg constructor] [arg destructor]]
+[call [cmd ::critcl::iassoc::def] [arg name] [arg arguments] [arg struct] [arg constructor] [arg destructor]]
 
 This command defines a C function with the given [arg name] which
 provides access to a structure associated with a Tcl interpreter.
@@ -42,10 +42,16 @@ said structure, whereas the fragments [arg constructor] and
 any dynamically allocated parts of the structure, when needed. Note
 that the structure itself is managed by the system.
 
-[para] The new function takes a single argument, a [const Tcl_Interp*]
-pointer refering to the interpreter whose structure we wish to obtain,
-and returns a pointer to the structure, of type "[arg name]_data" (see
-below).
+[para] The new function takes a [const Tcl_Interp*] pointer refering
+to the interpreter whose structure we wish to obtain as the first
+argument, plus the specified [arg arguments] and returns a pointer to
+the associated structure, of type "[arg name]_data" (see below).
+
+[para] The [arg arguments] are a dictionary-like list of C types and
+identifiers specifying additional arguments for the accessor function,
+and, indirectly, the [arg constructor] C code block. This is useful
+for the supplication of initialization values, or the return of more
+complex error information in case of a construction failure.
 
 [para] The C types associated with the structure are derived from
 [arg name], with "[arg name]_data__" the type of the structure itself,
@@ -61,6 +67,8 @@ will be associated with.
 [def error] A C code label the constructor can jump to to signal a
 construction failure. It is the responsibility of the constructor to
 release any fields already initialized before jumping to this label.
+[def ...] The names of the constructor arguments specified with
+[arg arguments].
 [list_end]
 [def [arg destructor]]
 [list_begin definitions]
@@ -87,7 +95,7 @@ critcl::buildrequirement {
     package require critcl::iassoc
 }
 
-critcl::iassoc::def icounter {
+critcl::iassoc::def icounter {} {
     int counter; /* The counter variable */
 } {
     data->counter = 0;

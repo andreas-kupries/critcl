@@ -130,7 +130,7 @@
 <li>package require <b class="pkgname">critcl::iassoc <span class="opt">?1?</span></b></li>
 </ul>
 <ul class="syntax">
-<li><a href="#1"><b class="cmd">::critcl::iassoc::def</b> <i class="arg">name</i> <i class="arg">struct</i> <i class="arg">constructor</i> <i class="arg">destructor</i></a></li>
+<li><a href="#1"><b class="cmd">::critcl::iassoc::def</b> <i class="arg">name</i> <i class="arg">arguments</i> <i class="arg">struct</i> <i class="arg">constructor</i> <i class="arg">destructor</i></a></li>
 </ul>
 </div>
 </div>
@@ -152,7 +152,7 @@ packages with embedded C code.</p>
 </div>
 <div id="section2" class="section"><h2><a name="section2">API</a></h2>
 <dl class="definitions">
-<dt><a name="1"><b class="cmd">::critcl::iassoc::def</b> <i class="arg">name</i> <i class="arg">struct</i> <i class="arg">constructor</i> <i class="arg">destructor</i></a></dt>
+<dt><a name="1"><b class="cmd">::critcl::iassoc::def</b> <i class="arg">name</i> <i class="arg">arguments</i> <i class="arg">struct</i> <i class="arg">constructor</i> <i class="arg">destructor</i></a></dt>
 <dd><p>This command defines a C function with the given <i class="arg">name</i> which
 provides access to a structure associated with a Tcl interpreter.</p>
 <p>The C code code fragment <i class="arg">struct</i> defines the elements of
@@ -160,10 +160,15 @@ said structure, whereas the fragments <i class="arg">constructor</i> and
 <i class="arg">destructor</i> are C code blocks executed to initialize and release
 any dynamically allocated parts of the structure, when needed. Note
 that the structure itself is managed by the system.</p>
-<p>The new function takes a single argument, a <b class="const">Tcl_Interp*</b>
-pointer refering to the interpreter whose structure we wish to obtain,
-and returns a pointer to the structure, of type &quot;<i class="arg">name</i>_data&quot; (see
-below).</p>
+<p>The new function takes a <b class="const">Tcl_Interp*</b> pointer refering
+to the interpreter whose structure we wish to obtain as the first
+argument, plus the specified <i class="arg">arguments</i> and returns a pointer to
+the associated structure, of type &quot;<i class="arg">name</i>_data&quot; (see below).</p>
+<p>The <i class="arg">arguments</i> are a dictionary-like list of C types and
+identifiers specifying additional arguments for the accessor function,
+and, indirectly, the <i class="arg">constructor</i> C code block. This is useful
+for the supplication of initialization values, or the return of more
+complex error information in case of a construction failure.</p>
 <p>The C types associated with the structure are derived from
 <i class="arg">name</i>, with &quot;<i class="arg">name</i>_data__&quot; the type of the structure itself,
 and &quot;<i class="arg">name</i>_data&quot; representing a pointer to the structure.
@@ -180,6 +185,9 @@ will be associated with.</p></dd>
 <dd><p>A C code label the constructor can jump to to signal a
 construction failure. It is the responsibility of the constructor to
 release any fields already initialized before jumping to this label.</p></dd>
+<dt>...</dt>
+<dd><p>The names of the constructor arguments specified with
+<i class="arg">arguments</i>.</p></dd>
 </dl></dd>
 <dt><i class="arg">destructor</i></dt>
 <dd><dl class="definitions">
@@ -203,7 +211,7 @@ package require critcl 3.1
 critcl::buildrequirement {
     package require critcl::iassoc
 }
-critcl::iassoc::def icounter {
+critcl::iassoc::def icounter {} {
     int counter; /* The counter variable */
 } {
     data-&gt;counter = 0;

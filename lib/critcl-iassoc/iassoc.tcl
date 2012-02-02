@@ -20,7 +20,7 @@ namespace eval ::critcl::iassoc {}
 # # ## ### ##### ######## ############# #####################
 ## API: Generate the declaration and implementation files for the iassoc.
 
-proc ::critcl::iassoc::def {name struct constructor destructor} {
+proc ::critcl::iassoc::def {name arguments struct constructor destructor} {
     # Arguments:
     # - name of the C function which will provide access to the
     #   structure. This name, with a fixed prefix is also used to
@@ -47,13 +47,25 @@ proc ::critcl::iassoc::def {name struct constructor destructor} {
     set type  ${name}_data
     set label critcl::iassoc/p=$package/a=$name
 
+    if {[llength $arguments]} {
+	foreach {t v} $arguments {
+	    lappend alist "$t $v"
+	    lappend anames $v
+	}
+	set arguments ", [join $alist {, }]"
+	set anames ", [join $anames {, }]"
+    }
+
     lappend map @package@     $package
     lappend map @name@        $name
     lappend map @stem@        $stem
     lappend map @label@       $label
     lappend map @type@        $type
     lappend map @struct@      $struct
+    lappend map @argdecls@    $arguments
+    lappend map @argnames@    $anames
     lappend map @constructor@ $constructor
+    lappend map @destructor@  $destructor
     lappend map @destructor@  $destructor
 
     set hdr      ${stem}.h
