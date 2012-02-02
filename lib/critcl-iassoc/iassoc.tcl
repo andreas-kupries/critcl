@@ -45,7 +45,7 @@ proc ::critcl::iassoc::def {name struct constructor destructor} {
 
     set stem  ${package}_iassoc_${name}
     set type  ${name}_data
-    set label critcl::iassoc/$stem/$name
+    set label critcl::iassoc/p=$package/a=$name
 
     lappend map @package@     $package
     lappend map @name@        $name
@@ -56,7 +56,7 @@ proc ::critcl::iassoc::def {name struct constructor destructor} {
     lappend map @constructor@ $constructor
     lappend map @destructor@  $destructor
 
-    set hdr      ${stem}_iassoc_${name}.h
+    set hdr      ${stem}.h
     set header   [file join [critcl::cache] $hdr]
     set template [Template iassoc.h]
 

@@ -8,7 +8,7 @@
 /* # # ## ### ##### ######## ############# ##################### */
 
 /*
- * Association structure.
+ * Association structure type, and pointers to it.
  */
 
 typedef struct @type@__ {
@@ -17,22 +17,23 @@ typedef struct @type@__ {
 typedef struct @type@__* @type@;
 
 /*
- * Support functions.
+ * Support functions for structure creation and destruction.
  */
 
 static void
-@stem@_AssocRelease (@type@ data, Tcl_Interp* interp)
+@stem@_Release (@type@ data, Tcl_Interp* interp)
 {
-    { @destructor@ }
+@destructor@
+
     ckfree((char*) data);
 }
 
 static @type@
-@stem@_AssocInit (Tcl_Interp* interp)
+@stem@_Init (Tcl_Interp* interp)
 {
     @type@ data = (@type@) ckalloc (sizeof (@type@__));
 
-    { @constructor@ }
+@constructor@
 
     return data;
 
@@ -41,12 +42,17 @@ static @type@
     return NULL;
 }
 
+/*
+ * Structure accessor, automatically creating it if the interpreter does not
+ * have it already, setting it up for destruction on interpreter shutdown.
+ */
+
 static @type@
 @name@ (Tcl_Interp* interp)
 {
 #define KEY "@label@"
 
-    Tcl_InterpDeleteProc* proc = (Tcl_InterpDeleteProc*) @stem@_AssocRelease;
+    Tcl_InterpDeleteProc* proc = (Tcl_InterpDeleteProc*) @stem@_Release;
     @type@ data;
 
     data = Tcl_GetAssocData (interp, KEY, &proc);
@@ -54,7 +60,7 @@ static @type@
 	return data;
     }
 
-    data = @stem@_AssocInit (interp);
+    data = @stem@_Init (interp);
 
     if (data) {
 	Tcl_SetAssocData (interp, KEY, proc, (ClientData) data);
