@@ -47,6 +47,7 @@ proc ::critcl::iassoc::def {name arguments struct constructor destructor} {
     set type  ${name}_data
     set label critcl::iassoc/p=$package/a=$name
 
+    set anames {}
     if {[llength $arguments]} {
 	foreach {t v} $arguments {
 	    lappend alist "$t $v"
