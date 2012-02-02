@@ -155,18 +155,41 @@ packages with embedded C code.</p>
 <dt><a name="1"><b class="cmd">::critcl::iassoc::def</b> <i class="arg">name</i> <i class="arg">struct</i> <i class="arg">constructor</i> <i class="arg">destructor</i></a></dt>
 <dd><p>This command defines a C function with the given <i class="arg">name</i> which
 provides access to a structure associated with a Tcl interpreter.</p>
-<p>The C code code fragment <i class="arg">struct</i> defines the elements of said
-structure, whereas the fragments <i class="arg">constructor</i> and <i class="arg">destructor</i> are
-C code blocks executed to initialize and release any dynamically allocated
-parts of the structure, when needed.</p>
-<p>The new function takes a single argument, a <b class="const">Tcl_Interp*</b> pointer
-refering to the interpreter whose structure we wish to obtain, and returns a
-pointer to the structure, of yupe &quot;<i class="arg">name</i>_data&quot; (see below).</p>
-<p>The relevant interpreter is also accessible in the <i class="arg">constructor</i>
-and <i class="arg">destructor</i> blocks, under the name <b class="variable">interp</b>.</p>
-<p>The C types associated with the structure are derived from <i class="arg">name</i>,
-with &quot;<i class="arg">name</i>_data__&quot; the type of the structure itself, and &quot;<i class="arg">name</i>_data&quot;
-representing a pointer to the structure.</p></dd>
+<p>The C code code fragment <i class="arg">struct</i> defines the elements of
+said structure, whereas the fragments <i class="arg">constructor</i> and
+<i class="arg">destructor</i> are C code blocks executed to initialize and release
+any dynamically allocated parts of the structure, when needed. Note
+that the structure itself is managed by the system.</p>
+<p>The new function takes a single argument, a <b class="const">Tcl_Interp*</b>
+pointer refering to the interpreter whose structure we wish to obtain,
+and returns a pointer to the structure, of type &quot;<i class="arg">name</i>_data&quot; (see
+below).</p>
+<p>The C types associated with the structure are derived from
+<i class="arg">name</i>, with &quot;<i class="arg">name</i>_data__&quot; the type of the structure itself,
+and &quot;<i class="arg">name</i>_data&quot; representing a pointer to the structure.
+The C code blocks can rely on the following C environments:</p>
+<dl class="definitions">
+<dt><i class="arg">constructor</i></dt>
+<dd><dl class="definitions">
+<dt><b class="variable">data</b></dt>
+<dd><p>Pointer to the structure to initialize.</p></dd>
+<dt><b class="variable">interp</b></dt>
+<dd><p>Pointer to the Tcl interpreter the new structure
+will be associated with.</p></dd>
+<dt>error</dt>
+<dd><p>A C code label the constructor can jump to to signal a
+construction failure. It is the responsibility of the constructor to
+release any fields already initialized before jumping to this label.</p></dd>
+</dl></dd>
+<dt><i class="arg">destructor</i></dt>
+<dd><dl class="definitions">
+<dt><b class="variable">data</b></dt>
+<dd><p>Pointer to the structure being released.</p></dd>
+<dt><b class="variable">interp</b></dt>
+<dd><p>Pointer to the Tcl interpreter the structure
+belonged to.</p></dd>
+</dl></dd>
+</dl></dd>
 </dl>
 </div>
 <div id="section3" class="section"><h2><a name="section3">Example</a></h2>
@@ -183,7 +206,7 @@ critcl::buildrequirement {
 critcl::iassoc::def icounter {
     int counter; /* The counter variable */
 } {
-    counter = 0;
+    data-&gt;counter = 0;
 } {
     /* Nothing to release */
 }
@@ -201,7 +224,7 @@ Please also report any ideas for enhancements you may have for either
 package and/or documentation.</p>
 </div>
 <div id="keywords" class="section"><h2><a name="keywords">Keywords</a></h2>
-<p><a href="../../index.html#key8">C code</a>, <a href="../../index.html#key3">Embedded C Code</a>, <a href="../../index.html#key15">Tcl Interp Association</a>, <a href="../../index.html#key6">code generator</a>, <a href="../../index.html#key0">compile &amp; run</a>, <a href="../../index.html#key10">compiler</a>, <a href="../../index.html#key1">dynamic code generation</a>, <a href="../../index.html#key2">dynamic compilation</a>, <a href="../../index.html#key9">generate package</a>, <a href="../../index.html#key4">linker</a>, <a href="../../index.html#key5">on demand compilation</a>, <a href="../../index.html#key7">on-the-fly compilation</a>, <a href="../../index.html#key14">singleton</a></p>
+<p><a href="../../index.html#key12">C code</a>, <a href="../../index.html#key4">Embedded C Code</a>, <a href="../../index.html#key5">Tcl Interp Association</a>, <a href="../../index.html#key7">code generator</a>, <a href="../../index.html#key2">compile &amp; run</a>, <a href="../../index.html#key8">compiler</a>, <a href="../../index.html#key1">dynamic code generation</a>, <a href="../../index.html#key9">dynamic compilation</a>, <a href="../../index.html#key3">generate package</a>, <a href="../../index.html#key11">linker</a>, <a href="../../index.html#key10">on demand compilation</a>, <a href="../../index.html#key6">on-the-fly compilation</a>, <a href="../../index.html#key0">singleton</a></p>
 </div>
 <div id="category" class="section"><h2><a name="category">Category</a></h2>
 <p>Glueing/Embedded C code</p>

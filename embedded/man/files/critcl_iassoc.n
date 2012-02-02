@@ -1,5 +1,5 @@
 '\"
-'\" Generated from file '/net/nas/data/andreask/Dev/Critcl/dev-v31/embedded/man/files/critcl_iassoc.n' by tcllib/doctools with format 'nroff'
+'\" Generated from file '/home/aku/Projects/Critcl/dev-critcl/embedded/man/files/critcl_iassoc.n' by tcllib/doctools with format 'nroff'
 '\" Copyright (c) 2011-2012 Andreas Kupries
 '\"
 '\" The definitions below are for supplemental macros used in Tcl/Tk
@@ -278,28 +278,58 @@ IMAGE: arch_core
 This command defines a C function with the given \fIname\fR which
 provides access to a structure associated with a Tcl interpreter.
 .sp
-The C code code fragment \fIstruct\fR defines the elements of said
-structure, whereas the fragments \fIconstructor\fR and \fIdestructor\fR are
-C code blocks executed to initialize and release any dynamically allocated
-parts of the structure, when needed.
+The C code code fragment \fIstruct\fR defines the elements of
+said structure, whereas the fragments \fIconstructor\fR and
+\fIdestructor\fR are C code blocks executed to initialize and release
+any dynamically allocated parts of the structure, when needed. Note
+that the structure itself is managed by the system.
 .sp
-The new function takes a single argument, a \fBTcl_Interp*\fR pointer
-refering to the interpreter whose structure we wish to obtain, and returns a
-pointer to the structure, of yupe "\fIname\fR_data" (see below).
+The new function takes a single argument, a \fBTcl_Interp*\fR
+pointer refering to the interpreter whose structure we wish to obtain,
+and returns a pointer to the structure, of type "\fIname\fR_data" (see
+below).
 .sp
-The relevant interpreter is also accessible in the \fIconstructor\fR
-and \fIdestructor\fR blocks, under the name \fBinterp\fR.
-.sp
-The C types associated with the structure are derived from \fIname\fR,
-with "\fIname\fR_data__" the type of the structure itself, and "\fIname\fR_data"
-representing a pointer to the structure.
+The C types associated with the structure are derived from
+\fIname\fR, with "\fIname\fR_data__" the type of the structure itself,
+and "\fIname\fR_data" representing a pointer to the structure.
+The C code blocks can rely on the following C environments:
+.RS
+.TP
+\fIconstructor\fR
+.RS
+.TP
+\fBdata\fR
+Pointer to the structure to initialize.
+.TP
+\fBinterp\fR
+Pointer to the Tcl interpreter the new structure
+will be associated with.
+.TP
+error
+A C code label the constructor can jump to to signal a
+construction failure. It is the responsibility of the constructor to
+release any fields already initialized before jumping to this label.
+.RE
+.TP
+\fIdestructor\fR
+.RS
+.TP
+\fBdata\fR
+Pointer to the structure being released.
+.TP
+\fBinterp\fR
+Pointer to the Tcl interpreter the structure
+belonged to.
+.RE
+.RE
 .PP
 .SH EXAMPLE
 The example shown below is the specification of a simple interpreter-associated
 counter. The full example, with meta data and other incidentals, can be found
 in the directory "\fIexamples/queue\fR" of the critcl source
 distribution/repository.
-.nf
+.CS
+
 
 package require Tcl 8.4
 package require critcl 3.1
@@ -311,13 +341,13 @@ critcl::buildrequirement {
 critcl::iassoc::def icounter {
     int counter; /* The counter variable */
 } {
-    counter = 0;
+    data->counter = 0;
 } {
     /* Nothing to release */
 }
 package provide icounter 1
 
-.fi
+.CE
 .SH AUTHORS
 Andreas Kupries
 .SH "BUGS, IDEAS, FEEDBACK"
