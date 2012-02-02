@@ -36,22 +36,39 @@ This package resides in the Core Package Layer of CriTcl.
 This command defines a C function with the given [arg name] which
 provides access to a structure associated with a Tcl interpreter.
 
-[para] The C code code fragment [arg struct] defines the elements of said
-structure, whereas the fragments [arg constructor] and [arg destructor] are
-C code blocks executed to initialize and release any dynamically allocated
-parts of the structure, when needed.
+[para] The C code code fragment [arg struct] defines the elements of
+said structure, whereas the fragments [arg constructor] and
+[arg destructor] are C code blocks executed to initialize and release
+any dynamically allocated parts of the structure, when needed. Note
+that the structure itself is managed by the system.
 
-[para] The new function takes a single argument, a [const Tcl_Interp*] pointer
-refering to the interpreter whose structure we wish to obtain, and returns a
-pointer to the structure, of yupe "[arg name]_data" (see below).
+[para] The new function takes a single argument, a [const Tcl_Interp*]
+pointer refering to the interpreter whose structure we wish to obtain,
+and returns a pointer to the structure, of type "[arg name]_data" (see
+below).
 
-[para] The relevant interpreter is also accessible in the [arg constructor]
-and [arg destructor] blocks, under the name [var interp].
+[para] The C types associated with the structure are derived from
+[arg name], with "[arg name]_data__" the type of the structure itself,
+and "[arg name]_data" representing a pointer to the structure.
 
-[para] The C types associated with the structure are derived from [arg name],
-with "[arg name]_data__" the type of the structure itself, and "[arg name]_data"
-representing a pointer to the structure.
-
+The C code blocks can rely on the following C environments:
+[list_begin definitions]
+[def [arg constructor]]
+[list_begin definitions]
+[def [var data]] Pointer to the structure to initialize.
+[def [var interp]] Pointer to the Tcl interpreter the new structure
+will be associated with.
+[def error] A C code label the constructor can jump to to signal a
+construction failure. It is the responsibility of the constructor to
+release any fields already initialized before jumping to this label.
+[list_end]
+[def [arg destructor]]
+[list_begin definitions]
+[def [var data]] Pointer to the structure being released.
+[def [var interp]] Pointer to the Tcl interpreter the structure
+belonged to.
+[list_end]
+[list_end]
 [list_end]
 
 [comment {===================================================================}]
@@ -73,7 +90,7 @@ critcl::buildrequirement {
 critcl::iassoc::def icounter {
     int counter; /* The counter variable */
 } {
-    counter = 0;
+    data->counter = 0;
 } {
     /* Nothing to release */
 }
