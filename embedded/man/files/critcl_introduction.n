@@ -1,5 +1,5 @@
 '\"
-'\" Generated from file '/net/nas/data/andreask/Dev/Critcl/github-ak-scratch/embedded/man/files/critcl_introduction.n' by tcllib/doctools with format 'nroff'
+'\" Generated from file '/net/nas/data/andreask/Dev/Critcl/dev/embedded/man/files/critcl_introduction.n' by tcllib/doctools with format 'nroff'
 '\" Copyright (c) Jean-Claude Wippler
 '\" Copyright (c) Steve Landers
 '\" Copyright (c) 2011 Andreas Kupries
@@ -529,6 +529,45 @@ for/about the package.
 .sp
 Please see section \fIPackage Meta Data\fR of the
 \fBcritcl\fR package documentation for details.
+.PP
+.SH "CHANGES FOR VERSION 3.0.1"
+.IP [1]
+Bugfixes all around. In detail:
+.IP [2]
+Fixed recording of Tcl version requirements. Keep package name
+and version together, unbreaking generated meta data and generated
+package load command.
+.IP [3]
+Fixed the build scripts: When installing, or wrapping for TEA,
+generate any missing directories
+.IP [4]
+Modified the build scripts to properly exit the application
+when the window of their GUI is closed through the (X) button.
+.IP [5]
+Removed an 8.5-ism (open wb) which had slipped into the main
+build script.
+.IP [6]
+Modified the example build scripts to separate the output for
+the different examples (and packages) by adding empty lines.
+.IP [7]
+stack::c example bugfix: Include API declarations for use in
+the companion files.
+.IP [8]
+Extended the documentation: Noted the need for a working
+installation of a C compiler.
+.IP [9]
+Extended the Windows target definitions and code to handle the
+manifest files used by modern MS development environments. Note that
+this code handles both possibilities, environment using manifests, and
+(old(er)) environments without.
+.IP [10]
+Extended the Windows 64bit target definitions and code to
+auto-detect the need for the helper library "bufferoverflowU.lib" and
+reconfigure the compile and link commands appropriately. We assume
+that the library must be linked when present. This should be no harm
+if the library is present, yet not needed. Just superfluous. We search
+for the library in the paths specified by the environment variable
+LIB.
 .PP
 .SH AUTHORS
 Jean Claude Wippler, Steve Landers, Andreas Kupries
