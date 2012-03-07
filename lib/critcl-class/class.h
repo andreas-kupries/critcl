@@ -123,8 +123,10 @@ static @instancetype@
 }
 
 static void
-@stem@_PostContructor (@instancetype@ instance,
-		       Tcl_Command cmd)
+@stem@_PostConstructor (Tcl_Interp* interp,
+		        @instancetype@ instance,
+		        Tcl_Command cmd,
+			Tcl_Obj* fqn)
 {
     /* # # ## ### ##### ######## User: Post Constructor */
     @postconstructor@;
@@ -248,7 +250,7 @@ static int
 				(ClientData) instance,
 				@stem@_Destructor);
 
-    @stem@_PostContructor (instance, cmd);
+    @stem@_PostConstructor (interp, instance, cmd, fqn);
 
     Tcl_SetObjResult (interp, fqn);
     Tcl_DecrRefCount (fqn);
