@@ -117,9 +117,10 @@
 <li class="section"><a href="#section3">Package Structure</a></li>
 <li class="section"><a href="#section4">Changes for version 2.1</a></li>
 <li class="section"><a href="#section5">Changes for version 3</a></li>
-<li class="section"><a href="#section6">Changes for version 3.1</a></li>
-<li class="section"><a href="#section7">Authors</a></li>
-<li class="section"><a href="#section8">Bugs, Ideas, Feedback</a></li>
+<li class="section"><a href="#section6">Changes for version 3.0.1</a></li>
+<li class="section"><a href="#section7">Changes for version 3.1</a></li>
+<li class="section"><a href="#section8">Authors</a></li>
+<li class="section"><a href="#section9">Bugs, Ideas, Feedback</a></li>
 <li class="section"><a href="#keywords">Keywords</a></li>
 <li class="section"><a href="#category">Category</a></li>
 <li class="section"><a href="#copyright">Copyright</a></li>
@@ -612,7 +613,38 @@ for/about the package.</p>
 <b class="package"><a href="critcl_pkg.html">critcl</a></b> package documentation for details.</p></li>
 </ol>
 </div>
-<div id="section6" class="section"><h2><a name="section6">Changes for version 3.1</a></h2>
+<div id="section6" class="section"><h2><a name="section6">Changes for version 3.0.1</a></h2>
+<ol class="enumerated">
+<li><p>Bugfixes all around. In detail:</p></li>
+<li><p>Fixed recording of Tcl version requirements. Keep package name
+and version together, unbreaking generated meta data and generated
+package load command.</p></li>
+<li><p>Fixed the build scripts: When installing, or wrapping for TEA,
+generate any missing directories</p></li>
+<li><p>Modified the build scripts to properly exit the application
+when the window of their GUI is closed through the (X) button.</p></li>
+<li><p>Removed an 8.5-ism (open wb) which had slipped into the main
+build script.</p></li>
+<li><p>Modified the example build scripts to separate the output for
+the different examples (and packages) by adding empty lines.</p></li>
+<li><p>stack::c example bugfix: Include API declarations for use in
+the companion files.</p></li>
+<li><p>Extended the documentation: Noted the need for a working
+installation of a C compiler.</p></li>
+<li><p>Extended the Windows target definitions and code to handle the
+manifest files used by modern MS development environments. Note that
+this code handles both possibilities, environment using manifests, and
+(old(er)) environments without.</p></li>
+<li><p>Extended the Windows 64bit target definitions and code to
+auto-detect the need for the helper library &quot;bufferoverflowU.lib&quot; and
+reconfigure the compile and link commands appropriately. We assume
+that the library must be linked when present. This should be no harm
+if the library is present, yet not needed. Just superfluous. We search
+for the library in the paths specified by the environment variable
+LIB.</p></li>
+</ol>
+</div>
+<div id="section7" class="section"><h2><a name="section7">Changes for version 3.1</a></h2>
 <ol class="enumerated">
 <li><p>Extended the API for handling TEApot metadata. Added the
 command <b class="cmd">critcl::meta?</b> to query the stored information. Main use
@@ -629,10 +661,10 @@ allowing for easier management of larger bodies of code by splitting
 it up.</p></li>
 </ol>
 </div>
-<div id="section7" class="section"><h2><a name="section7">Authors</a></h2>
+<div id="section8" class="section"><h2><a name="section8">Authors</a></h2>
 <p>Jean Claude Wippler, Steve Landers, Andreas Kupries</p>
 </div>
-<div id="section8" class="section"><h2><a name="section8">Bugs, Ideas, Feedback</a></h2>
+<div id="section9" class="section"><h2><a name="section9">Bugs, Ideas, Feedback</a></h2>
 <p>This document, and the package it describes, will undoubtedly contain
 bugs and other problems.
 Please report such at <a href="https://github.com/jcw/critcl">https://github.com/jcw/critcl</a>.
