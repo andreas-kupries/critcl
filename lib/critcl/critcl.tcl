@@ -2727,7 +2727,10 @@ proc ::critcl::BeginCommand {name args} {
     set cns [string map {:: _} $ns]
 
     # Setup the defered build-on-demand used by mode 'comile & run'.
-    set ::auto_index($ns$name) [list [namespace current]::cbuild $file]
+    # Note: Removing the leading :: because it trips Tcl's unknown
+    # command, i.e. the command will not be found when called in a
+    # script without leading ::.
+    set ::auto_index([string trimleft $ns$name :]) [list [namespace current]::cbuild $file]
 
     set v::curr [UUID.extend $file .function "$ns $name $args"]
 
