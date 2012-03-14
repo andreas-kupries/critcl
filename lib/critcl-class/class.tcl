@@ -478,36 +478,54 @@ ComputeMethodList (CONST char** table)
 proc ::critcl::class::spec::classconstructor {code} {
     variable state
     set loc {};#[critcl::LinePragma -2 [critcl::This]]
-    dict lappend state classconstructor $loc[string trim $code \n]
+    set code [string trim $code \n]
+    if {$code ne {}} {
+	dict lappend state classconstructor $loc$code
+    }
     return
 }
 
 proc ::critcl::class::spec::classdestructor {code} {
     variable state
     set loc {};#[critcl::LinePragma -2 [critcl::This]]
-    dict lappend state classdestructor $loc[string trim $code \n]
+    set code [string trim $code \n]
+    if {$code ne {}} {
+	dict lappend state classdestructor $loc$code
+    }
     return
 }
 
 proc ::critcl::class::spec::constructor {code {postcode {}}} {
     variable state
     set loc {};#[critcl::LinePragma -2 [critcl::This]]
-    dict lappend state constructor        $loc[string trim $code     \n]
-    dict lappend state postconstructor    $loc[string trim $postcode \n]
+    set code [string trim $code \n]
+    if {$code ne {}} {
+	dict lappend state constructor $loc$code
+    }
+    set postcode [string trim $postcode \n]
+    if {$postcode ne {}} {
+	dict lappend state postconstructor $loc$postcode
+    }
     return
 }
 
 proc ::critcl::class::spec::destructor {code} {
     variable state
     set loc {};#[critcl::LinePragma -2 [critcl::This]]
-    dict lappend state destructor $loc[string trim $code \n]
+    set code [string trim $code \n]
+    if {$code ne {}} {
+	dict lappend state destructor $loc$code
+    }
     return
 }
 
 proc ::critcl::class::spec::support {code} {
     variable state
     set loc {};#[critcl::LinePragma -2 [critcl::This]]
-    dict lappend state support $loc[string trim $code \n]
+    set code [string trim $code \n]
+    if {$code ne {}} {
+	dict lappend state support $loc$code
+    }
     return
 }
 
