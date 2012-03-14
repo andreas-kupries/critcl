@@ -176,8 +176,9 @@ proc ::critcl::ccommand {name anames args} {
 
     # XXX clientdata/delproc, either note clashes, or keep information per-file.
 
-    set v::clientdata($ns$name) $clientdata
-    set v::delproc($ns$name) $delproc
+    set key [string map {:: _} $ns$name]
+    set v::clientdata($key) $clientdata
+    set v::delproc($key) $delproc
 
     set body [join $args]
     if {$body != ""} {
