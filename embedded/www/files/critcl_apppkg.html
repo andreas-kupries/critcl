@@ -92,7 +92,7 @@
     }
 --></style>
 </head>
-<! -- Generated from file '/net/nas/data/andreask/Dev/Critcl/dev/embedded/www/files/critcl_apppkg.html' by tcllib/doctools with format 'html'
+<! -- Generated from file '/home/aku/Projects/Critcl/dev-critcl/embedded/www/files/critcl_apppkg.html' by tcllib/doctools with format 'html'
    -->
 <! -- Copyright &copy; Jean-Claude Wippler   -- Copyright &copy; Steve Landers   -- Copyright &copy; 2011 Andreas Kupries
    -->
@@ -183,6 +183,12 @@ then exit.</p></dd>
 <dt><b class="option">-I</b> path</dt>
 <dd><p>This option specifies an additional global include path to use during
 compilation of &quot;<b class="file">.critcl</b>&quot; files. All values are used if this is
+specified multiple times.</p>
+<p>This option is irrelevant when generating a TEA package (see
+option <b class="option">-tea</b> below).</p></dd>
+<dt><b class="option">-L</b> path</dt>
+<dd><p>This option specifies an additional global library searh path to use
+during linking of &quot;<b class="file">.critcl</b>&quot; files. All values are used if this is
 specified multiple times.</p>
 <p>This option is irrelevant when generating a TEA package (see
 option <b class="option">-tea</b> below).</p></dd>
@@ -364,8 +370,8 @@ system with most of the needed support code (incliding copies of the
 critcl packages).</p>
 <p>If both options, i.e. <b class="option">-pkg</b> and <b class="option">-tea</b> are specified
 the last one specified wins.</p>
-<p>In this mode the options <b class="option">-clean</b>, <b class="option">-force</b>,
-<b class="option">-cache</b>, <b class="option">-includedir</b>, <b class="option">-enable</b>,
+<p>In this mode the options <b class="option">-I</b>, <b class="option">-L</b>, <b class="option">-clean</b>,
+<b class="option">-force</b>, <b class="option">-cache</b>, <b class="option">-includedir</b>, <b class="option">-enable</b>,
 <b class="option">-disable</b>, and <b class="option">-with-<b class="variable">FOO</b></b> are irrelevant and
 ignored. In contrast, the option <b class="option">-libdir</b> is relevant in both
 this and <b class="option">-pkg</b> mode.</p>

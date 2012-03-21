@@ -57,6 +57,7 @@ compile         gcc -c -fPIC
 version         gcc -v
 link            gcc -shared
 include         -I
+libinclude      -L
 preproc_define  gcc -E -dM
 preproc_enum    gcc -E
 tclstubs        -DUSE_TCL_STUBS

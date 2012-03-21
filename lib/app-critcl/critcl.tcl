@@ -217,6 +217,7 @@ proc ::critcl::app::Cmdline {argv} {
 		::exit 0
 	    }
 	    I          { AddIncludePath $arg }
+	    L          { AddLibraryPath $arg }
 	    cache      { set v::cache $arg }
 	    clean      { incr cleaning }
 	    config     { set configfile $arg }
@@ -436,6 +437,13 @@ proc ::critcl::app::AddIncludePath {path} {
     return
 }
 
+proc ::critcl::app::AddLibraryPath {path} {
+    set dirs [critcl::config L]
+    lappend dirs [file normalize $path]
+    critcl::config L $dirs
+    return
+}
+
 proc ::critcl::app::Log {text} {
     if {!$v::verbose} return
     puts -nonewline $text
@@ -472,7 +480,8 @@ Options include:
     -target target  generate binary for specified target platform/architecture
 
 Other options that may be useful:
-    -I dir          adds dir to the include path when compiling.
+    -I dir          adds dir to the include search path when compiling.
+    -L dir          adds dir to the library search path when linking.
     -cache dir      sets the Critcl cache directory to dir.
     -keep           keep intermediate C files in the Critcl cache
     -config file    read the Critcl configuration options from file
@@ -1674,7 +1683,7 @@ namespace eval ::critcl::app {
     variable mydir [file dirname $myself]
 
     variable options {
-	I.arg cache.arg clean config.arg debug.arg force help
+	I.arg L.arg cache.arg clean config.arg debug.arg force help
 	keep libdir.arg pkg show showall target.arg targets
 	test tea showtarget includedir.arg enable.arg disable.arg
 	v -version
