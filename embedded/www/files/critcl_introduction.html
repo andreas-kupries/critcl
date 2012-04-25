@@ -117,8 +117,9 @@
 <li class="section"><a href="#section5">Changes for version 2.1</a></li>
 <li class="section"><a href="#section6">Changes for version 3</a></li>
 <li class="section"><a href="#section7">Changes for version 3.0.1</a></li>
-<li class="section"><a href="#section8">Authors</a></li>
-<li class="section"><a href="#section9">Bugs, Ideas, Feedback</a></li>
+<li class="section"><a href="#section8">Changes for version 3.0.2</a></li>
+<li class="section"><a href="#section9">Authors</a></li>
+<li class="section"><a href="#section10">Bugs, Ideas, Feedback</a></li>
 <li class="section"><a href="#keywords">Keywords</a></li>
 <li class="section"><a href="#category">Category</a></li>
 <li class="section"><a href="#copyright">Copyright</a></li>
@@ -389,10 +390,23 @@ for the library in the paths specified by the environment variable
 LIB.</p></li>
 </ol>
 </div>
-<div id="section8" class="section"><h2><a name="section8">Authors</a></h2>
+<div id="section8" class="section"><h2><a name="section8">Changes for version 3.0.2</a></h2>
+<ol class="enumerated">
+<li><p>Fixed issue in compile-and-run mode where commands put into the
+auto_index are not found by Tcl's [unknown] command.</p></li>
+<li><p>Fixed an array key mismatch breaking usage of client data and
+delete function for procedure. Reported by Jos DeCoster, with patch.</p></li>
+<li><p>Implemented a command line option <b class="option">-L</b>, an equivalent of
+option <b class="option">-I</b>, just for library search paths.</p></li>
+<li><p>Fixed github issues 5 and 8. Working around a missing variable
+::errorInfo. It should always be present, however there seem to be
+revisions of Tcl around which violate this assumption.</p></li>
+</ol>
+</div>
+<div id="section9" class="section"><h2><a name="section9">Authors</a></h2>
 <p>Jean Claude Wippler, Steve Landers, Andreas Kupries</p>
 </div>
-<div id="section9" class="section"><h2><a name="section9">Bugs, Ideas, Feedback</a></h2>
+<div id="section10" class="section"><h2><a name="section10">Bugs, Ideas, Feedback</a></h2>
 <p>This document, and the package it describes, will undoubtedly contain
 bugs and other problems.
 Please report such at <a href="https://github.com/jcw/critcl">https://github.com/jcw/critcl</a>.
