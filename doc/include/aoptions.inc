@@ -20,6 +20,16 @@ specified multiple times.
 option [option -tea] below).
 
 [comment %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%]
+[opt_def -L path]
+
+This option specifies an additional global library searh path to use
+during linking of [file .critcl] files. All values are used if this is
+specified multiple times.
+
+[para] This option is irrelevant when generating a TEA package (see
+option [option -tea] below).
+
+[comment %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%]
 [opt_def -cache path]
 
 This option specifies the path to the directory to use as the result
@@ -311,8 +321,8 @@ the last one specified wins.
 
 [para]
 
-In this mode the options [option -clean], [option -force],
-[option -cache], [option -includedir], [option -enable],
+In this mode the options [option -I], [option -L], [option -clean],
+[option -force], [option -cache], [option -includedir], [option -enable],
 [option -disable], and [option -with-[var FOO]] are irrelevant and
 ignored. In contrast, the option [option -libdir] is relevant in both
 this and [option -pkg] mode.

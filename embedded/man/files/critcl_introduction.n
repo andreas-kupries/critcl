@@ -571,6 +571,21 @@ if the library is present, yet not needed. Just superfluous. We search
 for the library in the paths specified by the environment variable
 LIB.
 .PP
+.SH "CHANGES FOR VERSION 3.0.2"
+.IP [1]
+Fixed issue in compile-and-run mode where commands put into the
+auto_index are not found by Tcl's [unknown] command.
+.IP [2]
+Fixed an array key mismatch breaking usage of client data and
+delete function for procedure. Reported by Jos DeCoster, with patch.
+.IP [3]
+Implemented a command line option \fB-L\fR, an equivalent of
+option \fB-I\fR, just for library search paths.
+.IP [4]
+Fixed github issues 5 and 8. Working around a missing variable
+::errorInfo. It should always be present, however there seem to be
+revisions of Tcl around which violate this assumption.
+.PP
 .SH "CHANGES FOR VERSION 3.1"
 .IP [1]
 Extended the API for handling TEApot metadata. Added the

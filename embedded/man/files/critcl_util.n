@@ -267,7 +267,25 @@ packages with embedded C code.
 .PP
 This package resides in the Core Package Layer of CriTcl.
 .PP
-IMAGE: arch_core
+.PS
+.nf
++----------------+
+|Applications    |
+|     critcl     |
++----------------+
+
+*================*
+|Core Packages   |
+|     critcl     |
+*================*
+
++----------------+
+|Support Packages|
+|  (platform)... |
++----------------+
+
+.fi
+.PE
 .PP
 .SH API
 .TP

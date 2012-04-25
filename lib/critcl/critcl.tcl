@@ -176,8 +176,9 @@ proc ::critcl::ccommand {name anames args} {
 
     # XXX clientdata/delproc, either note clashes, or keep information per-file.
 
-    set v::clientdata($ns$name) $clientdata
-    set v::delproc($ns$name) $delproc
+    set key [string map {:: _} $ns$name]
+    set v::clientdata($key) $clientdata
+    set v::delproc($key) $delproc
 
     set body [join $args]
     if {$body != ""} {
@@ -1213,6 +1214,7 @@ proc ::critcl::checklink {args} {
 
     lappendlist cmdline [LinkResult $out]
     lappendlist cmdline $obj
+    lappendlist cmdline [SystemLibraries]
     lappendlist cmdline [FixLibraries [GetParam $file clibraries]]
     lappendlist cmdline [GetParam $file ldflags]
 
@@ -3035,6 +3037,28 @@ proc ::critcl::SystemIncludePaths {file} {
     return $paths
 }
 
+proc ::critcl::SystemLibraries {} {
+    set libincludes {}
+    foreach dir [SystemLibraryPaths] {
+	lappend libincludes $c::libinclude$dir
+    }
+    return $libincludes
+}
+
+proc ::critcl::SystemLibraryPaths {} {
+    set paths {}
+    set has {}
+
+    # critcl -L options.
+    foreach dir $v::options(L) {
+	if {[dict exists $has $dir]} continue
+	dict set has $dir yes
+	lappend paths $dir
+    }
+
+    return $paths
+}
+
 proc ::critcl::Compile {tclfile origin cfile obj} {
     StatusAbort?
 
@@ -3162,6 +3186,7 @@ proc ::critcl::Link {file} {
 
     lappendlist cmdline [LinkResult $shlib]
     lappendlist cmdline [GetObjects $file]
+    lappendlist cmdline [SystemLibraries]
     lappendlist cmdline [GetLibraries $file]
     lappendlist cmdline [dict get $v::code($file) result ldflags]
     # lappend cmdline bufferoverflowU.lib ;# msvc >=1400 && <1500 for amd64
@@ -3888,6 +3913,10 @@ namespace eval ::critcl {
 				  #   the user for mode 'generate
 				  #   package', for all components put
 				  #   into the package's library.
+	set options(L)        "" ;# - List. Additional library search
+				  #   directories, globally specified by
+				  #   the user for mode 'generate
+				  #   package'.
 	set options(language) "" ;# - String. XXX
 	set options(lines)    1  ;# - Boolean. If set the generator will
 				  #   emit #line-directives to help locating
@@ -4106,6 +4135,7 @@ namespace eval ::critcl {
 	    debug_memory
 	    debug_symbols
 	    include
+	    libinclude
 	    ldoutput
 	    embed_manifest
 	    link
@@ -4140,6 +4170,7 @@ namespace eval ::critcl {
 	# debug_memory    Compiler flags to enable memory debugging
 	# debug_symbols   Compiler flags to add symbols to resulting library
 	# include         Compiler flag to add an include directory
+	# libinclude      Linker flag to add a library directory
 	# ldoutput       - ? See 'Config'
 	# link            Command to link one or more object files and create a shared library
 	# embed_manifest  Command to embed a manifest into a DLL. (Win-specific)

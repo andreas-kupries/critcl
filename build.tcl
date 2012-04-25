@@ -21,7 +21,7 @@ set packages {
 }
 proc usage {{status 1}} {
     global errorInfo
-    if {($errorInfo ne {}) &&
+    if {[info exists errorInfo] && ($errorInfo ne {}) &&
 	![string match {invalid command name "_*"*} $errorInfo]
     } {
 	puts stderr $::errorInfo

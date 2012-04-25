@@ -274,7 +274,25 @@ go and read the \fIIntroduction To CriTcl\fR.
 .PP
 This package resides in the Application Layer of CriTcl.
 .PP
-IMAGE: arch_application
+.PS
+.nf
+*================*
+|Applications    |
+|     critcl     |
+*================*
+
++----------------+
+|Core Packages   |
+|     critcl     |
++----------------+
+
++----------------+
+|Support Packages|
+|  (platform)... |
++----------------+
+
+.fi
+.PE
 .PP
 ,
 implementing the functionality of the \fICriTcl Application\fR,
@@ -305,6 +323,14 @@ then exit.
 \fB-I\fR path
 This option specifies an additional global include path to use during
 compilation of "\fI.critcl\fR" files. All values are used if this is
+specified multiple times.
+.sp
+This option is irrelevant when generating a TEA package (see
+option \fB-tea\fR below).
+.TP
+\fB-L\fR path
+This option specifies an additional global library searh path to use
+during linking of "\fI.critcl\fR" files. All values are used if this is
 specified multiple times.
 .sp
 This option is irrelevant when generating a TEA package (see
@@ -543,8 +569,8 @@ critcl packages).
 If both options, i.e. \fB-pkg\fR and \fB-tea\fR are specified
 the last one specified wins.
 .sp
-In this mode the options \fB-clean\fR, \fB-force\fR,
-\fB-cache\fR, \fB-includedir\fR, \fB-enable\fR,
+In this mode the options \fB-I\fR, \fB-L\fR, \fB-clean\fR,
+\fB-force\fR, \fB-cache\fR, \fB-includedir\fR, \fB-enable\fR,
 \fB-disable\fR, and \fB-with-\fBFOO\fR\fR are irrelevant and
 ignored. In contrast, the option \fB-libdir\fR is relevant in both
 this and \fB-pkg\fR mode.
@@ -954,6 +980,21 @@ that the library must be linked when present. This should be no harm
 if the library is present, yet not needed. Just superfluous. We search
 for the library in the paths specified by the environment variable
 LIB.
+.PP
+.SH "CHANGES FOR VERSION 3.0.2"
+.IP [1]
+Fixed issue in compile-and-run mode where commands put into the
+auto_index are not found by Tcl's [unknown] command.
+.IP [2]
+Fixed an array key mismatch breaking usage of client data and
+delete function for procedure. Reported by Jos DeCoster, with patch.
+.IP [3]
+Implemented a command line option \fB-L\fR, an equivalent of
+option \fB-I\fR, just for library search paths.
+.IP [4]
+Fixed github issues 5 and 8. Working around a missing variable
+::errorInfo. It should always be present, however there seem to be
+revisions of Tcl around which violate this assumption.
 .PP
 .SH "CHANGES FOR VERSION 3.1"
 .IP [1]
