@@ -240,7 +240,7 @@ Database Class:	\\fB\\$3\\fR
 .de UL
 \\$1\l'|0\(ul'\\$2
 ..
-.TH "critcl_app" n 1 doc "C Runtime In Tcl (CriTcl)"
+.TH "critcl_app" n 3 doc "C Runtime In Tcl (CriTcl)"
 .BS
 .SH NAME
 critcl_app \- CriTcl Application
@@ -944,6 +944,13 @@ option \fB-I\fR, just for library search paths.
 Fixed github issues 5 and 8. Working around a missing variable
 ::errorInfo. It should always be present, however there seem to be
 revisions of Tcl around which violate this assumption.
+.PP
+.SH "CHANGES FOR VERSION 3.0.3"
+.IP [1]
+Fixed github issues 5 and 8, for the example build.tcl
+scripts. Working around a missing variable ::errorInfo. It should
+always be present, however there seem to be revisions of Tcl around
+which violate this assumption.
 .PP
 .SH AUTHORS
 Jean Claude Wippler, Steve Landers, Andreas Kupries
