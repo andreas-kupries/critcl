@@ -118,8 +118,9 @@
 <li class="section"><a href="#section5">Changes for version 3</a></li>
 <li class="section"><a href="#section6">Changes for version 3.0.1</a></li>
 <li class="section"><a href="#section7">Changes for version 3.0.2</a></li>
-<li class="section"><a href="#section8">Authors</a></li>
-<li class="section"><a href="#section9">Bugs, Ideas, Feedback</a></li>
+<li class="section"><a href="#section8">Changes for version 3.1</a></li>
+<li class="section"><a href="#section9">Authors</a></li>
+<li class="section"><a href="#section10">Bugs, Ideas, Feedback</a></li>
 <li class="section"><a href="#keywords">Keywords</a></li>
 <li class="section"><a href="#category">Category</a></li>
 <li class="section"><a href="#copyright">Copyright</a></li>
@@ -662,10 +663,27 @@ option <b class="option">-I</b>, just for library search paths.</p></li>
 revisions of Tcl around which violate this assumption.</p></li>
 </ol>
 </div>
-<div id="section8" class="section"><h2><a name="section8">Authors</a></h2>
+<div id="section8" class="section"><h2><a name="section8">Changes for version 3.1</a></h2>
+<ol class="enumerated">
+<li><p>Extended the API for handling TEApot metadata. Added the
+command <b class="cmd">critcl::meta?</b> to query the stored information. Main use
+currently envisioned is retrieval of the current package's name by
+utility command, for use in constructed names. This particular
+information is always available due to the static scan of the package
+file on execution of the first critcl command.</p></li>
+<li><p>Extended the API with a command, <b class="cmd">critcl::name2c</b> exposing
+the process of converting a Tcl name into base name, namespace, and C
+namespace.</p></li>
+<li><p>Extended the API with a command, <b class="cmd">critcl::source</b> executing
+critcl commands in a separate file in the context of the current file,
+allowing for easier management of larger bodies of code by splitting
+it up.</p></li>
+</ol>
+</div>
+<div id="section9" class="section"><h2><a name="section9">Authors</a></h2>
 <p>Jean Claude Wippler, Steve Landers, Andreas Kupries</p>
 </div>
-<div id="section9" class="section"><h2><a name="section9">Bugs, Ideas, Feedback</a></h2>
+<div id="section10" class="section"><h2><a name="section10">Bugs, Ideas, Feedback</a></h2>
 <p>This document, and the package it describes, will undoubtedly contain
 bugs and other problems.
 Please report such at <a href="https://github.com/jcw/critcl">https://github.com/jcw/critcl</a>.

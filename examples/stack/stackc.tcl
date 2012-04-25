@@ -1,10 +1,15 @@
 # stackc.tcl --
 #
 #       Implementation of a stack data structure for Tcl.
-#       This code based on critcl, API compatible to the PTI [x].
+#       This code based on critcl v3.1, API compatible to the PTI [x].
 #       [x] Pure Tcl Implementation.
 #
-# Copyright (c) 2008 Andreas Kupries <andreas_kupries@users.sourceforge.net>
+# Demonstrates not just the stubs import and meta data declaration,
+# but also the utility package for the creation of classes and objects
+# in C, with both claaes and their instances represented as Tcl
+# commands.
+#
+# Copyright (c) 2012 Andreas Kupries <andreas_kupries@users.sourceforge.net>
 #
 # See the file "license.terms" for information on usage and redistribution
 # of this file, and for a DISCLAIMER OF ALL WARRANTIES.
@@ -12,7 +17,11 @@
 # RCS: @(#) $Id: stackc.tcl,v 1.1 2008/06/19 23:03:35 andreas_kupries Exp $
 
 package require Tcl 8.4
-package require critcl 3
+package require critcl 3.1
+
+critcl::buildrequirement {
+    package require critcl::class ; # DSL, easy spec of Tcl class/object commands.
+}
 
 # # ## ### ##### ######## ############# #####################
 ## Administrivia
@@ -37,138 +46,47 @@ critcl::subject {generic data structure}
 # # ## ### ##### ######## ############# #####################
 ## Configuration and implementation.
 
+critcl::api import cstack 1
+
 critcl::cheaders stackc/*.h
 critcl::csources stackc/*.c
 
-critcl::api import cstack 1
+critcl::class::def ::stackc {
+    include m.h
+    include cstack/cstackDecls.h
+    type    CSTACK
 
-# Supporting code for the main command.
-
-critcl::ccode {
-    /* -*- c -*- */
-
-    #include <util.h>
-    #include <ms.h>
-    #include <m.h>
-
-    /* .................................................. */
-    /* Global stack management, per interp */
-
-    typedef struct SDg {
-	long int counter;
-	char buf [50];
-    } SDg;
-
-    static void
-    SDgrelease (ClientData cd, Tcl_Interp* interp) {
-	ckfree((char*) cd);
+    constructor {
+	instance = cstack_new (stackc_FreeCell, 0);
+    } {
+	cstack_clientdata_set (instance, (ClientData) cmd);
     }
 
-    static CONST char*
-    SDnewName (Tcl_Interp* interp) {
-#define KEY "package/stackc"
-
-	Tcl_InterpDeleteProc* proc = SDgrelease;
-	SDg*                  sdg;
-
-	sdg = Tcl_GetAssocData (interp, KEY, &proc);
-	if (sdg  == NULL) {
-	    sdg = (SDg*) ckalloc (sizeof (SDg));
-	    sdg->counter = 0;
-
-	    Tcl_SetAssocData (interp, KEY, proc,
-			      (ClientData) sdg);
-	}
-	    
-	sdg->counter ++;
-	sprintf (sdg->buf, "stack%ld", sdg->counter);
-	return sdg->buf;
-
-#undef  KEY
-    }
-
-    static void
-    SDfreeObj (void* cell) {
-	/* Release the cell. */
-	Tcl_DecrRefCount ((Tcl_Obj*) cell);
-    }
-
-    static void
-    SDdeleteCmd (ClientData clientData) {
+    destructor {
 	/* Release the whole stack. */
-	cstack_del ((CSTACK) clientData);
-    }
-}
-
-# Main command, stack creation.
-
-critcl::ccommand ::stackc {dummy interp objc objv} {
-    /* Syntax
-     *  - epsilon                         |1
-     *  - name                            |2
-     */
-
-    CONST char* name;
-    CSTACK      sd;
-    Tcl_Obj*    fqn;
-    Tcl_CmdInfo ci;
-    Tcl_Command cmd;
-
-#define USAGE "?name?"
-
-    if ((objc != 2) && (objc != 1)) {
-        Tcl_WrongNumArgs (interp, 1, objv, USAGE);
-        return TCL_ERROR;
+	cstack_del (instance);
     }
 
-    if (objc < 2) {
-        name = SDnewName (interp);
-    } else {
-        name = Tcl_GetString (objv [1]);
+    support {
+	static void
+	stackc_FreeCell (void* cell) {
+	    /* Release the cell. */
+	    Tcl_DecrRefCount ((Tcl_Obj*) cell);
+	}
     }
 
-    if (!Tcl_StringMatch (name, "::*")) {
-        /* Relative name. Prefix with current namespace */
-
-        Tcl_Eval (interp, "namespace current");
-        fqn = Tcl_GetObjResult (interp);
-        fqn = Tcl_DuplicateObj (fqn);
-        Tcl_IncrRefCount (fqn);
-
-        if (!Tcl_StringMatch (Tcl_GetString (fqn), "::")) {
-          Tcl_AppendToObj (fqn, "::", -1);
-        }
-        Tcl_AppendToObj (fqn, name, -1);
-    } else {
-        fqn = Tcl_NewStringObj (name, -1);
-        Tcl_IncrRefCount (fqn);
-    }
-    Tcl_ResetResult (interp);
-
-    if (Tcl_GetCommandInfo (interp,
-			    Tcl_GetString (fqn),
-			    &ci)) {
-        Tcl_Obj* err;
-
-        err = Tcl_NewObj ();
-        Tcl_AppendToObj    (err, "command \"", -1);
-        Tcl_AppendObjToObj (err, fqn);
-        Tcl_AppendToObj    (err, "\" already exists, unable to create stack", -1);
-
-        Tcl_DecrRefCount (fqn);
-        Tcl_SetObjResult (interp, err);
-        return TCL_ERROR;
-    }
-
-    sd = cstack_new (SDfreeObj, 0);
-    cmd = Tcl_CreateObjCommand (interp, Tcl_GetString (fqn),
-				stms_objcmd, (ClientData) sd,
-				SDdeleteCmd);
-    cstack_clientdata_set (sd, (ClientData) cmd);
-
-    Tcl_SetObjResult (interp, fqn);
-    Tcl_DecrRefCount (fqn);
-    return TCL_OK;
+    mdef clear   as stm_CLEAR
+    mdef destroy as stm_DESTROY
+    mdef peek    as stm_PEEK 0 0
+    mdef peekr   as stm_PEEK 0 1
+    mdef pop     as stm_PEEK 1 0
+    mdef push    as stm_PUSH
+    mdef rotate  as stm_ROTATE
+    mdef size    as stm_SIZE
+    mdef get     as stm_GET 0
+    mdef getr    as stm_GET 1
+    mdef trim    as stm_TRIM 1
+    mdef trimv   as stm_TRIM 0
 }
 
 # ### ### ### ######### ######### #########

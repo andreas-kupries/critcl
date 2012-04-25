@@ -1,0 +1,360 @@
+
+<html><head>
+<title>critcl::class - C Runtime In Tcl (CriTcl)</title>
+<style type="text/css"><!--
+    HTML {
+	background: 	#FFFFFF;
+	color: 		black;
+    }
+    BODY {
+	background: 	#FFFFFF;
+	color:	 	black;
+    }
+    DIV.doctools {
+	margin-left:	10%;
+	margin-right:	10%;
+    }
+    DIV.doctools H1,DIV.doctools H2 {
+	margin-left:	-5%;
+    }
+    H1, H2, H3, H4 {
+	margin-top: 	1em;
+	font-family:	sans-serif;
+	font-size:	large;
+	color:		#005A9C;
+	background: 	transparent;
+	text-align:		left;
+    }
+    H1.title {
+	text-align: center;
+    }
+    UL,OL {
+	margin-right: 0em;
+	margin-top: 3pt;
+	margin-bottom: 3pt;
+    }
+    UL LI {
+	list-style: disc;
+    }
+    OL LI {
+	list-style: decimal;
+    }
+    DT {
+	padding-top: 	1ex;
+    }
+    UL.toc,UL.toc UL, UL.toc UL UL {
+	font:		normal 12pt/14pt sans-serif;
+	list-style:	none;
+    }
+    LI.section, LI.subsection {
+	list-style: 	none;
+	margin-left: 	0em;
+	text-indent:	0em;
+	padding: 	0em;
+    }
+    PRE {
+	display: 	block;
+	font-family:	monospace;
+	white-space:	pre;
+	margin:		0%;
+	padding-top:	0.5ex;
+	padding-bottom:	0.5ex;
+	padding-left:	1ex;
+	padding-right:	1ex;
+	width:		100%;
+    }
+    PRE.example {
+	color: 		black;
+	background: 	#f5dcb3;
+	border:		1px solid black;
+    }
+    UL.requirements LI, UL.syntax LI {
+	list-style: 	none;
+	margin-left: 	0em;
+	text-indent:	0em;
+	padding:	0em;
+    }
+    DIV.synopsis {
+	color: 		black;
+	background: 	#80ffff;
+	border:		1px solid black;
+	font-family:	serif;
+	margin-top: 	1em;
+	margin-bottom: 	1em;
+    }
+    UL.syntax {
+	margin-top: 	1em;
+	border-top:	1px solid black;
+    }
+    UL.requirements {
+	margin-bottom: 	1em;
+	border-bottom:	1px solid black;
+    }
+--></style>
+</head>
+<! -- Generated from file '/home/aku/Projects/Critcl/dev-critcl/embedded/www/files/critcl_class.html' by tcllib/doctools with format 'html'
+   -->
+<! -- Copyright &copy; 2011-2012 Andreas Kupries
+   -->
+<! -- CVS: $Id$ critcl::class.n
+   -->
+<body><div class="doctools">
+<hr> [
+  <a href="../toc.html">Table Of Contents</a>
+| <a href="../index.html">Keyword Index</a>
+] <hr>
+<h1 class="title">critcl::class(n) 1 doc &quot;C Runtime In Tcl (CriTcl)&quot;</h1>
+<div id="name" class="section"><h2><a name="name">Name</a></h2>
+<p>critcl::class - CriTcl Utilities: C Classes</p>
+</div>
+<div id="toc" class="section"><h2><a name="toc">Table Of Contents</a></h2>
+<ul class="toc">
+<li class="section"><a href="#toc">Table Of Contents</a></li>
+<li class="section"><a href="#synopsis">Synopsis</a></li>
+<li class="section"><a href="#section1">Description</a></li>
+<li class="section"><a href="#section2">API</a></li>
+<li class="section"><a href="#section3">Class Specification API</a></li>
+<li class="section"><a href="#section4">Example</a></li>
+<li class="section"><a href="#section5">Authors</a></li>
+<li class="section"><a href="#section6">Bugs, Ideas, Feedback</a></li>
+<li class="section"><a href="#keywords">Keywords</a></li>
+<li class="section"><a href="#category">Category</a></li>
+<li class="section"><a href="#copyright">Copyright</a></li>
+</ul>
+</div>
+<div id="synopsis" class="section"><h2><a name="synopsis">Synopsis</a></h2>
+<div class="synopsis">
+<ul class="requirements">
+<li>package require <b class="pkgname">Tcl 8.4</b></li>
+<li>package require <b class="pkgname">critcl <span class="opt">?3.1?</span></b></li>
+<li>package require <b class="pkgname">critcl::class <span class="opt">?1?</span></b></li>
+</ul>
+<ul class="syntax">
+<li><a href="#1"><b class="cmd">::critcl::class::def</b> <i class="arg">name</i> <i class="arg">script</i></a></li>
+<li><a href="#2"><b class="cmd">constructor</b> <i class="arg">body</i> <span class="opt">?<i class="arg">postbody</i>?</span></a></li>
+<li><a href="#3"><b class="cmd">destructor</b> <i class="arg">body</i></a></li>
+<li><a href="#4"><b class="cmd">field</b> <i class="arg">ctype</i> <i class="arg">name</i> <span class="opt">?<i class="arg">comment</i>?</span></a></li>
+<li><a href="#5"><b class="cmd">include</b> <i class="arg">path</i></a></li>
+<li><a href="#6"><b class="cmd">mdef</b> <i class="arg">name</i> <i class="arg">body</i></a></li>
+<li><a href="#7"><b class="cmd">mdef</b> <i class="arg">name</i> <b class="const">as</b> <i class="arg">funname</i> <span class="opt">?<i class="arg">arg</i>...?</span></a></li>
+<li><a href="#8"><b class="cmd">support</b> <i class="arg">code</i></a></li>
+<li><a href="#9"><b class="cmd">type</b> <i class="arg">name</i></a></li>
+</ul>
+</div>
+</div>
+<div id="section1" class="section"><h2><a name="section1">Description</a></h2>
+<p>Welcome to the <i class="term">C Runtime In Tcl</i>, <i class="term"><a href="critcl_pkg.html">CriTcl</a></i> for short, a
+system to build C extension packages for Tcl on the fly, from C code
+embedded within Tcl scripts, for all who wish to make their code go
+faster.</p>
+<p>This document is the reference manpage for the <b class="package">critcl::class</b>
+package. This package provides convenience commands for advanced
+functionality built on top of the core.
+Namely, the specification of classes and objects without having to
+write all the required boilerplate, only the methods themselves,
+essentially.
+Its intended audience are mainly developers wishing to write Tcl
+packages with embedded C code.</p>
+<p>This package resides in the Core Package Layer of CriTcl.</p>
+<p><img alt="arch_core" src="../image/arch_core.png"></p>
+</div>
+<div id="section2" class="section"><h2><a name="section2">API</a></h2>
+<dl class="definitions">
+<dt><a name="1"><b class="cmd">::critcl::class::def</b> <i class="arg">name</i> <i class="arg">script</i></a></dt>
+<dd><p>This command defines a new class <i class="arg">name</i>, where <i class="arg">name</i> is the
+name of the Tcl command representing the class. The <i class="arg">script</i>
+provides the specification of the class, i.e. information about
+included headers, instance data, methods, etc.
+The section <span class="sectref"><a href="#section3">Class Specification API</a></span> below explains the
+commands available to the developer.</p></dd>
+</dl>
+</div>
+<div id="section3" class="section"><h2><a name="section3">Class Specification API</a></h2>
+<dl class="definitions">
+<dt><a name="2"><b class="cmd">constructor</b> <i class="arg">body</i> <span class="opt">?<i class="arg">postbody</i>?</span></a></dt>
+<dd><p>This command specifies the C code for the construction,
+i.e. allocation of instance structures.
+While technically optional in practice it should be specified.</p>
+<p>The C code in <i class="arg">body</i> has to contain the statements
+initializing the instance structure, which is accessible through the
+variable <b class="variable">instance</b>.
+It further has access to the variable <b class="variable">interp</b>, a pointer to the
+Tcl interpreter the command is created in, enabling it to set an error
+message should the construction fail.
+The C code in <i class="arg">postbody</i> is then responsible for connecting the
+<b class="variable">instance</b> with the created Tcl command, accessible through the
+variable <b class="variable">cmd</b>, of type <b class="const">Tcl_Command</b>.</p>
+<p>If the instance structure is specified as a series of
+<b class="cmd">field</b>s then the system will automatically generate code to
+allocate the instance structure.
+It will also provide a label <b class="const">error:</b> to jump to in case of a
+failure, at which point the instance will be cleaned up and NULL
+returned as the result of the constructor, to notify the calling
+environment of that failure.</p>
+<p>Otherwise, i.e. for an external <b class="cmd">type</b> all of this,
+i.e. allocation, possible deallocation on failure, etc. will be the
+responsibility of the <i class="arg">body</i> and writer of the class.</p></dd>
+<dt><a name="3"><b class="cmd">destructor</b> <i class="arg">body</i></a></dt>
+<dd><p>This command specifies the C code for the destruction, i.e. release of
+instance structures.
+While technically optional in practice it should be specified.</p>
+<p>The <i class="arg">body</i> has to contain the code releasing the contents
+of the instance structure, accessible through the variable
+<b class="variable">instance</b>.</p>
+<p>If the instance structure is specified as a series of
+<b class="cmd">field</b>s then the system will automatically generate code to free
+the instance structure (not the fields) after the <i class="arg">body</i> was run.
+It will further generate a <b class="method">destroy</b> method too, owing to its
+knowledge of the instance structure, i.e. the existence of field
+<b class="const">cmd</b>.
+Otherwise, i.e. for an external <b class="cmd">type</b> it is the responsibility of
+the <i class="arg">body</i> to free the structure itself as well.</p></dd>
+<dt><a name="4"><b class="cmd">field</b> <i class="arg">ctype</i> <i class="arg">name</i> <span class="opt">?<i class="arg">comment</i>?</span></a></dt>
+<dd><p>This command specifies a field in the instance structure of the class,
+naming it, the C type used, and possibly a comment. Multiple fields
+can be specified, and are saved in the order specified.
+This specification is mutually exclusive with the use of an external C
+<b class="cmd">type</b> for the instance structure.</p>
+<p>Note that for this way of declaring the instance data the
+system will automatically generate code for the basic allocation and
+release of the instance structure. The constructor and destructor C
+code supplied by the user has to deal only with the specified fields.</p>
+<p>Note further that in this case a predefined field <b class="variable">cmd</b> of
+type <b class="const">Tcl_Command</b> is present, to allow the association of
+instance structure and instance command. And the <i class="arg">postbody</i> will
+implictly contain the assignment</p>
+<pre class="example">
+    instance-&gt;cmd = cmd;
+</pre>
+</dd>
+<dt><a name="5"><b class="cmd">include</b> <i class="arg">path</i></a></dt>
+<dd><p>This command specified the path of a header file to include within the
+code generated for the class. This is separate from the <b class="cmd">support</b>
+because these include will be at the very beginning of the generated
+code to allow the use of the import declarations within the instance
+type, etc.</p></dd>
+<dt><a name="6"><b class="cmd">mdef</b> <i class="arg">name</i> <i class="arg">body</i></a></dt>
+<dd><p>This command specifies a method and the C code implementing it. The
+body has access to the variables</p>
+<dl class="definitions">
+<dt><b class="variable">instance</b></dt>
+<dd></dd>
+<dt><b class="variable">interp</b></dt>
+<dd></dd>
+<dt><b class="variable">objc</b></dt>
+<dd></dd>
+<dt><b class="variable">objv</b></dt>
+<dd></dd>
+</dl></dd>
+<dt><a name="7"><b class="cmd">mdef</b> <i class="arg">name</i> <b class="const">as</b> <i class="arg">funname</i> <span class="opt">?<i class="arg">arg</i>...?</span></a></dt>
+<dd><p>This variant of the command above defines a method of the class as
+implemented by the external function <i class="arg">funname</i>, i.e. which is
+declared outside of the class code itself.</p>
+<p>It is assumed that the first four arguments of that function
+represent the parameters</p>
+<dl class="definitions">
+<dt><b class="variable">instance</b></dt>
+<dd></dd>
+<dt><b class="variable">interp</b></dt>
+<dd></dd>
+<dt><b class="variable">objc</b></dt>
+<dd></dd>
+<dt><b class="variable">objv</b></dt>
+<dd></dd>
+</dl>
+<p>Any additional arguments specified will be added after these and are
+passed into the C code as is, i.e. are considered to be C expressions.</p>
+<p>Note that the system automatically generates a method
+<b class="method">destroy</b> when the instance structure is specified as a series
+of <b class="cmd">field</b>s.</p></dd>
+<dt><a name="8"><b class="cmd">support</b> <i class="arg">code</i></a></dt>
+<dd><p>This command specifies the <i class="arg">support</i>ing C code, i.e. any
+definitions (types, functions, etc.) needed by the <em>whole</em> class.
+It is optional, i.e. if the class doesn't need supporting code, this
+command can be left out of the specification.</p></dd>
+<dt><a name="9"><b class="cmd">type</b> <i class="arg">name</i></a></dt>
+<dd><p>This command specifies the name of an external C type, i.e. found
+outside of the class definition itself, for the instance
+structure.
+This specification is mutually exclusive with the declaration of the
+structure as a series of <b class="cmd">field</b>s within the class definition
+itself.</p>
+<p>It is the responsibility of the constructor and destructor C
+code to allocate and release this structure, and its contents.</p></dd>
+</dl>
+</div>
+<div id="section4" class="section"><h2><a name="section4">Example</a></h2>
+<p>The example shown below is the specification of queue data structure,
+with most of the method implementations and support code omitted to
+keep the size down.</p>
+<p>The full implementation can be found in the directory
+&quot;<b class="file">examples/queue</b>&quot; of the critcl source distribution/repository.</p>
+<pre class="example">
+package require Tcl 8.4
+package require critcl 3.1
+critcl::buildrequirement {
+    package require critcl::class ; # DSL, easy spec of Tcl class/object commands.
+}
+critcl::cheaders util.h
+critcl::class::def ::queuec {
+    include util.h
+    field Tcl_Obj* unget  {List object unget elements}
+    field Tcl_Obj* queue  {List object holding the main queue}
+    field Tcl_Obj* append {List object holding new elements}
+    field int      at     {Index of next element to return from the main queue}
+    constructor {
+	instance-&gt;at     = 0;
+	instance-&gt;unget  = Tcl_NewListObj (0,NULL);
+	instance-&gt;queue  = Tcl_NewListObj (0,NULL);
+	instance-&gt;append = Tcl_NewListObj (0,NULL);
+	Tcl_IncrRefCount (instance-&gt;unget); 
+	Tcl_IncrRefCount (instance-&gt;queue); 
+	Tcl_IncrRefCount (instance-&gt;append);
+    }
+    destructor {
+	Tcl_DecrRefCount (instance-&gt;unget);
+	Tcl_DecrRefCount (instance-&gt;queue);
+	Tcl_DecrRefCount (instance-&gt;append);
+    }
+    support {... queue_peekget, queue_size, etc.}
+    mdef clear {...}
+    mdef destroy {...}
+    mdef get  as queue_peekget 1
+    mdef peek as queue_peekget 0
+    mdef put {...}
+    mdef size {
+	/* Syntax: queue size
+	 *	       [0]   [1]
+	 */
+	if ((objc != 2)) {
+	    Tcl_WrongNumArgs (interp, 2, objv, NULL);
+	    return TCL_ERROR;
+	}
+	Tcl_SetObjResult  (interp, Tcl_NewIntObj (queue_size (instance, NULL, NULL, NULL)));
+	return TCL_OK;
+    }
+    mdef unget {...}
+}
+package provide queuec 1
+</pre>
+</div>
+<div id="section5" class="section"><h2><a name="section5">Authors</a></h2>
+<p>Andreas Kupries</p>
+</div>
+<div id="section6" class="section"><h2><a name="section6">Bugs, Ideas, Feedback</a></h2>
+<p>This document, and the package it describes, will undoubtedly contain
+bugs and other problems.
+Please report such at <a href="https://github.com/jcw/critcl">https://github.com/jcw/critcl</a>.
+Please also report any ideas for enhancements you may have for either
+package and/or documentation.</p>
+</div>
+<div id="keywords" class="section"><h2><a name="keywords">Keywords</a></h2>
+<p><a href="../index.html#key14">C class</a>, <a href="../index.html#key8">C code</a>, <a href="../index.html#key13">C instance</a>, <a href="../index.html#key15">C object</a>, <a href="../index.html#key3">Embedded C Code</a>, <a href="../index.html#key6">code generator</a>, <a href="../index.html#key0">compile &amp; run</a>, <a href="../index.html#key10">compiler</a>, <a href="../index.html#key1">dynamic code generation</a>, <a href="../index.html#key2">dynamic compilation</a>, <a href="../index.html#key9">generate package</a>, <a href="../index.html#key4">linker</a>, <a href="../index.html#key5">on demand compilation</a>, <a href="../index.html#key7">on-the-fly compilation</a></p>
+</div>
+<div id="category" class="section"><h2><a name="category">Category</a></h2>
+<p>Glueing/Embedded C code</p>
+</div>
+<div id="copyright" class="section"><h2><a name="copyright">Copyright</a></h2>
+<p>Copyright &copy; 2011-2012 Andreas Kupries</p>
+</div>
+</div></body></html>

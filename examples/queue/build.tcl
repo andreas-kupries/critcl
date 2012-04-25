@@ -2,9 +2,7 @@
 # -*- tcl -*- \
 exec tclsh "$0" ${1+"$@"}
 set me [file normalize [info script]]
-# Order of building and installation: "rnmath", then "random", as the
-# latter depends on the former. Not relevant for wrap4tea.
-set packages {rnmath random}
+set packages {queuec}
 proc main {} {
     global argv tcl_platform tag
     set tag {}
@@ -22,7 +20,7 @@ proc main {} {
 }
 proc usage {{status 1}} {
     global errorInfo
-    if {[info exists errorInfo] && ($errorInfo ne {}) &&
+    if {($errorInfo ne {}) &&
 	![string match {invalid command name "_*"*} $errorInfo]
     } {
 	puts stderr $::errorInfo
@@ -116,7 +114,7 @@ proc _recipes {} {
     puts [lsort -dict $r]
     return
 }
-proc Hinstall {} { return "?destination?\n\tInstall all packages, and application.\n\tdestination = path of package directory, default \[info library\]." }
+proc Hinstall {} { return "?destination?\n\tInstall all packages.\n\tdestination = path of package directory, default \[info library\]." }
 proc _install {{ldir {}}} {
     global packages
     if {[llength [info level 0]] < 2} {
@@ -140,6 +138,45 @@ proc _install {{ldir {}}} {
 
 	file delete -force             [pwd]/BUILD
 	critcl::app::main [list -cache [pwd]/BUILD -libdir $ldir -includedir $idir -pkg $src]
+
+	if {![file exists $ldir/$p]} {
+	    set ::NOTE {warn {DONE, with FAILURES}}
+	    break
+	}
+
+	file delete -force $ldir/$p$version
+	file rename        $ldir/$p $ldir/$p$version
+
+	puts -nonewline "Installed package:     "
+	tag ok
+	puts $ldir/$p$version
+    }
+    return
+}
+proc Hdebug {} { return "?destination?\n\tInstall all packages, build for debugging.\n\tdestination = path of package directory, default \[info library\]." }
+proc _debug {{ldir {}}} {
+    global packages
+    if {[llength [info level 0]] < 2} {
+	set ldir [info library]
+	set idir [file dirname [file dirname $ldir]]/include
+    } else {
+	set idir [file dirname $ldir]/include
+    }
+
+    # Create directories, might not exist.
+    file mkdir $idir
+    file mkdir $ldir
+
+    package require critcl::app
+
+    foreach p $packages {
+	puts ""
+
+	set src     [file dirname $::me]/$p.tcl
+	set version [version $src]
+
+	file delete -force             [pwd]/BUILD.$p
+	critcl::app::main [list -keep -debug symbols -cache [pwd]/BUILD.$p -libdir $ldir -includedir $idir -pkg $src]
 
 	if {![file exists $ldir/$p]} {
 	    set ::NOTE {warn {DONE, with FAILURES}}

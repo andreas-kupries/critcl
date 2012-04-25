@@ -1,5 +1,5 @@
 
-The package provides twelve commands to control the details of
+The package provides thirteen commands to control the details of
 compilation and linking, enabling [file .critcl] files to provide
 custom information about their environment and dependencies.
 
@@ -86,6 +86,20 @@ current [file .critcl] file.
 
 [para] Multiple invokations of this command accumulate their
 information.
+
+[comment ---------------------------------------------------------------------]
+[call [cmd ::critcl::source] [arg path]]
+
+This command evaluates the critcl commands in the file specified by
+[arg path] in the context of the current [file .critcl] file.
+
+[para] The argument is actually considered as glob pattern and all
+matching files are evaluated. A pattern matching no file or
+non-existing files cause the command to throw an error.
+
+[para] [emph Note] that a pattern not beginning with an absolute path
+is interpreted relative to the directory containing the current
+[file .critcl] file.
 
 [comment ---------------------------------------------------------------------]
 [call [cmd ::critcl::tsources] [arg pattern]...]

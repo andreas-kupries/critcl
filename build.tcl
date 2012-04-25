@@ -10,6 +10,15 @@ proc main {} {
     }]} usage
     exit 0
 }
+set packages {
+    {critcl        critcl.tcl}
+    {critcl-util   util.tcl}
+    {critcl-class  class.tcl}
+    {critcl-iassoc iassoc.tcl}
+    {app-critcl   ../critcl/critcl.tcl critcl-app}
+    util84
+    stubs
+}
 proc usage {{status 1}} {
     global errorInfo
     if {[info exists errorInfo] && ($errorInfo ne {}) &&
@@ -53,7 +62,7 @@ proc _help {} {
     usage 0
     return
 }
-proc Hrecipes {} { return "\n\tList all brew commands, without details." }
+proc Hrecipes {} { return "\n\tList all build commands, without details." }
 proc _recipes {} {
     set r {}
     foreach c [info commands _*] {
@@ -62,9 +71,26 @@ proc _recipes {} {
     puts [lsort -dict $r]
     return
 }
+proc Hdoc {} { return "\n\t(Re)Generate the embedded documentation." }
+proc _doc {} {
+    cd [file dirname $::me]/doc
+
+    puts "Removing old documentation..."
+    file delete -force ../embedded/man
+    file delete -force ../embedded/www
+
+    puts "Generating man pages..."
+    exec 2>@ stderr >@ stdout dtplite        -o ../embedded/man -ext n nroff .
+    puts "Generating 1st html..."
+    exec 2>@ stderr >@ stdout dtplite -merge -o ../embedded/www html .
+    puts "Generating 2nd html, resolving cross-references..."
+    exec 2>@ stderr >@ stdout dtplite -merge -o ../embedded/www html .
+
+    return
+}
 proc Hinstall {} { return "?destination?\n\tInstall all packages, and application.\n\tdestination = path of package directory, default \[info library\]." }
 proc _install {{dst {}}} {
-    set version  [version [file dirname $::me]/lib/critcl/critcl.tcl]
+    global packages
 
     if {[llength [info level 0]] < 2} {
 	set dstl [info library]
@@ -78,41 +104,33 @@ proc _install {{dst {}}} {
     file mkdir $dstl
     file mkdir $dsta
 
-    # Package: critcl
-    file copy   -force [file dirname $::me]/lib/critcl     $dstl/critcl-new
-    file delete -force $dstl/critcl$version
-    file rename        $dstl/critcl-new     $dstl/critcl$version
+    foreach item $packages {
+	# Package: /name/
 
-    puts "Installed package:     $dstl/critcl$version"
+	if {[llength $item] == 3} {
+	    foreach {dir vfile name} $item break
+	} elseif {[llength $item] == 1} {
+	    set dir   $item
+	    set vfile {}
+	    set name  $item
+	} else {
+	    foreach {dir vfile} $item break
+	    set name $dir
+	}
 
-    # Package: critcl::util
-    set uversion [version [file dirname $::me]/lib/critcl-util/util.tcl]
-    file copy   -force [file dirname $::me]/lib/critcl-util     $dstl/critcl-util-new
-    file delete -force $dstl/critcl-util$uversion
-    file rename        $dstl/critcl-util-new     $dstl/critcl-util$uversion
+	if {$vfile ne {}} {
+	    set version  [version [file dirname $::me]/lib/$dir/$vfile]
+	} else {
+	    set version {}
+	}
 
-    puts "Installed package:     $dstl/critcl-util$uversion"
+	file copy   -force [file dirname $::me]/lib/$dir     $dstl/${name}-new
+	file delete -force $dstl/$name$version
+	file rename        $dstl/${name}-new     $dstl/$name$version
+	puts "Installed package:     $dstl/$name$version"
+    }
 
-    # Package: critcl::app
-    file copy   -force [file dirname $::me]/lib/app-critcl $dstl/critcl-app-new
-    file delete -force $dstl/critcl-app$version
-    file rename        $dstl/critcl-app-new $dstl/critcl-app$version
-
-    puts "Installed package:     $dstl/critcl-app$version"
-
-    # Package: dict84, lassign84, both under util84
-    file copy   -force [file dirname $::me]/lib/util84 $dstl/util84-new
-    file delete -force $dstl/util84
-    file rename        $dstl/util84-new $dstl/util84
-
-    puts "Installed package:     $dstl/util84 (dict84, lassign84 bundle)"
-
-    # Package: stubs::*, all under stubs
-    file copy   -force [file dirname $::me]/lib/stubs $dstl/stubs-new
-    file delete -force $dstl/stubs
-    file rename        $dstl/stubs-new $dstl/stubs
-
-    puts "Installed package:     $dstl/stubs (stubs::* bundle)"
+    # Application: critcl
 
     set    c [open $dsta/critcl w]
     puts  $c "#!/bin/sh\n# -*- tcl -*- \\\nexec tclsh \"\$0\" \$\{1+\"\$@\"\}\npackage require critcl::app\ncritcl::app::main \$argv"
@@ -120,6 +138,48 @@ proc _install {{dst {}}} {
     +x $dsta/critcl
 
     puts "Installed application: $dsta/critcl"
+    return
+}
+proc Hdrop {} { return "?destination?\n\tRemove all packages, and application.\n\tdestination = path of package directory, default \[info library\]." }
+proc _drop {{dst {}}} {
+    global packages
+
+    if {[llength [info level 0]] < 2} {
+	set dstl [info library]
+	set dsta [file dirname [file normalize [info nameofexecutable]]]
+    } else {
+	set dstl $dst
+	set dsta [file dirname $dst]/bin
+    }
+
+    foreach item $packages {
+	# Package: /name/
+
+	if {[llength $item] == 3} {
+	    foreach {dir vfile name} $item break
+	} elseif {[llength $item] == 1} {
+	    set dir   $item
+	    set vfile {}
+	    set name  $item
+	} else {
+	    foreach {dir vfile} $item break
+	    set name $dir
+	}
+
+	if {$vfile ne {}} {
+	    set version  [version [file dirname $::me]/lib/$dir/$vfile]
+	} else {
+	    set version {}
+	}
+
+	file delete -force $dstl/$name$version
+	puts "Removed package:     $dstl/$name$version"
+    }
+
+    # Application: critcl
+
+    file delete $dsta/critcl
+    puts "Removed application: $dsta/critcl"
     return
 }
 proc Hstarkit {} { return "?destination? ?interpreter?\n\tGenerate a starkit\n\tdestination = path of result file, default 'critcl.kit'\n\tinterpreter = (path) name of tcl shell to use for execution, default 'tclkit'" }

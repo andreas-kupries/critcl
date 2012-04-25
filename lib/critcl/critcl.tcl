@@ -6,7 +6,7 @@
 
 # CriTcl Core.
 
-package provide critcl 3.0.2
+package provide critcl 3.1
 
 # # ## ### ##### ######## ############# #####################
 ## Requirements.
@@ -384,6 +384,20 @@ proc ::critcl::cinit {text edecls} {
 
 proc ::critcl::owns {args} {}
 
+proc ::critcl::source {path} {
+    # Source a critcl file in the context of the current file,
+    # i.e. [This]. Enables the factorization of a large critcl
+    # file into smaller, easier to read pieces.
+    SkipIgnored [set file [This]]
+    AbortWhenCalledAfterBuild
+
+    msg -nonewline " (importing $path)"
+    foreach f [Expand $file $path] {
+	uplevel 1 [Cat $f]
+    }
+    return
+}
+
 proc ::critcl::cheaders {args} {
     SkipIgnored [This]
     AbortWhenCalledAfterBuild
@@ -411,9 +425,10 @@ proc ::critcl::cobjects {args} {
 proc ::critcl::tsources {args} {
     set file [SkipIgnored [This]]
     AbortWhenCalledAfterBuild
-    # This, 'license', and 'meta' are the only places where we are not
-    # extending the UUID. Because the companion Tcl sources (count,
-    # order, and content) have no bearing on the binary at all.
+    # This, 'license', 'meta?' and 'meta' are the only places where we
+    # are not extending the UUID. Because the companion Tcl sources
+    # (count, order, and content) have no bearing on the binary at
+    # all.
     InitializeFile $file
 
     dict update v::code($file) config c {
@@ -540,9 +555,9 @@ proc ::critcl::license {who args} {
 
     append license $elicense
 
-    # This, 'tsources', and 'meta' are the only places where we are
-    # not extending the UUID. Because the license text has no bearing
-    # on the binary at all.
+    # This, 'tsources', 'meta?', and 'meta' are the only places where
+    # we are not extending the UUID. Because the license text has no
+    # bearing on the binary at all.
     InitializeFile $file
 
     ImetaSet $file license [Text2Words   $elicense]
@@ -603,9 +618,9 @@ proc ::critcl::meta {key args} {
     set file [SkipIgnored [This]]
     AbortWhenCalledAfterBuild
 
-    # This, 'license', and 'tsources' are the only places where we are
-    # not extending the UUID. Because the meta data has no bearing on
-    # the binary at all.
+    # This, 'meta?', 'license', and 'tsources' are the only places
+    # where we are not extending the UUID. Because the meta data has
+    # no bearing on the binary at all.
     InitializeFile $file
 
     dict update v::code($file) config c {
@@ -614,6 +629,24 @@ proc ::critcl::meta {key args} {
 	}
     }
     return
+}
+
+proc ::critcl::meta? {key} {
+    set file [SkipIgnored [This]]
+    AbortWhenCalledAfterBuild
+
+    # This, 'meta', 'license', and 'tsources' are the only places
+    # where we are not extending the UUID. Because the meta data has
+    # no bearing on the binary at all.
+    InitializeFile $file
+
+    if {[dict exists $v::code($file) config package $key]} {
+	return [dict get $v::code($file) config package $key]
+    }
+    if {[dict exists $v::code($file) config meta $key]} {
+	return [dict get $v::code($file) config meta $key]
+    }
+    return -code error "Unknown meta data key \"$key\""
 }
 
 proc ::critcl::ImetaSet {file key words} {
@@ -2074,9 +2107,7 @@ proc ::critcl::ProcessArgs {typesArray names cnames}  {
 }
 
 proc ::critcl::scan {file} {
-    set fd    [open $file r]
-    set lines [split [read $fd] \n]
-    close $fd
+    set lines [split [Cat $file] \n]
 
     set scan::rkey    require
     set scan::base    [file dirname [file normalize $file]]
@@ -2097,6 +2128,7 @@ proc ::critcl::scan {file} {
 	critcl::api/function		ok
 	critcl::api/header		warn
 	critcl::api/import		ok
+	critcl::source                  warn
 	critcl::cheaders		warn
 	critcl::csources		warn
 	critcl::license			warn
@@ -2158,9 +2190,7 @@ proc ::critcl::scan {file} {
 }
 
 proc ::critcl::ScanDependencies {dfile file {mode plain}} {
-    set fd    [open $file r]
-    set lines [split [read $fd] \n]
-    close $fd
+    set lines [split [Cat $file] \n]
 
     catch {
 	set saved $scan::capture
@@ -2348,6 +2378,17 @@ proc ::critcl::scan::critcl::meta {key args} {
 }
 
 # Capture files
+proc ::critcl::scan::critcl::source   {path} {
+    # Recursively scan the imported file.
+    # Keep the current context.
+    variable ::critcl::scan::config
+
+    foreach f [Files $path] {
+	set lines [split [::critcl::Cat $f] \n]
+	ScanCore $lines $config
+    }
+    return
+}
 proc ::critcl::scan::critcl::owns     {args} { eval [linsert $args 0 Files] }
 proc ::critcl::scan::critcl::cheaders {args} { eval [linsert $args 0 Files] }
 proc ::critcl::scan::critcl::csources {args} { eval [linsert $args 0 Files] }
@@ -2701,10 +2742,44 @@ proc ::critcl::InitializeFile {file} {
 # # ## ### ##### ######## ############# #####################
 ## Implementation -- Internals - Management of in-memory C source fragment.
 
+proc ::critcl::name2c {name} {
+    # Note: A slightly modified copy (different depth in the call-stack) of this
+    # is inlined into the internal command "BeginCommand".
+
+    # Locate caller, as the data is saved per .tcl file.
+    set file [This]
+
+    if {![string match ::* $name]} {
+	# Locate caller's namespace. Two up, skipping the
+	# ccommand/cproc frame. This is where the new Tcl command will
+	# be defined in.
+
+	set ns [uplevel 1 namespace current]
+	if {$ns ne "::"} { append ns :: }
+
+	set name ${ns}$name
+    }
+
+    # First ensure that any namespace qualifiers found in the name
+    # itself are shifted over to the namespace information.
+
+    set ns   [namespace qualifiers $name]
+    set name [namespace tail       $name]
+
+    # Then ensure that everything is fully qualified, and that the C
+    # level name doesn't contain bad characters.
+
+    if {$ns ne "::"} { append ns :: }
+    set cns [string map {:: _} $ns]
+
+    return [list $ns $cns $name]
+}
+
 proc ::critcl::BeginCommand {name args} {
     # Locate caller, as the data is saved per .tcl file.
     set file [This]
 
+    # Inlined name2c
     if {![string match ::* $name]} {
 	# Locate caller's namespace. Two up, skipping the
 	# ccommand/cproc frame. This is where the new Tcl command will

@@ -1,5 +1,5 @@
 
-The eleven commands in this section provide tools like
+The twelve commands in this section provide tools like
 [manpage {CriTcl Application}] or similar with
 deeper access to the package's internals.
 
@@ -170,5 +170,21 @@ all relative to the location (directory) of the input file.
 This command and the information it returns can be used by tools to
 implement processing modes like the assembly of a directory hierachy
 containing a TEA-lookalike buildystem, etc.
+
+[comment ---------------------------------------------------------------------]
+[call [cmd ::critcl::name2c] [arg name]]
+
+This command exposes the conversion of a Tcl level identifier of
+commands into various C-level pieces, i.e. namespace, C namespace
+prefix, and C base name.
+
+[para] The result of the command is a list providing the above
+mentioned information, in the named order.
+
+[para] The envisioned main use is from within utility packages
+providing Tcl commands without going through the standard commands,
+i.e. [cmd critcl::ccommand], or [cmd critcl::cproc]. An example of a
+package using this command for exactly this purpose is
+[package critcl::class].
 
 [list_end]

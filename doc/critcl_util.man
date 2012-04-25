@@ -1,6 +1,6 @@
 [comment {-*- tcl -*- doctools manpage}]
 [manpage_begin critcl::util n 1]
-[include include/module.inc]
+[include include/module2.inc]
 [titledesc {CriTcl Utilities}]
 [require Tcl 8.4]
 [require critcl [opt 2.1]]
@@ -36,5 +36,5 @@ It returns [const true] on success, and [const false] otherwise.
 [list_end]
 
 [comment {===================================================================}]
-[include include/feedback.inc]
+[include include/feedback2.inc]
 [manpage_end]
