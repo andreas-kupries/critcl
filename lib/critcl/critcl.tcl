@@ -6,7 +6,7 @@
 
 # CriTcl Core.
 
-package provide critcl 3.0.2
+package provide critcl 3.0.3
 
 # # ## ### ##### ######## ############# #####################
 ## Requirements.
