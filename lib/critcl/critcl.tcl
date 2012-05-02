@@ -1635,7 +1635,7 @@ proc ::critcl::setconfig {targetconfig} {
 
     cache [file join ~ .critcl $v::targetplatform]
 
-    #  set any Tcl variables Tcl variables
+    #  set any Tcl variables
     foreach idx [array names v::toolchain $v::targetplatform,*] {
 	set var [lindex [split $idx ,] 1]
 	if {![info exists c::$var]} {
