@@ -3444,8 +3444,6 @@ proc ::critcl::DetermineObjectName {file} {
 }
 
 proc ::critcl::DetermineInitName {file prefix} {
-    # Default; in case it's called interactively
-    set ininame stdin
     set ininame [PkgInit $file]
 
     # Add in the build prefix, if specified. This is done in mode
@@ -3476,8 +3474,12 @@ proc ::critcl::PkgInit {file} {
     # While related to the package name, it can be different,
     # especially if the package name contains :: separators.
 
-    regexp {^\w+} [file tail $file] ininame
-    return [string totitle $ininame]
+    if {$file eq {}} {
+	return Stdin
+    } else {
+	regexp {^\w+} [file tail $file] ininame
+	return [string totitle $ininame]
+    }
 }
 
 # # ## ### ##### ######## ############# #####################
