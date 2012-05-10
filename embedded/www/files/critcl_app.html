@@ -92,7 +92,7 @@
     }
 --></style>
 </head>
-<! -- Generated from file '/home/aku/Projects/Critcl/dev-critcl/embedded/www/files/critcl_app.html' by tcllib/doctools with format 'html'
+<! -- Generated from file '/net/nas/data/andreask/Dev/Critcl/dev-master/embedded/www/files/critcl_app.html' by tcllib/doctools with format 'html'
    -->
 <! -- Copyright &copy; Jean-Claude Wippler   -- Copyright &copy; Steve Landers   -- Copyright &copy; 2011 Andreas Kupries
    -->
@@ -103,7 +103,7 @@
   <a href="../toc.html">Table Of Contents</a>
 | <a href="../index.html">Keyword Index</a>
 ] <hr>
-<h1 class="title">critcl_app(n) 1 doc &quot;C Runtime In Tcl (CriTcl)&quot;</h1>
+<h1 class="title">critcl_app(n) 3 doc &quot;C Runtime In Tcl (CriTcl)&quot;</h1>
 <div id="name" class="section"><h2><a name="name">Name</a></h2>
 <p>critcl_app - CriTcl Application</p>
 </div>
@@ -118,9 +118,10 @@
 <li class="section"><a href="#section5">Changes for version 3</a></li>
 <li class="section"><a href="#section6">Changes for version 3.0.1</a></li>
 <li class="section"><a href="#section7">Changes for version 3.0.2</a></li>
-<li class="section"><a href="#section8">Changes for version 3.1</a></li>
-<li class="section"><a href="#section9">Authors</a></li>
-<li class="section"><a href="#section10">Bugs, Ideas, Feedback</a></li>
+<li class="section"><a href="#section8">Changes for version 3.0.3</a></li>
+<li class="section"><a href="#section9">Changes for version 3.1</a></li>
+<li class="section"><a href="#section10">Authors</a></li>
+<li class="section"><a href="#section11">Bugs, Ideas, Feedback</a></li>
 <li class="section"><a href="#keywords">Keywords</a></li>
 <li class="section"><a href="#category">Category</a></li>
 <li class="section"><a href="#copyright">Copyright</a></li>
@@ -663,7 +664,15 @@ option <b class="option">-I</b>, just for library search paths.</p></li>
 revisions of Tcl around which violate this assumption.</p></li>
 </ol>
 </div>
-<div id="section8" class="section"><h2><a name="section8">Changes for version 3.1</a></h2>
+<div id="section8" class="section"><h2><a name="section8">Changes for version 3.0.3</a></h2>
+<ol class="enumerated">
+<li><p>Fixed github issues 5 and 8, for the example build.tcl
+scripts. Working around a missing variable ::errorInfo. It should
+always be present, however there seem to be revisions of Tcl around
+which violate this assumption.</p></li>
+</ol>
+</div>
+<div id="section9" class="section"><h2><a name="section9">Changes for version 3.1</a></h2>
 <ol class="enumerated">
 <li><p>Extended the API for handling TEApot metadata. Added the
 command <b class="cmd">critcl::meta?</b> to query the stored information. Main use
@@ -680,10 +689,10 @@ allowing for easier management of larger bodies of code by splitting
 it up.</p></li>
 </ol>
 </div>
-<div id="section9" class="section"><h2><a name="section9">Authors</a></h2>
+<div id="section10" class="section"><h2><a name="section10">Authors</a></h2>
 <p>Jean Claude Wippler, Steve Landers, Andreas Kupries</p>
 </div>
-<div id="section10" class="section"><h2><a name="section10">Bugs, Ideas, Feedback</a></h2>
+<div id="section11" class="section"><h2><a name="section11">Bugs, Ideas, Feedback</a></h2>
 <p>This document, and the package it describes, will undoubtedly contain
 bugs and other problems.
 Please report such at <a href="https://github.com/jcw/critcl">https://github.com/jcw/critcl</a>.

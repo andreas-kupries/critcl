@@ -1,5 +1,5 @@
 '\"
-'\" Generated from file '/home/aku/Projects/Critcl/dev-critcl/embedded/man/files/critcl_class.n' by tcllib/doctools with format 'nroff'
+'\" Generated from file '/net/nas/data/andreask/Dev/Critcl/dev-master/embedded/man/files/critcl_class.n' by tcllib/doctools with format 'nroff'
 '\" Copyright (c) 2011-2012 Andreas Kupries
 '\"
 '\" The definitions below are for supplemental macros used in Tcl/Tk
@@ -379,12 +379,11 @@ Note further that in this case a predefined field \fBcmd\fR of
 type \fBTcl_Command\fR is present, to allow the association of
 instance structure and instance command. And the \fIpostbody\fR will
 implictly contain the assignment
-.CS
-
+.nf
 
     instance->cmd = cmd;
 
-.CE
+.fi
 .TP
 \fBinclude\fR \fIpath\fR
 This command specified the path of a header file to include within the
@@ -424,7 +423,6 @@ represent the parameters
 .TP
 \fBobjv\fR
 .RE
-.IP
 Any additional arguments specified will be added after these and are
 passed into the C code as is, i.e. are considered to be C expressions.
 .sp
@@ -456,8 +454,7 @@ keep the size down.
 .PP
 The full implementation can be found in the directory
 "\fIexamples/queue\fR" of the critcl source distribution/repository.
-.CS
-
+.nf
 
 package require Tcl 8.4
 package require critcl 3.1
@@ -522,7 +519,7 @@ critcl::class::def ::queuec {
 
 package provide queuec 1
 
-.CE
+.fi
 .SH AUTHORS
 Andreas Kupries
 .SH "BUGS, IDEAS, FEEDBACK"

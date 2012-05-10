@@ -207,7 +207,13 @@ proc _starpack {prefix {dst critcl}} {
     file copy -force $prefix $dst
 
     vfs::mk4::Mount $dst /KIT
-    file copy -force lib /KIT
+    file mkdir /KIT/lib
+
+    foreach d [glob -directory lib *] {
+	file delete -force  /KIT/lib/[file tail $d]
+	file copy -force $d /KIT/lib
+    }
+
     file copy -force main.tcl /KIT
     vfs::unmount /KIT
     +x $dst

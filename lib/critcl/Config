@@ -291,6 +291,7 @@ win32-ix86-cl  link            link -nologo
 win32-ix86-cl  embed_manifest  mt -manifest [list $outfile].manifest -outputresource:[list $outfile]\;2
 win32-ix86-cl  preproc_define  cl -nologo -E
 win32-ix86-cl  preproc_enum    cl -nologo -E
+win32-ix86-cl  libinclude      /LIBPATH:
 win32-ix86-cl  object          .obj
 win32-ix86-cl  debug_symbols   -W3 -Od -Zi -GZ -MDd -D_DEBUG
 win32-ix86-cl  optimize        -W3 -O2 -Op -Gs -MD
@@ -316,6 +317,7 @@ win32-x86_64-cl-buf  embed_manifest  mt -manifest [list $outfile].manifest -outp
 win32-x86_64-cl-buf  preproc_define  cl -nologo -E
 win32-x86_64-cl-buf  preproc_enum    cl -nologo -E
 win32-x86_64-cl-buf  object          .obj
+win32-x86_64-cl-buf  libinclude      /LIBPATH:
 win32-x86_64-cl-buf  debug_symbols   -W3 -Od -Zi -GZ -MDd -D_DEBUG
 win32-x86_64-cl-buf  optimize        -W3 -O2 -Op -Gs -MD
 win32-x86_64-cl-buf  output          [list -Fo$outfile]
@@ -336,6 +338,7 @@ win32-x86_64-cl-nobuf  embed_manifest  mt -manifest [list $outfile].manifest -ou
 win32-x86_64-cl-nobuf  preproc_define  cl -nologo -E
 win32-x86_64-cl-nobuf  preproc_enum    cl -nologo -E
 win32-x86_64-cl-nobuf  object          .obj
+win32-x86_64-cl-nobuf  libinclude      /LIBPATH:
 win32-x86_64-cl-nobuf  debug_symbols   -W3 -Od -Zi -GZ -MDd -D_DEBUG
 win32-x86_64-cl-nobuf  optimize        -W3 -O2 -Op -Gs -MD
 win32-x86_64-cl-nobuf  output          [list -Fo$outfile]

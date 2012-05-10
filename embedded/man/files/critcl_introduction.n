@@ -1,5 +1,5 @@
 '\"
-'\" Generated from file '/home/aku/Projects/Critcl/dev-critcl/embedded/man/files/critcl_introduction.n' by tcllib/doctools with format 'nroff'
+'\" Generated from file '/net/nas/data/andreask/Dev/Critcl/dev-master/embedded/man/files/critcl_introduction.n' by tcllib/doctools with format 'nroff'
 '\" Copyright (c) Jean-Claude Wippler
 '\" Copyright (c) Steve Landers
 '\" Copyright (c) 2011 Andreas Kupries
@@ -240,7 +240,7 @@ Database Class:	\\fB\\$3\\fR
 .de UL
 \\$1\l'|0\(ul'\\$2
 ..
-.TH "critcl_introduction" n 2 doc "C Runtime In Tcl (CriTcl)"
+.TH "critcl_introduction" n 3 doc "C Runtime In Tcl (CriTcl)"
 .BS
 .SH NAME
 critcl_introduction \- Introduction To CriTcl
@@ -293,13 +293,12 @@ Newly introduced with Critcl version 3 is
 \fIGenerate TEA Package\fR. This mode constructs a directory
 hierarchy from the package which can later be built like a regular TEA
 package, i.e. using
-.CS
-
+.nf
 
 	.../configure --prefix ...
 	make all isntall
 
-.CE
+.fi
 .SH "SYSTEM ARCHITECTURE"
 The whole system consist of two pieces, as seen in the figure below
 .PP
@@ -436,7 +435,6 @@ for use by advanced users. The new commands are
 .IP [5]
 \fBcritcl::argconversion\fR
 .RE
-.IP
 Please see section \fIAdvanced Embedded C Code\fR of the
 \fBcritcl\fR package documentation for details.
 .IP [23]
@@ -585,6 +583,13 @@ option \fB-I\fR, just for library search paths.
 Fixed github issues 5 and 8. Working around a missing variable
 ::errorInfo. It should always be present, however there seem to be
 revisions of Tcl around which violate this assumption.
+.PP
+.SH "CHANGES FOR VERSION 3.0.3"
+.IP [1]
+Fixed github issues 5 and 8, for the example build.tcl
+scripts. Working around a missing variable ::errorInfo. It should
+always be present, however there seem to be revisions of Tcl around
+which violate this assumption.
 .PP
 .SH "CHANGES FOR VERSION 3.1"
 .IP [1]
