@@ -3208,14 +3208,51 @@ proc ::critcl::GetLibraries {file} {
 }
 
 proc ::critcl::FixLibraries {libraries} {
-    # On windows using the native MSVC compiler, transform all -lFOO
-    # references into FOO.lib.
-
     if {[string match "win32-*-cl" $v::buildplatform]} {
+	# On windows using the native MSVC compiler, transform all
+	# -lFOO references into FOO.lib.
+
 	regsub -all -- {-l(\S+)} $libraries {\1.lib} libraries
+    } else {
+	# On unix we look for '-l:' references and rewrite them to the
+	# full path of the library, doing the search on our own.
+	#
+	# GNU ld understands this since at least 2.22 (don't know if
+	# earlier, 2.15 definitely doesn't), and it helps in
+	# specifying static libraries (Regular -l prefers .so over .a,
+	# and -l: overrides that).
+
+	# Search paths specified via -L, -libdir.
+	set lpath [SystemLibraryPaths]
+
+	set tmp {}
+	foreach word $libraries {
+	    # Extend search path with -L options from clibraries.
+	    if {[string match -L* $word]} {
+		lappend lpath [string range $word 2 end]
+		lappend tmp $word
+		continue
+	    }
+	    if {![string match -l:* $word]} {
+		lappend tmp $word
+		continue
+	    }
+	    # Search named library.
+	    lappend tmp [ResolveColonSpec $lpath [string range $word 3 end]]
+	}
+	set libraries $tmp
     }
 
     return $libraries
+}
+
+proc ::critcl::ResolveColonSpec {lpath name} {
+    foreach path $lpath {
+	set f [file join $lpath $name]
+	if {![file exists $f]} continue
+	return $f
+    }
+    return -l:$name
 }
 
 proc ::critcl::SetupTkStubs {fd} {
