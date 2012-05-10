@@ -243,6 +243,7 @@ proc ::critcl::app::Cmdline {argv} {
 
 		lappend ::auto_path $arg
 		lappend ::auto_path [file dirname $arg]
+		AddLibraryPath $arg
 	    }
 	    includedir {
 		set v::incdir  $arg
