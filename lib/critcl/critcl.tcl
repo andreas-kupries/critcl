@@ -1635,7 +1635,7 @@ proc ::critcl::setconfig {targetconfig} {
 
     cache [file join ~ .critcl $v::targetplatform]
 
-    #  set any Tcl variables Tcl variables
+    #  set any Tcl variables
     foreach idx [array names v::toolchain $v::targetplatform,*] {
 	set var [lindex [split $idx ,] 1]
 	if {![info exists c::$var]} {
@@ -3481,8 +3481,6 @@ proc ::critcl::DetermineObjectName {file} {
 }
 
 proc ::critcl::DetermineInitName {file prefix} {
-    # Default; in case it's called interactively
-    set ininame stdin
     set ininame [PkgInit $file]
 
     # Add in the build prefix, if specified. This is done in mode
@@ -3513,8 +3511,12 @@ proc ::critcl::PkgInit {file} {
     # While related to the package name, it can be different,
     # especially if the package name contains :: separators.
 
-    regexp {^\w+} [file tail $file] ininame
-    return [string totitle $ininame]
+    if {$file eq {}} {
+	return Stdin
+    } else {
+	regexp {^\w+} [file tail $file] ininame
+	return [string totitle $ininame]
+    }
 }
 
 # # ## ### ##### ######## ############# #####################
