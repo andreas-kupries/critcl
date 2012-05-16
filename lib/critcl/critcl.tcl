@@ -3003,7 +3003,7 @@ proc ::critcl::Compile {tclfile origin cfile obj} {
     if {$v::options(combine) ne "standalone"} {
 	lappendlist cmdline [getconfigvalue tclstubs]
     }
-    if {$v::options(language) ne "" && [file tail $file] ne "critcl.tcl"} {
+    if {$v::options(language) ne "" && [file tail $tclfile] ne "critcl.tcl"} {
 	# XXX Is this gcc specific ?
 	# XXX Should this not be configurable via some c::* setting ?
 	# See also -x none below.
