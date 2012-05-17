@@ -62,6 +62,29 @@ proc _recipes {} {
     puts [lsort -dict $r]
     return
 }
+proc Hdoc {} { return "\n\t(Re)Generate the embedded documentation." }
+proc _doc {} {
+    cd [file dirname $::me]/doc
+
+    puts "Removing old documentation..."
+    file delete -force ../embedded/man
+    file delete -force ../embedded/www
+
+    file mkdir ../embedded/man
+    file mkdir ../embedded/www
+
+    puts "Generating man pages..."
+    exec 2>@ stderr >@ stdout dtplite -ext n -o ../embedded/man nroff .
+    puts "Generating html..."
+    exec 2>@ stderr >@ stdout dtplite        -o ../embedded/www html .
+
+    cd  ../embedded/man
+    file delete -force .idxdoc .tocdoc
+    cd  ../www
+    file delete -force .idxdoc .tocdoc
+
+    return
+}
 proc Hinstall {} { return "?destination?\n\tInstall all packages, and application.\n\tdestination = path of package directory, default \[info library\]." }
 proc _install {{dst {}}} {
     set version  [version [file dirname $::me]/lib/critcl/critcl.tcl]
