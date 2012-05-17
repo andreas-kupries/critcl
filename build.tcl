@@ -85,6 +85,15 @@ proc _doc {} {
 
     return
 }
+proc Hfigures {} { return "\n\t(Re)Generate the figures and diagrams for the documentation." }
+proc _figures {} {
+    cd [file dirname $::me]/doc/include
+
+    puts "Generating (tklib) diagrams..."
+    eval [linsert [glob *.dia] 0 exec 2>@ stderr >@ stdout dia convert -t -o . png]
+
+    return
+}
 proc Hinstall {} { return "?destination?\n\tInstall all packages, and application.\n\tdestination = path of package directory, default \[info library\]." }
 proc _install {{dst {}}} {
     set version  [version [file dirname $::me]/lib/critcl/critcl.tcl]
