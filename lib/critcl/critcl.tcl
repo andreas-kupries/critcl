@@ -1504,6 +1504,7 @@ proc ::critcl::chooseconfig {targetconfig {err 0}} {
 
 proc ::critcl::showconfig {{fd ""}} {
     variable run
+    variable configfile
 
     # XXX replace gen - v::buildplatform
     # XXX Do not use v::targetplatform here. Use v::config.
@@ -1521,6 +1522,7 @@ proc ::critcl::showconfig {{fd ""}} {
     } else {
 	lappend out "Config: $plat (built on $gen)"
     }
+    lappend out "Origin: $configfile"
     lappend out "    [format %-15s cache] [critcl::cache]"
     foreach var [lsort $v::configvars] {
 	set val [getconfigvalue $var]
