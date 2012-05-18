@@ -1687,9 +1687,16 @@ proc ::critcl::getconfigvalue {var} {
 proc ::critcl::crosscheck {} {
     variable run
     global tcl_platform
+
+    if {$tcl_platform(platform) eq "windows"} {
+	set null NUL:
+    } else {
+	set null /dev/null
+    }
+
     if {![catch {
 	set     cmd [linsert $c::version 0 exec]
-	lappend cmd 2>@stdout
+	lappend cmd 2> $null;#@stdout
 	set config [interp eval $run $cmd]
     } msg]} {
 	set host ""
