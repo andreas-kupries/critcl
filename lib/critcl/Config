@@ -270,7 +270,7 @@ set winbufferoverflowu 0
 set msvc 0
 
 if {[string match win32-* $platform]} {
-    set cl [auto_execok cl]
+    set cl [file nativename [lindex [auto_execok cl] 0]]
     if {$cl ne ""} {
 	set msvc 1
 	foreach p [split $::env(LIB) \;] {
@@ -280,7 +280,16 @@ if {[string match win32-* $platform]} {
 	    }
 	}
 
-	regexp {Compiler Version ([0-9.]*) for} [exec $cl] -> msvcversion
+	set tmpfile $::env(TMP)/[pid].txt
+	catch { exec $cl 2> $tmpfile > NUL: } msg
+	#puts "M $msg"
+	set chan [open $tmpfile r]
+	set output [read $chan]
+	#puts "O $output"
+	close $chan
+	file delete $tmpfile
+
+	regexp {Compiler Version ([0-9.]*) for} $output -> msvcversion
 	if {[package vcompare $msvcversion 15.00.30729.01] >= 0} {
 	    # VC9 or higher. -debug:full is not supported anymore.
 	    # VC9 - warning, VC10 - error
