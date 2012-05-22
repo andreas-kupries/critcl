@@ -1570,6 +1570,7 @@ proc ::critcl::chooseconfig {targetconfig {err 0}} {
 
 proc ::critcl::showconfig {{fd ""}} {
     variable run
+    variable configfile
 
     # XXX replace gen - v::buildplatform
     # XXX Do not use v::targetplatform here. Use v::config.
@@ -1587,6 +1588,7 @@ proc ::critcl::showconfig {{fd ""}} {
     } else {
 	lappend out "Config: $plat (built on $gen)"
     }
+    lappend out "Origin: $configfile"
     lappend out "    [format %-15s cache] [critcl::cache]"
     foreach var [lsort $v::configvars] {
 	set val [getconfigvalue $var]
@@ -1753,9 +1755,16 @@ proc ::critcl::getconfigvalue {var} {
 proc ::critcl::crosscheck {} {
     variable run
     global tcl_platform
+
+    if {$tcl_platform(platform) eq "windows"} {
+	set null NUL:
+    } else {
+	set null /dev/null
+    }
+
     if {![catch {
 	set     cmd [linsert $c::version 0 exec]
-	lappend cmd 2>@stdout
+	lappend cmd 2> $null;#@stdout
 	set config [interp eval $run $cmd]
     } msg]} {
 	set host ""
