@@ -136,14 +136,32 @@ proc ::critcl::TeapotRequire {dspec} {
 # # ## ### ##### ######## ############# #####################
 ## Implementation -- API: Embed C Code
 
+proc ::critcl::HeaderLines {text} {
+    regexp {^[\t\n ]+} $text header
+    set header [string map {{ } {} "\t" {} "\n" *} $header]
+    set lines  [string length $header]
+    # => The C code begins $lines lines after location of the c**
+    #    command. This goes as offset into the generated #line pragma,
+    #    because now (see next line) we throw away this leading
+    #    whitespace.
+    set text [string trim $text]
+    return [list $lines $text]
+}
+
+proc ::critcl::Lines {text} {
+    set n [regexp -all {\n} $text]
+    return $n
+}
+
 proc ::critcl::ccode {text} {
     set file [SkipIgnored [This]]
     AbortWhenCalledAfterBuild
     set digest [UUID.extend $file .ccode $text]
 
     set block {}
+    lassign [HeaderLines $text] lines text
     if {$v::options(lines)} {
-	append block [LinePragma -2 $file]
+	append block [LinePragma $lines -2 $file]
     }
     append block $text \n
 
@@ -156,7 +174,7 @@ proc ::critcl::ccode {text} {
 }
 
 proc ::critcl::ccommand {name anames args} {
-    SkipIgnored [This]
+    SkipIgnored [set file [This]]
     AbortWhenCalledAfterBuild
 
     set clientdata NULL
@@ -192,15 +210,41 @@ proc ::critcl::ccommand {name anames args} {
 	set ca "(ClientData $cd, Tcl_Interp *$ip, int $oc, Tcl_Obj *CONST $ov\[])"
 
 	Emitln "static int tcl_$cns$name$ca"
-	Emit   \{
+	Emit   \{\n
+	lassign [HeaderLines $body] lines body
+	if {$v::options(lines)} {
+	    Emit [LinePragma $lines -2 $file $name]
+	}
 	Emit   $body
-	Emitln \}
+	Emitln \n\}
     } else {
 	# if no body is specified, then $anames is alias for the real cmd proc
 	Emitln "#define tcl_$cns$name $anames"
 	Emitln "int $anames\(\);"
     }
     EndCommand
+    return
+}
+
+proc ::critcl::/Frameshift {off} {
+    set v::shift $off
+    return
+}
+
+proc ::critcl::At! {{name {}} {level 0}} {
+    # Logically equivalent to At= [At?]
+    incr level -3
+    set v::lp [LinePragma 0 $level [This] $name]
+    return
+}
+
+proc ::critcl::At? {{name {}} {level 0}} {
+    incr level -3
+    return [LinePragma 0 $level [This] $name]
+}
+
+proc ::critcl::At= {lp} {
+    set v::lp $lp
     return
 }
 
@@ -222,11 +266,13 @@ proc ::critcl::cdata {name data} {
 
     set count [llength $bytes]
 
+    set body [subst [Cat [Template cdata.c]]]
+    #               ^=> count, inittext
+
     # NOTE: The uplevel is needed because otherwise 'ccommand' will
     # not properly determine the caller's namespace.
-    uplevel 1 [list critcl::ccommand $name {dummy ip objc objv} \
-		   [subst [Cat [Template cdata.c]]]]
-    #               ^=> count, inittext
+    At! $name
+    uplevel 1 [list critcl::ccommand $name {dummy ip objc objv} $body]
     return $name
 }
 
@@ -329,7 +375,7 @@ proc ::critcl::argconversion {adefs {n 1}} {
 }
 
 proc ::critcl::cproc {name adefs rtype {body "#"}} {
-    SkipIgnored [This]
+    SkipIgnored [set file [This]]
     AbortWhenCalledAfterBuild
 
     lassign [BeginCommand $name $adefs $rtype $body] ns cns name
@@ -345,9 +391,13 @@ proc ::critcl::cproc {name adefs rtype {body "#"}} {
     if {$body ne "#"} {
 	Emit   "static [ResultCType $rtype] "
 	Emitln "${cname}([join $cargs {, }])"
-	Emit   \{
+	Emit   \{\n
+	lassign [HeaderLines $body] lines body
+	if {$v::options(lines)} {
+	    Emit [LinePragma $lines -2 $file $name]
+	}
 	Emit   $body
-	Emitln \}
+	Emitln \n\}
     } else {
 	Emitln "#define $cname $name"
     }
@@ -366,15 +416,31 @@ proc ::critcl::cproc {name adefs rtype {body "#"}} {
 }
 
 proc ::critcl::cinit {text edecls} {
-    set file [SkipIgnored [This]]
+    set file [SkipIgnored [set file [This]]]
     AbortWhenCalledAfterBuild
 
     set digesta [UUID.extend $file .cinit.f $text]
     set digestb [UUID.extend $file .cinit.e $edecls]
 
+    set initc {}
+    set skip [Lines $text]
+    lassign [HeaderLines $text] lines text
+    if {$v::options(lines)} {
+	append initc [LinePragma $lines -2 $file]
+    }
+    append initc $text \n
+
+    set edec {}
+    lassign [HeaderLines $edecls] lines edecls
+    if {$v::options(lines)} {
+	incr lines $skip
+	append edec [LinePragma $lines -2 $file]
+    }
+    append edec $edecls \n
+
     dict update v::code($file) config c {
-	dict append  c initc  $text   \n
-	dict append  c edecls $edecls \n
+	dict append  c initc  $initc \n
+	dict append  c edecls $edec  \n
     }
     return
 }
@@ -2013,8 +2079,9 @@ proc ::critcl::c++command {tclname class constructors methods} {
     }
     append cmdproc "    \}\n\}\n"
 
-    critcl::ccode $delproc
-    critcl::ccode $cmdproc
+    # TODO: line pragma fix ?!
+    ccode $delproc
+    ccode $cmdproc
 
     # Force the new ccommand to be defined in the caller's namespace
     # instead of improperly in ::critcl.
@@ -2742,10 +2809,6 @@ proc ::critcl::BeginCommand {name args} {
     }
 
     Emitln "#define ns_$cns$name \"$ns$name\""
-    if {$v::options(lines)} {
-	Emit [LinePragma -3 $file $name]
-    }
-
     return [list $ns $cns $name]
 }
 
@@ -2771,33 +2834,31 @@ proc ::critcl::Emitln {{s ""}} {
     return
 }
 
-proc ::critcl::LinePragma {level file {name {}}} {
-    if {
-	[string match "hpux-ia64*-cc" $v::buildplatform] ||
-	[string match "solaris-*-cc"  $v::buildplatform]
-    } {
-	# Oh boy, the native HPUX cc on IA64 doesn't like 'line 0'.
-	# Ditto the native Solaris/* compilers.
-	#
-	# Error message: "Line number in #line directive is invalid."
-	# Our fix means that the line-numbers in compiler error messages
-	# will be off-by-one on these platforms.
-	set line 1
-    } else {
-	set line 0
+proc ::critcl::LinePragma {off level file {name {}}} {
+    if {$v::lp ne {}} {
+	set lp $v::lp
+	set v::lp {}
+	#msg "LP forced = $lp"
+	return $lp
     }
+
+    set line 1
 
     # If the interpreter running critcl has TIP 280 support use it to
     # place more exact line number information into the generated C
     # file.
 
+    incr level [expr {- $v::shift}]
+    set v::shift 0
+
     if {![catch {
+	#SHOWFRAMES $level
 	array set loc [info frame $level]
     }] && $loc(type) eq "source"} {
 	#parray loc
 	set file  $loc(file)
 	set fline $loc(line)
-	incr fline -1 ; # Adjust for invisible C boilerplate
+	incr fline $off ; # Adjust for removed leading whitespace.
 	set name {} ; # Squash reference for relative location.
 
 	# Keep the limitations of native compilers in mind and stay
@@ -2806,11 +2867,28 @@ proc ::critcl::LinePragma {level file {name {}}} {
 	if {$fline > $line} {
 	    set line $fline
 	}
+    } else {
+	return ""
     }
 
     if {$name ne {}} { set name /$name }
+
+    #msg "\nLP $fline (+$off)|$line : $level = [info frame $level]"
     return "#line $line \"[file tail $file]$name\"\n"
- }
+}
+
+proc ::critcl::SHOWFRAMES {level} {
+    set n [info frame]
+    set i 0
+    set id 1
+    while {$n} {
+	msg "[expr {$level == $id ? "**" : "  "}] frame [format %3d $id]: [info frame $i]"
+	incr i -1
+	incr id -1
+	incr n -1
+    }
+    return
+}
  
 # # ## ### ##### ######## ############# #####################
 
@@ -3779,7 +3857,7 @@ proc ::critcl::Initialize {} {
 
     variable v::prefix	"v[package require critcl]"
 
-    regsub {\.} $prefix {} prefix
+    regsub -all {\.} $prefix {} prefix
 
     # keep config options in a namespace
     foreach var $v::configvars {
@@ -3992,6 +4070,8 @@ namespace eval ::critcl {
 #endif
 	}
 
+	variable lp {}
+	variable shift 0
 	variable code	         ;# This array collects all code snippets and
 				  # data about them.
 
