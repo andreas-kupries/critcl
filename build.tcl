@@ -131,7 +131,7 @@ proc _release {} {
 
     exec 2>@ stderr >@ stdout git checkout gh-pages
     file copy download/critcl3.exe $tmpdir/prefix.exe
-    exec 2>@ stderr >@ git checkout $commit
+    exec 2>@ stderr >@ stdout git checkout $commit
 
     # # ## ### ##### ######## #############
     puts {Generate starpack...}
