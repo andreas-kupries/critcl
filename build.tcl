@@ -151,6 +151,7 @@ proc _release {} {
     regsub \
 	{Download \[commit .*\] (v.*)}           $index \
 	"Download \[commit $commit\] (v$version)" index
+    fileutil::writeFile index.html $index
 
     # # ## ### ##### ######## #############
     puts ""
