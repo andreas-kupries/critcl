@@ -115,7 +115,8 @@ if {[string match macosx-* $platform]} {
                 set info [exec defaults read $SDKROOT/SDKSettings buildSettings]
         }] {
             catch {
-                set info [exec defaults read $SDKROOT/SDKSettings DefaultProperties -dict MACOSX_DEPLOYMENT_TARGET]
+                set info [exec defaults read $SDKROOT/SDKSettings DefaultProperties \
+			      -dict MACOSX_DEPLOYMENT_TARGET]
             }
         }
 	if {$info eq ""} {
@@ -265,17 +266,37 @@ linux-64-*  compile   gcc -c -m64
 # This should be ok, for linking to it when it is present but not
 # required, should do no harm.
 
-set winbufferoverflowu 0
 set msvc 0
-
 if {[string match win32-* $platform]} {
-    if {[auto_execok cl] ne ""} {
+    set cl [file nativename [lindex [auto_execok cl] 0]]
+    if {$cl ne ""} {
 	set msvc 1
+
+	set msvcbufferoverflowlib ""
 	foreach p [split $::env(LIB) \;] {
 	    if {[llength [glob -nocomplain -directory $p bufferoverflowu.lib]]} {
-		set winbufferoverflowu 1
+		set msvcbufferoverflowlib bufferoverflowU.lib
 		break
 	    }
+	}
+
+	set tmpfile $::env(TMP)/[pid].txt
+	catch { exec $cl 2> $tmpfile > NUL: } msg
+	#puts "M $msg"
+	set chan [open $tmpfile r]
+	set output [read $chan]
+	#puts "O $output"
+	close $chan
+	file delete $tmpfile
+
+	regexp {Compiler Version ([0-9.]*) for} $output -> msvcversion
+	#puts V=$msvcversion
+	if {[package vcompare $msvcversion 15.00.30729.01] >= 0} {
+	    # VC9 or higher. -debug:full is not supported anymore.
+	    # VC9 - warning, VC10 - error
+	    set msvclinkdebug -debug
+	} else {
+	    set msvclinkdebug -debug:full
 	}
     }
 }
@@ -285,7 +306,7 @@ if {[string match win32-* $platform]} {
 # Note: the language option for cl is -TC for c and -TP for c++ or
 #       it can treat single files -Tc<filename>
 #
-win32-ix86-cl  when            [auto_execok cl] ne ""
+win32-ix86-cl  when            $msvc
 win32-ix86-cl  compile         cl -nologo -c
 win32-ix86-cl  link            link -nologo
 win32-ix86-cl  embed_manifest  mt -manifest [list $outfile].manifest -outputresource:[list $outfile]\;2
@@ -297,7 +318,7 @@ win32-ix86-cl  debug_symbols   -W3 -Od -Zi -GZ -MDd -D_DEBUG
 win32-ix86-cl  optimize        -W3 -O2 -Op -Gs -MD
 win32-ix86-cl  output          [list -Fo$outfile]
 win32-ix86-cl  ldoutput        -dll [list -out:$outfile]
-win32-ix86-cl  link_debug      -debug:full -debugtype:cv                   -verbose:lib -nodefaultlib:libc
+win32-ix86-cl  link_debug      $msvclinkdebug -debugtype:cv -verbose:lib -nodefaultlib:libc
 win32-ix86-cl  link_release    -release -opt:ref -opt:icf,3 -ws:aggressive -verbose:lib
 win32-ix86-cl  link_preload
 win32-ix86-cl  strip
@@ -310,45 +331,24 @@ win32-ix86-cl  platform        win32-ix86
 #       it can treat single files -Tc<filename>
 #
 
-win32-x86_64-cl-buf  when            $msvc && $winbufferoverflowu
-win32-x86_64-cl-buf  compile         cl -nologo -c
-win32-x86_64-cl-buf  link            link -nologo
-win32-x86_64-cl-buf  embed_manifest  mt -manifest [list $outfile].manifest -outputresource:[list $outfile]\;2
-win32-x86_64-cl-buf  preproc_define  cl -nologo -E
-win32-x86_64-cl-buf  preproc_enum    cl -nologo -E
-win32-x86_64-cl-buf  object          .obj
-win32-x86_64-cl-buf  libinclude      /LIBPATH:
-win32-x86_64-cl-buf  debug_symbols   -W3 -Od -Zi -GZ -MDd -D_DEBUG
-win32-x86_64-cl-buf  optimize        -W3 -O2 -Op -Gs -MD
-win32-x86_64-cl-buf  output          [list -Fo$outfile]
-win32-x86_64-cl-buf  ldoutput        -dll [list -out:$outfile]
-win32-x86_64-cl-buf  link_debug      -debug:full -debugtype:cv                   -verbose:lib bufferoverflowU.lib
-win32-x86_64-cl-buf  link_release    -release -opt:ref -opt:icf,3 -ws:aggressive -verbose:lib bufferoverflowU.lib
-win32-x86_64-cl-buf  link_preload
-win32-x86_64-cl-buf  strip
-win32-x86_64-cl-buf  version         cl
-win32-x86_64-cl-buf  platform        win32-x86_64
-
-# Windows 64bit environment not requiring bufferoverflowu (anymore)
-
-win32-x86_64-cl-nobuf  when            $msvc && !$winbufferoverflowu
-win32-x86_64-cl-nobuf  compile         cl -nologo -c
-win32-x86_64-cl-nobuf  link            link -nologo
-win32-x86_64-cl-nobuf  embed_manifest  mt -manifest [list $outfile].manifest -outputresource:[list $outfile]\;2
-win32-x86_64-cl-nobuf  preproc_define  cl -nologo -E
-win32-x86_64-cl-nobuf  preproc_enum    cl -nologo -E
-win32-x86_64-cl-nobuf  object          .obj
-win32-x86_64-cl-nobuf  libinclude      /LIBPATH:
-win32-x86_64-cl-nobuf  debug_symbols   -W3 -Od -Zi -GZ -MDd -D_DEBUG
-win32-x86_64-cl-nobuf  optimize        -W3 -O2 -Op -Gs -MD
-win32-x86_64-cl-nobuf  output          [list -Fo$outfile]
-win32-x86_64-cl-nobuf  ldoutput        -dll [list -out:$outfile]
-win32-x86_64-cl-nobuf  link_debug      -debug:full -debugtype:cv                   -verbose:lib
-win32-x86_64-cl-nobuf  link_release    -release -opt:ref -opt:icf,3 -ws:aggressive -verbose:lib
-win32-x86_64-cl-nobuf  link_preload
-win32-x86_64-cl-nobuf  strip
-win32-x86_64-cl-nobuf  version         cl
-win32-x86_64-cl-nobuf  platform        win32-x86_64
+win32-x86_64-cl  when            $msvc
+win32-x86_64-cl  compile         cl -nologo -c
+win32-x86_64-cl  link            link -nologo
+win32-x86_64-cl  embed_manifest  mt -manifest [list $outfile].manifest -outputresource:[list $outfile]\;2
+win32-x86_64-cl  preproc_define  cl -nologo -E
+win32-x86_64-cl  preproc_enum    cl -nologo -E
+win32-x86_64-cl  object          .obj
+win32-x86_64-cl  libinclude      /LIBPATH:
+win32-x86_64-cl  debug_symbols   -W3 -Od -Zi -GZ -MDd -D_DEBUG
+win32-x86_64-cl  optimize        -W3 -O2 -Op -Gs -MD
+win32-x86_64-cl  output          [list -Fo$outfile]
+win32-x86_64-cl  ldoutput        -dll [list -out:$outfile]
+win32-x86_64-cl  link_debug      $msvclinkdebug -debugtype:cv -verbose:lib $msvcbufferoverflowlib
+win32-x86_64-cl  link_release    -release -opt:ref -opt:icf,3 -ws:aggressive -verbose:lib bufferoverflowU.lib
+win32-x86_64-cl  link_preload
+win32-x86_64-cl  strip
+win32-x86_64-cl  version         cl
+win32-x86_64-cl  platform        win32-x86_64
 
 # Cross-compile for Windows using Xmingwin
 mingw32     target         win32-ix86
