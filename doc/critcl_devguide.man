@@ -1,0 +1,119 @@
+[comment {-*- tcl -*- doctools manpage}]
+[manpage_begin critcl_devguide n 1]
+[include include/module.inc]
+[titledesc {Critcl - The Developer's Guide}]
+[description]
+[include include/welcome.inc]
+
+[para] This document is a guide for developers working on Critcl,
+i.e. maintainers fixing bugs, extending the package's functionality,
+etc.
+
+[para]
+
+Please read
+
+[list_begin enum]
+[enum] [term {Critcl - License}],
+[enum] [term {Critcl - How To Get The Sources}], and
+[enum] [term {Critcl - The Installer's Guide}]
+[list_end]
+
+first, if that was not done already.
+
+Here we assume that the sources are already available in a directory
+of your choice, and that you not only know how to build and install
+them, but also have all the necessary requisites to actually do
+so. The guide to the sources in particular also explains which source
+code management system is used, where to find it, how to set it up,
+etc.
+
+
+[section {Playing with Critcl}]
+
+We currently do not have demo applications.
+
+[section {Developing for Critcl}]
+
+[comment @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@]
+[subsection {Architecture & Concepts}]
+
+The whole system consist of two pieces, as seen in the figure below
+
+[para][image architecture][para]
+
+[list_begin enumerated]
+[enum]
+
+At the top we have an application built on top of the core package,
+providing higher-level features than just compiling embedded C on the
+fly.
+
+[list_begin definitions][comment {----- application ---}]
+[def [package critcl::app]]
+[list_end][comment {------------------- application ---}]
+
+[enum]
+
+Below is the core package providing the essential functionality of the
+system.
+
+[list_begin definitions][comment {----- core ---}]
+[def [package critcl]]
+[list_end][comment {------------------- core ---}]
+[list_end]
+
+[comment {XXX --- Describe the utility package and how they fit in --- XXX}]
+
+[comment @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@]
+[subsection {Directory structure}]
+
+[list_begin definitions][comment {___1___}]
+
+[comment =====================================================================]
+[def Helpers]
+
+[comment =====================================================================]
+[def Documentation]
+
+[list_begin definitions]
+[def [file doc/]]
+
+This directory contains the documentation sources. The texts are written
+in [term doctools] format, whereas the figures are a mixture of TeX (math
+formulas), and tklib's [package dia](gram) package and application.
+
+[def [file embedded/]]
+
+This directory contains the documentation converted to regular manpages
+(nroff) and HTML.
+
+It is called embedded because these files, while derived, are part of the
+git repository, i.e. embedded into it. This enables us to place these files
+where they are visible when serving the prject's web interface.
+
+[list_end]
+
+[comment =====================================================================]
+[def {Demonstration Application and Framework}]
+
+[comment =====================================================================]
+[def {Package Code, General structure}]
+
+[list_begin definitions]
+[list_end]
+
+[comment =====================================================================]
+[def {Package Code, Per Package}]
+[list_begin definitions][comment ----------------------PCPP]
+
+[def [package critcl]]
+[list_begin definitions][comment ---------------critcl]
+[list_end][comment -----------------------------critcl]
+
+[list_end][comment ------------------------------------PCPP]
+
+[list_end][comment {___1___}]
+
+[include include/feedback.inc]
+[manpage_end]

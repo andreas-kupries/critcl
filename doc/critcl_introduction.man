@@ -28,6 +28,15 @@ is not sufficient anymore. I.e. for
 	Should I discuss the alternatives? And why they are not good?
 }]
 
+[section {Related Documents}]
+
+[list_begin enum]
+[enum] [term {Critcl - License}].
+[enum] [term {Critcl - How To Get The Sources}].
+[enum] [term {Critcl - The Installer's Guide}].
+[enum] [term {Critcl - The Developer's Guide}].
+[list_end]
+
 
 [section {Modes Of Operation/Use}]
 [include include/modes.inc]
@@ -62,14 +71,6 @@ system.
 [section References]
 
 [list_begin enumerated]
-
-[comment {===================================================
-[enum]
-    "Advanced Encryption Standard",
-    Federal Information Processing Standards Publication 197, 2001
-    ([uri http://csrc.nist.gov/publications/fips/fips197/fips-197.pdf])
-=============================================================}]
-
 [list_end]
 
 [comment {===================================================================}]
