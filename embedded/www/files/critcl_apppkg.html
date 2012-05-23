@@ -121,8 +121,9 @@
 <li class="section"><a href="#section8">Changes for version 3.0.1</a></li>
 <li class="section"><a href="#section9">Changes for version 3.0.2</a></li>
 <li class="section"><a href="#section10">Changes for version 3.0.3</a></li>
-<li class="section"><a href="#section11">Authors</a></li>
-<li class="section"><a href="#section12">Bugs, Ideas, Feedback</a></li>
+<li class="section"><a href="#section11">Changes for version 3.0.4</a></li>
+<li class="section"><a href="#section12">Authors</a></li>
+<li class="section"><a href="#section13">Bugs, Ideas, Feedback</a></li>
 <li class="section"><a href="#keywords">Keywords</a></li>
 <li class="section"><a href="#category">Category</a></li>
 <li class="section"><a href="#copyright">Copyright</a></li>
@@ -275,7 +276,8 @@ where it may be necessary to inspect the generated C code.</p>
 option <b class="option">-tea</b> below).</p></dd>
 <dt><b class="option">-libdir</b> path</dt>
 <dd><p>This option specifies the path under which the packages generated via
-option <b class="option">-pkg</b> are saved.
+option <b class="option">-pkg</b> are saved. It also specifies a path to search
+libraries in, like for <b class="option">-L</b>.
 When specified multiple times the last value is used.
 When not specified at all the default, &quot;<b class="file">lib</b>&quot;, is used. Note how
 this is a relative path, placing the result into the current working
@@ -283,7 +285,7 @@ directory.</p></dd>
 <dt><b class="option">-includedir</b> path</dt>
 <dd><p>This option specifies the path under which any generated package
 headers are saved. It also specifies a path to search include files
-in, like for -I.
+in, like for <b class="option">-I</b>.
 When specified multiple times the last value is used as destination,
 however all previous values are kept on the include search path.
 When not specified at all the default, &quot;<b class="file">include</b>&quot;, is used. Note
@@ -716,10 +718,40 @@ always be present, however there seem to be revisions of Tcl around
 which violate this assumption.</p></li>
 </ol>
 </div>
-<div id="section11" class="section"><h2><a name="section11">Authors</a></h2>
+<div id="section11" class="section"><h2><a name="section11">Changes for version 3.0.4</a></h2>
+<ol class="enumerated">
+<li><p>Fixed generation of the package's initname when the incoming
+	code is read from stdin and has no proper path.</p></li>
+<li><p>Fixed github issue 11. Now using /LIBPATH instead of -L
+	on Windows (libinclude configuration setting).</p></li>
+<li><p>Extended critcl to handle -l:path format of -l options.
+	GNU ld 2.22+ handles this by searching for the path as
+	is. Good when specifying static libraries, as plain -l looks
+	for shared libraries in preference over static. critcl handles
+	it now, as older GNU ld's do not understand it, nor the
+	various vendor-specific linkers.</p></li>
+<li><p>Fixed github issue #12. Critcl now determines the version of
+	MSVC in use and uses it to switch between various link debug
+	options. Simplified the handling of bufferoverflowU.lib also,
+	making use of the same mechanism and collapsing the two
+	configurations sections we had back into one.</p></li>
+<li><p>Reworked the insertion of #line pragmas into the generated C
+	code to avoid limitations on the line number argument imposed
+	by various compilers, and be more accurate.</p></li>
+<li><p>Modified argument processing. Option -libdir now also
+	implies -L for its argument.</p></li>
+<li><p>Extended handling of option -show (<b class="cmd">critcl::showconfig</b>)
+	to list the path of the configuration file the data is coming
+	from. Good for debugging configuration processing.</p></li>
+<li><p>Extended the build script with targets to regenerate the
+	embedded documentation, and diagrams, and to generate a
+	release.</p></li>
+</ol>
+</div>
+<div id="section12" class="section"><h2><a name="section12">Authors</a></h2>
 <p>Jean Claude Wippler, Steve Landers, Andreas Kupries</p>
 </div>
-<div id="section12" class="section"><h2><a name="section12">Bugs, Ideas, Feedback</a></h2>
+<div id="section13" class="section"><h2><a name="section13">Bugs, Ideas, Feedback</a></h2>
 <p>This document, and the package it describes, will undoubtedly contain
 bugs and other problems.
 Please report such at <a href="https://github.com/jcw/critcl">https://github.com/jcw/critcl</a>.

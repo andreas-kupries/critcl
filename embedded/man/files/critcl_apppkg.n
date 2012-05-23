@@ -441,7 +441,8 @@ option \fB-tea\fR below).
 .TP
 \fB-libdir\fR path
 This option specifies the path under which the packages generated via
-option \fB-pkg\fR are saved.
+option \fB-pkg\fR are saved. It also specifies a path to search
+libraries in, like for \fB-L\fR.
 When specified multiple times the last value is used.
 When not specified at all the default, "\fIlib\fR", is used. Note how
 this is a relative path, placing the result into the current working
@@ -450,7 +451,7 @@ directory.
 \fB-includedir\fR path
 This option specifies the path under which any generated package
 headers are saved. It also specifies a path to search include files
-in, like for -I.
+in, like for \fB-I\fR.
 When specified multiple times the last value is used as destination,
 however all previous values are kept on the include search path.
 When not specified at all the default, "\fIinclude\fR", is used. Note
@@ -1002,6 +1003,42 @@ Fixed github issues 5 and 8, for the example build.tcl
 scripts. Working around a missing variable ::errorInfo. It should
 always be present, however there seem to be revisions of Tcl around
 which violate this assumption.
+.PP
+.SH "CHANGES FOR VERSION 3.0.4"
+.IP [1]
+Fixed generation of the package's initname when the incoming
+code is read from stdin and has no proper path.
+.IP [2]
+Fixed github issue 11. Now using /LIBPATH instead of -L
+on Windows (libinclude configuration setting).
+.IP [3]
+Extended critcl to handle -l:path format of -l options.
+GNU ld 2.22+ handles this by searching for the path as
+is. Good when specifying static libraries, as plain -l looks
+for shared libraries in preference over static. critcl handles
+it now, as older GNU ld's do not understand it, nor the
+various vendor-specific linkers.
+.IP [4]
+Fixed github issue #12. Critcl now determines the version of
+MSVC in use and uses it to switch between various link debug
+options. Simplified the handling of bufferoverflowU.lib also,
+making use of the same mechanism and collapsing the two
+configurations sections we had back into one.
+.IP [5]
+Reworked the insertion of #line pragmas into the generated C
+code to avoid limitations on the line number argument imposed
+by various compilers, and be more accurate.
+.IP [6]
+Modified argument processing. Option -libdir now also
+implies -L for its argument.
+.IP [7]
+Extended handling of option -show (\fBcritcl::showconfig\fR)
+to list the path of the configuration file the data is coming
+from. Good for debugging configuration processing.
+.IP [8]
+Extended the build script with targets to regenerate the
+embedded documentation, and diagrams, and to generate a
+release.
 .PP
 .SH AUTHORS
 Jean Claude Wippler, Steve Landers, Andreas Kupries
