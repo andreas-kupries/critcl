@@ -92,7 +92,7 @@
     }
 --></style>
 </head>
-<! -- Generated from file '/net/nas/data/andreask/Dev/Critcl/dev-master/embedded/www/files/critcl_introduction.html' by tcllib/doctools with format 'html'
+<! -- Generated from file '/home/aku/Projects/Critcl/dev-critcl/embedded/www/files/critcl_introduction.html' by tcllib/doctools with format 'html'
    -->
 <! -- Copyright &copy; Jean-Claude Wippler   -- Copyright &copy; Steve Landers   -- Copyright &copy; 2011 Andreas Kupries
    -->
@@ -119,9 +119,10 @@
 <li class="section"><a href="#section7">Changes for version 3.0.1</a></li>
 <li class="section"><a href="#section8">Changes for version 3.0.2</a></li>
 <li class="section"><a href="#section9">Changes for version 3.0.3</a></li>
-<li class="section"><a href="#section10">Changes for version 3.1</a></li>
-<li class="section"><a href="#section11">Authors</a></li>
-<li class="section"><a href="#section12">Bugs, Ideas, Feedback</a></li>
+<li class="section"><a href="#section10">Changes for version 3.0.4</a></li>
+<li class="section"><a href="#section11">Changes for version 3.1</a></li>
+<li class="section"><a href="#section12">Authors</a></li>
+<li class="section"><a href="#section13">Bugs, Ideas, Feedback</a></li>
 <li class="section"><a href="#keywords">Keywords</a></li>
 <li class="section"><a href="#category">Category</a></li>
 <li class="section"><a href="#copyright">Copyright</a></li>
@@ -413,7 +414,37 @@ always be present, however there seem to be revisions of Tcl around
 which violate this assumption.</p></li>
 </ol>
 </div>
-<div id="section10" class="section"><h2><a name="section10">Changes for version 3.1</a></h2>
+<div id="section10" class="section"><h2><a name="section10">Changes for version 3.0.4</a></h2>
+<ol class="enumerated">
+<li><p>Fixed generation of the package's initname when the incoming
+	code is read from stdin and has no proper path.</p></li>
+<li><p>Fixed github issue 11. Now using /LIBPATH instead of -L
+	on Windows (libinclude configuration setting).</p></li>
+<li><p>Extended critcl to handle -l:path format of -l options.
+	GNU ld 2.22+ handles this by searching for the path as
+	is. Good when specifying static libraries, as plain -l looks
+	for shared libraries in preference over static. critcl handles
+	it now, as older GNU ld's do not understand it, nor the
+	various vendor-specific linkers.</p></li>
+<li><p>Fixed github issue #12. Critcl now determines the version of
+	MSVC in use and uses it to switch between various link debug
+	options. Simplified the handling of bufferoverflowU.lib also,
+	making use of the same mechanism and collapsing the two
+	configurations sections we had back into one.</p></li>
+<li><p>Reworked the insertion of #line pragmas into the generated C
+	code to avoid limitations on the line number argument imposed
+	by various compilers, and be more accurate.</p></li>
+<li><p>Modified argument processing. Option -libdir now also
+	implies -L for its argument.</p></li>
+<li><p>Extended handling of option -show (<b class="cmd">critcl::showconfig</b>)
+	to list the path of the configuration file the data is coming
+	from. Good for debugging configuration processing.</p></li>
+<li><p>Extended the build script with targets to regenerate the
+	embedded documentation, and diagrams, and to generate a
+	release.</p></li>
+</ol>
+</div>
+<div id="section11" class="section"><h2><a name="section11">Changes for version 3.1</a></h2>
 <ol class="enumerated">
 <li><p>Extended the API for handling TEApot metadata. Added the
 command <b class="cmd">critcl::meta?</b> to query the stored information. Main use
@@ -430,10 +461,10 @@ allowing for easier management of larger bodies of code by splitting
 it up.</p></li>
 </ol>
 </div>
-<div id="section11" class="section"><h2><a name="section11">Authors</a></h2>
+<div id="section12" class="section"><h2><a name="section12">Authors</a></h2>
 <p>Jean Claude Wippler, Steve Landers, Andreas Kupries</p>
 </div>
-<div id="section12" class="section"><h2><a name="section12">Bugs, Ideas, Feedback</a></h2>
+<div id="section13" class="section"><h2><a name="section13">Bugs, Ideas, Feedback</a></h2>
 <p>This document, and the package it describes, will undoubtedly contain
 bugs and other problems.
 Please report such at <a href="https://github.com/jcw/critcl">https://github.com/jcw/critcl</a>.

@@ -1,5 +1,5 @@
 '\"
-'\" Generated from file '/net/nas/data/andreask/Dev/Critcl/dev-master/embedded/man/files/critcl_iassoc.n' by tcllib/doctools with format 'nroff'
+'\" Generated from file '/home/aku/Projects/Critcl/dev-critcl/embedded/man/files/critcl_iassoc.n' by tcllib/doctools with format 'nroff'
 '\" Copyright (c) 2011-2012 Andreas Kupries
 '\"
 '\" The definitions below are for supplemental macros used in Tcl/Tk
@@ -356,7 +356,8 @@ The example shown below is the specification of a simple interpreter-associated
 counter. The full example, with meta data and other incidentals, can be found
 in the directory "\fIexamples/queue\fR" of the critcl source
 distribution/repository.
-.nf
+.CS
+
 
 package require Tcl 8.4
 package require critcl 3.1
@@ -374,7 +375,7 @@ critcl::iassoc::def icounter {} {
 }
 package provide icounter 1
 
-.fi
+.CE
 .SH AUTHORS
 Andreas Kupries
 .SH "BUGS, IDEAS, FEEDBACK"
