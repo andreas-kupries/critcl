@@ -79,13 +79,95 @@ proc _doc {} {
     file delete -force ../embedded/man
     file delete -force ../embedded/www
 
-    puts "Generating man pages..."
-    exec 2>@ stderr >@ stdout dtplite        -o ../embedded/man -ext n nroff .
-    puts "Generating 1st html..."
-    exec 2>@ stderr >@ stdout dtplite -merge -o ../embedded/www html .
-    puts "Generating 2nd html, resolving cross-references..."
-    exec 2>@ stderr >@ stdout dtplite -merge -o ../embedded/www html .
+    file mkdir ../embedded/man
+    file mkdir ../embedded/www
 
+    puts "Generating man pages..."
+    exec 2>@ stderr >@ stdout dtplite -ext n -o ../embedded/man nroff .
+    puts "Generating html..."
+    exec 2>@ stderr >@ stdout dtplite        -o ../embedded/www html .
+
+    cd  ../embedded/man
+    file delete -force .idxdoc .tocdoc
+    cd  ../www
+    file delete -force .idxdoc .tocdoc
+
+    return
+}
+proc Hfigures {} { return "\n\t(Re)Generate the figures and diagrams for the documentation." }
+proc _figures {} {
+    cd [file dirname $::me]/doc/include
+
+    puts "Generating (tklib) diagrams..."
+    eval [linsert [glob *.dia] 0 exec 2>@ stderr >@ stdout dia convert -t -o . png]
+
+    return
+}
+proc Hrelease {} { return "\n\tGenerate a release from the current commit.\n\tAssumed to be properly tagged.\n\tLeaves checkout in the gh-pages branch, ready for commit+push" }
+proc _release {} {
+
+    # # ## ### ##### ######## #############
+    # Get scratchpad to assemble the release in.
+    package require fileutil
+
+    set tmpraw [fileutil::tempfile critcl-release]
+    set tmpdir $tmpraw.[pid]
+    file delete -force $tmpdir
+    file mkdir $tmpdir
+    file delete -force $tmpraw
+
+    puts "Assembly in: $tmpdir"
+
+    # # ## ### ##### ######## #############
+    # Get version and hash of the commit to be released.
+    set commit  [exec git log -1 --pretty=format:%H]
+    set version [exec git describe]
+
+    puts "Commit:      $commit"
+    puts "Version:     $version"
+
+    # # ## ### ##### ######## #############
+    puts {Collecting the documentation ...}
+    file copy -force embedded/www $tmpdir/doc
+
+    # # ## ### ##### ######## #############
+    puts {Generate starkit...}
+    _starkit $tmpdir/critcl3.kit
+
+    # # ## ### ##### ######## #############
+    puts {Collecting starpack prefix...}
+    # which we use the existing starpack for, from the gh-pages branch
+
+    exec 2>@ stderr >@ stdout git checkout gh-pages
+    file copy download/critcl3.exe $tmpdir/prefix.exe
+    exec 2>@ stderr >@ stdout git checkout $commit
+
+    # # ## ### ##### ######## #############
+    puts {Generate starpack...}
+    _starpack $tmpdir/prefix.exe $tmpdir/critcl3.exe
+    # TODO: vacuum the thing. fix permissions if so.
+
+    # # ## ### ##### ######## #############
+    puts {Assembly now, switching to gh-pages...}
+    exec 2>@ stderr >@ stdout git checkout gh-pages
+
+    file delete -force doc
+    file copy -force $tmpdir/doc doc
+    file copy -force $tmpdir/critcl3.kit download/critcl3.kit
+    file copy -force $tmpdir/critcl3.exe download/critcl3.exe
+
+    set index [fileutil::cat index.html]
+    regsub \
+	{Download \[commit .*\] \(v[^)]*\)}      $index \
+	"Download \[commit $commit\] (v$version)" index
+    fileutil::writeFile index.html $index
+
+    # # ## ### ##### ######## #############
+    puts ""
+    puts "We are in branch gh-pages now, coming from $commit"
+    puts ""
+
+    # # ## ### ##### ######## #############
     return
 }
 proc Hinstall {} { return "?destination?\n\tInstall all packages, and application.\n\tdestination = path of package directory, default \[info library\]." }

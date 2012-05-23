@@ -163,7 +163,8 @@ option [option -tea] below).
 [opt_def -libdir path]
 
 This option specifies the path under which the packages generated via
-option [option -pkg] are saved.
+option [option -pkg] are saved. It also specifies a path to search
+libraries in, like for [option -L].
 
 When specified multiple times the last value is used.
 
@@ -176,7 +177,7 @@ directory.
 
 This option specifies the path under which any generated package
 headers are saved. It also specifies a path to search include files
-in, like for -I.
+in, like for [option -I].
 
 When specified multiple times the last value is used as destination,
 however all previous values are kept on the include search path.
