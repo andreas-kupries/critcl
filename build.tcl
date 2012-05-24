@@ -87,7 +87,7 @@ proc _doc {} {
 }
 proc Hfigures {} { return "\n\t(Re)Generate the figures and diagrams for the documentation." }
 proc _figures {} {
-    cd [file dirname $::me]/doc/include
+    cd [file dirname $::me]/doc/figures
 
     puts "Generating (tklib) diagrams..."
     eval [linsert [glob *.dia] 0 exec 2>@ stderr >@ stdout dia convert -t -o . png]
