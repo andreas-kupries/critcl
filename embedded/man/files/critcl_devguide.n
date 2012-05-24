@@ -343,9 +343,9 @@ possible accelerator packages:
 .IP [1]
 \fBtcllibc\fR
 .IP [2]
-\fBmd5c\fR
-.IP [3]
 \fBTrf\fR
+.IP [3]
+\fBmd5c\fR
 .RE
 .TP
 \fBcmdline\fR

@@ -207,14 +207,22 @@ can be found at</p>
 <p>To use Critcl a few packages found in the Tcllib bundle are
 required. These packages are:</p>
 <ol class="enumerated">
-<li><p>snit</p></li>
-<li><p>cmdline</p></li>
-<li><p>md5</p></li>
-<li><p>tcllibc (or Trf, which is its own package, not in Tcllib)</p></li>
+<li><p><b class="package">cmdline</b></p></li>
+<li><p><b class="package">md5</b>.</p>
+<p>And to accelerate this package, it is recommend to get and
+install one of</p>
+<ol class="enumerated">
+<li><p><b class="package">tcllibc</b></p></li>
+<li><p><b class="package">md5c</b></p></li>
+<li><p><b class="package">Trf</b></p></li>
+</ol>
+<p>The system will work without them, but can become quite slow,
+especially when handling large code blocks.</p></li>
+<li><p><b class="package">snit</b></p></li>
 </ol>
 <p>Assuming that ActiveTcl is installed, or some other Tcl
-installation with <b class="syscmd">teacup</b> available, these packages can
-be installed via</p>
+installation with <b class="syscmd">teacup</b> available, most (not md5c) of these
+packages can be installed via</p>
 <pre class="example">
     teacup install $packagename
 </pre>

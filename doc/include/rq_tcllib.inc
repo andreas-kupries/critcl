@@ -5,15 +5,23 @@ To use Critcl a few packages found in the Tcllib bundle are
 required. These packages are:
 
 [list_begin enumerated]
-[enum] snit
-[enum] cmdline
-[enum] md5
-[enum] tcllibc (or Trf, which is its own package, not in Tcllib)
+[enum] [package cmdline]
+[enum] [package md5].
+[para] And to accelerate this package, it is recommend to get and
+install one of
+[list_begin enumerated]
+[enum] [package tcllibc]
+[enum] [package md5c]
+[enum] [package Trf]
+[list_end]
+The system will work without them, but can become quite slow,
+especially when handling large code blocks.
+[enum] [package snit]
 [list_end]
 
 [para] Assuming that ActiveTcl is installed, or some other Tcl
-installation with [syscmd teacup] available, these packages can
-be installed via
+installation with [syscmd teacup] available, most (not md5c) of these
+packages can be installed via
 
 [example {
     teacup install $packagename

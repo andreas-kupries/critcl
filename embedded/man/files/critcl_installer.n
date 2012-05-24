@@ -346,18 +346,29 @@ Tk
 To use Critcl a few packages found in the Tcllib bundle are
 required. These packages are:
 .IP [1]
-snit
+\fBcmdline\fR
 .IP [2]
-cmdline
+\fBmd5\fR.
+.sp
+And to accelerate this package, it is recommend to get and
+install one of
+.RS
+.IP [1]
+\fBtcllibc\fR
+.IP [2]
+\fBmd5c\fR
 .IP [3]
-md5
-.IP [4]
-tcllibc (or Trf, which is its own package, not in Tcllib)
+\fBTrf\fR
+.RE
+The system will work without them, but can become quite slow,
+especially when handling large code blocks.
+.IP [3]
+\fBsnit\fR
 .PP
 .PP
 Assuming that ActiveTcl is installed, or some other Tcl
-installation with \fBteacup\fR available, these packages can
-be installed via
+installation with \fBteacup\fR available, most (not md5c) of these
+packages can be installed via
 .nf
 
     teacup install $packagename

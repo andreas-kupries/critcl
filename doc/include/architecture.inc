@@ -37,8 +37,8 @@ For this pure-Tcl package to be fast users should get one of several
 possible accelerator packages:
 [list_begin enumerated]
 [enum] [package tcllibc]
-[enum] [package md5c]
 [enum] [package Trf]
+[enum] [package md5c]
 [list_end]
 
 [def [package cmdline]]
