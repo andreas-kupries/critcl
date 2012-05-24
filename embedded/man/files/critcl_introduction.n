@@ -1,5 +1,5 @@
 '\"
-'\" Generated from file '/home/aku/Projects/Critcl/dev-critcl/embedded/man/files/critcl_introduction.n' by tcllib/doctools with format 'nroff'
+'\" Generated from file '/net/nas/data/andreask/Dev/Critcl/dev-master/embedded/man/files/critcl_introduction.n' by tcllib/doctools with format 'nroff'
 '\" Copyright (c) Jean-Claude Wippler
 '\" Copyright (c) Steve Landers
 '\" Copyright (c) 2011 Andreas Kupries
@@ -267,6 +267,28 @@ hiding critical pieces of your library or application, and
 .IP [4]
 simply needing features provided only by C.
 .PP
+.PP
+The following sections first reference a few related documents
+which may or may not be of interest to you, depending on if you are
+just a plain user of the system, trying to get and build/install it,
+or are going deep into the internals for either edification or
+modification.
+.PP
+This is followed by an introduction to the modes of operation
+supported by the system, and its general architecture as seen by a
+user.
+.SH "RELATED DOCUMENTS"
+.IP [1]
+\fICritcl - License\fR.
+.IP [2]
+\fIUsing CriTcl\fR
+.IP [3]
+\fICritcl - How To Get The Sources\fR.
+.IP [4]
+\fICritcl - The Installer's Guide\fR.
+.IP [5]
+\fICritcl - The Developer's Guide\fR.
+.PP
 .SH "MODES OF OPERATION/USE"
 CriTcl can be used in three different modes of operation, called
 .IP [1]
@@ -293,36 +315,114 @@ Newly introduced with Critcl version 3 is
 \fIGenerate TEA Package\fR. This mode constructs a directory
 hierarchy from the package which can later be built like a regular TEA
 package, i.e. using
-.CS
-
+.nf
 
 	.../configure --prefix ...
 	make all isntall
 
-.CE
+.fi
 .SH "SYSTEM ARCHITECTURE"
-The whole system consist of two pieces, as seen in the figure below
+The system consists of two main layers, as seen in the figure below,
+plus a support layer containing general packages the system uses during
+operation.
 .PP
-IMAGE: architecture
+.PS
+.nf
++----------------+
+|Applications    |
+| critcl         |
+| critcl::app    |
++----------------+
+
++----------------+
+|Core Packages   |
+| critcl         |
+| critcl::util   |
++----------------+
+
++----------------+
+|Support Packages|
+| stubs::*       |
+| md5, platform  |
+|  ...           |
++----------------+
+
+.fi
+.PE
 .PP
 .IP [1]
-At the top we have an application built on top of the core package,
-providing higher-level features than just compiling embedded C on the
-fly.
+At the top we have an application built on top of the core packages,
+providing command line access to the second and third usage modes,
+i.e. \fIGenerate Package\fR and \fIGenerate TEA Package\fR.
 .RS
+.TP
+\fBcritcl\fR
 .TP
 \fBcritcl::app\fR
 .RE
 .IP [2]
-Below is the core package providing the essential functionality of the
-system.
+Below that is the core package providing the essential functionality
+of the system, plus various utility packages which make common tasks
+more convenient.
 .RS
 .TP
 \fBcritcl\fR
+.TP
+\fBcritcl::util\fR
+.RE
+.IP [3]
+Lastly a layer of supporting packages, mostly external to critcl.
+.RS
+.TP
+\fBmd5\fR
+For this pure-Tcl package to be fast users should get one of several
+possible accelerator packages:
+.RS
+.IP [1]
+\fBtcllibc\fR
+.IP [2]
+\fBmd5c\fR
+.IP [3]
+\fBTrf\fR
+.RE
+.TP
+\fBcmdline\fR
+.TP
+\fBplatform\fR
+.TP
+\fBstubs::container\fR
+.TP
+\fBstubs::reader\fR
+.TP
+\fBstubs::writer\fR
+.TP
+\fBstubs::gen\fR
+.TP
+\fBstubs::gen::init\fR
+.TP
+\fBstubs::gen::header\fR
+.TP
+\fBstubs::gen::decl\fR
+.TP
+\fBstubs::gen::macro\fR
+.TP
+\fBstubs::gen::slot\fR
+.TP
+\fBstubs::gen::lib\fR
 .RE
 .PP
-.SH REFERENCES
+.SH EXAMPLES
 .PP
+The sources of Critcl, should you have gotten them, contain
+several larger examples show-casing various aspects of the
+system. These demonstration packages can all be found in the
+sub-directory "\fIexamples/\fR" of the sources.
+.PP
+Lots of smaller examples can be found in the document
+\fIUsing CriTcl\fR, an introduction to Critcl by way of a of
+examples. These focus more on specific critcl commands than the
+overall picture shown by the large examples mentioned in the previous
+paragraph.
 .SH "CHANGES FOR VERSION 2.1"
 .IP [1]
 Fixed bug where \fBcritcl::tsources\fR interpreted relative
@@ -436,7 +536,6 @@ for use by advanced users. The new commands are
 .IP [5]
 \fBcritcl::argconversion\fR
 .RE
-.IP
 Please see section \fIAdvanced Embedded C Code\fR of the
 \fBcritcl\fR package documentation for details.
 .IP [23]

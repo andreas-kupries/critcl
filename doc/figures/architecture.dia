@@ -33,6 +33,6 @@ set C [area "Core Packages"]
 move
 set S [area "Support Packages"]
 
-text at $A "critcl"
-text at $C "critcl"
-text at $S "(platform) ..."
+text at $A "critcl\ncritcl::app"
+text at $C "critcl\ncritcl::util"
+text at $S "stubs::*, md5, platform ..."

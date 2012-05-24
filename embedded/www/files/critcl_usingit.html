@@ -92,7 +92,7 @@
     }
 --></style>
 </head>
-<! -- Generated from file '/home/aku/Projects/Critcl/dev-critcl/embedded/www/files/critcl_usingit.html' by tcllib/doctools with format 'html'
+<! -- Generated from file '/net/nas/data/andreask/Dev/Critcl/dev-master/embedded/www/files/critcl_usingit.html' by tcllib/doctools with format 'html'
    -->
 <! -- Copyright &copy; Jean-Claude Wippler   -- Copyright &copy; Steve Landers   -- Copyright &copy; 2011 Andreas Kupries
    -->
@@ -160,17 +160,22 @@
 system to build C extension packages for Tcl on the fly, from C code
 embedded within Tcl scripts, for all who wish to make their code go
 faster.</p>
-<p>This document is a (hopefully) gentle introduction to it by way of a
-series of examples, both for how to embed C into Tcl with it, and how
-to build the distributable packages.
+<p>This document is a (hopefully) gentle introduction to Critcl by way of a
+series of small examples.</p>
+<p>Readers which came directly to this document through a search
+or similar, and are thus in need of an overview of the whole system,
+are advised to read the <i class="term"><a href="critcl_introduction.html">Introduction To CriTcl</a></i> first.</p>
+<p>The examples here cover both how to embed C into Tcl with it,
+and how to build the distributable packages.
 As such the intended audience are both writers of packages with
 embedded C, and people building such packages.
 To make things easier the two themes each have their own section in
 this document, enabling all readers to quickly skip the part they are
 not interested in.</p>
-<p>For those readers which came directly to this document through
-a search or similar and thus are in need of an overview of the whole
-system, please go and read the <i class="term"><a href="critcl_introduction.html">Introduction To CriTcl</a></i>.</p>
+<p>The sources of Critcl, should you have gotten them, contain
+several larger examples show-casing various aspects of the
+system. These demonstration packages can all be found in the
+sub-directory &quot;<b class="file">examples/</b>&quot; of the sources.</p>
 </div>
 <div id="section2" class="section"><h2><a name="section2">Embedding C</a></h2>
 <p>This is the section for developers writing, or wishing to write, a

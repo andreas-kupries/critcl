@@ -1,5 +1,5 @@
 '\"
-'\" Generated from file '/net/nas/data/andreask/Dev/Critcl/dev-master/embedded/man/files/critcl_util.n' by tcllib/doctools with format 'nroff'
+'\" Generated from file '/net/nas/data/andreask/Dev/Critcl/dev-master/embedded/man/files/critcl_sources.n' by tcllib/doctools with format 'nroff'
 '\" Copyright (c) Jean-Claude Wippler
 '\" Copyright (c) Steve Landers
 '\" Copyright (c) 2011 Andreas Kupries
@@ -240,66 +240,60 @@ Database Class:	\\fB\\$3\\fR
 .de UL
 \\$1\l'|0\(ul'\\$2
 ..
-.TH "critcl::util" n 1 doc "C Runtime In Tcl (CriTcl)"
+.TH "critcl_sources" n 1 doc "C Runtime In Tcl (CriTcl)"
 .BS
 .SH NAME
-critcl::util \- CriTcl Utilities
-.SH SYNOPSIS
-package require \fBTcl  8.4\fR
-.sp
-package require \fBcritcl  ?2.1?\fR
-.sp
-package require \fBcritcl::util  ?1?\fR
-.sp
-\fB::critcl::util::checkfun\fR \fIname\fR ?\fIlabel\fR?
-.sp
-.BE
+critcl_sources \- Critcl - How To Get The Sources
 .SH DESCRIPTION
-.PP
 Welcome to the \fIC Runtime In Tcl\fR, \fICriTcl\fR for short, a
 system to build C extension packages for Tcl on the fly, from C code
 embedded within Tcl scripts, for all who wish to make their code go
 faster.
 .PP
-This document is the reference manpage for the \fBcritcl::util\fR
-package. This package provides convenience commands for advanced
-functionality built on top of the core.
-Its intended audience are mainly developers wishing to write Tcl
-packages with embedded C code.
+The audience of this document is anyone wishing to either have
+just a look at Critcl's source code, or build the packages, or to
+extend and modify them.
 .PP
-This package resides in the Core Package Layer of CriTcl.
+For builders and developers we additionally provide
+.IP [1]
+\fICritcl - License\fR.
+.IP [2]
+\fICritcl - The Installer's Guide\fR.
+.IP [3]
+\fICritcl - The Developer's Guide\fR.
 .PP
-.PS
+respectively.
+.SH "SOURCE LOCATION"
+The official repository for Critcl can be found at
+\fIhttp://jcw.github.com/critcl\fR
+.SH RETRIEVAL
+Assuming that you simply wish to look at the sources, or build a
+specific revision, the easiest way of retrieving it is to:
+.IP [1]
+Go to this site.
+.IP [2]
+Follow the 'Fork me on Github' link (top-right corner) to the project sources.
+.IP [3]
+Choose the revision under the Commits panel you wish to have and
+.IP [4]
+follow its 'Browse code' link to its detailed information page.
+.IP [5]
+On that page, choose either the "ZIP" link to get a copy of this revision as a Zip archive.
+.PP
+.SH "SOURCE CODE MANAGEMENT"
+For the curious (or a developer-to-be), the sources are managed by the
+\fIGit SCM\fR [http://www.git-scm.com].
+Binaries for popular platforms can be found directly at its
+\fIdownload page\fR [http://www.fossil-scm.org/downloads].
+.PP
+With that tool available the full history can be retrieved via:
 .nf
-+----------------+
-|Applications    |
-| critcl         |
-| critcl::app    |
-+----------------+
 
-*================*
-|Core Packages   |
-| critcl         |
-| critcl::util   |
-*================*
-
-+----------------+
-|Support Packages|
-| stubs::*       |
-| md5, platform  |
-|  ...           |
-+----------------+
+    git clone http://github.com/jcw/critcl
+    cd critcl
 
 .fi
-.PE
-.PP
-.SH API
-.TP
-\fB::critcl::util::checkfun\fR \fIname\fR ?\fIlabel\fR?
-This command checks the build-time environment for the existence of
-the C function \fIname\fR.
-It returns \fBtrue\fR on success, and \fBfalse\fR otherwise.
-.PP
+to get a checkout of the head of the trunk and move into it for browsing, editing, etc.
 .SH AUTHORS
 Jean Claude Wippler, Steve Landers, Andreas Kupries
 .SH "BUGS, IDEAS, FEEDBACK"

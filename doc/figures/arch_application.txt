@@ -1,14 +1,18 @@
 *================*
 |Applications    |
-|     critcl     |
+| critcl         |
+| critcl::app    |
 *================*
 
 +----------------+
 |Core Packages   |
-|     critcl     |
+| critcl         |
+| critcl::util   |
 +----------------+
 
 +----------------+
 |Support Packages|
-|  (platform)... |
+| stubs::*       |
+| md5, platform  |
+|  ...           |
 +----------------+

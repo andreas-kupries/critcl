@@ -92,7 +92,7 @@
     }
 --></style>
 </head>
-<! -- Generated from file '/home/aku/Projects/Critcl/dev-critcl/embedded/www/files/critcl_introduction.html' by tcllib/doctools with format 'html'
+<! -- Generated from file '/net/nas/data/andreask/Dev/Critcl/dev-master/embedded/www/files/critcl_introduction.html' by tcllib/doctools with format 'html'
    -->
 <! -- Copyright &copy; Jean-Claude Wippler   -- Copyright &copy; Steve Landers   -- Copyright &copy; 2011 Andreas Kupries
    -->
@@ -111,17 +111,18 @@
 <ul class="toc">
 <li class="section"><a href="#toc">Table Of Contents</a></li>
 <li class="section"><a href="#section1">Description</a></li>
-<li class="section"><a href="#section2">Modes Of Operation/Use</a></li>
-<li class="section"><a href="#section3">System Architecture</a></li>
-<li class="section"><a href="#section4">References</a></li>
-<li class="section"><a href="#section5">Changes for version 2.1</a></li>
-<li class="section"><a href="#section6">Changes for version 3</a></li>
-<li class="section"><a href="#section7">Changes for version 3.0.1</a></li>
-<li class="section"><a href="#section8">Changes for version 3.0.2</a></li>
-<li class="section"><a href="#section9">Changes for version 3.0.3</a></li>
-<li class="section"><a href="#section10">Changes for version 3.0.4</a></li>
-<li class="section"><a href="#section11">Authors</a></li>
-<li class="section"><a href="#section12">Bugs, Ideas, Feedback</a></li>
+<li class="section"><a href="#section2">Related Documents</a></li>
+<li class="section"><a href="#section3">Modes Of Operation/Use</a></li>
+<li class="section"><a href="#section4">System Architecture</a></li>
+<li class="section"><a href="#section5">Examples</a></li>
+<li class="section"><a href="#section6">Changes for version 2.1</a></li>
+<li class="section"><a href="#section7">Changes for version 3</a></li>
+<li class="section"><a href="#section8">Changes for version 3.0.1</a></li>
+<li class="section"><a href="#section9">Changes for version 3.0.2</a></li>
+<li class="section"><a href="#section10">Changes for version 3.0.3</a></li>
+<li class="section"><a href="#section11">Changes for version 3.0.4</a></li>
+<li class="section"><a href="#section12">Authors</a></li>
+<li class="section"><a href="#section13">Bugs, Ideas, Feedback</a></li>
 <li class="section"><a href="#keywords">Keywords</a></li>
 <li class="section"><a href="#category">Category</a></li>
 <li class="section"><a href="#copyright">Copyright</a></li>
@@ -144,8 +145,25 @@ is not sufficient anymore. I.e. for</p>
 <li><p>hiding critical pieces of your library or application, and</p></li>
 <li><p>simply needing features provided only by C.</p></li>
 </ol>
+<p>The following sections first reference a few related documents
+which may or may not be of interest to you, depending on if you are
+just a plain user of the system, trying to get and build/install it,
+or are going deep into the internals for either edification or
+modification.</p>
+<p>This is followed by an introduction to the modes of operation
+supported by the system, and its general architecture as seen by a
+user.</p>
 </div>
-<div id="section2" class="section"><h2><a name="section2">Modes Of Operation/Use</a></h2>
+<div id="section2" class="section"><h2><a name="section2">Related Documents</a></h2>
+<ol class="enumerated">
+<li><p><i class="term"><a href="license.html">Critcl - License</a></i>.</p></li>
+<li><p><i class="term"><a href="critcl_usingit.html">Using CriTcl</a></i></p></li>
+<li><p><i class="term"><a href="critcl_sources.html">Critcl - How To Get The Sources</a></i>.</p></li>
+<li><p><i class="term"><a href="critcl_installer.html">Critcl - The Installer's Guide</a></i>.</p></li>
+<li><p><i class="term"><a href="critcl_devguide.html">Critcl - The Developer's Guide</a></i>.</p></li>
+</ol>
+</div>
+<div id="section3" class="section"><h2><a name="section3">Modes Of Operation/Use</a></h2>
 <p>CriTcl can be used in three different modes of operation, called</p>
 <ol class="enumerated">
 <li><p><i class="term"><a href="../index.html#key0">Compile &amp; Run</a></i>, and</p></li>
@@ -172,32 +190,82 @@ package, i.e. using</p>
 	make all isntall
 </pre>
 </div>
-<div id="section3" class="section"><h2><a name="section3">System Architecture</a></h2>
-<p>The whole system consist of two pieces, as seen in the figure below</p>
+<div id="section4" class="section"><h2><a name="section4">System Architecture</a></h2>
+<p>The system consists of two main layers, as seen in the figure below,
+plus a support layer containing general packages the system uses during
+operation.</p>
 <p><img alt="architecture" src="../image/architecture.png"></p>
 <ol class="enumerated">
-<li><p>At the top we have an application built on top of the core package,
-providing higher-level features than just compiling embedded C on the
-fly.</p>
+<li><p>At the top we have an application built on top of the core packages,
+providing command line access to the second and third usage modes,
+i.e. <i class="term"><a href="../index.html#key9">Generate Package</a></i> and <i class="term">Generate TEA Package</i>.</p>
 <dl class="definitions">
+<dt><b class="syscmd"><a href="critcl_pkg.html">critcl</a></b></dt>
+<dd></dd>
 <dt><b class="package"><a href="critcl_apppkg.html">critcl::app</a></b></dt>
 <dd></dd>
 </dl>
 </li>
-<li><p>Below is the core package providing the essential functionality of the
-system.</p>
+<li><p>Below that is the core package providing the essential functionality
+of the system, plus various utility packages which make common tasks
+more convenient.</p>
 <dl class="definitions">
 <dt><b class="package"><a href="critcl_pkg.html">critcl</a></b></dt>
+<dd></dd>
+<dt><b class="package"><a href="critcl_util.html">critcl::util</a></b></dt>
+<dd></dd>
+</dl>
+</li>
+<li><p>Lastly a layer of supporting packages, mostly external to critcl.</p>
+<dl class="definitions">
+<dt><b class="package">md5</b></dt>
+<dd><p>For this pure-Tcl package to be fast users should get one of several
+possible accelerator packages:</p>
+<ol class="enumerated">
+<li><p><b class="package">tcllibc</b></p></li>
+<li><p><b class="package">md5c</b></p></li>
+<li><p><b class="package">Trf</b></p></li>
+</ol></dd>
+<dt><b class="package">cmdline</b></dt>
+<dd></dd>
+<dt><b class="package">platform</b></dt>
+<dd></dd>
+<dt><b class="package">stubs::container</b></dt>
+<dd></dd>
+<dt><b class="package">stubs::reader</b></dt>
+<dd></dd>
+<dt><b class="package">stubs::writer</b></dt>
+<dd></dd>
+<dt><b class="package">stubs::gen</b></dt>
+<dd></dd>
+<dt><b class="package">stubs::gen::init</b></dt>
+<dd></dd>
+<dt><b class="package">stubs::gen::header</b></dt>
+<dd></dd>
+<dt><b class="package">stubs::gen::decl</b></dt>
+<dd></dd>
+<dt><b class="package">stubs::gen::macro</b></dt>
+<dd></dd>
+<dt><b class="package">stubs::gen::slot</b></dt>
+<dd></dd>
+<dt><b class="package">stubs::gen::lib</b></dt>
 <dd></dd>
 </dl>
 </li>
 </ol>
 </div>
-<div id="section4" class="section"><h2><a name="section4">References</a></h2>
-<ol class="enumerated">
-</ol>
+<div id="section5" class="section"><h2><a name="section5">Examples</a></h2>
+<p>The sources of Critcl, should you have gotten them, contain
+several larger examples show-casing various aspects of the
+system. These demonstration packages can all be found in the
+sub-directory &quot;<b class="file">examples/</b>&quot; of the sources.</p>
+<p>Lots of smaller examples can be found in the document
+<i class="term"><a href="critcl_usingit.html">Using CriTcl</a></i>, an introduction to Critcl by way of a of
+examples. These focus more on specific critcl commands than the
+overall picture shown by the large examples mentioned in the previous
+paragraph.</p>
 </div>
-<div id="section5" class="section"><h2><a name="section5">Changes for version 2.1</a></h2>
+<div id="section6" class="section"><h2><a name="section6">Changes for version 2.1</a></h2>
 <ol class="enumerated">
 <li><p>Fixed bug where <b class="cmd">critcl::tsources</b> interpreted relative
 paths as relative to the current working directory instead of
@@ -294,7 +362,7 @@ still using proper path names and init function.</p></li>
 <li><p>Dropped remnants of support for Tcl 8.3 and before.</p></li>
 </ol>
 </div>
-<div id="section6" class="section"><h2><a name="section6">Changes for version 3</a></h2>
+<div id="section7" class="section"><h2><a name="section7">Changes for version 3</a></h2>
 <ol class="enumerated">
 <li><p>The command <b class="cmd">critcl::platform</b> was deprecated in version
 2.1, superceded by <b class="cmd">critcl::targetplatform</b>, yet kept for
@@ -361,7 +429,7 @@ for/about the package.</p>
 <b class="package"><a href="critcl_pkg.html">critcl</a></b> package documentation for details.</p></li>
 </ol>
 </div>
-<div id="section7" class="section"><h2><a name="section7">Changes for version 3.0.1</a></h2>
+<div id="section8" class="section"><h2><a name="section8">Changes for version 3.0.1</a></h2>
 <ol class="enumerated">
 <li><p>Bugfixes all around. In detail:</p></li>
 <li><p>Fixed recording of Tcl version requirements. Keep package name
@@ -392,7 +460,7 @@ for the library in the paths specified by the environment variable
 LIB.</p></li>
 </ol>
 </div>
-<div id="section8" class="section"><h2><a name="section8">Changes for version 3.0.2</a></h2>
+<div id="section9" class="section"><h2><a name="section9">Changes for version 3.0.2</a></h2>
 <ol class="enumerated">
 <li><p>Fixed issue in compile-and-run mode where commands put into the
 auto_index are not found by Tcl's [unknown] command.</p></li>
@@ -405,7 +473,7 @@ option <b class="option">-I</b>, just for library search paths.</p></li>
 revisions of Tcl around which violate this assumption.</p></li>
 </ol>
 </div>
-<div id="section9" class="section"><h2><a name="section9">Changes for version 3.0.3</a></h2>
+<div id="section10" class="section"><h2><a name="section10">Changes for version 3.0.3</a></h2>
 <ol class="enumerated">
 <li><p>Fixed github issues 5 and 8, for the example build.tcl
 scripts. Working around a missing variable ::errorInfo. It should
@@ -413,7 +481,7 @@ always be present, however there seem to be revisions of Tcl around
 which violate this assumption.</p></li>
 </ol>
 </div>
-<div id="section10" class="section"><h2><a name="section10">Changes for version 3.0.4</a></h2>
+<div id="section11" class="section"><h2><a name="section11">Changes for version 3.0.4</a></h2>
 <ol class="enumerated">
 <li><p>Fixed generation of the package's initname when the incoming
 	code is read from stdin and has no proper path.</p></li>
@@ -443,10 +511,10 @@ which violate this assumption.</p></li>
 	release.</p></li>
 </ol>
 </div>
-<div id="section11" class="section"><h2><a name="section11">Authors</a></h2>
+<div id="section12" class="section"><h2><a name="section12">Authors</a></h2>
 <p>Jean Claude Wippler, Steve Landers, Andreas Kupries</p>
 </div>
-<div id="section12" class="section"><h2><a name="section12">Bugs, Ideas, Feedback</a></h2>
+<div id="section13" class="section"><h2><a name="section13">Bugs, Ideas, Feedback</a></h2>
 <p>This document, and the package it describes, will undoubtedly contain
 bugs and other problems.
 Please report such at <a href="https://github.com/jcw/critcl">https://github.com/jcw/critcl</a>.
