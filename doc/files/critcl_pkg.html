@@ -103,7 +103,7 @@
   <a href="../toc.html">Table Of Contents</a>
 | <a href="../index.html">Keyword Index</a>
 ] <hr>
-<h1 class="title">critcl(n) 3.0.3 doc &quot;C Runtime In Tcl (CriTcl)&quot;</h1>
+<h1 class="title">critcl(n) 3.0.5 doc &quot;C Runtime In Tcl (CriTcl)&quot;</h1>
 <div id="name" class="section"><h2><a name="name">Name</a></h2>
 <p>critcl - CriTcl Package Reference</p>
 </div>
@@ -145,8 +145,9 @@
 <li class="section"><a href="#section8">Changes for version 3.0.2</a></li>
 <li class="section"><a href="#section9">Changes for version 3.0.3</a></li>
 <li class="section"><a href="#section10">Changes for version 3.0.4</a></li>
-<li class="section"><a href="#section11">Authors</a></li>
-<li class="section"><a href="#section12">Bugs, Ideas, Feedback</a></li>
+<li class="section"><a href="#section11">Changes for version 3.0.5</a></li>
+<li class="section"><a href="#section12">Authors</a></li>
+<li class="section"><a href="#section13">Bugs, Ideas, Feedback</a></li>
 <li class="section"><a href="#keywords">Keywords</a></li>
 <li class="section"><a href="#category">Category</a></li>
 <li class="section"><a href="#copyright">Copyright</a></li>
@@ -156,7 +157,7 @@
 <div class="synopsis">
 <ul class="requirements">
 <li>package require <b class="pkgname">Tcl 8.4</b></li>
-<li>package require <b class="pkgname">critcl <span class="opt">?3.0.3?</span></b></li>
+<li>package require <b class="pkgname">critcl <span class="opt">?3.0.5?</span></b></li>
 <li>package require <b class="pkgname">platform <span class="opt">?1.0.2?</span></b></li>
 <li>package require <b class="pkgname">md5 <span class="opt">?2?</span></b></li>
 </ul>
@@ -1836,7 +1837,7 @@ for use by advanced users. The new commands are</p>
 </ol>
 <p>Please see section <em>Advanced Embedded C Code</em> of the
 <b class="package">critcl</b> package documentation for details.</p></li>
-<li><p>Extended the critclk package to intercept <b class="cmd">package
+<li><p>Extended the critcl package to intercept <b class="cmd">package
 provide</b> and record the file -&gt; package name mapping. Plus other
 internal changes now allow the use of namespaced package names while
 still using proper path names and init function.</p></li>
@@ -1995,10 +1996,18 @@ which violate this assumption.</p></li>
 	release.</p></li>
 </ol>
 </div>
-<div id="section11" class="section"><h2><a name="section11">Authors</a></h2>
+<div id="section11" class="section"><h2><a name="section11">Changes for version 3.0.5</a></h2>
+<ol class="enumerated">
+<li><p>Fixed bug in the new code for #line pragmas triggered when
+	specifying C code without leading whitespace.</p></li>
+<li><p>Extended the documentation to have manpages for the license,
+	source retrieval, installer, and developer's guides.</p></li>
+</ol>
+</div>
+<div id="section12" class="section"><h2><a name="section12">Authors</a></h2>
 <p>Jean Claude Wippler, Steve Landers, Andreas Kupries</p>
 </div>
-<div id="section12" class="section"><h2><a name="section12">Bugs, Ideas, Feedback</a></h2>
+<div id="section13" class="section"><h2><a name="section13">Bugs, Ideas, Feedback</a></h2>
 <p>This document, and the package it describes, will undoubtedly contain
 bugs and other problems.
 Please report such at <a href="https://github.com/jcw/critcl">https://github.com/jcw/critcl</a>.
