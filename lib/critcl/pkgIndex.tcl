@@ -1,1 +1,1 @@
-package ifneeded critcl 3.0.3 [list source [file join $dir critcl.tcl]]
+package ifneeded critcl 3.0.5 [list source [file join $dir critcl.tcl]]

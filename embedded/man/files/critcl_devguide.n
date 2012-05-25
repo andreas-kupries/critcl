@@ -1,5 +1,5 @@
 '\"
-'\" Generated from file '/net/nas/data/andreask/Dev/Critcl/dev-master/embedded/man/files/critcl_devguide.n' by tcllib/doctools with format 'nroff'
+'\" Generated from file '/home/aku/Projects/Critcl/dev-critcl/embedded/man/files/critcl_devguide.n' by tcllib/doctools with format 'nroff'
 '\" Copyright (c) Jean-Claude Wippler
 '\" Copyright (c) Steve Landers
 '\" Copyright (c) 2011 Andreas Kupries
@@ -408,11 +408,13 @@ developer for critcl, like regenerating the documentation, the
 figures, building and installing critcl, etc.
 .sp
 Running the command like
-.nf
+.CS
+
 
 	./build.tcl help
 
-.fi
+.CE
+.IP
 will provide more details about the available operations and their
 arguments.
 .RE

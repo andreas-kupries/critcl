@@ -1,5 +1,5 @@
 '\"
-'\" Generated from file '/net/nas/data/andreask/Dev/Critcl/dev-master/embedded/man/files/critcl_installer.n' by tcllib/doctools with format 'nroff'
+'\" Generated from file '/home/aku/Projects/Critcl/dev-critcl/embedded/man/files/critcl_installer.n' by tcllib/doctools with format 'nroff'
 '\" Copyright (c) Jean-Claude Wippler
 '\" Copyright (c) Steve Landers
 '\" Copyright (c) 2011 Andreas Kupries
@@ -303,11 +303,12 @@ ActiveTcl 8.5 for your platform and install it as directed by
 ActiveState.
 .PP
 Assuming that ActiveTcl got installed I usually run the command
-.nf
+.CS
+
 
     teacup update
 
-.fi
+.CE
 to install all packages ActiveState provides, and the kitchensink, as
 the distribution itself usually contains only the ost important set of
 packages. This ensures that the dependencies for Critcl are all
@@ -316,21 +317,23 @@ present, and more.
 If that is not to your liking you have to read the sections for
 Critcl to determine the exact set of packages required, and install
 only these using
-.nf
+.CS
+
 
     teacup install $packagename
 
-.fi
+.CE
 .PP
 Both \fBteacup\fR commands above assume that ActiveState's
 TEApot repository at \fIhttp://teapot.activestate.com\fR is in the
 list of repositories accessible to \fBteacup\fR. This is automatically
 ensured for the ActiveTcl distribution. Others may have to run
-.nf
+.CS
+
 
     teacup archive add http://teapot.activestate.com
 
-.fi
+.CE
 to make this happen.
 .PP
 For those wishing to build Tcl/Tk on their own, their sources
@@ -360,6 +363,7 @@ install one of
 .IP [3]
 \fBTrf\fR
 .RE
+.IP
 The system will work without them, but can become quite slow,
 especially when handling large code blocks.
 .IP [3]
@@ -369,21 +373,23 @@ especially when handling large code blocks.
 Assuming that ActiveTcl is installed, or some other Tcl
 installation with \fBteacup\fR available, most (not md5c) of these
 packages can be installed via
-.nf
+.CS
+
 
     teacup install $packagename
 
-.fi
+.CE
 .PP
 The \fBteacup\fR command above assumes that ActiveState's
 TEApot repository at \fIhttp://teapot.activestate.com\fR is in the
 list of repositories accessible to \fBteacup\fR. This is automatically
 ensured for the ActiveTcl distribution. Others may have to run
-.nf
+.CS
+
 
     teacup archive add http://teapot.activestate.com
 
-.fi
+.CE
 to make this happen.
 .PP
 Now, for those wishing to install the packages from source,
@@ -399,11 +405,12 @@ file a bug against the Tcllib project at the above url, and not
 Critcl.
 .SH "BUILD & INSTALLATION"
 To install Critcl simply run
-.nf
+.CS
+
 
     /path/to/tclsh8.5 /path/to/critcl/build.tcl install
 
-.fi
+.CE
 where "\fI/path/to/tclsh8.5\fR" is the tclsh of your Tcl installation, and
 "\fI/path/to/critcl\fR" the location of the Critcl sources on your system.
 .PP
@@ -420,11 +427,12 @@ any arguments.
 .PP
 To get help about the methods of "\fIbuild.tcl\fR", and their complete
 syntax, invoke  "\fIbuild.tcl\fR" with argument \fBhelp\fR, i.e., like
-.nf
+.CS
+
 
     /path/to/tclsh8.5 /path/to/critcl/build.tcl help
 
-.fi
+.CE
 .SH AUTHORS
 Jean Claude Wippler, Steve Landers, Andreas Kupries
 .SH "BUGS, IDEAS, FEEDBACK"
