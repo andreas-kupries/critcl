@@ -1,5 +1,5 @@
 '\"
-'\" Generated from file '/home/aku/Projects/Critcl/dev-critcl/embedded/man/files/critcl_introduction.n' by tcllib/doctools with format 'nroff'
+'\" Generated from file '/net/nas/data/andreask/Dev/Critcl/dev/embedded/man/files/critcl_introduction.n' by tcllib/doctools with format 'nroff'
 '\" Copyright (c) Jean-Claude Wippler
 '\" Copyright (c) Steve Landers
 '\" Copyright (c) 2011 Andreas Kupries
@@ -315,13 +315,12 @@ Newly introduced with Critcl version 3 is
 \fIGenerate TEA Package\fR. This mode constructs a directory
 hierarchy from the package which can later be built like a regular TEA
 package, i.e. using
-.CS
-
+.nf
 
 	.../configure --prefix ...
 	make all isntall
 
-.CE
+.fi
 .SH "SYSTEM ARCHITECTURE"
 The system consists of two main layers, as seen in the figure below,
 plus a support layer containing general packages the system uses during
@@ -537,7 +536,6 @@ for use by advanced users. The new commands are
 .IP [5]
 \fBcritcl::argconversion\fR
 .RE
-.IP
 Please see section \fIAdvanced Embedded C Code\fR of the
 \fBcritcl\fR package documentation for details.
 .IP [23]

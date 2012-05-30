@@ -1,5 +1,5 @@
 '\"
-'\" Generated from file '/home/aku/Projects/Critcl/dev-critcl/embedded/man/files/critcl_installer.n' by tcllib/doctools with format 'nroff'
+'\" Generated from file '/net/nas/data/andreask/Dev/Critcl/dev/embedded/man/files/critcl_installer.n' by tcllib/doctools with format 'nroff'
 '\" Copyright (c) Jean-Claude Wippler
 '\" Copyright (c) Steve Landers
 '\" Copyright (c) 2011 Andreas Kupries
@@ -303,12 +303,11 @@ ActiveTcl 8.5 for your platform and install it as directed by
 ActiveState.
 .PP
 Assuming that ActiveTcl got installed I usually run the command
-.CS
-
+.nf
 
     teacup update
 
-.CE
+.fi
 to install all packages ActiveState provides, and the kitchensink, as
 the distribution itself usually contains only the ost important set of
 packages. This ensures that the dependencies for Critcl are all
@@ -317,23 +316,21 @@ present, and more.
 If that is not to your liking you have to read the sections for
 Critcl to determine the exact set of packages required, and install
 only these using
-.CS
-
+.nf
 
     teacup install $packagename
 
-.CE
+.fi
 .PP
 Both \fBteacup\fR commands above assume that ActiveState's
 TEApot repository at \fIhttp://teapot.activestate.com\fR is in the
 list of repositories accessible to \fBteacup\fR. This is automatically
 ensured for the ActiveTcl distribution. Others may have to run
-.CS
-
+.nf
 
     teacup archive add http://teapot.activestate.com
 
-.CE
+.fi
 to make this happen.
 .PP
 For those wishing to build Tcl/Tk on their own, their sources
@@ -363,7 +360,6 @@ install one of
 .IP [3]
 \fBTrf\fR
 .RE
-.IP
 The system will work without them, but can become quite slow,
 especially when handling large code blocks.
 .IP [3]
@@ -373,23 +369,21 @@ especially when handling large code blocks.
 Assuming that ActiveTcl is installed, or some other Tcl
 installation with \fBteacup\fR available, most (not md5c) of these
 packages can be installed via
-.CS
-
+.nf
 
     teacup install $packagename
 
-.CE
+.fi
 .PP
 The \fBteacup\fR command above assumes that ActiveState's
 TEApot repository at \fIhttp://teapot.activestate.com\fR is in the
 list of repositories accessible to \fBteacup\fR. This is automatically
 ensured for the ActiveTcl distribution. Others may have to run
-.CS
-
+.nf
 
     teacup archive add http://teapot.activestate.com
 
-.CE
+.fi
 to make this happen.
 .PP
 Now, for those wishing to install the packages from source,
@@ -405,17 +399,21 @@ file a bug against the Tcllib project at the above url, and not
 Critcl.
 .SH "BUILD & INSTALLATION"
 To install Critcl simply run
-.CS
+.nf
 
+    /path/to/tclsh /path/to/critcl/build.tcl install
 
-    /path/to/tclsh8.5 /path/to/critcl/build.tcl install
-
-.CE
-where "\fI/path/to/tclsh8.5\fR" is the tclsh of your Tcl installation, and
+.fi
+where "\fI/path/to/tclsh\fR" is the tclsh of your Tcl installation, and
 "\fI/path/to/critcl\fR" the location of the Critcl sources on your system.
 .PP
 This builds all packages and then places them in a directory where the
-\fBtclsh8.5\fR will find them.
+\fBtclsh\fR will find them.
+.PP
+It further creates a "\fIcritcl\fR" application script and places it
+into the directory \fBtclsh\fR resides in, making it a sibling of that
+executable. The critcl application is written to use that executable
+as well, and not search for it in the \fBPATH\fR.
 .PP
 On Windows you can invoke the file "\fIbuild.tcl\fR" with a
 double-click.  This will pop up a small graphical interface for
@@ -427,12 +425,57 @@ any arguments.
 .PP
 To get help about the methods of "\fIbuild.tcl\fR", and their complete
 syntax, invoke  "\fIbuild.tcl\fR" with argument \fBhelp\fR, i.e., like
-.CS
+.nf
+
+    /path/to/tclsh /path/to/critcl/build.tcl help
+
+.fi
+.SH "FIRST USE, TESTING THE INSTALLATION"
+With critcl installed it is now the time to try at least one of the
+examples distributed with it. This will also test if the installation
+was successful.
+.PP
+Below I show the steps to generate and then use the low- and
+high-level stack example packages. I am intentionally bypassing the
+"\fIbuild.tcl\fR" file the example is coming with, to show the use of
+\fBcritcl\fR itself.
+.PP
+.nf
 
 
-    /path/to/tclsh8.5 /path/to/critcl/build.tcl help
+    > cd examples/stack
+    > /path/to/critcl -keep -cache B -pkg cstack.tcl
+    > /path/to/critcl -keep -cache B -pkg stackc.tcl
+    > tclsh
+    % lappend auto_path [pwd]/lib
+    % package require stackc
+    % join [info loaded] \\n
+    % stackc S
+    % S push FOO
+    % S size
+    % S destroy
+    % exit
+    >
 
-.CE
+.fi
+.PP
+Some explanations:
+.IP \(bu
+The example shows only the commands entered on the shell (and
+tclsh) command line. Their responses are left out.
+.IP \(bu
+Use of option \fB-keep\fR causes critcl to leave the
+generated .c files behind, for edification. Normally this
+happens only in case of trouble.
+.IP \(bu
+Use of option \fB-cache\fR redirects the location of the
+directory to hold generated and build files to a local
+directory with a known name, for an easy look after.
+.IP \(bu
+Both \fBcstack\fR and \fBstackc\fR have to use the
+\fIsame\fR \fB-cache\fR so that \fBstackc\fR will
+find the stub table headers exported by \fBcstack\fR.
+.PP
 .SH AUTHORS
 Jean Claude Wippler, Steve Landers, Andreas Kupries
 .SH "BUGS, IDEAS, FEEDBACK"
