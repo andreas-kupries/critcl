@@ -48,6 +48,48 @@ proc version {file} {
     #puts /$provisions/
     return [lindex $provisions 0 3]
 }
+proc tmpdir {} {
+    package require fileutil
+    set tmpraw [fileutil::tempfile critcl.]
+    set tmpdir $tmpraw.[pid]
+    file delete -force $tmpdir
+    file mkdir $tmpdir
+    file delete -force $tmpraw
+
+    puts "Assembly in: $tmpdir"
+    return $tmpdir
+}
+proc id {cv vv} {
+    upvar 1 $cv commit $vv version
+
+    set commit  [exec git log -1 --pretty=format:%H]
+    set version [exec git describe]
+
+    puts "Commit:      $commit"
+    puts "Version:     $version"
+    return
+}
+proc savedoc {tmpdir} {
+    puts {Collecting the documentation ...}
+    file copy -force embedded/www $tmpdir/doc
+    return
+}
+proc placedoc {tmpdir} {
+    file delete -force doc
+    file copy -force $tmpdir/doc doc
+    return
+}
+proc 2website {} {
+    puts {Switching to gh-pages...}
+    exec 2>@ stderr >@ stdout git checkout gh-pages
+    return
+}
+proc reminder {} {
+    puts ""
+    puts "We are in branch gh-pages now, coming from $commit"
+    puts ""
+    return
+}
 proc Hhelp {} { return "\n\tPrint this help" }
 proc _help {} {
     usage 0
@@ -96,30 +138,14 @@ proc _figures {} {
 }
 proc Hrelease {} { return "\n\tGenerate a release from the current commit.\n\tAssumed to be properly tagged.\n\tLeaves checkout in the gh-pages branch, ready for commit+push" }
 proc _release {} {
-
     # # ## ### ##### ######## #############
     # Get scratchpad to assemble the release in.
-    package require fileutil
-
-    set tmpraw [fileutil::tempfile critcl-release]
-    set tmpdir $tmpraw.[pid]
-    file delete -force $tmpdir
-    file mkdir $tmpdir
-    file delete -force $tmpraw
-
-    puts "Assembly in: $tmpdir"
-
-    # # ## ### ##### ######## #############
     # Get version and hash of the commit to be released.
-    set commit  [exec git log -1 --pretty=format:%H]
-    set version [exec git describe]
 
-    puts "Commit:      $commit"
-    puts "Version:     $version"
+    set tmpdir [tmpdir]
+    id commit version
 
-    # # ## ### ##### ######## #############
-    puts {Collecting the documentation ...}
-    file copy -force embedded/www $tmpdir/doc
+    savedoc $tmpdir
 
     # # ## ### ##### ######## #############
     puts {Generate starkit...}
@@ -139,24 +165,37 @@ proc _release {} {
     # TODO: vacuum the thing. fix permissions if so.
 
     # # ## ### ##### ######## #############
-    puts {Assembly now, switching to gh-pages...}
-    exec 2>@ stderr >@ stdout git checkout gh-pages
+    2website
+    placedoc $tmpdir
 
-    file delete -force doc
-    file copy -force $tmpdir/doc doc
     file copy -force $tmpdir/critcl3.kit download/critcl3.kit
     file copy -force $tmpdir/critcl3.exe download/critcl3.exe
 
-    set index [fileutil::cat index.html]
-    regsub \
-	{\[commit .*\] \(v[^)]*\)}      $index \
-	"\[commit $commit\] (v$version)" index
+    set index   [fileutil::cat index.html]
+    set pattern "\\[commit .*\\] \\(v\[^)\]*\\)"
+    set replacement "\[commit $commit\] (v$version)"
+    regsub $pattern $index $replacement index
     fileutil::writeFile index.html $index
 
     # # ## ### ##### ######## #############
-    puts ""
-    puts "We are in branch gh-pages now, coming from $commit"
-    puts ""
+    reminder
+
+    # # ## ### ##### ######## #############
+    return
+}
+proc Hrelease-doc {} { return "\n\Update the release documentation from the current commit.\n\tAssumed to be properly tagged.\n\tLeaves the checkout in the gh-pages branch, ready for commit+push" }
+proc _release-doc {} {
+    # # ## ### ##### ######## #############
+    # Get scratchpad to assemble the release in.
+    # Get version and hash of the commit to be released.
+
+    set tmpdir [tmpdir]
+    id _ _ ; # Just for the printout, we are actually not using the data.
+
+    savedoc $tmpdir
+    2website
+    placedoc $tmpdir
+    reminder
 
     # # ## ### ##### ######## #############
     return
@@ -214,7 +253,7 @@ proc _install {{dst {}}} {
     puts "Installed package:     $dstl/stubs (stubs::* bundle)"
 
     set    c [open $dsta/critcl w]
-    puts  $c "#!/bin/sh\n# -*- tcl -*- \\\nexec tclsh \"\$0\" \$\{1+\"\$@\"\}\npackage require critcl::app\ncritcl::app::main \$argv"
+    puts  $c "#!/bin/sh\n# -*- tcl -*- \\\nexec [file normalize [info nameofexecutable]] \"\$0\" \$\{1+\"\$@\"\}\npackage require critcl::app\ncritcl::app::main \$argv"
     close $c
     +x $dsta/critcl
 
