@@ -183,7 +183,7 @@ proc _release {} {
     # # ## ### ##### ######## #############
     return
 }
-proc Hrelease-doc {} { return "\n\Update the release documentation from the current commit.\n\tAssumed to be properly tagged.\n\tLeaves the checkout in the gh-pages branch, ready for commit+push" }
+proc Hrelease-doc {} { return "\n\tUpdate the release documentation from the current commit.\n\tAssumed to be properly tagged.\n\tLeaves the checkout in the gh-pages branch, ready for commit+push" }
 proc _release-doc {} {
     # # ## ### ##### ######## #############
     # Get scratchpad to assemble the release in.
