@@ -1,66 +1,73 @@
 # Compiled Runtime In Tcl
 
- *  This is version 3 of Critcl, with several new features, listed
-    below. This version has changes to the public API which make it
-    incompatible with packages using Critcl version 2.x, or earlier.
+ *  Welcome to the C Runtime In Tcl, CriTcl for short, a system to
+    build C extension packages for Tcl on the fly, from C code
+    embedded within Tcl scripts, for all who wish to make their code
+    go faster.
 
-# Building Critcl
+# Website
 
- *  The toplevel directory contains a Tcl script **build.tcl** for
-    building and installing Critcl in various forms. Here we describe
-    only building and installation of the necessary packages, and the
-    creation of critcl starkits. For more information run
+ *  The main website of this project is http://jcw.github.com/critcl
 
-    ```% ./build.tcl help```
+    It provides access to pre-made binaries and archives for various
+    platforms, and the full documentation, especially the guides to
+    building and using Critcl.
 
- *  Building and installing the package, and its support:
+    Because of the latter this document contains only the most basic
+    instructions on getting, building, and using Critcl.
 
-    ```% ./build.tcl install```
+# Versions
 
-    builds and installs the critcl package, and all supporting packages
-    in the **[info library]** directory of the **tclsh** found in PATH and
-    used to run build.tcl.
+ *  Version 3 is the actively developed version of Critcl, with several
+    new features, listed in section **New Features**, below. This version
+    has changes to the public API which make it incompatible with packages
+    using Critcl version 2.x, or earlier.
 
-    Explicitly using a specific **tclsh**, like
+ *  The last of version 2 is 2.1, available at the same-named tag in the
+    repository. This version is not developed anymore.
 
-    ```% /path/to/tclsh ./build.tcl install```
+# Getting, Building, and Using Critcl
 
-    will install the packages in the **[info library]** directory of
-    that shell.
+ *  Retrieve the sources:
 
-    Explicitly using a specific installation directory, like
+    ```% git clone http://github.com/jcw/critcl```
 
-    ```% ./build.tcl install /path/to/chosen/package/directory/```
+    Your working directory now contains a directory ```critcl```.
 
-    will install all the packages there.
+ *  Build and install it:
 
- *  Building a starkit is don via
+    Install requisites: cmdline, md5; possibly one of tcllibc, Trf, md5c to accelerate md5.
 
-    ```% ./build.tcl starkit```
+    ```% cd critcl```
+    ```% tclsh ./build.tcl install```
 
-    This places the resulting file **critcl.kit** in the current
-    working directory.
+    The generated packages are placed into the **[info library]** directory
+    of the **tclsh** used to run build.tcl. The **critcl** application script
+    is put into the directory of the **tclsh** itself (and modified to
+    use this executable). This may require administrative (root) permissions,
+    depending on the system setup.
 
-    Explicitly using a specific installation path, like
+ *  It is expected that a working C compiler is available. Installation and
+    setup of such a compiler is platform and vendor specific, and instructions
+    for doing so are very much outside of scope for this document. Please find
+    and read the documentation, how-tos, etc. for your platform or vendor.
 
-    ```% ./build.tcl starkit /path/to/chosen/critcl.kit```
+ *  With critcl installed try out one of the examples:
 
-    will put the generated starkit there.
-
-# Using Critcl
-
- *  It is expected that the system you wish to use critcl on has a
-    working C compiler. Installation and setup of such a compiler is
-    platform and vendor specific, and instructions for doing so are
-    very much outside of the scope of this document. Please read the
-    documentation, how-tos, etc. for your platform or vendor.
+    ```% cd examples/stack```
+    ```% critcl -keep -cache B -pkg cstack.tcl```
+    ```% critcl -keep -cache B -pkg stackc.tcl```
+    ```% tclsh```
+    ```> lappend auto_path [pwd]/lib```
+    ```> package require stackc```
+    ```> stackc S```
+    ```> S push FOO```
+    ```> S size```
+    ```> S destroy```
+    ```> exit```
+    ```%```
 
 # New Features
-
- *  Here we provide only a short list of the features. For more details
-    see the 'Changes' sections in the reference manpages, or the files
-    "doc/include/changes\*.inc" which are the shared source of said
-    sections.
 
  *  Declaration, export and import of C-APIs through stubs tables.
 
@@ -72,26 +79,15 @@
     build configurations, like 'link a 3rd party library dynamically,
     statically, build it from copy of its sources, etc.', etc.
 
+ * This is of course not everything. For the details please read the
+   Changes sections of the documentation.
+
 # Documentation
 
- *  The source of the reference manpages for the main packages can be
-    found in the sub-directory "doc/", with various (shared) text blocks
-    under "doc/include/". They are written using *doctools* markup (See
-    Tcllib's doctools packages). The files match the pattern
-    "doc/\*.man", and "doc/include/\*.inc".
-
- *  The files matching the pattern "doc/include/\*.dia" are diagram
-    specifications using the *dia* markup language (See Tklib's diagram
-    packages). The files matching the pattern "doc/include/\*.png" are
-    the diagrams saved as raster images in the PNG format.
-
-    This was done with the **dia** application found in Tklib.
-
- *  The directory "embedded/" contains the reference manpages in nroff
-    and HTML formats, derived from the doctools sources under "doc/".
-
-    The script used to (re)generate these files is "tools/makedoc.sh".
-    It requires the **dtplite** application found in Tcllib.
+ *  Too much to cover here. Please go to http://jcw.github.com/critcl
+    for online reading, or the directories **embedded/www** and
+    **embedded/man** for local copies of the documentation in HTML
+    and nroff formats, respectively.
 
 # History
 
