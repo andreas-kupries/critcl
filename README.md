@@ -39,6 +39,7 @@
     Install requisites: cmdline, md5; possibly one of tcllibc, Trf, md5c to accelerate md5.
 
     ```% cd critcl```
+
     ```% tclsh ./build.tcl install```
 
     The generated packages are placed into the **[info library]** directory
@@ -55,16 +56,27 @@
  *  With critcl installed try out one of the examples:
 
     ```% cd examples/stack```
+
     ```% critcl -keep -cache B -pkg cstack.tcl```
+
     ```% critcl -keep -cache B -pkg stackc.tcl```
+
     ```% tclsh```
+
     ```> lappend auto_path [pwd]/lib```
+
     ```> package require stackc```
+
     ```> stackc S```
+
     ```> S push FOO```
+
     ```> S size```
+
     ```> S destroy```
+
     ```> exit```
+
     ```%```
 
 # New Features
