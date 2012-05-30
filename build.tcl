@@ -84,7 +84,7 @@ proc 2website {} {
     exec 2>@ stderr >@ stdout git checkout gh-pages
     return
 }
-proc reminder {} {
+proc reminder {commit} {
     puts ""
     puts "We are in branch gh-pages now, coming from $commit"
     puts ""
@@ -178,7 +178,7 @@ proc _release {} {
     fileutil::writeFile index.html $index
 
     # # ## ### ##### ######## #############
-    reminder
+    reminder $commit
 
     # # ## ### ##### ######## #############
     return
@@ -190,12 +190,12 @@ proc _release-doc {} {
     # Get version and hash of the commit to be released.
 
     set tmpdir [tmpdir]
-    id _ _ ; # Just for the printout, we are actually not using the data.
+    id _ commit ; # Just for the printout, we are actually not using the data.
 
     savedoc $tmpdir
     2website
     placedoc $tmpdir
-    reminder
+    reminder $commit
 
     # # ## ### ##### ######## #############
     return
