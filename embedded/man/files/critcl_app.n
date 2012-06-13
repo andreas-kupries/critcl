@@ -240,7 +240,7 @@ Database Class:	\\fB\\$3\\fR
 .de UL
 \\$1\l'|0\(ul'\\$2
 ..
-.TH "critcl_app" n 3 doc "C Runtime In Tcl (CriTcl)"
+.TH "critcl_app" n 3.0.5 doc "C Runtime In Tcl (CriTcl)"
 .BS
 .SH NAME
 critcl_app \- CriTcl Application
@@ -268,17 +268,21 @@ This application resides in the Application Layer of CriTcl.
 .nf
 *================*
 |Applications    |
-|     critcl     |
+| critcl         |
+| critcl::app    |
 *================*
 
 +----------------+
 |Core Packages   |
-|     critcl     |
+| critcl         |
+| critcl::util   |
 +----------------+
 
 +----------------+
 |Support Packages|
-|  (platform)... |
+| stubs::*       |
+| md5, platform  |
+|  ...           |
 +----------------+
 
 .fi
@@ -800,7 +804,7 @@ for use by advanced users. The new commands are
 Please see section \fIAdvanced Embedded C Code\fR of the
 \fBcritcl\fR package documentation for details.
 .IP [23]
-Extended the critclk package to intercept \fBpackage
+Extended the critcl package to intercept \fBpackage
 provide\fR and record the file -> package name mapping. Plus other
 internal changes now allow the use of namespaced package names while
 still using proper path names and init function.
@@ -988,6 +992,14 @@ from. Good for debugging configuration processing.
 Extended the build script with targets to regenerate the
 embedded documentation, and diagrams, and to generate a
 release.
+.PP
+.SH "CHANGES FOR VERSION 3.0.5"
+.IP [1]
+Fixed bug in the new code for #line pragmas triggered when
+specifying C code without leading whitespace.
+.IP [2]
+Extended the documentation to have manpages for the license,
+source retrieval, installer, and developer's guides.
 .PP
 .SH "CHANGES FOR VERSION 3.1"
 .IP [1]

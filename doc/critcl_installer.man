@@ -1,0 +1,85 @@
+[comment {-*- tcl -*- doctools manpage}]
+[manpage_begin critcl_install_guide n 1]
+[include include/module.inc]
+[titledesc {Critcl - The Installer's Guide}]
+[description]
+[include include/welcome.inc]
+
+[para] The audience of this document is anyone wishing to build the
+packages, for either themselves, or others.
+
+[para] For a developer intending to extend or modify the packages we
+additionally provide
+
+[list_begin enum]
+[enum] [term {Critcl - License}].
+[enum] [term {Critcl - The Developer's Guide}].
+[list_end]
+
+[para]
+
+Please read [term {Critcl - How To Get The Sources}] first, if that was
+not done already. Here we assume that the sources are already
+available in a directory of your choice.
+
+[para]
+
+[section Requisites]
+
+Before Critcl can be build and used a number of requisites must be installed. These are:
+
+[list_begin enumerated]
+[enum] The scripting language Tcl.
+       For details see [sectref Tcl].
+[enum] Various packages from the Tcllib bundle for [syscmd Tcl].
+       For details see [sectref Tcllib].
+[list_end]
+
+This list assumes that the machine where Critcl is to be installed is
+essentially clean. Of course, if parts of the dependencies listed
+below are already installed the associated steps can be skipped. It is
+still recommended to read their sections though, to validate that the
+dependencies they talk about are indeed installed.
+
+[include include/rq_tcl.inc]
+[include include/rq_tcllib.inc]
+
+[section {Build & Installation}]
+
+To install Critcl simply run
+
+[example {
+    /path/to/tclsh8.5 /path/to/critcl/build.tcl install
+}]
+
+where [file /path/to/tclsh8.5] is the tclsh of your Tcl installation, and
+[file /path/to/critcl] the location of the Critcl sources on your system.
+
+[para]
+
+This builds all packages and then places them in a directory where the
+[cmd tclsh8.5] will find them. 
+
+[para]
+
+On Windows you can invoke the file [file build.tcl] with a
+double-click.  This will pop up a small graphical interface for
+entering the destination and performing the installation. This
+handling of a double-click is restricted to Windows only however.
+
+[para]
+
+On unix the same GUI is acessible by invoking [file build.tcl] without
+any arguments.
+
+[para]
+
+To get help about the methods of [file build.tcl], and their complete
+syntax, invoke  [file build.tcl] with argument [method help], i.e., like
+
+[example {
+    /path/to/tclsh8.5 /path/to/critcl/build.tcl help
+}]
+
+[include include/feedback.inc]
+[manpage_end]

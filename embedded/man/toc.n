@@ -242,6 +242,18 @@ Database Class:	\\fB\\$3\\fR
 doc
 .RS
 .TP
+\fBcritcl_sources\fR
+\fIfiles/critcl_sources.n\fR: Critcl - How To Get The Sources
+.TP
+\fBcritcl_license\fR
+\fIfiles/license.n\fR: Critcl - License
+.TP
+\fBcritcl_devguide\fR
+\fIfiles/critcl_devguide.n\fR: Critcl - The Developer's Guide
+.TP
+\fBcritcl_install_guide\fR
+\fIfiles/critcl_installer.n\fR: Critcl - The Installer's Guide
+.TP
 \fBcritcl_app\fR
 \fIfiles/critcl_app.n\fR: CriTcl Application
 .TP

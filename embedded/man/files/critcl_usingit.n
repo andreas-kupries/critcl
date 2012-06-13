@@ -251,18 +251,25 @@ system to build C extension packages for Tcl on the fly, from C code
 embedded within Tcl scripts, for all who wish to make their code go
 faster.
 .PP
-This document is a (hopefully) gentle introduction to it by way of a
-series of examples, both for how to embed C into Tcl with it, and how
-to build the distributable packages.
+This document is a (hopefully) gentle introduction to Critcl by way of a
+series of small examples.
+.PP
+Readers which came directly to this document through a search
+or similar, and are thus in need of an overview of the whole system,
+are advised to read the \fIIntroduction To CriTcl\fR first.
+.PP
+The examples here cover both how to embed C into Tcl with it,
+and how to build the distributable packages.
 As such the intended audience are both writers of packages with
 embedded C, and people building such packages.
 To make things easier the two themes each have their own section in
 this document, enabling all readers to quickly skip the part they are
 not interested in.
 .PP
-For those readers which came directly to this document through
-a search or similar and thus are in need of an overview of the whole
-system, please go and read the \fIIntroduction To CriTcl\fR.
+The sources of Critcl, should you have gotten them, contain
+several larger examples show-casing various aspects of the
+system. These demonstration packages can all be found in the
+sub-directory "\fIexamples/\fR" of the sources.
 .SH "EMBEDDING C"
 This is the section for developers writing, or wishing to write, a
 package embedding C into Tcl via critcl.

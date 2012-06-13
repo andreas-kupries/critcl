@@ -1,6 +1,8 @@
 '\"
-'\" Generated from file '/home/aku/Projects/Critcl/dev-critcl/embedded/man/files/critcl_util.n' by tcllib/doctools with format 'nroff'
-'\" Copyright (c) 2011-2012 Andreas Kupries
+'\" Generated from file '/home/aku/Projects/Critcl/dev-critcl/embedded/man/files/license.n' by tcllib/doctools with format 'nroff'
+'\" Copyright (c) Jean-Claude Wippler
+'\" Copyright (c) Steve Landers
+'\" Copyright (c) 2011 Andreas Kupries
 '\"
 '\" The definitions below are for supplemental macros used in Tcl/Tk
 '\" manual entries.
@@ -238,68 +240,59 @@ Database Class:	\\fB\\$3\\fR
 .de UL
 \\$1\l'|0\(ul'\\$2
 ..
-.TH "critcl::util" n 1 doc "C Runtime In Tcl (CriTcl)"
+.TH "critcl_license" n 1 doc "C Runtime In Tcl (CriTcl)"
 .BS
 .SH NAME
-critcl::util \- CriTcl Utilities
-.SH SYNOPSIS
-package require \fBTcl  8.4\fR
-.sp
-package require \fBcritcl  ?2.1?\fR
-.sp
-package require \fBcritcl::util  ?1?\fR
-.sp
-\fB::critcl::util::checkfun\fR \fIname\fR ?\fIlabel\fR?
-.sp
-.BE
+critcl_license \- Critcl - License
 .SH DESCRIPTION
-.PP
 Welcome to the \fIC Runtime In Tcl\fR, \fICriTcl\fR for short, a
 system to build C extension packages for Tcl on the fly, from C code
 embedded within Tcl scripts, for all who wish to make their code go
 faster.
 .PP
-This document is the reference manpage for the \fBcritcl::util\fR
-package. This package provides convenience commands for advanced
-functionality built on top of the core.
-Its intended audience are mainly developers wishing to write Tcl
-packages with embedded C code.
+The package is under the BSD license.
+.SH LICENSE
 .PP
-This package resides in the Core Package Layer of CriTcl.
+This software is copyrighted by Andreas Kupries and other
+parties.  The following terms apply to all files associated with the
+software unless explicitly disclaimed in individual files.
 .PP
-.PS
-.nf
-+----------------+
-|Applications    |
-| critcl         |
-| critcl::app    |
-+----------------+
-
-*================*
-|Core Packages   |
-| critcl         |
-| critcl::util   |
-*================*
-
-+----------------+
-|Support Packages|
-| stubs::*       |
-| md5, platform  |
-|  ...           |
-+----------------+
-
-.fi
-.PE
+The authors hereby grant permission to use, copy, modify,
+distribute, and license this software and its documentation for any
+purpose, provided that existing copyright notices are retained in all
+copies and that this notice is included verbatim in any
+distributions. No written agreement, license, or royalty fee is
+required for any of the authorized uses.  Modifications to this
+software may be copyrighted by their authors and need not follow the
+licensing terms described here, provided that the new terms are
+clearly indicated on the first page of each file where they apply.
 .PP
-.SH API
-.TP
-\fB::critcl::util::checkfun\fR \fIname\fR ?\fIlabel\fR?
-This command checks the build-time environment for the existence of
-the C function \fIname\fR.
-It returns \fBtrue\fR on success, and \fBfalse\fR otherwise.
+IN NO EVENT SHALL THE AUTHORS OR DISTRIBUTORS BE LIABLE TO ANY
+PARTY FOR DIRECT, INDIRECT, SPECIAL, INCIDENTAL, OR CONSEQUENTIAL
+DAMAGES ARISING OUT OF THE USE OF THIS SOFTWARE, ITS DOCUMENTATION, OR
+ANY DERIVATIVES THEREOF, EVEN IF THE AUTHORS HAVE BEEN ADVISED OF THE
+POSSIBILITY OF SUCH DAMAGE.
 .PP
+THE AUTHORS AND DISTRIBUTORS SPECIFICALLY DISCLAIM ANY
+WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
+MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, AND
+NON-INFRINGEMENT.  THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, AND
+THE AUTHORS AND DISTRIBUTORS HAVE NO OBLIGATION TO PROVIDE
+MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
+.PP
+GOVERNMENT USE: If you are acquiring this software on behalf of
+the U.S. government, the Government shall have only "Restricted
+Rights" in the software and related documentation as defined in the
+Federal Acquisition Regulations (FARs) in Clause 52.227.19 (c) (2).
+If you are acquiring the software on behalf of the Department of
+Defense, the software shall be classified as "Commercial Computer
+Software" and the Government shall have only "Restricted Rights" as
+defined in Clause 252.227-7014 (b) (3) of DFARs.  Notwithstanding the
+foregoing, the authors grant the U.S. Government and others acting in
+its behalf permission to use and distribute the software in accordance
+with the terms specified in this license.
 .SH AUTHORS
-Andreas Kupries
+Jean Claude Wippler, Steve Landers, Andreas Kupries
 .SH "BUGS, IDEAS, FEEDBACK"
 This document, and the package it describes, will undoubtedly contain
 bugs and other problems.
@@ -312,6 +305,8 @@ C code, Embedded C Code, code generator, compile & run, compiler, dynamic code g
 Glueing/Embedded C code
 .SH COPYRIGHT
 .nf
-Copyright (c) 2011-2012 Andreas Kupries
+Copyright (c) Jean-Claude Wippler
+Copyright (c) Steve Landers
+Copyright (c) 2011 Andreas Kupries
 
 .fi

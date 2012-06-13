@@ -28,49 +28,38 @@ is not sufficient anymore. I.e. for
 	Should I discuss the alternatives? And why they are not good?
 }]
 
+[para] The following sections first reference a few related documents
+which may or may not be of interest to you, depending on if you are
+just a plain user of the system, trying to get and build/install it,
+or are going deep into the internals for either edification or
+modification.
 
+[para] This is followed by an introduction to the modes of operation
+supported by the system, and its general architecture as seen by a
+user.
+
+[comment {===================================================================}]
+[section {Related Documents}]
+[list_begin enum]
+[enum] [term {Critcl - License}].
+[enum] [term {Using CriTcl}]
+[enum] [term {Critcl - How To Get The Sources}].
+[enum] [term {Critcl - The Installer's Guide}].
+[enum] [term {Critcl - The Developer's Guide}].
+[list_end]
+
+[comment {===================================================================}]
 [section {Modes Of Operation/Use}]
 [include include/modes.inc]
 
+[comment {===================================================================}]
 [section {System Architecture}]
+[include include/architecture.inc]
 
-The whole system consist of two pieces, as seen in the figure below
-
-[para][image architecture][para]
-
-[list_begin enumerated]
-[enum]
-
-At the top we have an application built on top of the core package,
-providing higher-level features than just compiling embedded C on the
-fly.
-
-[list_begin definitions][comment {----- application ---}]
-[def [package critcl::app]]
-[list_end][comment {------------------- application ---}]
-
-[enum]
-
-Below is the core package providing the essential functionality of the
-system.
-
-[list_begin definitions][comment {----- core ---}]
-[def [package critcl]]
-[list_end][comment {------------------- core ---}]
-[list_end]
-
-[section References]
-
-[list_begin enumerated]
-
-[comment {===================================================
-[enum]
-    "Advanced Encryption Standard",
-    Federal Information Processing Standards Publication 197, 2001
-    ([uri http://csrc.nist.gov/publications/fips/fips197/fips-197.pdf])
-=============================================================}]
-
-[list_end]
+[comment {===================================================================}]
+[section {Examples}]
+[include include/largeexampleref.inc]
+[include include/smallexampleref.inc]
 
 [comment {===================================================================}]
 [include include/changes.inc]

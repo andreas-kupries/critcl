@@ -112,7 +112,7 @@ for use by advanced users. The new commands are
 Please see section [emph {Advanced Embedded C Code}] of the
 [package critcl] package documentation for details.
 
-[enum] Extended the critclk package to intercept [cmd {package
+[enum] Extended the critcl package to intercept [cmd {package
 provide}] and record the file -> package name mapping. Plus other
 internal changes now allow the use of namespaced package names while
 still using proper path names and init function.

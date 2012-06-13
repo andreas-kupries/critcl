@@ -267,6 +267,28 @@ hiding critical pieces of your library or application, and
 .IP [4]
 simply needing features provided only by C.
 .PP
+.PP
+The following sections first reference a few related documents
+which may or may not be of interest to you, depending on if you are
+just a plain user of the system, trying to get and build/install it,
+or are going deep into the internals for either edification or
+modification.
+.PP
+This is followed by an introduction to the modes of operation
+supported by the system, and its general architecture as seen by a
+user.
+.SH "RELATED DOCUMENTS"
+.IP [1]
+\fICritcl - License\fR.
+.IP [2]
+\fIUsing CriTcl\fR
+.IP [3]
+\fICritcl - How To Get The Sources\fR.
+.IP [4]
+\fICritcl - The Installer's Guide\fR.
+.IP [5]
+\fICritcl - The Developer's Guide\fR.
+.PP
 .SH "MODES OF OPERATION/USE"
 CriTcl can be used in three different modes of operation, called
 .IP [1]
@@ -301,28 +323,107 @@ package, i.e. using
 
 .CE
 .SH "SYSTEM ARCHITECTURE"
-The whole system consist of two pieces, as seen in the figure below
+The system consists of two main layers, as seen in the figure below,
+plus a support layer containing general packages the system uses during
+operation.
 .PP
-IMAGE: architecture
+.PS
+.nf
++----------------+
+|Applications    |
+| critcl         |
+| critcl::app    |
++----------------+
+
++----------------+
+|Core Packages   |
+| critcl         |
+| critcl::util   |
++----------------+
+
++----------------+
+|Support Packages|
+| stubs::*       |
+| md5, platform  |
+|  ...           |
++----------------+
+
+.fi
+.PE
 .PP
 .IP [1]
-At the top we have an application built on top of the core package,
-providing higher-level features than just compiling embedded C on the
-fly.
+At the top we have an application built on top of the core packages,
+providing command line access to the second and third usage modes,
+i.e. \fIGenerate Package\fR and \fIGenerate TEA Package\fR.
 .RS
+.TP
+\fBcritcl\fR
 .TP
 \fBcritcl::app\fR
 .RE
 .IP [2]
-Below is the core package providing the essential functionality of the
-system.
+Below that is the core package providing the essential functionality
+of the system, plus various utility packages which make common tasks
+more convenient.
 .RS
 .TP
 \fBcritcl\fR
+.TP
+\fBcritcl::util\fR
+.RE
+.IP [3]
+Lastly a layer of supporting packages, mostly external to critcl.
+.RS
+.TP
+\fBmd5\fR
+For this pure-Tcl package to be fast users should get one of several
+possible accelerator packages:
+.RS
+.IP [1]
+\fBtcllibc\fR
+.IP [2]
+\fBTrf\fR
+.IP [3]
+\fBmd5c\fR
+.RE
+.TP
+\fBcmdline\fR
+.TP
+\fBplatform\fR
+.TP
+\fBstubs::container\fR
+.TP
+\fBstubs::reader\fR
+.TP
+\fBstubs::writer\fR
+.TP
+\fBstubs::gen\fR
+.TP
+\fBstubs::gen::init\fR
+.TP
+\fBstubs::gen::header\fR
+.TP
+\fBstubs::gen::decl\fR
+.TP
+\fBstubs::gen::macro\fR
+.TP
+\fBstubs::gen::slot\fR
+.TP
+\fBstubs::gen::lib\fR
 .RE
 .PP
-.SH REFERENCES
+.SH EXAMPLES
 .PP
+The sources of Critcl, should you have gotten them, contain
+several larger examples show-casing various aspects of the
+system. These demonstration packages can all be found in the
+sub-directory "\fIexamples/\fR" of the sources.
+.PP
+Lots of smaller examples can be found in the document
+\fIUsing CriTcl\fR, an introduction to Critcl by way of a of
+examples. These focus more on specific critcl commands than the
+overall picture shown by the large examples mentioned in the previous
+paragraph.
 .SH "CHANGES FOR VERSION 2.1"
 .IP [1]
 Fixed bug where \fBcritcl::tsources\fR interpreted relative
@@ -440,7 +541,7 @@ for use by advanced users. The new commands are
 Please see section \fIAdvanced Embedded C Code\fR of the
 \fBcritcl\fR package documentation for details.
 .IP [23]
-Extended the critclk package to intercept \fBpackage
+Extended the critcl package to intercept \fBpackage
 provide\fR and record the file -> package name mapping. Plus other
 internal changes now allow the use of namespaced package names while
 still using proper path names and init function.
@@ -628,6 +729,14 @@ from. Good for debugging configuration processing.
 Extended the build script with targets to regenerate the
 embedded documentation, and diagrams, and to generate a
 release.
+.PP
+.SH "CHANGES FOR VERSION 3.0.5"
+.IP [1]
+Fixed bug in the new code for #line pragmas triggered when
+specifying C code without leading whitespace.
+.IP [2]
+Extended the documentation to have manpages for the license,
+source retrieval, installer, and developer's guides.
 .PP
 .SH "CHANGES FOR VERSION 3.1"
 .IP [1]
