@@ -344,7 +344,7 @@ win32-x86_64-cl  optimize        -W3 -O2 -Op -Gs -MD
 win32-x86_64-cl  output          [list -Fo$outfile]
 win32-x86_64-cl  ldoutput        -dll [list -out:$outfile]
 win32-x86_64-cl  link_debug      $msvclinkdebug -debugtype:cv -verbose:lib $msvcbufferoverflowlib
-win32-x86_64-cl  link_release    -release -opt:ref -opt:icf,3 -ws:aggressive -verbose:lib bufferoverflowU.lib
+win32-x86_64-cl  link_release    -release -opt:ref -opt:icf,3 -ws:aggressive -verbose:lib $msvcbufferoverflowU.lib
 win32-x86_64-cl  link_preload
 win32-x86_64-cl  strip
 win32-x86_64-cl  version         cl
