@@ -7,7 +7,8 @@ Jean Claude Wippler, Steve Landers, Andreas Kupries
 This document, and the package it describes, will undoubtedly contain
 bugs and other problems.
 
-Please report such at [uri https://github.com/jcw/critcl].
+Please report them at [uri https://github.com/jcw/critcl/issues].
 
-Please also report any ideas for enhancements you may have for either
-package and/or documentation.
+Ideas for enhancements you may have for either package, application,
+and/or the documentation are also very welcome and should be reported
+at [uri https://github.com/jcw/critcl/issues] as well.
