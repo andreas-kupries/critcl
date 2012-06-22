@@ -87,3 +87,4 @@ for/about the package.
 [include changes303.inc]
 [include changes304.inc]
 [include changes305.inc]
+[include changes306.inc]

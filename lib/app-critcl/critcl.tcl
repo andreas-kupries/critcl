@@ -153,7 +153,7 @@ proc ::critcl::app::StopOnFailed {} {
     puts stderr "FAILURES $v::failed"
     puts stderr "FAILED:  [join $v::borken "\nFAILED:  "]"
     puts stderr "FAILED   [join [split [join $v::log \n\n] \n] "\nFAILED   "]"
-    return -code return
+    exit 1 ; #return -code return
 }
 
 proc ::critcl::app::Cmdline {argv} {
