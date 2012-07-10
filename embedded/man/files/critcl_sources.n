@@ -1,5 +1,5 @@
 '\"
-'\" Generated from file '/net/nas/data/andreask/Dev/Critcl/dev/embedded/man/files/critcl_sources.n' by tcllib/doctools with format 'nroff'
+'\" Generated from file '/home/aku/Projects/Critcl/dev-master/embedded/man/files/critcl_sources.n' by tcllib/doctools with format 'nroff'
 '\" Copyright (c) Jean-Claude Wippler
 '\" Copyright (c) Steve Landers
 '\" Copyright (c) 2011 Andreas Kupries
@@ -287,12 +287,13 @@ Binaries for popular platforms can be found directly at its
 \fIdownload page\fR [http://www.fossil-scm.org/downloads].
 .PP
 With that tool available the full history can be retrieved via:
-.nf
+.CS
+
 
     git clone http://github.com/jcw/critcl
     cd critcl
 
-.fi
+.CE
 to get a checkout of the head of the trunk and move into it for browsing, editing, etc.
 .SH AUTHORS
 Jean Claude Wippler, Steve Landers, Andreas Kupries

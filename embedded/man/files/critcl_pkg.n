@@ -1,5 +1,5 @@
 '\"
-'\" Generated from file '/net/nas/data/andreask/Dev/Critcl/dev/embedded/man/files/critcl_pkg.n' by tcllib/doctools with format 'nroff'
+'\" Generated from file '/home/aku/Projects/Critcl/dev-master/embedded/man/files/critcl_pkg.n' by tcllib/doctools with format 'nroff'
 '\" Copyright (c) Jean-Claude Wippler
 '\" Copyright (c) Steve Landers
 '\" Copyright (c) 2011 Andreas Kupries
@@ -240,14 +240,14 @@ Database Class:	\\fB\\$3\\fR
 .de UL
 \\$1\l'|0\(ul'\\$2
 ..
-.TH "critcl" n 3.0.5 doc "C Runtime In Tcl (CriTcl)"
+.TH "critcl" n 3.0.7 doc "C Runtime In Tcl (CriTcl)"
 .BS
 .SH NAME
 critcl \- CriTcl Package Reference
 .SH SYNOPSIS
 package require \fBTcl  8.4\fR
 .sp
-package require \fBcritcl  ?3.0.5?\fR
+package require \fBcritcl  ?3.0.7?\fR
 .sp
 package require \fBplatform  ?1.0.2?\fR
 .sp
@@ -493,6 +493,7 @@ with standard names. These are, in order of usage
 .IP [4]
 \fBobjv\fR
 .RE
+.IP
 The only options accepted by this command are:
 .RS
 .TP
@@ -513,6 +514,7 @@ command is deleted again.
 If not specified the expression defaults to \fBNULL\fR, i.e. no
 deletion function.
 .RE
+.IP
 A ccommand is, in comparison to functions defined via
 \fBcritcl::cproc\fR, more lower level.
 Its advantage is that the developer \fIcan\fR do their own argument
@@ -566,7 +568,8 @@ See section \fBRuntime Behaviour\fR for more details.
 .sp
 The result of \fBcritcl::cproc\fR itself is the empty string.
 The following values are allowed for the \fIresulttype\fR:
-.nf
+.CS
+
 
           Types
 Name      C        Tcl      Notes
@@ -584,23 +587,23 @@ void      void     ---      No result.
 vstring   char*    String   !Volatile
 -------   -------- -------- -------------------
 
-.fi
+.CE
+.IP
 The \fIarguments\fR parameter has the overall syntax of a Tcl
 dictionary value, except that keys (argument names) and values
 (argument types) are specified in reverse order. Consider the
 example
-.nf
+.CS
+
 
 int x int y
 
-.fi where \fIx\fR and \fIy\fR are the arguments/keys, both
+.CE
+.IP where \fIx\fR and \fIy\fR are the arguments/keys, both
 mapped to type/value \fBint\fR.
-
 The following values are allowed as argument-types:
+.CS
 
-
-
-.nf
 
           Types
 Name      C        Tcl      Notes
@@ -619,7 +622,7 @@ rawchar*  char*    ByteArray
 void*     void*             Default
 -------   -------- -------- -------------------
 
-.fi
+.CE
 .sp
 \fINote\fR that optional arguments are not possible. This
 restriction is inherited from C.
@@ -679,6 +682,7 @@ Critcl prepares the "\fI.critcl\fR" file \fIand\fR its companion
 .IP [2]
 "\fI\fBname\fR/\fBname\fRStubLib.h\fR"
 .RE
+.IP
 in the appropriate places. It is checked that the compiler will be
 able to find these header files somewhere on the include search
 path, using the paths defined so far (See \fBcritcl::cheaders\fR, and
@@ -1078,6 +1082,7 @@ The extension "\fI.so\fR" is the placeholder for whatever actual extension is us
 .IP \(bu
 Note how the search is relative to the current working directory.
 .RE
+.IP
 And now the paths, depending on the exact form of the library name:
 .RS
 .TP
@@ -1102,6 +1107,7 @@ PATH/FOO.so
 .IP [3]
 PATH/\fBplatform\fR/FOO.so
 .RE
+.IP
 Otherwise it searches
 .RS
 .IP [1]
@@ -1111,6 +1117,7 @@ PATH/FOO/FOO.so
 .IP [3]
 PATH/FOO/\fBplatform\fR/FOO.so
 .RE
+.IP
 instead.
 .TP
 /PATH/FOO
@@ -1125,6 +1132,7 @@ FOO.so
 /PATH/\fBplatform\fR/FOO.so
 .RE
 .RE
+.IP
 If you are a developer wishing to understand or modify the internals
 of the \fBcritcl\fR package then you possibly should read the
 section explaining how the \fBPreloading functionality\fR is
@@ -1290,6 +1298,7 @@ Object files have no suffix, and the generated C files are compiled
 without using Tcl/Tk stubs. The result are object files usable for
 static linking into a \fIbig shell\fR.
 .RE
+.IP
 The default is \fBdynamic\fR.
 .TP
 \fBlanguage\fR string
@@ -1505,6 +1514,7 @@ files
 List of the companion files. The paths in this list are
 all relative to the location (directory) of the input file.
 .RE
+.IP
 This command and the information it returns can be used by tools to
 implement processing modes like the assembly of a directory hierachy
 containing a TEA-lookalike buildystem, etc.
@@ -1624,12 +1634,13 @@ Newly introduced with Critcl version 3 is
 \fIGenerate TEA Package\fR. This mode constructs a directory
 hierarchy from the package which can later be built like a regular TEA
 package, i.e. using
-.nf
+.CS
+
 
 	.../configure --prefix ...
 	make all isntall
 
-.fi
+.CE
 .PP
 Regarding the caching of results please read the section about
 the \fBResult Cache\fR fore more details.
@@ -1767,90 +1778,97 @@ are wrong or insufficient for the platform in question.
 version
 The command to print the compiler version number.
 Defaults to
-.nf
+.CS
+
  gcc -v
-.fi
+.CE
 .TP
 compile
 The command to compile a single C source file to an object file.
 Defaults to
-.nf
+.CS
+
  gcc -c -fPIC
-.fi
+.CE
 .TP
 debug_memory
 The list of flags for the compiler to enable memory debugging in
 Tcl.
 Defaults to
-.nf
+.CS
+
  -DTCL_MEM_DEBUG
-.fi
+.CE
 .TP
 debug_symbols
 The list of flags for the compiler to add symbols to the object files
 and the resulting library.
 Defaults to
-.nf
+.CS
+
  -g
-.fi
+.CE
 .TP
 include
 The compiler flag to add an include directory.
 Defaults to
-.nf
+.CS
+
  -I
-.fi
+.CE
 .TP
 tclstubs
 The compiler flag to set USE_TCL_STUBS.
 Defaults to
-.nf
+.CS
+
  -DUSE_TCL_STUBS
-.fi
+.CE
 .TP
 tkstubs
 The compiler flag to set USE_TK_STUBS.
 Defaults to
-.nf
+.CS
+
  -DUSE_TK_STUBS
-.fi
+.CE
 .TP
 threadflags
 The list of compiler flags to enable a threaded build.
 Defaults to
-.nf
+.CS
+
 
     -DUSE_THREAD_ALLOC=1 -D_REENTRANT=1 -D_THREAD_SAFE=1
     -DHAVE_PTHREAD_ATTR_SETSTACKSIZE=1 -DHAVE_READDIR_R=1
     -DTCL_THREADS=1
 
-.fi.
-
-
-
+.CE
+.IP.
 .TP
 noassert
-
 The compiler flag to turn off assertions in Tcl code.
 Defaults to
+.CS
 
-.nf
  -DNDEBUG
-.fi
+.CE
 .TP
 optimize
 The compiler flag to specify optimization level.
 Defaults to
-.nf
+.CS
+
  -O2
-.fi
+.CE
 .TP
 output
 The compiler flags to set the output file of a compilation.
 Defaults to
-.nf
+.CS
+
  -o [list $outfile]
-.fi
+.CE
 .sp
 \fINOTE\fR the use of Tcl commands and variables here.  At the
 time \fBcritcl\fR uses the value of this key the value of the
@@ -1860,44 +1878,50 @@ only variable whose value is defined for this substitution.
 object
 The file extension for object files on the platform.
 Defaults to
-.nf
+.CS
+
  .o
-.fi
+.CE
 .TP
 preproc_define
 The command to preprocess a C source file without compiling it, but
 leaving #define's in the output. Defaults to
-.nf
+.CS
+
  gcc -E -dM
-.fi
+.CE
 .TP
 preproc_enum
 See \fBpreproc_define\fR, except that #define's are not left in the
 output. Defaults to
-.nf
+.CS
+
  gcc -E
-.fi
+.CE
 .TP
 link
 The command to link one or more object files and create a shared
 library. Defaults to
-.nf
+.CS
+
  gcc -shared
-.fi
+.CE
 .TP
 link_preload
 The list of linker flags to use when dependent libraries are
 pre-loaded. Defaults to
-.nf
+.CS
+
  --unresolved-symbols=ignore-in-shared-libs
-.fi
+.CE
 .TP
 strip
 The flag to tell the linker to strip symbols from the shared library.
 Defaults to
-.nf
+.CS
+
  -Wl,-s
-.fi
+.CE
 .TP
 ldoutput
 Like \fBoutput\fR, but for the linker.
@@ -1907,31 +1931,35 @@ link_debug
 The list of linker flags needed to build a shared library with
 symbols. Defaults to the empty string.
 One platform requiring this are all variants of Windows, which uses
-.nf
+.CS
+
  -debug:full -debugtype:cv
-.fi
+.CE
 .TP
 link_release
 The list of linker flags needed to build a shared library without
 symbols, i.e. a regular build. Defaults to the empty string.
 One platform requiring this are all variants of Windows, which uses
-.nf
+.CS
+
  -release -opt:ref -opt:icf,3 -ws:aggressive
-.fi
+.CE
 .TP
 sharedlibext
 The file extension for shared library files on the platform.
 Defaults to
-.nf
+.CS
+
  [info sharedlibextension]
-.fi
+.CE
 .TP
 platform
 The identifier of the platform used in generated packages.
 Defaults to
-.nf
+.CS
+
  [platform::generic]
-.fi
+.CE
 .TP
 target
 The presence of this key marks the configuration as a
@@ -2069,12 +2097,14 @@ An #include directive for "\fIfooDecls.h\fR", with USE_FOO_STUBS
 surely defined.
 .IP [3]
 A \fIdefinition\fR of the stubs table variable, i.e.
-.nf
+.CS
+
 const FooStubs* fooStubsPtr;
-.fi
+.CE
 .IP [4]
 A \fIdefinition\fR of the stubs initializer function, like
-.nf
+.CS
+
 char *
 Foo_InitStubs(Tcl_Interp *interp, CONST char *version, int exact)
 {
@@ -2101,19 +2131,22 @@ Foo_InitStubs(Tcl_Interp *interp, CONST char *version, int exact)
 
     return (char*) actualVersion;
 }
-.fi
+.CE
 .RE
+.IP
 This header file must be included by an importing package
 \fIexactly once\fR, so that it contains only one definition of both
 stubs table and stubs initializer function.
 .sp
 The importing package's initialization function must further
 contain a statement like
-.nf
+.CS
+
 if (!Foo_InitStubs (ip, "1", 0)) {
     return TCL_ERROR;
 }
-.fi
+.CE
+.IP
 which invokes \fBfoo\fR's stubs initializer function to set the
 local stub table up.
 .sp
@@ -2138,7 +2171,8 @@ complete, from a package for low-level random number generator
 functions:
 .TP
 "\fIrngDecls.h\fR":
-.nf
+.CS
+
 
 #ifndef rng_DECLS_H
 #define rng_DECLS_H
@@ -2179,10 +2213,11 @@ extern const RngStubs *rngStubsPtr;
 #endif /* rng_DECLS_H */
 
 
-.fi
+.CE
 .TP
 "\fIrngStubLib.h\fR":
-.nf
+.CS
+
 
 /*
  * rngStubLib.c --
@@ -2258,7 +2293,7 @@ Rng_InitStubs(Tcl_Interp *interp, CONST char *version, int exact)
     return (char*) actualVersion;
 }
 
-.fi
+.CE
 .PP
 .SH EXAMPLES
 As the set of examples is a bit large, and growing, it has been put
@@ -2377,6 +2412,7 @@ for use by advanced users. The new commands are
 .IP [5]
 \fBcritcl::argconversion\fR
 .RE
+.IP
 Please see section \fIAdvanced Embedded C Code\fR of the
 \fBcritcl\fR package documentation for details.
 .IP [23]
@@ -2590,6 +2626,15 @@ both cases.
 .IP [3]
 Documentation cleanup, mainly in the installation guide, and
 the README.md shown by github
+.PP
+.SH "CHANGES FOR VERSION 3.0.7"
+.IP [1]
+Fixed the code generated by \fBcritcl::c++command\fR.
+The emitted code handed a non-static string table to
+\fBTcl_GetIndexFromObj\fR, in violation of the contract, which
+requires the table to have a fixed address. This was a memory
+smash waiting to happen. Thanks to Brian Griffin for alrerting
+us to the general problem.
 .PP
 .SH AUTHORS
 Jean Claude Wippler, Steve Landers, Andreas Kupries

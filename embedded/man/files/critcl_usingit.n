@@ -1,5 +1,5 @@
 '\"
-'\" Generated from file '/net/nas/data/andreask/Dev/Critcl/dev/embedded/man/files/critcl_usingit.n' by tcllib/doctools with format 'nroff'
+'\" Generated from file '/home/aku/Projects/Critcl/dev-master/embedded/man/files/critcl_usingit.n' by tcllib/doctools with format 'nroff'
 '\" Copyright (c) Jean-Claude Wippler
 '\" Copyright (c) Steve Landers
 '\" Copyright (c) 2011 Andreas Kupries
@@ -293,16 +293,18 @@ meat of things.
 .SS "A SIMPLE PROCEDURE"
 Starting simple, let us assume that the Tcl code in question is
 something like
-.nf
+.CS
+
 
     proc math {x y z} {
         return [expr {(sin($x)*rand())/$y**log($z)}]
     }
 
-.fi
+.CE
 with the expression pretending to be something very complex and
 slow. Converting this to C we get:
-.nf
+.CS
+
 
     package require critcl
 
@@ -312,7 +314,7 @@ slow. Converting this to C we get:
         return up/down;
     }
 
-.fi
+.CE
 Notable about this translation:
 .IP [1]
 All the arguments got type information added to them, here
@@ -337,7 +339,8 @@ known beforehand, i.e. at the time of declaration. This of course also
 means that they do not support default arguments either.
 .PP
 Thus, to handle something like the example below
-.nf
+.CS
+
 
     proc math {args} {
         set sum 0
@@ -345,7 +348,7 @@ Thus, to handle something like the example below
 	return $sum
     }
 
-.fi
+.CE
 we have to use \fBcritcl::ccommand\fR instead.
 .PP
 Its advantage: Access to the low-level C arguments representing
@@ -360,7 +363,8 @@ values (for arguments) and back (for the result), with
 \fBcritcl::command\fRs we have to do this on our own.
 .PP
 Here is the translation of the example:
-.nf
+.CS
+
 
     package require critcl
 
@@ -380,7 +384,7 @@ Here is the translation of the example:
         return TCL_OK:
     }
 
-.fi
+.CE
 Notable about this translation:
 .IP [1]
 As promised/threatened, all the conversions between the Tcl and
@@ -399,6 +403,7 @@ Number of arguments, and
 .IP [4]
 Array of argument values, each a Tcl_Obj*.
 .RE
+.IP
 This list of arguments, while not optional in itself, is allowed to be
 empty, and/or to contain empty strings as argument names. If we do
 that critcl will supply standard names for the missing pieces, namely:
@@ -417,21 +422,23 @@ objv
 Here we assume that we have a Tcl procedure which returns a fixed
 string. In the final product we are going to C to hide this string
 from the casual user.
-.nf
+.CS
+
 
     proc somedata {} {
 	return {... A large blob of characters ...}
     }
 
-.fi
+.CE
 The translation of this is simple and easy:
-.nf
+.CS
+
 
     package require critcl
 
     critcl::cdata somedata {... A large blob of characters ...}
 
-.fi
+.CE
 There is nothing really notable here.
 .SS "BLOCKS OF ARBITRARY C"
 Often just defining Tcl commands in C, as demonstrated in the sections
@@ -450,7 +457,8 @@ The command \fBcritcl::code\fR provides us with exactly that.
 As our example now an excerpt taken from real code, the top of the
 "\fIsha1c.tcl\fR" critcl file in the \fIsha1\fR module of
 \fITcllib\fR:
-.nf
+.CS
+
 
     critcl::ccode {
         #include "sha1.h"
@@ -470,7 +478,7 @@ As our example now an excerpt taken from real code, the top of the
         ...
     }
 
-.fi
+.CE
 We see here the beginning of the C code defining a custom
 \fITcl_ObjType\fR holding the data of a SHA1 context used during the
 incremental calculation of sha1 hashes.
@@ -496,16 +504,18 @@ enumeration types. We just have to \fIlift\fR them up.
 Our example comes from \fBcryptkit\fR, a Tcl binding to
 \fBcryptlib\fR, a cryptography library.
 The command
-.nf
+.CS
+
 
     critcl::cdefines CRYPT_* ::crypt
 
-.fi
+.CE
 maps all Cryptlib specific #defines and enums into the namespace
 \fB::crypt\fR, telling critcl to create aliases to the symbols.
 .PP
 Similarly
-.nf
+.CS
+
 
     critcl::cdefines {
         NULL
@@ -515,7 +525,7 @@ Similarly
         TCL_ERROR
     } ::crypt
 
-.fi
+.CE
 maps the listed defines into the namespace \fB::crypt\fR.
 .PP
 An \fIimportant\fR thing to note:
@@ -530,11 +540,12 @@ declaring them are ignored, i.e. not mapped.
 .SS "FINDING HEADER FILES"
 A notable thing in the example shown in the section about
 \fBBlocks of arbitrary C\fR is the
-.nf
+.CS
+
 
     #include "sha1.h"
 
-.fi
+.CE
 statement. Where does this header come from ?
 Looking at the Tcllib module we will find that the header is actually
 a sibling to the "\fIsha1c.tcl\fR" file containing the embedded C code.
@@ -546,17 +557,19 @@ paths used by the compiler, and therefore will not be found.
 For this we have the \fBcritcl::cheaders\fR command. It enables us to
 either tell the compiler the path(s) where the required headers can be
 found, using
-.nf
+.CS
+
 
     critcl::cheaders -I/path/to/headers/
 
-.fi
+.CE
 or to tell it directly which headers we are using and where they live:
-.nf
+.CS
+
 
     critcl::cheaders sha1.h
 
-.fi
+.CE
 And now critcl knows that "\fIsha1.h\fR" is important, and that it
 lives besides the "\fI.critcl\fR" file which referenced it (because of
 the relative path used).
@@ -585,7 +598,8 @@ Our example comes from the \fBstruct::graph\fR package in
 Tcllib.
 Its core C functions are in separate files, and the "\fI.critcl\fR"
 code then makes them known via:
-.nf
+.CS
+
 
 namespace eval ::struct {
     # Supporting code for the main command.
@@ -595,7 +609,7 @@ namespace eval ::struct {
     ...
 }
 
-.fi
+.CE
 which tells critcl that these files are in the subdirectory
 "\fIgraph\fR" relative to the location of "\fIgraph_c.tcl\fR", which is
 the relevant "\fI.critcl\fR" file.
@@ -616,23 +630,26 @@ The relevant command is \fBcritcl::clibraries\fR. Its basic
 semantics are like that of \fBcritcl::cheaders\fR, i.e. It enables us
 to tell the linker the path(s) where the required libraries can be
 found, using
-.nf
+.CS
+
 
     critcl::clibraries -L/path/to/libraries/
 
-.fi
+.CE
 name them
-.nf
+.CS
+
 
     critcl::clibraries -lfoo
 
-.fi
+.CE
 or tell it directly which libraries we are using and where they live:
-.nf
+.CS
+
 
     critcl::clibraries /path/to/library/foo.so
 
-.fi
+.CE
 This last way of using should be avoided however, as it intermingles
 searching and naming, plus the name is platform dependent.
 .PP
@@ -675,7 +692,8 @@ providing the Tcl parts.
 Then use the \fBcritcl::tsources\fR command in the "\fI.critcl\fR" file
 to link the two parts together, declaring the "\fI.tcl\fR" files as
 necessary companions of the C part.
-.nf
+.CS
+
 
     package require critcl
 
@@ -683,7 +701,7 @@ necessary companions of the C part.
 
     ... embedded C via critcl commands ...
 
-.fi
+.CE
 With a declaration as shown above the companion file will be
 automatically \fBsource\fRd when the C parts are made available, thus
 making the Tcl parts available as well.
@@ -715,7 +733,8 @@ the examples we had so far. The only non-trivial part is the
 coordinator, and even that if and only if we wish to make it easy to
 write a testsuite which can check both branches, C, and Tcl without
 gymnastics. So, the most basic coordinator would be
-.nf
+.CS
+
 
     set sha::version 1
     if {[catch {
@@ -725,7 +744,8 @@ gymnastics. So, the most basic coordinator would be
     }
     package provide sha $sha::version
 
-.fi
+.CE
+.IP
 It tries to load the C implementation first, and falls back to the Tcl
 implementation if that fails. The code as is assumes that both
 implementations create exactly the same command names, leaving the
@@ -760,7 +780,8 @@ active. The disadvantage is the additional complexity of the
 coordinator's internals. As a larger example of this technique here is
 the coordinator "\fImodules/struct/queue.tcl\fR" handling the C and Tcl
 implementations of Tcllib's \fBstruct::queue\fR package:
-.nf
+.CS
+
 
     # queue.tcl --
     #       Implementation of a queue data structure for Tcl.
@@ -904,7 +925,8 @@ implementations of Tcllib's \fBstruct::queue\fR package:
 
     package provide struct::queue 1.4.2
 
-.fi
+.CE
+.IP
 In this implementation the coordinator renames the commands of the
 low-level packages to the public commands, making the future dispatch
 as fast as if the commands had these names anyway, but also forcing a
@@ -931,7 +953,8 @@ easier to understand and maintain. With this warning done, lets go
 into the nuts and bolts.
 .sp
 If we care only about mode "compile & run" things are easy:
-.nf
+.CS
+
 
     package require critcl
 
@@ -946,7 +969,8 @@ If we care only about mode "compile & run" things are easy:
         }
     }
 
-.fi
+.CE
+.IP
 The command \fBcritcl::compiling\fR tells us whether we have a
 compiler available or not, and in the latter case we implement our
 command in Tcl.
@@ -977,7 +1001,8 @@ inside of the package itself, or other packages, we have the command
 Used as the last command in a "\fI.critcl\fR" file it forces the
 compile, link, and load trinity, ensuring that all C commands are
 available immediately.
-.nf
+.CS
+
 
     package require critcl
 
@@ -985,10 +1010,11 @@ available immediately.
 
     critcl::load ; # Force build and loading.
 
-.fi
+.CE
 Note that is not allowed, nor possible to use critcl commands
 declaring anything after \fBcritcl::load\fR has been called. I.e., code like
-.nf
+.CS
+
 
     package require critcl
 
@@ -999,7 +1025,7 @@ declaring anything after \fBcritcl::load\fR has been called. I.e., code like
     ... More declarations of C code, ...
     critcl::code { ... }
 
-.fi
+.CE
 will result in an error. The only package-related commands still
 allowed are
 .IP [1]
@@ -1028,7 +1054,8 @@ The command \fBcritcl::failed\fR is exactly that. When called
 it forcibly builds the C code for the "\fI.critcl\fR" file it is part
 of, and returns a boolean vlaue signaling failure (\fBtrue\fR), or
 success (\fBfalse\fR).
-.nf
+.CS
+
 
     package require critcl
 
@@ -1038,7 +1065,7 @@ success (\fBfalse\fR).
         ... signal error
     }
 
-.fi
+.CE
 It is related and similar to \fBcritcl::load\fR, the command to
 overcome the lazy loading, as shown in section
 \fBUnlazy Packages\fR.
@@ -1047,7 +1074,8 @@ Like it is not allowed, nor possible to use critcl commands
 declaring anything after \fBcritcl::failed\fR has been called, making
 it pretty much the last critcl command in a "\fI.critcl\fR" file.
 Code like
-.nf
+.CS
+
 
     package require critcl
 
@@ -1058,7 +1086,7 @@ Code like
     ... More declarations of C code, ...
     critcl::code { ... }
 
-.fi
+.CE
 will result in an error. The only package-related commands still
 allowed are
 .IP [1]
@@ -1084,14 +1112,15 @@ Use the \fBcritcl::tcl\fR command to declare to critcl the
 minimum version of Tcl required to operate the package. This can be
 either \fB8.4\fR, \fB8.5\fR, or \fB8.6\fR, and critcl then
 supplies the proper headers and stubs.
-.nf
+.CS
+
 
     package require critcl
     critcl::tcl 8.5
 
     ... Declare your code ...
 
-.fi
+.CE
 .SS "MAKING A WIDGET"
 ... requires compiling against the Tk headers, and linking with Tk's
 stubs. For our convenience we have a simple, single command to
@@ -1101,14 +1130,15 @@ via \fBcritcl::cflags\fR, \fBcritcl::ldflags\fR,
 \fBcritcl::cheaders\fR, \fBcritcl::csources\fR.
 .PP
 This command is \fBcritcl::tk\fR.
-.nf
+.CS
+
 
     package require critcl
     critcl::tk ; # And now critcl knows to put in the Tk headers and other support.
 
     ... Declare your code ...
 
-.fi
+.CE
 Please note that this doesn't release you from the necessity of
 learning Tk's C API and how to use it to make a widget work. Sorry.
 .SS "CHECKING THE ENVIRONMENT"
@@ -1132,7 +1162,8 @@ declarations.
 .PP
 As example let us check for the existence of some header
 "\fIFOO.h\fR":
-.nf
+.CS
+
 
     package require critcl
 
@@ -1144,7 +1175,7 @@ As example let us check for the existence of some header
         ... Code for when FOO.h is not present.
     }
 
-.fi
+.CE
 Should we, on the other hand, wish to search for the header ourselves,
 in non-standard locations we have the full power of Tcl available,
 i.e. loops, the \fBfile\fR and \fBglob\fR commands, etc., which can
@@ -1203,11 +1234,12 @@ This is the section for developers having to generate packages from
 "\fI.critcl\fR" files, i.e binaries for deployment,
 .SS "GETTING HELP ..."
 ... Is easy. Running
-.nf
+.CS
+
 
     critcl -help
 
-.fi
+.CE
 prints the basics of using the application to \fBstdout\fR.
 .SS "PRE-FILLING THE RESULT CACHE"
 The default mode of the \fBcritcl\fR application is to take a series
@@ -1216,71 +1248,79 @@ in the result cache. When the files are later actually used the
 compile and link steps can be skipped, leading to shorter load times.
 .PP
 The command line for this is
-.nf
+.CS
+
 
     critcl foo.tcl
 
-.fi
+.CE
 or, to process multiple files
-.nf
+.CS
+
 
     critcl foo.tcl bar.tcl ...
 
-.fi
+.CE
 One thing to be aware of, should \fBcritcl\fR find that the cache
 already contains the results for the input files, no building will be
 done. If you are sure that these results are outdated use the option
 \fB-force\fR to force(sic!) \fBcritcl\fR to rebuild the binaries.
-.nf
+.CS
+
 
     critcl -force foo.tcl
 
-.fi
+.CE
 For debugging purposes it may be handy to see the generated
 intermediate "\fI.c\fR" files as well. Their removal from the cache can
 be prevented by specifying the option \fB-keep\fR.
-.nf
+.CS
+
 
     critcl -keep foo.tcl
 
-.fi
+.CE
 These can be combined, of course.
 .SS "BUILDING A PACKAGE"
 To build the binary package for a "\fI.critcl\fR" file, instead of
 \fBPre-Filling The Result Cache\fR, simply specify the option
 \fB-pkg\fR.
-.nf
+.CS
+
 
     critcl -pkg foo.tcl
 
-.fi
+.CE
 This will geneate a package named \fBfoo\fR.
 A simpler alternative to the above is
-.nf
+.CS
+
 
     critcl -pkg foo
 
-.fi
+.CE
 The application will automatically assume that the input file to look
 for is "\fIfoo.tcl\fR".
 .PP
 But what when the name of the input file is not the name of the
 package to build ? This we can handle as well:
-.nf
+.CS
+
 
     critcl -pkg foo bar.tcl
 
-.fi
+.CE
 The argument \fBfoo\fR specifies the name, and "\fIbar.tcl\fR" is
 the file to process.
 .PP
 Going back to the very first example, it is of course possible to use
 an absolute path to specify the file to process:
-.nf
+.CS
+
 
     critcl -pkg /path/to/foo.tcl
 
-.fi
+.CE
 The package name derived from that is still \fBfoo\fR.
 .SS "BUILDING AND INSTALLING A PACKAGE"
 Here we assume that you know the basics of how to build a package.
@@ -1289,32 +1329,35 @@ If not, please read section \fBBuilding A Package\fR first.
 By default \fBcritcl\fR will place all newly-made packages in the
 subdirectory "\fIlib\fR" of the current working directory.
 I.e. running
-.nf
+.CS
+
 
     critcl -pkg foo
 
-.fi
+.CE
 will create the directory "\fIlib/foo\fR" which contains all the files
 of the package.
 .PP
 When this behaviour is unwanted the option \fB-libdir\fR is available,
 allowing the explicit specification of the destination location to use.
-.nf
+.CS
+
 
     critcl -pkg -libdir /path/to/packages foo
 
-.fi
+.CE
 A common use might be to not only build the package in question, but
 to also immediately install it directly in the path where the user's
 \fBtclsh\fR will be able to find it.
 Assuming, for example, that the \fBtclsh\fR in question is installed
 at "\fI/path/to/bin/tclsh\fR", with the packages searched for under
 "\fI/path/to/lib\fR" ([\fBinfo library\fR]), the command
-.nf
+.CS
+
 
     critcl -pkg -libdir /path/to/lib foo
 
-.fi
+.CE
 will build the package and place it in the directory
 "\fI/path/to/lib/foo\fR".
 .SS "BUILDING FOR DEBUGGING"
@@ -1328,38 +1371,42 @@ Using it enables various build modes which help with that.
 .PP
 For example, to activate the Tcl core's built-in memory debugging
 subsystem build your package with
-.nf
+.CS
+
 
     critcl -pkg -debug memory foo
 
-.fi
+.CE
 The resulting binary for package \fBfoo\fR will use Tcl's
 debug-enabled (de)allocation functions, making them visible to Tcl's
 \fBmemory\fR command. This of course assumes that the Tcl core used
 was also built for memory debugging.
 .PP
 Further, built your package with
-.nf
+.CS
+
 
     critcl -pkg -debug symbols foo
 
-.fi
+.CE
 to see the \fBfoo\fR's symbols (types, functions, variables, etc.)
 when inspecting a "\fIcore\fR" file it is involved in with a symbolic
 debugger,
 .PP
 To activate both memory debugging and symbols use either
-.nf
+.CS
+
 
     critcl -pkg -debug all foo
 
-.fi
+.CE
 or
-.nf
+.CS
+
 
     critcl -pkg -debug symbols -debug memory foo
 
-.fi
+.CE
 .SS "RETARGETING THE BINARIES"
 The configuration settings \fBcritcl\fR uses to drive the compiler,
 linker, etc. are by default selected based on the platform it is run
@@ -1374,18 +1421,22 @@ The standard configuration of \fBcritcl\fR currently has settings for
 two cross-compilation targets. So, to build 32bit Windows binaries on
 a Linux host which has the Xmingw cross-compilation development
 environment installed use
-.nf
+.CS
+
 
     critcl -pkg -target mingw32 foo
 
-.fi
+.CE
+.IP
 Similarly, building a package for use on ARM processors while critcl
 is running in an Intel environment use
-.nf
+.CS
+
 
     critcl -pkg -target linux-arm foo
 
-.fi
+.CE
+.IP
 Note that both configurations assume that the cross-compiling
 compiler, linke, etc. are found first in the \fBPATH\fR.
 .PP
@@ -1404,11 +1455,12 @@ custom configuration and then tell \fBcritcl\fR about it.
 The latter is the easier part, given that \fBcritcl\fR supports the
 option \fB-config\fR whose argument is the path to the file
 containing the custom configuration(s). I.e.
-.nf
+.CS
+
 
     critcl -config /path/to/config ...
 
-.fi
+.CE
 will run \fBcritcl\fR with the custom configuration in
 "\fI/path/to/config\fR", with the other options and arguments as
 explained in previous sections. Depending on the choice of name for
@@ -1429,40 +1481,45 @@ the user to supply a single additional include path to use during the
 build phase of the package.
 .PP
 Simply use
-.nf
+.CS
+
 
     critcl -I /path/to/header ...
 
-.fi
+.CE
 and the specified header will be handed to the package to be built.
 .SS "INTROSPECTION OF TARGETS AND CONFIGURATIONS"
 To see a list containing the names of all the available
 configurations, run
-.nf
+.CS
+
 
     critcl -targets
 
-.fi
+.CE
 The configuration settings for either the default or user-chosen
 target can be inspected on \fBstdout\fR with
-.nf
+.CS
+
 
     critcl -show
 
-.fi
+.CE
 and
-.nf
+.CS
+
 
     critcl -show -target TARGET
 
-.fi
+.CE
 The raw contents of the configuration file used by \fBcritcl\fR
 are dumped to \fBstdout\fR with
-.nf
+.CS
+
 
     critcl -showall
 
-.fi
+.CE
 All of the above can of course be combined with custom configuration
 files.
 .SH AUTHORS
