@@ -2058,7 +2058,7 @@ proc ::critcl::c++command {tclname class constructors methods} {
 	}
 	lappend adefs $a
     }
-    append cmdproc "    const char* cmds\[]=\{\"[join $tnames {","}]\",NULL\};\n"
+    append cmdproc "    static const char* cmds\[]=\{\"[join $tnames {","}]\",NULL\};\n"
     append cmdproc "    if (objc<2) \{\n"
     append cmdproc "       Tcl_WrongNumArgs(ip, 1, objv, \"expecting pathName option\");\n"
     append cmdproc "       return TCL_ERROR;\n"
