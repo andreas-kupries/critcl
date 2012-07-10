@@ -47,15 +47,64 @@ critcl::subject {generic data structure}
 
 critcl::cheaders util.h
 
-critcl::class::def ::queuec {
+critcl::class::define ::queuec {
     include util.h
+    method_introspection
 
-    field Tcl_Obj* unget  {List object unget elements}
-    field Tcl_Obj* queue  {List object holding the main queue}
-    field Tcl_Obj* append {List object holding new elements}
-    field int      at     {Index of next element to return from the main queue}
+    # # ## ### ##### ######## ############# #####################
+    variable Tcl_Obj* unget {
+	List object holding unget'ted elements.
+    } {
+	instance->unget  = Tcl_NewListObj (0,NULL);
+	Tcl_IncrRefCount (instance->unget); 
+    } {
+	Tcl_DecrRefCount (instance->unget);
+    }
 
-    constructor {
+    # # ## ### ##### ######## ############# #####################
+    variable Tcl_Obj* queue {
+	List object holding the main queue.
+    } {
+	instance->queue  = Tcl_NewListObj (0,NULL);
+	Tcl_IncrRefCount (instance->queue); 
+    } {
+	Tcl_DecrRefCount (instance->queue);
+    }
+
+    # # ## ### ##### ######## ############# #####################
+    variable Tcl_Obj* append {
+	List object holding new elements
+    } {
+	instance->append = Tcl_NewListObj (0,NULL);
+	Tcl_IncrRefCount (instance->append);
+    } {
+	Tcl_DecrRefCount (instance->append);
+    }
+
+    # # ## ### ##### ######## ############# #####################
+    variable int at {
+	Index of next element to return from the main queue.
+	(variable: queue).
+    } {
+	instance->at = 0;
+    } ; # no need for a destructor
+
+    # # ## ### ##### ######## ############# #####################
+    method clear {} {
+	if (objc != 2) {
+	    Tcl_WrongNumArgs (interp, 2, objv, NULL);
+	    return TCL_ERROR;
+	}
+
+	/*
+	 * Delete and recreate the queue memory. A combination of delete/new,
+	 * except the main structure is left unchanged
+	 */
+
+	Tcl_DecrRefCount (instance->unget);
+	Tcl_DecrRefCount (instance->queue);
+	Tcl_DecrRefCount (instance->append);
+
 	instance->at     = 0;
 	instance->unget  = Tcl_NewListObj (0,NULL);
 	instance->queue  = Tcl_NewListObj (0,NULL);
@@ -64,17 +113,75 @@ critcl::class::def ::queuec {
 	Tcl_IncrRefCount (instance->unget); 
 	Tcl_IncrRefCount (instance->queue); 
 	Tcl_IncrRefCount (instance->append);
+
+	return TCL_OK;
     }
 
-    destructor {
-	Tcl_DecrRefCount (instance->unget);
-	Tcl_DecrRefCount (instance->queue);
-	Tcl_DecrRefCount (instance->append);
+    # # ## ### ##### ######## ############# #####################
+    method get  as QueueRetrieve 1
+    method peek as QueueRetrieve 0
+
+    # # ## ### ##### ######## ############# #####################
+    method put {item@2 ...} {
+	int i;
+
+	if (objc < 3) {
+	    Tcl_WrongNumArgs (interp, 2, objv, "item ?item ...?");
+	    return TCL_ERROR;
+	}
+
+	for (i = 2; i < objc; i++) {
+	    Tcl_ListObjAppendElement (interp, instance->append, objv[i]);
+	}
+
+	return TCL_OK;
     }
 
+    # # ## ### ##### ######## ############# #####################
+    method size {} {
+	if ((objc != 2)) {
+	    Tcl_WrongNumArgs (interp, 2, objv, NULL);
+	    return TCL_ERROR;
+	}
+
+	Tcl_SetObjResult  (interp, Tcl_NewIntObj (QueueSize (instance, NULL, NULL, NULL)));
+	return TCL_OK;
+    }
+
+    # # ## ### ##### ######## ############# #####################
+    method unget {item@2} {
+	Tcl_Obj* item;
+
+	if (objc != 3) {
+	    Tcl_WrongNumArgs (interp, 2, objv, "item");
+	    return TCL_ERROR;
+	}
+
+	item = objv[2];
+	if (instance->at == 0) {
+	    /* Need the unget stack */
+	    Tcl_ListObjAppendElement (interp, instance->unget, item);
+	} else {
+	    /*
+	     * We have room in the return buffer, so splice directly instead of
+	     * using the unget stack.
+	     */
+
+	    int queuec = 0;
+	    Tcl_ListObjLength (NULL, instance->queue,  &queuec);
+
+	    instance->at --;
+	    ASSERT_BOUNDS(instance->at,queuec);
+	    Tcl_ListObjReplace (interp, instance->queue, instance->at, 1, 1, &item);
+	}
+
+	return TCL_OK;
+    }
+
+    # # ## ### ##### ######## ############# #####################
     support {
 	static int
-	queue_size (@instancetype@ q, int* u, int* r, int* a)
+	QueueSize (@instancetype@ q, int* u, int* r, int* a)
 	{
 	    int ungetc  = 0;
 	    int queuec  = 0;
@@ -92,7 +199,7 @@ critcl::class::def ::queuec {
 	}
 
 	static void
-	queue_shift (@instancetype@ q)
+	QueueShift (@instancetype@ q)
 	{
 	    int queuec = 0;
 	    int appendc = 0;
@@ -114,8 +221,8 @@ critcl::class::def ::queuec {
 	    Tcl_IncrRefCount (q->append);
 	}
 
-	int
-	queue_peekget (@instancetype@  instance,
+	static int
+	QueueRetrieve (@instancetype@  instance,
 		       Tcl_Interp*     interp,
 		       int             objc,
 		       Tcl_Obj* CONST* objv,
@@ -149,7 +256,7 @@ critcl::class::def ::queuec {
 		}
 	    }
 
-	    if (n > queue_size(instance, &ungetc, &queuec, &appendc)) {
+	    if (n > QueueSize(instance, &ungetc, &queuec, &appendc)) {
 		Tcl_AppendResult (interp,
 				  "insufficient items in queue to fill request",
 				  NULL);
@@ -188,19 +295,19 @@ critcl::class::def ::queuec {
 			Tcl_ListObjReplace (interp, instance->unget, listc-1, 1, 0, NULL);
 		    }
 		} else {
-		    queue_shift (instance);
+		    QueueShift (instance);
 		    Tcl_ListObjGetElements (interp, instance->queue, &listc, &listv);
 		    ASSERT_BOUNDS(instance->at,listc);
 		    r = listv [instance->at];
 		    Tcl_SetObjResult (interp, r);
 		    /*
 		     * Note: Doing the SetObj now is important. It increments the
-		     * refcount of 'r', allowing it to survive if the 'queue_shift' below
+		     * refcount of 'r', allowing it to survive if the 'QueueShift' below
 		     * kills the internal list (instance->queue) holding it.
 		     */
 		    if (get) {
 			instance->at ++;
-			queue_shift (instance);
+			QueueShift (instance);
 		    }
 		}
 	    } else {
@@ -233,7 +340,7 @@ critcl::class::def ::queuec {
 		    }
 		}
 		if (i < n) {
-		    queue_shift (instance);
+		    QueueShift (instance);
 		    Tcl_ListObjGetElements (interp, instance->queue, &listc, &listv);
 		    for (j = instance->at;
 			 j < listc && i < n; 
@@ -246,7 +353,7 @@ critcl::class::def ::queuec {
 
 		    if (get) {
 			instance->at = j;
-			queue_shift (instance);
+			QueueShift (instance);
 		    } else if (i < n) {
 			/* XX */
 			Tcl_ListObjGetElements (interp, instance->append, &listc, &listv);
@@ -269,142 +376,31 @@ critcl::class::def ::queuec {
 
 		if (i < n) {
 		    ASSERT(get,"Impossible 2nd return pull witohut get");
-		    queue_shift (instance);
+		    QueueShift (instance);
 		    Tcl_ListObjGetElements (interp, instance->queue, &listc, &listv);
 		    for (j = instance->at;
 			 j < listc && i < n; 
 			 j++, i++) {
-				    ASSERT_BOUNDS(i,n);
-				    ASSERT_BOUNDS(j,listc);
-				    resv[i] = listv[j];
-				    Tcl_IncrRefCount (resv[i]);
-				}
+			    ASSERT_BOUNDS(i,n);
+			    ASSERT_BOUNDS(j,listc);
+			    resv[i] = listv[j];
+			    Tcl_IncrRefCount (resv[i]);
+		    }
 		    instance->at = j;
-		    queue_shift (instance);
+		    QueueShift (instance);
 		}
 
 		r = Tcl_NewListObj (n, resv);
 		Tcl_SetObjResult (interp, r);
 
 		for (i=0;i<n;i++) {
-				   Tcl_DecrRefCount (resv[i]);
-			       }
+		   Tcl_DecrRefCount (resv[i]);
+	        }
 		ckfree((char*)resv);
 	    }
 
 	    return TCL_OK;
 	}
-    }
-
-    mdef clear {
-	/* Syntax: queue clear
-	 *	       [0]   [1]
-	 */
-
-	if (objc != 2) {
-	    Tcl_WrongNumArgs (interp, 2, objv, NULL);
-	    return TCL_ERROR;
-	}
-
-	/*
-	 * Delete and recreate the queue memory. A combination of delete/new,
-	 * except the main structure is left unchanged
-	 */
-
-	Tcl_DecrRefCount (instance->unget);
-	Tcl_DecrRefCount (instance->queue);
-	Tcl_DecrRefCount (instance->append);
-
-	instance->at     = 0;
-	instance->unget  = Tcl_NewListObj (0,NULL);
-	instance->queue  = Tcl_NewListObj (0,NULL);
-	instance->append = Tcl_NewListObj (0,NULL);
-
-	Tcl_IncrRefCount (instance->unget); 
-	Tcl_IncrRefCount (instance->queue); 
-	Tcl_IncrRefCount (instance->append);
-
-	return TCL_OK;
-    }
-
-    mdef destroy {
-	/* Syntax: queue destroy
-	*	       [0]   [1]
-	*/
-
-	if (objc != 2) {
-	    Tcl_WrongNumArgs (interp, 2, objv, NULL);
-	    return TCL_ERROR;
-	}
-
-	Tcl_DeleteCommandFromToken(interp, instance->cmd);
-	return TCL_OK;
-    }
-
-    mdef get  as queue_peekget 1
-    mdef peek as queue_peekget 0
-
-    mdef put {
-	/* Syntax: queue push item...
-	*	       [0]   [1]  [2]
-	*/
-
-	int i;
-
-	if (objc < 3) {
-	    Tcl_WrongNumArgs (interp, 2, objv, "item ?item ...?");
-	    return TCL_ERROR;
-	}
-
-	for (i = 2; i < objc; i++) {
-	    Tcl_ListObjAppendElement (interp, instance->append, objv[i]);
-	}
-
-	return TCL_OK;
-    }
-
-    mdef size {
-	/* Syntax: queue size
-	 *	       [0]   [1]
-	 */
-
-	if ((objc != 2)) {
-	    Tcl_WrongNumArgs (interp, 2, objv, NULL);
-	    return TCL_ERROR;
-	}
-
-	Tcl_SetObjResult  (interp, Tcl_NewIntObj (queue_size (instance, NULL, NULL, NULL)));
-	return TCL_OK;
-    }
-
-    mdef unget {
-	/* Syntax: queue unget item
-	 *	       [0]   [1]   [2]
-	 */
-
-	if (objc != 3) {
-	    Tcl_WrongNumArgs (interp, 2, objv, "item");
-	    return TCL_ERROR;
-	}
-
-	if (instance->at == 0) {
-	    /* Need the unget stack */
-	    Tcl_ListObjAppendElement (interp, instance->unget, objv[2]);
-	} else {
-	    /*
-	     * We have room in the return buffer, so splice directly instead of
-	     * using the unget stack.
-	     */
-
-	    int queuec = 0;
-	    Tcl_ListObjLength (NULL, instance->queue,  &queuec);
-
-	    instance->at --;
-	    ASSERT_BOUNDS(instance->at,queuec);
-	    Tcl_ListObjReplace (interp, instance->queue, instance->at, 1, 1, &objv[2]);
-	}
-
-	return TCL_OK;
     }
 }
 

@@ -232,10 +232,10 @@ proc ::critcl::/Frameshift {off} {
     return
 }
 
-proc ::critcl::At! {{name {}} {level 0}} {
+proc ::critcl::At! {{off 0} {name {}} {level 0}} {
     # Logically equivalent to At= [At?]
     incr level -3
-    set v::lp [LinePragma 0 $level [This] $name]
+    set v::lp [LinePragma $off $level [This] $name]
     return
 }
 
@@ -246,6 +246,11 @@ proc ::critcl::At? {{name {}} {level 0}} {
 
 proc ::critcl::At= {lp} {
     set v::lp $lp
+    return
+}
+
+proc ::critcl::AtClear {} {
+    set v::lp {}
     return
 }
 
@@ -272,7 +277,7 @@ proc ::critcl::cdata {name data} {
 
     # NOTE: The uplevel is needed because otherwise 'ccommand' will
     # not properly determine the caller's namespace.
-    At! $name
+    At! 0 $name
     uplevel 1 [list critcl::ccommand $name {dummy ip objc objv} $body]
     return $name
 }

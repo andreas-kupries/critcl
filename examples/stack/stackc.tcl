@@ -48,17 +48,18 @@ critcl::subject {generic data structure}
 
 critcl::api import cstack 1
 
-critcl::cheaders stackc/*.h
-critcl::csources stackc/*.c
+critcl::cheaders stackc/*.h ; # Method declarations and implementation,
+critcl::csources stackc/*.c ; # outside of this main file.
 
-critcl::class::def ::stackc {
-    include m.h
-    include cstack/cstackDecls.h
+critcl::class::define ::stackc {
+    include m.h                  ; # Method function declarations.
+    include cstack/cstackDecls.h ; # API of the generic CSTACK we are binding to.
     type    CSTACK
 
     constructor {
-	instance = cstack_new (stackc_FreeCell, 0);
+	instance = cstack_new (StackcFreeCell, 0);
     } {
+	/* Set back reference from CSTACK instance to instance command */
 	cstack_clientdata_set (instance, (ClientData) cmd);
     }
 
@@ -67,26 +68,26 @@ critcl::class::def ::stackc {
 	cstack_del (instance);
     }
 
+    method clear   as stm_CLEAR
+    method destroy as stm_DESTROY
+    method peek    as stm_PEEK 0 0
+    method peekr   as stm_PEEK 0 1
+    method pop     as stm_PEEK 1 0
+    method push    as stm_PUSH
+    method rotate  as stm_ROTATE
+    method size    as stm_SIZE
+    method get     as stm_GET 0
+    method getr    as stm_GET 1
+    method trim    as stm_TRIM 1
+    method trimv   as stm_TRIM 0
+
     support {
 	static void
-	stackc_FreeCell (void* cell) {
+	StackcFreeCell (void* cell) {
 	    /* Release the cell. */
 	    Tcl_DecrRefCount ((Tcl_Obj*) cell);
 	}
     }
-
-    mdef clear   as stm_CLEAR
-    mdef destroy as stm_DESTROY
-    mdef peek    as stm_PEEK 0 0
-    mdef peekr   as stm_PEEK 0 1
-    mdef pop     as stm_PEEK 1 0
-    mdef push    as stm_PUSH
-    mdef rotate  as stm_ROTATE
-    mdef size    as stm_SIZE
-    mdef get     as stm_GET 0
-    mdef getr    as stm_GET 1
-    mdef trim    as stm_TRIM 1
-    mdef trimv   as stm_TRIM 0
 }
 
 # ### ### ### ######### ######### #########

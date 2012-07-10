@@ -44,7 +44,7 @@ typedef enum @stem@_classmethods {
 typedef struct @classtype@__ {
     const char* name;  /* Class name, for debugging */
     long int counter;  /* Id generation counter */
-    char     buf [50]; /* Stash for the auto-generated object names. */
+    char     buf [sizeof("@class@")+20]; /* Stash for the auto-generated object names. */
 @ctypedecl@} @classtype@__;
 typedef struct @classtype@__* @classtype@;
 
@@ -56,6 +56,7 @@ typedef struct @classtype@__* @classtype@;
 
 /* # # ## ### ##### ######## User: General support */
 @support@
+#line 59 "class.h"
 /* # # ## ### ##### ######## */
 
 /*
@@ -66,7 +67,8 @@ static void
 @stem@_ClassRelease (ClientData cd, Tcl_Interp* interp)
 {
     @classtype@ class = (@classtype@) cd;
-@classdestructor@
+    @classdestructor@
+#line 71 "class.h"
     ckfree((char*) cd);
 }
 
@@ -88,7 +90,8 @@ static @classtype@
     class->name = "@stem@";
     class->counter = 0;
 
-@classconstructor@
+    @classconstructor@
+#line 94 "class.h"
 
     Tcl_SetAssocData (interp, KEY, proc, (ClientData) class);
     return class;
@@ -116,7 +119,8 @@ static @instancetype@
 {
 @ivardecl@;
     /* # # ## ### ##### ######## User: Constructor */
-    @constructor@;
+    @constructor@
+#line 123 "class.h"
     /* # # ## ### ##### ######## */
     return instance;
 @ivarerror@;
@@ -129,7 +133,8 @@ static void
 			Tcl_Obj* fqn)
 {
     /* # # ## ### ##### ######## User: Post Constructor */
-    @postconstructor@;
+    @postconstructor@
+#line 137 "class.h"
     /* # # ## ### ##### ######## */
 }
 
@@ -138,13 +143,15 @@ static void
 {
     @instancetype@ instance = (@instancetype@) clientData;
     /* # # ## ### ##### ######## User: Destructor */
-@destructor@;
+    @destructor@
+#line 147 "class.h"
     /* # # ## ### ##### ######## */
 @ivarrelease@;
 }
 
 /* # # ## ### ##### ######## User: Methods */
 @method_implementations@
+#line 154 "class.h"
 /* # # ## ### ##### ######## */
 
 /*
@@ -299,6 +306,7 @@ static int
 
 /* # # ## ### ##### ######## User: Class Methods */
 @class_method_implementations@
+#line 309 "class.h"
 /* # # ## ### ##### ######## */
 
 /*
@@ -337,8 +345,7 @@ int
 
     switch ((@stem@_methods) mcode) {
 	case @stem@_CM_create: return @stem@_CM_createCmd (class, interp, objc, objv); break;
-	case @stem@_CM_new:    return @stem@_CM_newCmd    (class, interp, objc, objv); break;
-@class_method_dispatch@
+	case @stem@_CM_new:    return @stem@_CM_newCmd    (class, interp, objc, objv); break;@class_method_dispatch@
     }
     /* Not coming to this place */
     return TCL_ERROR;
