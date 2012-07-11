@@ -215,7 +215,7 @@ proc _install {{dst {}}} {
 
     if {[llength [info level 0]] < 2} {
 	set dstl [info library]
-	set dsta [file dirname [file normalize [info nameofexecutable]]]
+	set dsta [file dirname [file dirname [file normalize [info nameofexecutable]/___]]]
     } else {
 	set dstl $dst
 	set dsta [file dirname $dst]/bin
@@ -254,7 +254,7 @@ proc _install {{dst {}}} {
     # Application: critcl
 
     set    c [open $dsta/critcl w]
-    puts  $c "#!/bin/sh\n# -*- tcl -*- \\\nexec [file normalize [info nameofexecutable]] \"\$0\" \$\{1+\"\$@\"\}\npackage require critcl::app\ncritcl::app::main \$argv"
+    puts  $c "#!/bin/sh\n# -*- tcl -*- \\\nexec [file dirname [file normalize [info nameofexecutable]/___]] \"\$0\" \$\{1+\"\$@\"\}\npackage require critcl::app\ncritcl::app::main \$argv"
     close $c
     +x $dsta/critcl
 
@@ -267,7 +267,7 @@ proc _drop {{dst {}}} {
 
     if {[llength [info level 0]] < 2} {
 	set dstl [info library]
-	set dsta [file dirname [file normalize [info nameofexecutable]]]
+	set dsta [file dirname [file dirname [file normalize [info nameofexecutable]/___]]]
     } else {
 	set dstl $dst
 	set dsta [file dirname $dst]/bin
