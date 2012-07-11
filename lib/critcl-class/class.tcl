@@ -210,6 +210,14 @@ proc ::critcl::class::ProcessClassVariables {} {
     return
 }
 
+proc ::critcl::class::Max {v s} {
+    upvar 1 $v max
+    set l [string length $s]
+    if {$l < $max} return
+    set max $l
+    return
+}
+
 proc ::critcl::class::ProcessMethods {key} {
     variable state
     # Process method declarations. Ensure that the names are listed in
@@ -226,13 +234,22 @@ proc ::critcl::class::ProcessMethods {key} {
 		     [dict get $state $key typekey] \
 		     [dict get $state $key typedef]]
 
+	set maxe 0
+	set maxn 0
 	foreach name [lsort -dict [dict get $state $key names]] {
-	    set enum                  [dict get $state $key def $name enum]
-	    set case [string map $map [dict get $state $key def $name case]]
-	    set code [string map $map [dict get $state $key def $name code]]
+	    Max maxn $name
+	    Max maxe [dict get $state $key def $name enum]
+	}
+	incr maxn 3
 
-	    lappend names \"$name\",
-	    lappend enums $enum
+	foreach name [lsort -dict [dict get $state $key names]] {
+	    set enum                    [dict get $state $key def $name enum]
+	    set case   [string map $map [dict get $state $key def $name case]]
+	    set code   [string map $map [dict get $state $key def $name code]]
+	    set syntax [string map $map [dict get $state $key def $name syntax]]
+
+	    lappend names "[format %-${maxn}s \"$name\",] $syntax"
+	    lappend enums "[format %-${maxe}s $enum] $syntax"
 	    lappend cases $case
 	    lappend codes $code
 	}
@@ -475,7 +492,7 @@ proc ::critcl::class::MethodExternal {name function details} {
 	set details " ($details)"
     }
 
-    MethodDef method instance $name [MethodEnum method $name] $function $map \
+    MethodDef method instance $name [MethodEnum method $name] {} $function $map \
 	"/* $name : External function @function@$details */"
     return
 }
@@ -483,15 +500,16 @@ proc ::critcl::class::MethodExternal {name function details} {
 proc ::critcl::class::MethodExplicit {name arguments body} {
     MethodCheck method instance $name
 
-    set body "\n    /* Syntax: <instance> $name $arguments */\n    [string trimright $body]"
+    if {$arguments ne {}} {set arguments " $arguments"}
+    set syntax "/* Syntax: <instance> $name$arguments */"
+    set body   "\n    $syntax\n    [string trimright $body]"
 
-    set loc      {};#[critcl::LinePragma -2 [critcl::This]]
     set enum     [MethodEnum method $name]
     set function ${enum}_Cmd
     set map      [list @body@ $body]
 
-    MethodDef method instance $name $enum $function {} \
-	$loc[string map $map [string trim [Dedent "\t    " {
+    MethodDef method instance $name $enum $syntax $function {} \
+	[string map $map [string trim [Dedent "\t    " {
 	    static int
 	    @function@ (@instancetype@ instance,
 			Tcl_Interp*            interp,
@@ -511,7 +529,7 @@ proc ::critcl::class::ClassMethodExternal {name function details} {
 	lappend map objv "objv, [join $details {, }]"
     }
 
-    MethodDef classmethod class $name [MethodEnum method $name] $function $map \
+    MethodDef classmethod class $name [MethodEnum method $name] {} $function $map \
 	"/* $name : External function @function@ */"
     return
 }
@@ -519,15 +537,16 @@ proc ::critcl::class::ClassMethodExternal {name function details} {
 proc ::critcl::class::ClassMethodExplicit {name arguments body} {
     MethodCheck classmethod class $name
 
-    set body "\n    /* Syntax: <class> $name $arguments */\n    $body"
+    if {$arguments ne {}} {set arguments " $arguments"}
+    set syntax "/* Syntax: <class> $name$arguments */"
+    set body   "\n    $syntax\n    $body"
 
-    set loc      {};#[critcl::LinePragma -2 [critcl::This]]
     set enum     [MethodEnum method $name]
     set function ${enum}_Cmd
     set map      [list @body@ $body]
 
-    MethodDef classmethod class $name $enum $function {} \
-	$loc[string map $map [string trim [Dedent "\t    " {
+    MethodDef classmethod class $name $enum $syntax $function {} \
+	[string map $map [string trim [Dedent "\t    " {
 	    static int
 	    @function@ (@classtype@ class,
 			Tcl_Interp*            interp,
@@ -564,7 +583,7 @@ proc ::critcl::class::MethodEnum {section name} {
     return @stem@_M_${serial}_[string toupper $name]
 }
 
-proc ::critcl::class::MethodDef {section var name enum function xmap code} {
+proc ::critcl::class::MethodDef {section var name enum syntax function xmap code} {
     variable state
 
     set case  "case $enum: return @function@ ($var, interp, objc, objv); break;"
@@ -576,8 +595,9 @@ proc ::critcl::class::MethodDef {section var name enum function xmap code} {
 	dict lappend m names $name
     }
     dict set state $section def $name enum $enum
-    dict set state $section def $name case [string map $map $case]
-    dict set state $section def $name code [string map $map $code]
+    dict set state $section def $name case   [string map $map $case]
+    dict set state $section def $name code   [string map $map $code]
+    dict set state $section def $name syntax [string map $map $syntax]
     return
 }
 
