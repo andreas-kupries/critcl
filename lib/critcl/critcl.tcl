@@ -160,9 +160,9 @@ proc ::critcl::ccode {text} {
     set digest [UUID.extend $file .ccode $text]
 
     set block {}
-    lassign [HeaderLines $text] lines text
+    lassign [HeaderLines $text] leadoffset text
     if {$v::options(lines)} {
-	append block [LinePragma $lines -2 $file]
+	append block [Origin::CPragma $leadoffset -2 $file]
     }
     append block $text \n
 
@@ -212,9 +212,9 @@ proc ::critcl::ccommand {name anames args} {
 
 	Emitln "static int tcl_$cns$name$ca"
 	Emit   \{\n
-	lassign [HeaderLines $body] lines body
+	lassign [HeaderLines $body] leadoffset body
 	if {$v::options(lines)} {
-	    Emit [LinePragma $lines -2 $file $name]
+	    Emit [Origin::CPragma $leadoffset -2 $file]
 	}
 	Emit   $body
 	Emitln \n\}
@@ -224,33 +224,6 @@ proc ::critcl::ccommand {name anames args} {
 	Emitln "int $anames\(\);"
     }
     EndCommand
-    return
-}
-
-proc ::critcl::/Frameshift {off} {
-    set v::shift $off
-    return
-}
-
-proc ::critcl::At! {{off 0} {name {}} {level 0}} {
-    # Logically equivalent to At= [At?]
-    incr level -3
-    set v::lp [LinePragma $off $level [This] $name]
-    return
-}
-
-proc ::critcl::At? {{name {}} {level 0}} {
-    incr level -3
-    return [LinePragma 0 $level [This] $name]
-}
-
-proc ::critcl::At= {lp} {
-    set v::lp $lp
-    return
-}
-
-proc ::critcl::AtClear {} {
-    set v::lp {}
     return
 }
 
@@ -277,7 +250,7 @@ proc ::critcl::cdata {name data} {
 
     # NOTE: The uplevel is needed because otherwise 'ccommand' will
     # not properly determine the caller's namespace.
-    At! 0 $name
+    at::here?
     uplevel 1 [list critcl::ccommand $name {dummy ip objc objv} $body]
     return $name
 }
@@ -398,9 +371,9 @@ proc ::critcl::cproc {name adefs rtype {body "#"}} {
 	Emit   "static [ResultCType $rtype] "
 	Emitln "${cname}([join $cargs {, }])"
 	Emit   \{\n
-	lassign [HeaderLines $body] lines body
+	lassign [HeaderLines $body] leadoffset body
 	if {$v::options(lines)} {
-	    Emit [LinePragma $lines -2 $file $name]
+	    Emit [Origin::CPragma $leadoffset -2 $file]
 	}
 	Emit   $body
 	Emitln \n\}
@@ -430,17 +403,17 @@ proc ::critcl::cinit {text edecls} {
 
     set initc {}
     set skip [Lines $text]
-    lassign [HeaderLines $text] lines text
+    lassign [HeaderLines $text] leadoffset text
     if {$v::options(lines)} {
-	append initc [LinePragma $lines -2 $file]
+	append initc [Origin::CPragma $leadoffset -2 $file]
     }
     append initc $text \n
 
     set edec {}
-    lassign [HeaderLines $edecls] lines edecls
+    lassign [HeaderLines $edecls] leadoffset edecls
     if {$v::options(lines)} {
-	incr lines $skip
-	append edec [LinePragma $lines -2 $file]
+	incr leadoffset $skip
+	append edec [Origin::CPragma $leadoffset -2 $file]
     }
     append edec $edecls \n
 
@@ -448,6 +421,71 @@ proc ::critcl::cinit {text edecls} {
 	dict append  c initc  $initc \n
 	dict append  c edecls $edec  \n
     }
+    return
+}
+
+# # ## ### ##### ######## ############# #####################
+## Public API to code origin handling.
+
+proc ::critcl::at::here? {{off 0} {level 0}} {
+    if {[defined]} return ; # Do not erase caller supplied data
+    incr level -3
+    ::critcl::Origin::Where $off $level [This]
+    # Saves location into slot 0, always.
+    return
+}
+
+proc ::critcl::at::here {{off 0} {level 0}} {
+    incr level -3
+    ::critcl::Origin::Where $off $level [This]
+    # Saves location into slot 0, always.
+    return
+}
+
+proc ::critcl::at::clear {{slot 0}} {
+    variable ::critcl::Origin::where
+    unset -nocomplain where($slot)
+    return
+}
+
+proc ::critcl::at::reset {} {
+    variable ::critcl::Origin::where
+    unset where
+    return
+}
+
+proc ::critcl::at::get {} {
+    if {![defined 0]} {
+	return -code error "No location defined"
+    }
+    return [::critcl::Origin::CPragma _ _ _]
+    # implied at::clear
+}
+
+proc ::critcl::at::store {slot} {
+    variable ::critcl::Origin::where
+    set where($slot) $where(0)
+    return
+}
+
+proc ::critcl::at::recall {slot} {
+    variable ::critcl::Origin::where
+    if {![defined $slot]} return ; # Ignore missing slot
+    set where(0) $where($slot)
+    unset where($slot)
+    return
+}
+
+proc ::critcl::at::defined {slot} {
+    variable ::critcl::Origin::where
+    return [info exists where($slot)]
+}
+
+proc ::critcl::at::incr {offset {slot 0}} {
+    variable ::critcl::Origin::where
+    lassign $where($slot) file line
+    incr line $offset
+    set where($slot) [list $file $line]
     return
 }
 
@@ -2924,13 +2962,11 @@ proc ::critcl::Emitln {{s ""}} {
     return
 }
 
-proc ::critcl::LinePragma {off level file {name {}}} {
-    if {$v::lp ne {}} {
-	set lp $v::lp
-	set v::lp {}
-	#msg "LP forced = $lp"
-	return $lp
-    }
+# # ## ### ##### ######## ############# #####################
+## Origin processing
+
+proc ::critcl::Origin::Where {leadoffset level file} {
+    variable where
 
     set line 1
 
@@ -2938,18 +2974,14 @@ proc ::critcl::LinePragma {off level file {name {}}} {
     # place more exact line number information into the generated C
     # file.
 
-    incr level [expr {- $v::shift}]
-    set v::shift 0
-
     if {![catch {
 	#SHOWFRAMES $level
 	array set loc [info frame $level]
     }] && $loc(type) eq "source"} {
 	#parray loc
-	set file  $loc(file)
-	set fline $loc(line)
-	incr fline $off ; # Adjust for removed leading whitespace.
-	set name {} ; # Squash reference for relative location.
+	set  file  $loc(file)
+	set  fline $loc(line)
+	incr fline $leadoffset ; # Adjust for removed leading whitespace.
 
 	# Keep the limitations of native compilers in mind and stay
 	# inside their bounds.
@@ -2957,14 +2989,34 @@ proc ::critcl::LinePragma {off level file {name {}}} {
 	if {$fline > $line} {
 	    set line $fline
 	}
+
+	set where(0) [list [file tail $file] $line]
     } else {
+	set where(0) {}
+    }
+
+    return
+}
+
+proc ::critcl::Origin::CPragma {leadoffset level file} {
+    variable where
+    # Compute location based on our callstack if there is no external
+    # override.
+    if {![info exists where(0)]} {
+	incr level -1
+	Where $leadoffset $level $file
+    }
+
+    if {![llength $where(0)]} {
+	unset where(0)
 	return ""
     }
 
-    if {$name ne {}} { set name /$name }
+    lassign $where(0) file line
+    unset where(0)
 
-    #msg "\nLP $fline (+$off)|$line : $level = [info frame $level]"
-    return "#line $line \"[file tail $file]$name\"\n"
+    #msg "\nLP $fline (+$leadoffset)|$line : $level = [info frame $level]"
+    return "#line $line \"$file\"\n"
 }
 
 proc ::critcl::SHOWFRAMES {level} {
@@ -4161,7 +4213,6 @@ namespace eval ::critcl {
 	}
 
 	variable lp {}
-	variable shift 0
 	variable code	         ;# This array collects all code snippets and
 				  # data about them.
 

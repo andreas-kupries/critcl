@@ -430,37 +430,31 @@ proc ::critcl::class::ClassVariable {ctype name comment} {
 }
 
 proc ::critcl::class::Constructor {code} {
-    ::critcl::At!
     CodeFragment constructor $code
     return
 }
 
 proc ::critcl::class::PostConstructor {code} {
-    ::critcl::At!
     CodeFragment postconstructor $code
     return
 }
 
 proc ::critcl::class::Destructor {code} {
-    critcl::At!
     CodeFragment destructor $code
     return
 }
 
 proc ::critcl::class::ClassConstructor {code} {
-    critcl::At!
     CodeFragment classconstructor $code
     return
 }
 
 proc ::critcl::class::ClassDestructor {code} {
-    critcl::At!
     CodeFragment classdestructor $code
     return
  }
 
 proc ::critcl::class::Support {code} {
-    critcl::At!
     CodeFragment support $code
     return
 }
@@ -585,7 +579,8 @@ proc ::critcl::class::CodeFragment {section code} {
     variable state
     set code [string trim $code \n]
     if {$code ne {}} {
-	dict lappend state $section [::critcl::At?]$code
+	set code [::critcl::at::get]$code
+	dict lappend state $section $code
     }
     return
 }
@@ -618,37 +613,45 @@ proc ::critcl::class::spec::type {name} {
 
 proc ::critcl::class::spec::variable {ctype name {comment {}} {constructor {}} {destructor {}}} {
     ::critcl::class::Variable $ctype $name $comment
+
+    # Caller may place origin location overrides into slots 1
+    # (destructor) and 2 (destructor).
+
     set off [::critcl::Lines $comment]
     if {$constructor ne {}} {
-	::critcl::At! $off
+	::critcl::at::recall 1
+	::critcl::at::here? $off
 	::critcl::class::Constructor $constructor
-	::critcl::AtClear
+
 	incr off [critcl::Lines $constructor]
     }
     if {$destructor ne {}} {
-	::critcl::At! $off
-	::critcl::class::Destructor  $destructor
-	::critcl::AtClear
+	::critcl::at::recall 2
+	::critcl::at::here? $off
+	::critcl::class::Destructor $destructor
     }
     return
 }
 
 proc ::critcl::class::spec::constructor {code {postcode {}}} {
-    ::critcl::At!
+    # Caller may place origin location overrides into slots 1 (code)
+    # and 2 (postcode).
+
+    ::critcl::at::recall 1
+    ::critcl::at::here?
     ::critcl::class::Constructor $code
-    ::critcl::AtClear
+
     if {$postcode ne {}} {
-	::critcl::At! [::critcl::Lines $code]
+	::critcl::at::recall 2
+	::critcl::at::here? [::critcl::Lines $code]
 	::critcl::class::PostConstructor $postcode
-	::critcl::AtClear
     }
     return
 }
 
 proc ::critcl::class::spec::destructor {code} {
-    ::critcl::At!
+    ::critcl::at::here?
     ::critcl::class::Destructor $code
-    ::critcl::AtClear
     return
 }
 
@@ -673,39 +676,43 @@ proc ::critcl::class::spec::method {name op detail args} {
 	return -code error "wrong#args"
     }
 
-    ::critcl::At! [::critcl::Lines $op]
+    ::critcl::at::here? [::critcl::Lines $op]
     ::critcl::class::MethodExplicit $name [string trim $op] $detail
-    ::critcl::AtClear
     return
 }
 
 proc ::critcl::class::spec::classvariable { ctype name {comment {}} {constructor {}} {destructor {}}} {
     ::critcl::class::ClassVariable $ctype $name $comment
+
+    # Caller may place origin location overrides into slots 1
+    # (destructor) and 2 (destructor).
+
     set off [::critcl::Lines $comment]
     if {$constructor ne {}} {
-	::critcl::At! $off
+	::critcl::at::recall 1
+	::critcl::at::here? $off
 	::critcl::class::ClassConstructor $constructor
-	::critcl::AtClear
+
 	incr off [::critcl::Lines $constructor]
     }
     if {$destructor ne {}} {
-	::critcl::At! $off
-	::critcl::class::ClassDestructor  $destructor
-	::critcl::AtClear
+	::critcl::at::recall 2
+	::critcl::at::here $off
+	::critcl::class::ClassDestructor $destructor
     }
     return
 }
 
 proc ::critcl::class::spec::classconstructor {code} {
-    ::critcl::At!
+    ::critcl::at::here?
     ::critcl::class::ClassConstructor $code
-    ::critcl::AtClear
+    return
 }
 
 proc ::critcl::class::spec::classdestructor {code} {
-    ::critcl::At!
+    ::critcl::at::here?
     ::critcl::class::ClassDestructor $code
-    ::critcl::AtClear
+    return
 }
 
 proc ::critcl::class::spec::classmethod {name op detail args} {
@@ -729,16 +736,15 @@ proc ::critcl::class::spec::classmethod {name op detail args} {
 	return -code error "wrong#args"
     }
 
-    ::critcl::At! [::critcl::Lines $op]
+    ::critcl::at::here? [::critcl::Lines $op]
     ::critcl::class::ClassMethodExplicit $name [string trim $op] $detail
-    ::critcl::AtClear
     return
 }
 
 proc ::critcl::class::spec::support {code} {
-    ::critcl::At!
+    ::critcl::at::here?
     ::critcl::class::Support $code
-    ::critcl::AtClear
+    return
 }
 
 proc ::critcl::class::spec::method_introspection {} {
