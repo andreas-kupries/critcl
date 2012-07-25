@@ -7,5 +7,4 @@ the class definition script argument of [cmd ::critcl::class::define].
 [subsection {Instance lifetime management}]   [include include/class_spec_ilife.inc]
 [subsection {Class variables and methods}]    [include include/class_spec_cvarm.inc]
 [subsection {Instance variables and methods}] [include include/class_spec_ivarm.inc]
-
-[comment {TODO: Section collating all the special interactions in a single place}]
+[subsection {Context dependent interactions}] [include include/class_spec_cdin.inc]
