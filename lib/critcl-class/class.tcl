@@ -253,6 +253,8 @@ proc ::critcl::class::ProcessMethods {key} {
 
 	    lappend names "[format %-${maxn}s \"$name\",] $syntax"
 	    lappend enums "[format %-${maxe}s $enum] $syntax"
+	    regexp {(:.*)$} $case tail
+	    set case "case [format %-${maxe}s $enum]$tail"
 	    lappend cases $case
 	    lappend codes $code
 	}
@@ -623,7 +625,20 @@ namespace eval ::critcl::class::spec {}
 proc ::critcl::class::spec::Process {script} {
     # Note how this script is evaluated within the 'spec' namespace,
     # providing it with access to the specification methods.
+
+    # Point the global namespace resolution into the spec namespace,
+    # to ensure that the commands are properly found even if the
+    # script moved through helper commands and other namespaces.
+
+    # Note that even this will not override the builtin 'variable'
+    # command with ours, which is why ours is now called
+    # 'insvariable'.
+
+    namespace eval :: [list namespace path [list [namespace current] ::]]
+
     eval $script
+
+    namespace eval :: {namespace path {}}
     return
 }
 
