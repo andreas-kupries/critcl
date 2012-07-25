@@ -140,7 +140,7 @@ proc ::critcl::HeaderLines {text} {
     if {![regexp {^[\t\n ]+} $text header]} {
 	return [list 0 $text]
     }
-    set lines  [string length $header]
+    set lines [regexp -all {\n} $header]
     # => The C code begins $lines lines after location of the c**
     #    command. This goes as offset into the generated #line pragma,
     #    because now (see next line) we throw away this leading
