@@ -23,8 +23,18 @@ not. The default is [const off].
 
 [opt_def lines bool]
 
-This flag tells the package whether to place #line directives into the
-generated C code (when [const true]) or not. The default is [const on].
+This flag tells the package whether to embed #line directives into the
+generated C code (when [const true]) or not. By default this is [const on].
+
+[include rq_cline.inc]
+
+[para] Developers of higher-level packages generating their own C
+code, either directly, or indirectly, by using critcl commands, should
+also read section [sectref {Advanced: Location management}] to see how
+critcl helps them in generating their directives.
+
+Examples of such packages come with critcl itself, see the packages
+[package critcl::iassoc] and [package critcl::class].
 
 [opt_def I path]
 

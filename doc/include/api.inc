@@ -25,5 +25,6 @@ regardless of their file extension.
 [subsection {Result Cache Management}]	[include include/api_rcache.inc]
 [subsection {Build Configuration}]	[include include/api_bconfig.inc]
 [subsection {Tool API}]			[include include/api_tools.inc]
-[subsection {Advanced Embedded C Code}]	[include include/api_aembedc.inc]
+[subsection {Advanced: Embedded C Code}][include include/api_aembedc.inc]
 [subsection {Custom Build Configuration}][include include/api_cbconfig.inc]
+[subsection {Advanced: Location management}][include include/api_location.inc]

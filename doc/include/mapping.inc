@@ -3,10 +3,10 @@ Each [file .critcl] file is backed by a single private [file .c] file
 containing that code, plus the boilerplate necessary for its
 compilation and linking as a single shared library.
 
-[para] The [sectref {Embedded C Code}] fragments appear in that file
-in the exact same order it was defined in its [file .critcl] file,
-with one exception. The C code provided via [cmd critcl::cinit] is put
-after all other fragments.
+[para] The [sectref {Advanced: Embedded C Code} {Embedded C Code}]
+fragments appear in that file in the exact same order they were
+defined in the [file .critcl] file, with one exception. The C code
+provided via [cmd critcl::cinit] is put after all other fragments.
 
 In other words all fragments have access to the symbols defined by
 earlier fragments, and the [cmd critcl::cinit] fragment has access to
