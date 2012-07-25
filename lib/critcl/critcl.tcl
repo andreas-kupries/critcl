@@ -521,8 +521,26 @@ proc ::critcl::source {path} {
     AbortWhenCalledAfterBuild
 
     msg -nonewline " (importing $path)"
+
+    variable v::slevel
+    if {![info exists slevel]} {
+	variable v::this [This]
+	set slevel 1
+    } else {
+	incr slevel
+    }
+
     foreach f [Expand $file $path] {
-	uplevel 1 [Cat $f]
+	set v::source $f
+	# The source file information is used by critcl::at::Where
+	#uplevel 1 [Cat $f]
+	uplevel #0 [list ::source $f]
+	unset -nocomplain v::source
+    }
+
+    incr slevel -1
+    if {!$slevel} {
+	unset v::this v::slevel
     }
     return
 }
@@ -4024,6 +4042,8 @@ proc ::critcl::IsGCC {path} {
 }
 
 proc ::critcl::This {} {
+    variable v::this ; # See critcl::source for management.
+    if {[info exists this]} { return $this }
     return [file normalize [info script]]
 }
 
