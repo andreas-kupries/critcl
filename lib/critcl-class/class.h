@@ -39,6 +39,10 @@ typedef enum @stem@_classmethods {
 
 /*
  * Class structure. Instance counter.
+ *
+ * ATTENTION TODO: Rework this to keep the special fields separate so that the
+ * ATTENTION TODO: user data can use the same names without getting into
+ * ATTENTION TODO: conflict with them.
  */
 
 typedef struct @classtype@__ {

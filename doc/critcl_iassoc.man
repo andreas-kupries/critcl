@@ -15,10 +15,10 @@ This document is the reference manpage for the [package critcl::iassoc]
 package. This package provides convenience commands for advanced
 functionality built on top of the critcl core.
 
-[para] A user wishing to associate some data with a Tcl interpreter
-via Tcl's [fun Tcl_(Get|Set)AssocData()] APIs can now concentrate on
-the data itself, while all the necessary boilerplate around it is
-managed by this package.
+[para] With it a user wishing to associate some data with a Tcl
+interpreter via Tcl's [fun Tcl_(Get|Set)AssocData()] APIs can now
+concentrate on the data itself, while all the necessary boilerplate
+around it is managed by this package.
 
 [para] Its intended audience are mainly developers wishing to write
 Tcl packages with embedded C code.
@@ -62,13 +62,18 @@ The C code blocks can rely on the following C environments:
 [list_begin definitions]
 [def [arg constructor]]
 [list_begin definitions]
-[def [var data]] Pointer to the structure to initialize.
-[def [var interp]] Pointer to the Tcl interpreter the new structure
-will be associated with.
+
+[def [var data]] Pointer to the structure (type: [arg name]_data) to
+initialize.
+
+[def [var interp]] Pointer to the Tcl interpreter (type: Tcl_Interp*)
+the new structure will be associated with.
+
 [def error] A C code label the constructor can jump to should it have
-signal a construction failure. It is the responsibility of the
+to signal a construction failure. It is the responsibility of the
 constructor to release any fields already initialized before jumping
 to this label.
+
 [def ...] The names of the constructor arguments specified with
 [arg arguments].
 [list_end]

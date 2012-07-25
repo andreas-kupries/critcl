@@ -15,15 +15,16 @@ This document is the reference manpage for the [package critcl::class]
 package. This package provides convenience commands for advanced
 functionality built on top of the core.
 
-Namely, the specification of classes and objects without having to
-write all the required boilerplate, only the methods themselves,
-essentially.
+[para] With it a user wishing to create a C level object with class
+and instance commands can concentrate on specifying the class- and
+instance-variables and -methods in a manner similar to a TclOO class,
+while all the necessary boilerplate around it is managed by this
+package.
 
-Its intended audience are mainly developers wishing to write Tcl
-packages with embedded C code.
-[para]
+[para] Its intended audience are mainly developers wishing to write
+Tcl packages with embedded C code.
 
-This package resides in the Core Package Layer of CriTcl.
+[para] This package resides in the Core Package Layer of CriTcl.
 [para][image arch_core][para]
 
 [comment {===================================================================}]
@@ -33,239 +34,22 @@ This package resides in the Core Package Layer of CriTcl.
 [list_begin definitions]
 [call [cmd ::critcl::class::def] [arg name] [arg script]]
 
-This command defines a new class [arg name], where [arg name] is the
-name of the Tcl command representing the class. The [arg script]
-provides the specification of the class, i.e. information about
-included headers, instance data, methods, etc.
+This is the main command to define a new class [arg name], where
+[arg name] is the name of the Tcl command representing the class,
+i.e. the [term {class command}]. The [arg script] provides the
+specification of the class, i.e. information about included headers,
+class- and instance variables, class- and instance-methods, etc.
 
-The section [sectref {Class Specification API}] below explains the
-commands available to the developer.
-
-[list_end]
-
-[comment {===================================================================}]
-[section {Class Specification API}]
-
-[list_begin definitions]
-
-[call [cmd constructor] [arg body] [opt [arg postbody]]]
-
-This command specifies the C code for the construction,
-i.e. allocation of instance structures.
-
-While technically optional in practice it should be specified.
-
-[para] The C code in [arg body] has to contain the statements
-initializing the instance structure, which is accessible through the
-variable [var instance].
-
-It further has access to the variable [var interp], a pointer to the
-Tcl interpreter the command is created in, enabling it to set an error
-message should the construction fail.
-
-The C code in [arg postbody] is then responsible for connecting the
-[var instance] with the created Tcl command, accessible through the
-variable [var cmd], of type [const Tcl_Command].
-
-[para] If the instance structure is specified as a series of
-[cmd field]s then the system will automatically generate code to
-allocate the instance structure.
-
-It will also provide a label [const error:] to jump to in case of a
-failure, at which point the instance will be cleaned up and NULL
-returned as the result of the constructor, to notify the calling
-environment of that failure.
-
-[para] Otherwise, i.e. for an external [cmd type] all of this,
-i.e. allocation, possible deallocation on failure, etc. will be the
-responsibility of the [arg body] and writer of the class.
-
-
-[call [cmd destructor] [arg body]]
-
-This command specifies the C code for the destruction, i.e. release of
-instance structures.
-
-While technically optional in practice it should be specified.
-
-[para] The [arg body] has to contain the code releasing the contents
-of the instance structure, accessible through the variable
-[var instance].
-
-[para] If the instance structure is specified as a series of
-[cmd field]s then the system will automatically generate code to free
-the instance structure (not the fields) after the [arg body] was run.
-
-It will further generate a [method destroy] method too, owing to its
-knowledge of the instance structure, i.e. the existence of field
-[const cmd].
-
-Otherwise, i.e. for an external [cmd type] it is the responsibility of
-the [arg body] to free the structure itself as well.
-
-[call [cmd field] [arg ctype] [arg name] [opt [arg comment]]]
-
-This command specifies a field in the instance structure of the class,
-naming it, the C type used, and possibly a comment. Multiple fields
-can be specified, and are saved in the order specified.
-
-This specification is mutually exclusive with the use of an external C
-[cmd type] for the instance structure.
-
-[para] Note that for this way of declaring the instance data the
-system will automatically generate code for the basic allocation and
-release of the instance structure. The constructor and destructor C
-code supplied by the user has to deal only with the specified fields.
-
-[para] Note further that in this case a predefined field [var cmd] of
-type [const Tcl_Command] is present, to allow the association of
-instance structure and instance command. And the [arg postbody] will
-implictly contain the assignment
-
-[example {
-    instance->cmd = cmd;
-}]
-
-[call [cmd include] [arg path]]
-
-This command specified the path of a header file to include within the
-code generated for the class. This is separate from the [cmd support]
-because these include will be at the very beginning of the generated
-code to allow the use of the import declarations within the instance
-type, etc.
-
-[call [cmd mdef] [arg name] [arg body]]
-
-This command specifies a method and the C code implementing it. The
-body has access to the variables
-
-[list_begin definitions]
-[def [var instance]]
-[def [var interp]]
-[def [var objc]]
-[def [var objv]]
-[list_end]
-
-[call [cmd mdef] [arg name] [const as] [arg funname] [opt [arg arg]...]]
-
-This variant of the command above defines a method of the class as
-implemented by the external function [arg funname], i.e. which is
-declared outside of the class code itself.
-
-[para] It is assumed that the first four arguments of that function
-represent the parameters
-
-[list_begin definitions]
-[def [var instance]]
-[def [var interp]]
-[def [var objc]]
-[def [var objv]]
-[list_end]
-
-Any additional arguments specified will be added after these and are
-passed into the C code as is, i.e. are considered to be C expressions.
-
-[para] Note that the system automatically generates a method
-[method destroy] when the instance structure is specified as a series
-of [cmd field]s.
-
-[call [cmd support] [arg code]]
-
-This command specifies the [arg support]ing C code, i.e. any
-definitions (types, functions, etc.) needed by the [emph whole] class.
-
-It is optional, i.e. if the class doesn't need supporting code, this
-command can be left out of the specification.
-
-[call [cmd type] [arg name]]
-
-This command specifies the name of an external C type, i.e. found
-outside of the class definition itself, for the instance
-structure.
-
-This specification is mutually exclusive with the declaration of the
-structure as a series of [cmd field]s within the class definition
-itself.
-
-[para] It is the responsibility of the constructor and destructor C
-code to allocate and release this structure, and its contents.
+See the section [sectref {Class Specification API}] below for the
+detailed list of the available commands and their semantics.
 
 [list_end]
 
 [comment {===================================================================}]
-[section Example]
+[section {Class Specification API}][include include/class_spec.inc]
 
-The example shown below is the specification of queue data structure,
-with most of the method implementations and support code omitted to
-keep the size down.
-
-[para] The full implementation can be found in the directory
-[file examples/queue] of the critcl source distribution/repository.
-
-[example {
-package require Tcl 8.4
-package require critcl 3.1
-
-critcl::buildrequirement {
-    package require critcl::class ; # DSL, easy spec of Tcl class/object commands.
-}
-
-critcl::cheaders util.h
-
-critcl::class::def ::queuec {
-    include util.h
-
-    field Tcl_Obj* unget  {List object unget elements}
-    field Tcl_Obj* queue  {List object holding the main queue}
-    field Tcl_Obj* append {List object holding new elements}
-    field int      at     {Index of next element to return from the main queue}
-
-    constructor {
-	instance->at     = 0;
-	instance->unget  = Tcl_NewListObj (0,NULL);
-	instance->queue  = Tcl_NewListObj (0,NULL);
-	instance->append = Tcl_NewListObj (0,NULL);
-
-	Tcl_IncrRefCount (instance->unget); 
-	Tcl_IncrRefCount (instance->queue); 
-	Tcl_IncrRefCount (instance->append);
-    }
-
-    destructor {
-	Tcl_DecrRefCount (instance->unget);
-	Tcl_DecrRefCount (instance->queue);
-	Tcl_DecrRefCount (instance->append);
-    }
-
-    support {... queue_peekget, queue_size, etc.}
-
-    mdef clear {...}
-    mdef destroy {...}
-
-    mdef get  as queue_peekget 1
-    mdef peek as queue_peekget 0
-
-    mdef put {...}
-
-    mdef size {
-	/* Syntax: queue size
-	 *	       [0]   [1]
-	 */
-
-	if ((objc != 2)) {
-	    Tcl_WrongNumArgs (interp, 2, objv, NULL);
-	    return TCL_ERROR;
-	}
-
-	Tcl_SetObjResult  (interp, Tcl_NewIntObj (queue_size (instance, NULL, NULL, NULL)));
-	return TCL_OK;
-    }
-
-    mdef unget {...}
-}
-
-package provide queuec 1
-}]
+[comment {===================================================================}]
+[section Example][include include/class_example.inc]
 
 [comment {===================================================================}]
 [include include/feedback2.inc]
