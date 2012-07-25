@@ -18,6 +18,8 @@ package require platform 1.0.2 ; # Determine current platform.
 package require lassign84
 package require dict84
 
+catch { interp debug {} -frame 1 }
+
 # md5 could be a cmd or a pkg, or be in a separate namespace
 if {[catch { md5 "" }]} {
     # Do *not* use "package require md5c" since critcl is not loaded
