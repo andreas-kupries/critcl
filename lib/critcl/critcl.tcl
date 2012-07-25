@@ -161,10 +161,7 @@ proc ::critcl::ccode {text} {
 
     set block {}
     lassign [HeaderLines $text] leadoffset text
-    if {$v::options(lines)} {
-	append block [Origin::CPragma $leadoffset -2 $file]
-    }
-    append block $text \n
+    append block [at::CPragma $leadoffset -2 $file] $text \n
 
     dict update v::code($file) config c {
 	dict lappend c fragments $digest
@@ -214,7 +211,7 @@ proc ::critcl::ccommand {name anames args} {
 	Emit   \{\n
 	lassign [HeaderLines $body] leadoffset body
 	if {$v::options(lines)} {
-	    Emit [Origin::CPragma $leadoffset -2 $file]
+	    Emit [at::CPragma $leadoffset -2 $file]
 	}
 	Emit   $body
 	Emitln \n\}
@@ -250,8 +247,7 @@ proc ::critcl::cdata {name data} {
 
     # NOTE: The uplevel is needed because otherwise 'ccommand' will
     # not properly determine the caller's namespace.
-    at::here?
-    uplevel 1 [list critcl::ccommand $name {dummy ip objc objv} $body]
+    uplevel 1 [list critcl::ccommand $name {dummy ip objc objv} [at::caller!]$body]
     return $name
 }
 
@@ -373,7 +369,7 @@ proc ::critcl::cproc {name adefs rtype {body "#"}} {
 	Emit   \{\n
 	lassign [HeaderLines $body] leadoffset body
 	if {$v::options(lines)} {
-	    Emit [Origin::CPragma $leadoffset -2 $file]
+	    Emit [at::CPragma $leadoffset -2 $file]
 	}
 	Emit   $body
 	Emitln \n\}
@@ -405,7 +401,7 @@ proc ::critcl::cinit {text edecls} {
     set skip [Lines $text]
     lassign [HeaderLines $text] leadoffset text
     if {$v::options(lines)} {
-	append initc [Origin::CPragma $leadoffset -2 $file]
+	append initc [at::CPragma $leadoffset -2 $file]
     }
     append initc $text \n
 
@@ -413,7 +409,7 @@ proc ::critcl::cinit {text edecls} {
     lassign [HeaderLines $edecls] leadoffset edecls
     if {$v::options(lines)} {
 	incr leadoffset $skip
-	append edec [Origin::CPragma $leadoffset -2 $file]
+	append edec [at::CPragma $leadoffset -2 $file]
     }
     append edec $edecls \n
 
@@ -427,65 +423,88 @@ proc ::critcl::cinit {text edecls} {
 # # ## ### ##### ######## ############# #####################
 ## Public API to code origin handling.
 
-proc ::critcl::at::here? {{off 0} {level 0}} {
-    if {[defined]} return ; # Do not erase caller supplied data
-    incr level -3
-    ::critcl::Origin::Where $off $level [This]
-    # Saves location into slot 0, always.
+namespace eval ::critcl::at {
+    namespace export caller caller! here here! get get* incr incrt =
+    catch { namespace ensemble create }
+}
+
+# caller  - stash caller location, possibly modified (level change, line offset)
+# caller! - format & return caller location, clears stash
+# here    - stash current location
+# here!   - return format & return  current location, clears stash
+# incr*   - modify stashed location (only line number, not file).
+# get     - format, return, and clear stash
+# get*    - format & return stash
+
+proc ::critcl::at::caller {{off 0} {level 0}} {
+    ::incr level -3
+    Where $off $level [::critcl::This]
     return
 }
 
-proc ::critcl::at::here {{off 0} {level 0}} {
-    incr level -3
-    ::critcl::Origin::Where $off $level [This]
-    # Saves location into slot 0, always.
+proc ::critcl::at::caller! {{off 0} {level 0}} {
+    ::incr level -3
+    Where $off $level [::critcl::This]
+    return [get]
+}
+
+proc ::critcl::at::here {} {
+    Where 0 -2 [::critcl::This]
     return
 }
 
-proc ::critcl::at::clear {{slot 0}} {
-    variable ::critcl::Origin::where
-    unset -nocomplain where($slot)
-    return
-}
-
-proc ::critcl::at::reset {} {
-    variable ::critcl::Origin::where
-    unset where
-    return
+proc ::critcl::at::here! {} {
+    Where 0 -2 [::critcl::This]
+    return [get]
 }
 
 proc ::critcl::at::get {} {
-    if {![defined 0]} {
+    variable where
+    if {!$::critcl::v::options(lines)} {
+	return {}
+    }
+    if {![info exists where]} {
 	return -code error "No location defined"
     }
-    return [::critcl::Origin::CPragma _ _ _]
-    # implied at::clear
+    set result [Format $where]
+    unset where
+    return $result
 }
 
-proc ::critcl::at::store {slot} {
-    variable ::critcl::Origin::where
-    set where($slot) $where(0)
+proc ::critcl::at::get* {} {
+    variable where
+    if {![info exists where]} {
+	return -code error "No location defined"
+    }
+    return [Format $where]
+}
+
+proc ::critcl::at::= {file line} {
+    variable where
+    set where [list $file $line]
     return
 }
 
-proc ::critcl::at::recall {slot} {
-    variable ::critcl::Origin::where
-    if {![defined $slot]} return ; # Ignore missing slot
-    set where(0) $where($slot)
-    unset where($slot)
+proc ::critcl::at::incr {args} {
+    variable where
+    lassign $where file line
+    foreach offset $args {
+	::incr line $offset
+    }
+    set where [list $file $line]
     return
 }
 
-proc ::critcl::at::defined {slot} {
-    variable ::critcl::Origin::where
-    return [info exists where($slot)]
-}
-
-proc ::critcl::at::incr {offset {slot 0}} {
-    variable ::critcl::Origin::where
-    lassign $where($slot) file line
-    incr line $offset
-    set where($slot) [list $file $line]
+proc ::critcl::at::incrt {args} {
+    variable where
+    if {$where eq {}} {
+	return -code error "No location to change"
+    }
+    lassign $where file line
+    foreach text $args {
+	::incr line [::critcl::Lines $text]
+    }
+    set where [list $file $line]
     return
 }
 
@@ -1082,7 +1101,7 @@ proc ::critcl::API_setup_import {file} {
 	set upname  [string toupper  $cname]
 	set capname [stubs::gen::cap $cname]
 
-	set import [subst -nocommands {
+	set import [critcl::at::here!][subst -nocommands {
 	    /* Import API: $iname */
 	    #define USE_${upname}_STUBS 1
 	    #include <$cname/${cname}Decls.h>
@@ -2963,9 +2982,9 @@ proc ::critcl::Emitln {{s ""}} {
 }
 
 # # ## ### ##### ######## ############# #####################
-## Origin processing
+## At internal processing
 
-proc ::critcl::Origin::Where {leadoffset level file} {
+proc ::critcl::at::Where {leadoffset level file} {
     variable where
 
     set line 1
@@ -2974,14 +2993,25 @@ proc ::critcl::Origin::Where {leadoffset level file} {
     # place more exact line number information into the generated C
     # file.
 
-    if {![catch {
-	#SHOWFRAMES $level
+    #puts "XXX-WHERE-($leadoffset $level $file)"
+    #set ::errorInfo {}
+    if {[catch {
+	#SHOWFRAMES $level 0
 	array set loc [info frame $level]
-    }] && $loc(type) eq "source"} {
+	#puts XXX-TYPE-$loc(type)
+    }]} {
+	#puts XXX-NO-DATA-$::errorInfo
+	set where {}
+	return
+    }
+
+    if {$loc(type) eq "source"} {
 	#parray loc
 	set  file  $loc(file)
 	set  fline $loc(line)
-	incr fline $leadoffset ; # Adjust for removed leading whitespace.
+
+	# Adjust for removed leading whitespace.
+	::incr fline $leadoffset
 
 	# Keep the limitations of native compilers in mind and stay
 	# inside their bounds.
@@ -2990,44 +3020,64 @@ proc ::critcl::Origin::Where {leadoffset level file} {
 	    set line $fline
 	}
 
-	set where(0) [list [file tail $file] $line]
-    } else {
-	set where(0) {}
+	set where [list [file tail $file] $line]
+	return
     }
 
+    if {($loc(type) eq "eval") &&
+       [info exists loc(proc)] &&
+       ($loc(proc) eq "::critcl::source")
+    } {
+	# A relative location in critcl::source is absolute in the
+	# sourced file.  I.e. we can provide proper line information.
+
+	set  fline $loc(line)
+	# Adjust for removed leading whitespace.
+	::incr fline $leadoffset
+
+	# Keep the limitations of native compilers in mind and stay
+	# inside their bounds.
+
+	if {$fline > $line} {
+	    set line $fline
+	}
+
+	variable ::critcl::v::source
+	set where [list [file tail $source] $line]
+	return
+    }
+
+    #puts XXX-NO-DATA-$loc(type)
+    set where {}
     return
 }
 
-proc ::critcl::Origin::CPragma {leadoffset level file} {
-    variable where
-    # Compute location based on our callstack if there is no external
-    # override.
-    if {![info exists where(0)]} {
-	incr level -1
-	Where $leadoffset $level $file
-    }
-
-    if {![llength $where(0)]} {
-	unset where(0)
-	return ""
-    }
-
-    lassign $where(0) file line
-    unset where(0)
-
-    #msg "\nLP $fline (+$leadoffset)|$line : $level = [info frame $level]"
-    return "#line $line \"$file\"\n"
+proc ::critcl::at::CPragma {leadoffset level file} {
+    # internal variant of 'caller!'
+    ::incr level -1
+    Where $leadoffset $level $file
+    return [get]
 }
 
-proc ::critcl::SHOWFRAMES {level} {
+proc ::critcl::at::Format {loc} {
+   if {![llength $loc]} {
+	return ""
+    }
+    lassign $loc file line
+    #::critcl::msg "#line $line \"$file\"\n"
+    return        "#line $line \"$file\"\n"
+}
+
+proc ::critcl::at::SHOWFRAMES {level {all 1}} {
     set n [info frame]
     set i 0
     set id 1
     while {$n} {
-	msg "[expr {$level == $id ? "**" : "  "}] frame [format %3d $id]: [info frame $i]"
-	incr i -1
-	incr id -1
-	incr n -1
+	::critcl::msg "[expr {$level == $id ? "**" : "  "}] frame [format %3d $id]: [info frame $i]"
+	::incr i -1
+	::incr id -1
+	::incr n -1
+	if {($level > $id) && !$all} break
     }
     return
 }
@@ -4212,7 +4262,6 @@ namespace eval ::critcl {
 #endif
 	}
 
-	variable lp {}
 	variable code	         ;# This array collects all code snippets and
 				  # data about them.
 
@@ -4384,13 +4433,14 @@ namespace eval ::critcl {
 
 namespace eval ::critcl {
     namespace export \
-	cache ccode ccommand cdata cdefines cflags cheaders \
+	at cache ccode ccommand cdata cdefines cflags cheaders \
 	check cinit clibraries compiled compiling config cproc \
 	csources debug done failed framework ldflags platform \
 	tk tsources preload license load tcl api userconfig meta
     # This is exported for critcl::app to pick up when generating the
     # dummy commands in the runtime support of a generated package.
     namespace export Ignore
+    catch { namespace ensemble create }
 }
 
 # # ## ### ##### ######## ############# #####################
