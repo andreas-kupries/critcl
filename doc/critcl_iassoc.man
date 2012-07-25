@@ -13,17 +13,17 @@
 
 This document is the reference manpage for the [package critcl::iassoc]
 package. This package provides convenience commands for advanced
-functionality built on top of the core.
+functionality built on top of the critcl core.
 
-Namely, the specification of structures associated with Tcl interpreters
-through their association mechanism and accessor functions for these
-structures, without having to write all the required boilerplate.
+[para] A user wishing to associate some data with a Tcl interpreter
+via Tcl's [fun Tcl_(Get|Set)AssocData()] APIs can now concentrate on
+the data itself, while all the necessary boilerplate around it is
+managed by this package.
 
-Its intended audience are mainly developers wishing to write Tcl
-packages with embedded C code.
-[para]
+[para] Its intended audience are mainly developers wishing to write
+Tcl packages with embedded C code.
 
-This package resides in the Core Package Layer of CriTcl.
+[para] This package resides in the Core Package Layer of CriTcl.
 [para][image arch_core][para]
 
 [comment {===================================================================}]
@@ -31,7 +31,8 @@ This package resides in the Core Package Layer of CriTcl.
 [section API]
 
 [list_begin definitions]
-[call [cmd ::critcl::iassoc::def] [arg name] [arg arguments] [arg struct] [arg constructor] [arg destructor]]
+[call [cmd ::critcl::iassoc::def] [arg name] [arg arguments] [arg struct] \
+	[arg constructor] [arg destructor]]
 
 This command defines a C function with the given [arg name] which
 provides access to a structure associated with a Tcl interpreter.
@@ -39,7 +40,7 @@ provides access to a structure associated with a Tcl interpreter.
 [para] The C code code fragment [arg struct] defines the elements of
 said structure, whereas the fragments [arg constructor] and
 [arg destructor] are C code blocks executed to initialize and release
-any dynamically allocated parts of the structure, when needed. Note
+any dynamically allocated parts of this structure, when needed. Note
 that the structure itself is managed by the system.
 
 [para] The new function takes a [const Tcl_Interp*] pointer refering
@@ -64,9 +65,10 @@ The C code blocks can rely on the following C environments:
 [def [var data]] Pointer to the structure to initialize.
 [def [var interp]] Pointer to the Tcl interpreter the new structure
 will be associated with.
-[def error] A C code label the constructor can jump to to signal a
-construction failure. It is the responsibility of the constructor to
-release any fields already initialized before jumping to this label.
+[def error] A C code label the constructor can jump to should it have
+signal a construction failure. It is the responsibility of the
+constructor to release any fields already initialized before jumping
+to this label.
 [def ...] The names of the constructor arguments specified with
 [arg arguments].
 [list_end]
@@ -102,6 +104,17 @@ critcl::iassoc::def icounter {} {
 } {
     /* Nothing to release */
 }
+
+critcl::ccode {
+    ... function (...)
+    {
+         /* Access to the data ... */
+         icounter_data D = icounter (interp /* ... any declared arguments, here, none */);
+	 ... D->counter ...
+    }
+}
+# or, of course, 'cproc's, 'ccommand's etc.
+
 package provide icounter 1
 }]
 

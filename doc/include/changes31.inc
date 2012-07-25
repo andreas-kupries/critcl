@@ -24,4 +24,19 @@ embedding of proper C [term #line] directives. See the section
 commands, and the packages [package critcl::iassoc] and
 [package critcl::class] for users of these facilities.
 
+[enum] Added the higher-level package [package critcl::iassoc].
+
+[para] This package simplifies the creation of code associating data
+with an interpreter via Tcl's [fun Tcl_(Get|Set)AssocData()] APIs. The
+user can concentrate on his data while all the neccessary boilerplate
+to support it is generated/handled by the package.
+
+[enum] Added the higher-level package [package critcl::class]. 
+
+[para] This package simplifies the creation of C level objects with
+class and instance commands. The user sees a class definition with
+class- and instance-variables and -methods similar to a TclOO class,
+with all the necessary boilerplate to support them generated/handled
+by the package.
+
 [list_end]
