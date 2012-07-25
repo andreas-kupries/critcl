@@ -22,8 +22,9 @@ namespace eval ::critcl::class {}
 ## API: Generate the declaration and implementation files for the class.
 
 proc ::critcl::class::define {classname script} {
-    catch { unset state }
     variable state
+
+    catch { unset state }
 
     # Arguments:
     # - name of the Tcl command representing the class.
@@ -138,9 +139,10 @@ proc ::critcl::class::ProcessInstanceVariables {} {
 
     foreach fname [dict get $state variable names] {
 	set ctype   [dict get $state variable def $fname ctype]
+	set vloc    [dict get $state variable def $fname loc]
 	set comment [dict get $state variable def $fname comment]
 
-	set field "    $ctype $fname;"
+	set field "$vloc    $ctype $fname;"
 	if {$comment ne {}} {
 	    append field " /* $comment */"
 	}
@@ -195,9 +197,10 @@ proc ::critcl::class::ProcessClassVariables {} {
 
     foreach fname [dict get $state classvariable names] {
 	set ctype   [dict get $state classvariable def $fname ctype]
+	set vloc    [dict get $state classvariable def $fname loc]
 	set comment [dict get $state classvariable def $fname comment]
 
-	set field "$ctype $fname;"
+	set field "$vloc$ctype $fname;"
 	if {$comment ne {}} {
 	    append field " /* $comment */"
 	}
@@ -376,7 +379,7 @@ proc ::critcl::class::ExternalType {name} {
     return
 }
 
-proc ::critcl::class::Variable {ctype name comment} {
+proc ::critcl::class::Variable {ctype name comment vloc} {
     # Declaration of an instance variable. In other words, a field in
     # the C structure for instances. Cannot be specified if an
     # external "type" has been specified already.
@@ -396,6 +399,7 @@ proc ::critcl::class::Variable {ctype name comment} {
 	dict lappend f names $name
     }
     dict set state variable def $name ctype   $ctype
+    dict set state variable def $name loc     $vloc
     dict set state variable def $name comment [string trim $comment]
 
     if {[llength [dict get $state variable names]] == 1} {
@@ -403,7 +407,7 @@ proc ::critcl::class::Variable {ctype name comment} {
 	# that the instance structure will have a field named 'cmd'.
 	# Declared here.
 	dict set state variable def cmd {}
-	MethodExplicit destroy {} {
+	critcl::at::here ; MethodExplicit destroy {} {
 	    if (objc != 2) {
 		Tcl_WrongNumArgs (interp, 2, objv, NULL);
 		return TCL_ERROR;
@@ -415,7 +419,7 @@ proc ::critcl::class::Variable {ctype name comment} {
     return
 }
 
-proc ::critcl::class::ClassVariable {ctype name comment} {
+proc ::critcl::class::ClassVariable {ctype name comment vloc} {
     # Declaration of a class variable. In other words, a field in the
     # C structure for the class. Cannot be specified if a an external
     # "type" has been specified already.
@@ -435,13 +439,14 @@ proc ::critcl::class::ClassVariable {ctype name comment} {
 	dict lappend c names $name
     }
     dict set state classvariable def $name ctype   $ctype
+    dict set state classvariable def $name loc     $vloc
     dict set state classvariable def $name comment [string trim $comment]
 
     if {[llength [dict get $state classvariable names]] == 1} {
 	# On declaration of the first class variable we declare an
 	# instance variable which provides instances with a reference
 	# to their class (structure).
-	Variable @classtype@ class {Reference to class (variables)}
+	Variable @classtype@ class {Reference to class (variables)} [critcl::at::here!]
     }
     return
 }
@@ -496,7 +501,7 @@ proc ::critcl::class::MethodExplicit {name arguments body} {
 
     if {$arguments ne {}} {set arguments " $arguments"}
     set syntax "/* Syntax: <instance> $name$arguments */"
-    set body   "\n    $syntax\n    [string trimright $body]"
+    set body   "\n    $syntax\n    [critcl::at::get][string trimright $body]"
 
     set enum     [MethodEnum method $name]
     set function ${enum}_Cmd
@@ -533,7 +538,7 @@ proc ::critcl::class::ClassMethodExplicit {name arguments body} {
 
     if {$arguments ne {}} {set arguments " $arguments"}
     set syntax "/* Syntax: <class> $name$arguments */"
-    set body   "\n    $syntax\n    $body"
+    set body   "\n    $syntax\n    [critcl::at::get][string trimright $body]"
 
     set enum     [MethodEnum method $name]
     set function ${enum}_Cmd
@@ -599,7 +604,6 @@ proc ::critcl::class::CodeFragment {section code} {
     variable state
     set code [string trim $code \n]
     if {$code ne {}} {
-	set code [::critcl::at::get]$code
 	dict lappend state $section $code
     }
     return
@@ -631,47 +635,40 @@ proc ::critcl::class::spec::type {name} {
     ::critcl::class::ExternalType $name
 }
 
-proc ::critcl::class::spec::variable {ctype name {comment {}} {constructor {}} {destructor {}}} {
-    ::critcl::class::Variable $ctype $name $comment
+proc ::critcl::class::spec::insvariable {ctype name {comment {}} {constructor {}} {destructor {}}} {
+    ::critcl::at::caller
+    set vloc [critcl::at::get*]
+    ::critcl::at::incrt $comment     ; set cloc [::critcl::at::get*]
+    ::critcl::at::incrt $constructor ; set dloc [::critcl::at::get]
 
-    # Caller may place origin location overrides into slots 1
-    # (destructor) and 2 (destructor).
 
-    set off [::critcl::Lines $comment]
+    ::critcl::class::Variable $ctype $name $comment $vloc
+
     if {$constructor ne {}} {
-	::critcl::at::recall 1
-	::critcl::at::here? $off
-	::critcl::class::Constructor $constructor
-
-	incr off [critcl::Lines $constructor]
+	::critcl::class::Constructor $cloc$constructor
     }
     if {$destructor ne {}} {
-	::critcl::at::recall 2
-	::critcl::at::here? $off
-	::critcl::class::Destructor $destructor
+	::critcl::class::Destructor $dloc$destructor
     }
+
     return
 }
 
 proc ::critcl::class::spec::constructor {code {postcode {}}} {
-    # Caller may place origin location overrides into slots 1 (code)
-    # and 2 (postcode).
+    ::critcl::at::caller      ; set cloc [::critcl::at::get*]
+    ::critcl::at::incrt $code ; set ploc [::critcl::at::get]
 
-    ::critcl::at::recall 1
-    ::critcl::at::here?
-    ::critcl::class::Constructor $code
-
+    if {$code ne {}} {
+	::critcl::class::Constructor $cloc$code
+    }
     if {$postcode ne {}} {
-	::critcl::at::recall 2
-	::critcl::at::here? [::critcl::Lines $code]
-	::critcl::class::PostConstructor $postcode
+	::critcl::class::PostConstructor $ploc$postcode
     }
     return
 }
 
 proc ::critcl::class::spec::destructor {code} {
-    ::critcl::at::here?
-    ::critcl::class::Destructor $code
+    ::critcl::class::Destructor [::critcl::at::caller!]$code
     return
 }
 
@@ -696,42 +693,36 @@ proc ::critcl::class::spec::method {name op detail args} {
 	return -code error "wrong#args"
     }
 
-    ::critcl::at::here? [::critcl::Lines $op]
+    ::critcl::at::caller
+    ::critcl::at::incrt $op
     ::critcl::class::MethodExplicit $name [string trim $op] $detail
     return
 }
 
-proc ::critcl::class::spec::classvariable { ctype name {comment {}} {constructor {}} {destructor {}}} {
-    ::critcl::class::ClassVariable $ctype $name $comment
+proc ::critcl::class::spec::classvariable {ctype name {comment {}} {constructor {}} {destructor {}}} {
+    ::critcl::at::caller
+    set vloc [critcl::at::get*]
+    ::critcl::at::incrt $comment     ; set cloc [::critcl::at::get*]
+    ::critcl::at::incrt $constructor ; set dloc [::critcl::at::get]
 
-    # Caller may place origin location overrides into slots 1
-    # (destructor) and 2 (destructor).
+    ::critcl::class::ClassVariable $ctype $name $comment $vloc
 
-    set off [::critcl::Lines $comment]
     if {$constructor ne {}} {
-	::critcl::at::recall 1
-	::critcl::at::here? $off
-	::critcl::class::ClassConstructor $constructor
-
-	incr off [::critcl::Lines $constructor]
+	::critcl::class::ClassConstructor $cloc$constructor
     }
     if {$destructor ne {}} {
-	::critcl::at::recall 2
-	::critcl::at::here $off
-	::critcl::class::ClassDestructor $destructor
+	::critcl::class::ClassDestructor $dloc$destructor
     }
     return
 }
 
 proc ::critcl::class::spec::classconstructor {code} {
-    ::critcl::at::here?
-    ::critcl::class::ClassConstructor $code
+    ::critcl::class::ClassConstructor [::critcl::at::caller!]$code
     return
 }
 
 proc ::critcl::class::spec::classdestructor {code} {
-    ::critcl::at::here?
-    ::critcl::class::ClassDestructor $code
+    ::critcl::class::ClassDestructor [::critcl::at::caller!]$code
     return
 }
 
@@ -756,14 +747,14 @@ proc ::critcl::class::spec::classmethod {name op detail args} {
 	return -code error "wrong#args"
     }
 
-    ::critcl::at::here? [::critcl::Lines $op]
+    ::critcl::at::caller
+    ::critcl::at::incrt $op
     ::critcl::class::ClassMethodExplicit $name [string trim $op] $detail
     return
 }
 
 proc ::critcl::class::spec::support {code} {
-    ::critcl::at::here?
-    ::critcl::class::Support $code
+    ::critcl::class::Support [::critcl::at::caller!]$code
     return
 }
 
