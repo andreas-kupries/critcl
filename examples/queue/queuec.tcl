@@ -52,7 +52,7 @@ critcl::class::define ::queuec {
     method_introspection
 
     # # ## ### ##### ######## ############# #####################
-    variable Tcl_Obj* unget {
+    insvariable Tcl_Obj* unget {
 	List object holding unget'ted elements.
     } {
 	instance->unget  = Tcl_NewListObj (0,NULL);
@@ -62,7 +62,7 @@ critcl::class::define ::queuec {
     }
 
     # # ## ### ##### ######## ############# #####################
-    variable Tcl_Obj* queue {
+    insvariable Tcl_Obj* queue {
 	List object holding the main queue.
     } {
 	instance->queue  = Tcl_NewListObj (0,NULL);
@@ -72,7 +72,7 @@ critcl::class::define ::queuec {
     }
 
     # # ## ### ##### ######## ############# #####################
-    variable Tcl_Obj* append {
+    insvariable Tcl_Obj* append {
 	List object holding new elements
     } {
 	instance->append = Tcl_NewListObj (0,NULL);
@@ -82,7 +82,7 @@ critcl::class::define ::queuec {
     }
 
     # # ## ### ##### ######## ############# #####################
-    variable int at {
+    insvariable int at {
 	Index of next element to return from the main queue.
 	(variable: queue).
     } {
