@@ -223,7 +223,7 @@ proc ::critcl::app::Cmdline {argv} {
 	    config     { set configfile $arg }
 	    debug      {
 		lappend v::debug $arg
-		critcl::config lines 0
+		#critcl::config lines 0
 	    }
 	    force      {
 		critcl::config force 1
@@ -231,7 +231,7 @@ proc ::critcl::app::Cmdline {argv} {
 	    }
 	    keep       {
 		critcl::config keepsrc 1
-		critcl::config lines 0
+		#critcl::config lines 0
 		set v::keep 1
 	    }
 	    help       { incr help }
