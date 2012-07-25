@@ -13,6 +13,7 @@
 
 typedef struct @type@__ {
 @struct@
+#line 17 "iassoc.h"
 } @type@__;
 typedef struct @type@__* @type@;
 
@@ -24,7 +25,7 @@ static void
 @stem@_Release (@type@ data, Tcl_Interp* interp)
 {
 @destructor@
-
+#line 29 "iassoc.h"
     ckfree((char*) data);
 }
 
@@ -34,7 +35,7 @@ static @type@
     @type@ data = (@type@) ckalloc (sizeof (@type@__));
 
 @constructor@
-
+#line 39 "iassoc.h"
     return data;
 
  error:
