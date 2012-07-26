@@ -49,6 +49,14 @@ critcl::cheaders util.h
 
 critcl::class::define ::queuec {
     include util.h
+
+    constructor {
+	if (objc > 0) {
+	    Tcl_AppendResult (interp, "wrong\#args", NULL);
+	    goto error;
+	}
+    }
+
     method_introspection
 
     # # ## ### ##### ######## ############# #####################
