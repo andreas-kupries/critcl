@@ -504,6 +504,7 @@ proc ::critcl::class::MethodExplicit {name mtype arguments args} {
 
     set enum     [MethodEnum method $name]
     set function ${enum}_Cmd
+    set cdimport "[critcl::at::here!]    @instancetype@ instance = (@instancetype@) clientdata;"
 
     if {$mtype eq "proc"} {
 	# Method is cproc.
@@ -515,11 +516,11 @@ proc ::critcl::class::MethodExplicit {name mtype arguments args} {
 
 	set body   [critcl::at::get][string trimright $body]
 	set syntax "/* Syntax: <class> $name [critcl::argnames $arguments] */"
-	set body   "\n    $syntax\n    $body"
+	set body   "\n    $syntax\n$cdimport\n    $body"
 
-	# XXXX Missing, TODO :: Handling of the clientdata! => pass through
 	critcl::divert CMETHOD
-	critcl::cproc $function $arguments $rtype $body -cname 1
+	critcl::cproc $function $arguments $rtype $body \
+	    -cname 1 -pass-cdata 1
 	set code [critcl::divertend]
 
     } else {
@@ -528,13 +529,13 @@ proc ::critcl::class::MethodExplicit {name mtype arguments args} {
 	lassign $args body
 
 	if {$arguments ne {}} {set arguments " $arguments"}
-	set body     [critcl::at::get][string trimright $body]
-	set syntax   "/* Syntax: <class> $name$arguments */"
-	set cdimport "[critcl::at::here!]    @instancetype@ instance = (@instancetype@) clientdata;"
-	set body     "\n    $syntax\n$cdimport\n    $body"
+	set body   [critcl::at::get][string trimright $body]
+	set syntax "/* Syntax: <class> $name$arguments */"
+	set body   "\n    $syntax\n$cdimport\n    $body"
 
 	critcl::divert CMETHOD
-	critcl::ccommand $function {} $body -cname 1
+	critcl::ccommand $function {} $body \
+	    -cname 1
 	set code [critcl::divertend]
     }
 
@@ -561,6 +562,7 @@ proc ::critcl::class::ClassMethodExplicit {name mtype arguments args} {
 
     set enum     [MethodEnum method $name]
     set function ${enum}_Cmd
+    set cdimport "[critcl::at::here!]    @classtype@ class = (@classtype@) clientdata;"
 
     if {$mtype eq "proc"} {
 	# Method is cproc.
@@ -572,11 +574,11 @@ proc ::critcl::class::ClassMethodExplicit {name mtype arguments args} {
 
 	set body   [critcl::at::get][string trimright $body]
 	set syntax "/* Syntax: <class> $name [critcl::argnames $arguments] */"
-	set body   "\n    $syntax\n    $body"
+	set body   "\n    $syntax\n$cdimport\n    $body"
 
-	# XXXX Missing, TODO :: Handling of the clientdata! => pass through
 	critcl::divert CMETHOD
-	critcl::cproc $function $arguments $rtype $body -cname
+	critcl::cproc $function $arguments $rtype $body \
+	    -cname 1 -pass-cdata 1
 	set code [critcl::divertend]
 
     } else {
@@ -585,13 +587,13 @@ proc ::critcl::class::ClassMethodExplicit {name mtype arguments args} {
 	lassign $args body
 
 	if {$arguments ne {}} {set arguments " $arguments"}
-	set body     [critcl::at::get][string trimright $body]
-	set syntax   "/* Syntax: <class> $name$arguments */"
-	set cdimport "[critcl::at::here!]    @classtype@ class = (@classtype@) clientdata;"
-	set body     "\n    $syntax\n$cdimport\n    $body"
+	set body   [critcl::at::get][string trimright $body]
+	set syntax "/* Syntax: <class> $name$arguments */"
+	set body   "\n    $syntax\n$cdimport\n    $body"
 
 	critcl::divert CMETHOD
-	critcl::ccommand $function {} $body -cname
+	critcl::ccommand $function {} $body \
+	    -cname 1
 	set code [critcl::divertend]
     }
 

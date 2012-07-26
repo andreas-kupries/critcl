@@ -365,11 +365,13 @@ proc ::critcl::cproc {name adefs rtype {body "#"} args} {
     AbortWhenCalledAfterBuild
 
     set acname 0
+    set passcd 0
     while {[string match "-*" $args]} {
         switch -- [set opt [lindex $args 0]] {
 	    -cname { set acname 1 [lindex $args 1] }
+	    -pass-cdata { set passcd 1 [lindex $args 1] }
 	    default {
-		error "Unknown option $opt, expected -cname"
+		error "Unknown option $opt, expected one of -cname, or -pass-cdata"
 	    }
         }
         set args [lrange $args 2 end]
@@ -390,6 +392,11 @@ proc ::critcl::cproc {name adefs rtype {body "#"} args} {
     set names  [argnames      $adefs]
     set cargs  [argcsignature $adefs]
     set cnames [argcnames     $adefs]
+
+    if {$passcd} {
+	set cargs  [linsert $cargs 0 {ClientData clientdata}]
+	set cnames [linsert $cname 0 cd]
+    }
 
     # Emit either the low-level function, or, if it wasn't defined
     # here, a reference to the shim we can use.
