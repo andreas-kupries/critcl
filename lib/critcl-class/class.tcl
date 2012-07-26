@@ -517,7 +517,7 @@ proc ::critcl::class::MethodExplicit {name mtype arguments args} {
 	set body   "\n    $syntax\n$cdimport\n    $body"
 
 	critcl::divert CMETHOD
-	critcl::cproc $function $arguments $rtype $body -cname 1 -pass-cdata 1
+	critcl::cproc $function $arguments $rtype $body -cname 1 -pass-cdata 1 -arg-offset 1
 	set code [critcl::divertend]
 
     } else {
@@ -579,7 +579,7 @@ proc ::critcl::class::ClassMethodExplicit {name mtype arguments args} {
 	set body   "\n    $syntax\n$cdimport\n    $body"
 
 	critcl::divert CMETHOD
-	critcl::cproc $function $arguments $rtype $body -cname 1 -pass-cdata 1
+	critcl::cproc $function $arguments $rtype $body -cname 1 -pass-cdata 1 -arg-offset 1
 	set code [critcl::divertend]
 
     } else {

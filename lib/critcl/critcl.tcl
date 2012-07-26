@@ -200,13 +200,15 @@ proc ::critcl::ccommand {name anames args} {
     }
 
     if {$acname} {
-	BeginCommand $name $anames $args
+	BeginCommand static $name $anames $args
 	set ns  {}
 	set cns {}
 	set key $name
+	set wname $name
     } else {
-	lassign [BeginCommand $name $anames $args] ns cns name
+	lassign [BeginCommand public $name $anames $args] ns cns name
 	set key [string map {:: _} $ns$name]
+	set wname tcl_$cns$name
     }
 
     # XXX clientdata/delproc, either note clashes, or keep information per-file.
@@ -225,7 +227,7 @@ proc ::critcl::ccommand {name anames args} {
 
 	set ca "(ClientData $cd, Tcl_Interp *$ip, int $oc, Tcl_Obj *CONST $ov\[])"
 
-	Emitln "static int tcl_$cns$name$ca"
+	Emitln "static int $wname$ca"
 	Emit   \{\n
 	lassign [HeaderLines $body] leadoffset body
 	if {$v::options(lines)} {
@@ -373,10 +375,12 @@ proc ::critcl::cproc {name adefs rtype {body "#"} args} {
 
     set acname 0
     set passcd 0
+    set aoffset 0
     while {[string match "-*" $args]} {
         switch -- [set opt [lindex $args 0]] {
-	    -cname      { set acname [lindex $args 1] }
-	    -pass-cdata { set passcd [lindex $args 1] }
+	    -cname      { set acname  [lindex $args 1] }
+	    -pass-cdata { set passcd  [lindex $args 1] }
+	    -arg-offset { set aoffset [lindex $args 1] }
 	    default {
 		error "Unknown option $opt, expected one of -cname, or -pass-cdata"
 	    }
@@ -385,13 +389,13 @@ proc ::critcl::cproc {name adefs rtype {body "#"} args} {
     }
 
     if {$acname} {
-	BeginCommand $name $adefs $rtype $body
+	BeginCommand static $name $adefs $rtype $body
 	set ns  {}
 	set cns {}
 	set cname c_$name
 	set wname $name
     } else {
-	lassign [BeginCommand $name $adefs $rtype $body] ns cns name
+	lassign [BeginCommand public $name $adefs $rtype $body] ns cns name
 	set cname c_$cns$name
 	set wname tcl_$cns$name
     }
@@ -426,8 +430,8 @@ proc ::critcl::cproc {name adefs rtype {body "#"} args} {
 
     EmitShimHeader         $wname
     EmitShimVariables      $adefs $rtype
-    EmitWrongArgsCheck     $names
-    EmitArgumentConversion $adefs
+    EmitWrongArgsCheck     $names $aoffset
+    EmitArgumentConversion $adefs $aoffset
     EmitCall               $cname $cnames $rtype
     EmitShimFooter         $rtype
     EndCommand
@@ -2845,12 +2849,13 @@ proc ::critcl::EmitShimVariables {adefs rtype} {
     return
 }
 
-proc ::critcl::EmitWrongArgsCheck {names} {
+proc ::critcl::EmitWrongArgsCheck {names offset} {
     # Code checking for the correct count of arguments, and generating
     # the proper error if not.
 
     set  count [llength $names]
     incr count
+    incr count $offset
     set  names [join $names { }]
 
     Emitln ""
@@ -2862,8 +2867,9 @@ proc ::critcl::EmitWrongArgsCheck {names} {
     return
 }
 
-proc ::critcl::EmitArgumentConversion {adefs} {
-    foreach c [argconversion $adefs] {
+proc ::critcl::EmitArgumentConversion {adefs offset} {
+    incr offset
+    foreach c [argconversion $adefs $offset] {
 	Emitln $c
     }
     return
@@ -3052,7 +3058,7 @@ proc ::critcl::name2c {name} {
     return [list $ns $cns $name]
 }
 
-proc ::critcl::BeginCommand {name args} {
+proc ::critcl::BeginCommand {visibility name args} {
     # Locate caller, as the data is saved per .tcl file.
     set file [This]
 
@@ -3093,7 +3099,9 @@ proc ::critcl::BeginCommand {name args} {
 	dict lappend c fragments $v::curr
     }
 
-    Emitln "#define ns_$cns$name \"$ns$name\""
+    if {$visibility eq "public"} {
+	Emitln "#define ns_$cns$name \"$ns$name\""
+    }
     return [list $ns $cns $name]
 }
 
