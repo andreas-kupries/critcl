@@ -90,12 +90,7 @@ critcl::class::define ::queuec {
     } ; # no need for a destructor
 
     # # ## ### ##### ######## ############# #####################
-    method clear {} {
-	if (objc != 2) {
-	    Tcl_WrongNumArgs (interp, 2, objv, NULL);
-	    return TCL_ERROR;
-	}
-
+    method clear proc {} ok {
 	/*
 	 * Delete and recreate the queue memory. A combination of delete/new,
 	 * except the main structure is left unchanged
@@ -122,7 +117,9 @@ critcl::class::define ::queuec {
     method peek as QueueRetrieve 0
 
     # # ## ### ##### ######## ############# #####################
-    method put {item@2 ...} {
+    method put command {
+	item... = objv[2]...
+    } {
 	int i;
 
 	if (objc < 3) {
@@ -138,26 +135,13 @@ critcl::class::define ::queuec {
     }
 
     # # ## ### ##### ######## ############# #####################
-    method size {} {
-	if ((objc != 2)) {
-	    Tcl_WrongNumArgs (interp, 2, objv, NULL);
-	    return TCL_ERROR;
-	}
-
+    method size proc {} ok {
 	Tcl_SetObjResult  (interp, Tcl_NewIntObj (QueueSize (instance, NULL, NULL, NULL)));
 	return TCL_OK;
     }
 
     # # ## ### ##### ######## ############# #####################
-    method unget {item@2} {
-	Tcl_Obj* item;
-
-	if (objc != 3) {
-	    Tcl_WrongNumArgs (interp, 2, objv, "item");
-	    return TCL_ERROR;
-	}
-
-	item = objv[2];
+    method unget proc {Tcl_Obj* item} ok {
 	if (instance->at == 0) {
 	    /* Need the unget stack */
 	    Tcl_ListObjAppendElement (interp, instance->unget, item);
