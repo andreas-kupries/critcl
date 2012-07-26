@@ -38,19 +38,20 @@ typedef enum @stem@_classmethods {
 } @stem@_class_methods;
 
 /*
- * Class structure. Instance counter.
- *
- * ATTENTION TODO: Rework this to keep the special fields separate so that the
- * ATTENTION TODO: user data can use the same names without getting into
- * ATTENTION TODO: conflict with them.
+ * Class structures. Instance counter.
  */
 
 typedef struct @classtype@__ {
-    const char* name;  /* Class name, for debugging */
-    long int counter;  /* Id generation counter */
-    char     buf [sizeof("@class@")+20]; /* Stash for the auto-generated object names. */
 @ctypedecl@} @classtype@__;
 typedef struct @classtype@__* @classtype@;
+
+typedef struct @classtype@_mgr_ {
+    const char*   name;                       /* Class name, for debugging */
+    long int      counter;                    /* Id generation counter */
+    char          buf [sizeof("@class@")+20]; /* Stash for the auto-generated object names. */
+    @classtype@__ user;                       /* User-specified class variables */
+} @classtype@_mgr_;
+typedef struct @classtype@_mgr_* @classtype@_mgr;
 
 /*
  * Instance structure.
@@ -70,7 +71,8 @@ typedef struct @classtype@__* @classtype@;
 static void
 @stem@_ClassRelease (ClientData cd, Tcl_Interp* interp)
 {
-    @classtype@ class = (@classtype@) cd;
+    @classtype@_mgr classmgr = (@classtype@_mgr) cd;
+    @classtype@     class    = &classmgr->user;
     @classdestructor@
 #line 71 "class.h"
     ckfree((char*) cd);
@@ -82,35 +84,37 @@ static @classtype@
 #define KEY "@package@/@class@"
 
     Tcl_InterpDeleteProc* proc = @stem@_ClassRelease;
-    @classtype@ class;
+    @classtype@_mgr       classmgr;
+    @classtype@           class;
 
-    class = Tcl_GetAssocData (interp, KEY, &proc);
+    classmgr = Tcl_GetAssocData (interp, KEY, &proc);
 
-    if (class) {
-	return class;
+    if (classmgr) {
+	return classmgr;
     }
 
-    class = (@classtype@) ckalloc (sizeof (@classtype@__));
-    class->name = "@stem@";
-    class->counter = 0;
+    classmgr = (@classtype@) ckalloc (sizeof (@classtype@_mgr_));
+    classmgr->name = "@stem@";
+    classmgr->counter = 0;
+    class = &classmgr->user;
 
     @classconstructor@
 #line 94 "class.h"
 
     Tcl_SetAssocData (interp, KEY, proc, (ClientData) class);
-    return class;
+    return classmgr;
  error:
-    ckfree ((char*) class);
+    ckfree ((char*) classmgr);
     return NULL;
 #undef KEY
 }
 
 static CONST char*
-@stem@_NewInstanceName (@classtype@ class)
+@stem@_NewInstanceName (@classtype@_mgr classmgr)
 {
-    class->counter ++;
-    sprintf (class->buf, "@class@%ld", class->counter);
-    return class->buf;
+    classmgr->counter ++;
+    sprintf (classmgr->buf, "@class@%ld", classmgr->counter);
+    return classmgr->buf;
 }
 
 /* # # ## ### ##### ######## */
@@ -196,7 +200,7 @@ static int
 
 static int
 @stem@_NewInstance (const char*     name,
-		    @classtype@ class,
+		    @classtype@_mgr classmgr,
 		    Tcl_Interp*     interp,
 		    int             objc,
 		    Tcl_Obj* CONST* objv)
@@ -251,7 +255,7 @@ static int
      * Construct instance state, and command.
      */
 
-    instance = @stem@_Constructor (interp, class, objc, objv);
+    instance = @stem@_Constructor (interp, &classmgr->user, objc, objv);
     if (!instance) {
 	return TCL_ERROR;
     }
@@ -269,7 +273,7 @@ static int
 }
 
 static int
-@stem@_CM_createCmd (@classtype@ class,
+@stem@_CM_createCmd (@classtype@_mgr classmgr,
 		     Tcl_Interp*     interp,
 		     int             objc,
 		     Tcl_Obj* CONST* objv)
@@ -287,11 +291,11 @@ static int
     objc -= 2;
     objv += 2;
 
-    return @stem@_NewInstance (name, class, interp, objc, objv);
+    return @stem@_NewInstance (name, classmgr, interp, objc, objv);
 }
 
 static int
-@stem@_CM_newCmd (@classtype@ class,
+@stem@_CM_newCmd (@classtype@_mgr classmgr,
 		  Tcl_Interp*     interp,
 		  int             objc,
 		  Tcl_Obj* CONST* objv)
@@ -304,8 +308,8 @@ static int
 	return TCL_ERROR;
     }
 
-    name = @stem@_NewInstanceName (class);
-    return @stem@_NewInstance (name, class, interp, objc, objv);
+    name = @stem@_NewInstanceName (classmgr);
+    return @stem@_NewInstance (name, classmgr, interp, objc, objv);
 }
 
 /* # # ## ### ##### ######## User: Class Methods */
@@ -323,7 +327,7 @@ int
 		     int             objc,
 		     Tcl_Obj* CONST* objv)
 {
-    @classtype@ class;
+    @classtype@_mgr classmgr;
     int mcode;
 
     if (objc < 2) {
@@ -337,8 +341,8 @@ int
 	return TCL_ERROR;
     }
 
-    class = @stem@_Class (interp);
-    if (!class) {
+    classmgr = @stem@_Class (interp);
+    if (!classmgr) {
 	return TCL_ERROR;
     }
 
@@ -348,8 +352,8 @@ int
      */
 
     switch ((@stem@_methods) mcode) {
-	case @stem@_CM_create: return @stem@_CM_createCmd (class, interp, objc, objv); break;
-	case @stem@_CM_new:    return @stem@_CM_newCmd    (class, interp, objc, objv); break;@class_method_dispatch@
+	case @stem@_CM_create: return @stem@_CM_createCmd (classmgr, interp, objc, objv); break;
+	case @stem@_CM_new:    return @stem@_CM_newCmd    (classmgr, interp, objc, objv); break;@class_method_dispatch@
     }
     /* Not coming to this place */
     return TCL_ERROR;

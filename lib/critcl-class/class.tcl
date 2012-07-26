@@ -530,7 +530,7 @@ proc ::critcl::class::ClassMethodExternal {name function details} {
 	lappend map objv "objv, [join $details {, }]"
     }
 
-    MethodDef classmethod class $name [MethodEnum method $name] {} $function $map \
+    MethodDef classmethod "&classmgr->user" $name [MethodEnum method $name] {} $function $map \
 	"/* $name : External function @function@ */"
     return
 }
