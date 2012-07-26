@@ -161,11 +161,6 @@ proc ::critcl::class::ProcessInstanceVariables {} {
     # Extend the constructor
     dict lappend state postconstructor "\tinstance->cmd = cmd;\n    "
 
-    # And handle a reference to a class structure.
-    if {[dict exists $state variable def class]} {
-	dict append state ivardecl ";\n    instance->class = class"
-    }
-
     # For ProcessMethods
     dict set state method typedef $itype
     dict set state method menum   M_EMPTY
@@ -445,6 +440,7 @@ proc ::critcl::class::ClassVariable {ctype name comment vloc} {
 	# instance variable which provides instances with a reference
 	# to their class (structure).
 	Variable @classtype@ class {Reference to class (variables)} [critcl::at::here!]
+	Constructor "[critcl::at::here!]instance->class = class;"
     }
     return
 }
