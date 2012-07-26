@@ -177,6 +177,13 @@ proc ::critcl::ccommand {name anames args} {
     SkipIgnored [set file [This]]
     AbortWhenCalledAfterBuild
 
+    if {[llength $args]} {
+	set body [lindex $args 0]
+	set args [lrange $args 1 end]
+    } else {
+	set body {}
+    }
+
     set clientdata NULL
     set delproc    0
     set acname     0
@@ -207,7 +214,7 @@ proc ::critcl::ccommand {name anames args} {
     set v::clientdata($key) $clientdata
     set v::delproc($key) $delproc
 
-    set body [join $args]
+    #set body [join $args]
     if {$body != ""} {
 	lappend anames ""
 	foreach {cd ip oc ov} $anames break
@@ -368,8 +375,8 @@ proc ::critcl::cproc {name adefs rtype {body "#"} args} {
     set passcd 0
     while {[string match "-*" $args]} {
         switch -- [set opt [lindex $args 0]] {
-	    -cname { set acname 1 [lindex $args 1] }
-	    -pass-cdata { set passcd 1 [lindex $args 1] }
+	    -cname      { set acname [lindex $args 1] }
+	    -pass-cdata { set passcd [lindex $args 1] }
 	    default {
 		error "Unknown option $opt, expected one of -cname, or -pass-cdata"
 	    }
@@ -395,7 +402,7 @@ proc ::critcl::cproc {name adefs rtype {body "#"} args} {
 
     if {$passcd} {
 	set cargs  [linsert $cargs 0 {ClientData clientdata}]
-	set cnames [linsert $cname 0 cd]
+	set cnames [linsert $cnames 0 cd]
     }
 
     # Emit either the low-level function, or, if it wasn't defined
@@ -583,7 +590,7 @@ proc ::critcl::divertend {} {
     # Drop all the collected data. Note how anything other than the C
     # code fragments is lost, and how cbuild results are removed
     # also. These do not belong anyway.
-    dict unset v::code($slot)
+    unset v::code($slot)
 
     return $block
 }
@@ -4161,8 +4168,7 @@ proc ::critcl::This {} {
     if {[info exists this] && [llength $this]} {
 	return [lindex $this end]
     }
-    # Prefix prevents collision with slot names used by 'divert'.
-    return file://[file normalize [info script]]
+    return [file normalize [info script]]
 }
 
 proc ::critcl::Here {} {

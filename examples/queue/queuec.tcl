@@ -136,7 +136,7 @@ critcl::class::define ::queuec {
 
     # # ## ### ##### ######## ############# #####################
     method size proc {} ok {
-	Tcl_SetObjResult  (interp, Tcl_NewIntObj (QueueSize (instance, NULL, NULL, NULL)));
+	Tcl_SetObjResult (interp, Tcl_NewIntObj (QueueSize (instance, NULL, NULL, NULL)));
 	return TCL_OK;
     }
 

@@ -159,7 +159,7 @@ proc ::critcl::class::ProcessInstanceVariables {} {
     dict set state itypedecl   [join $decl \n]
 
     # Extend the constructor
-    dict lappend state postconstructor "\tinstance->cmd = cmd;\n    "
+    dict lappend state postconstructor "[critcl::at::here!]\tinstance->cmd = cmd;\n    "
 
     # For ProcessMethods
     dict set state method typedef $itype
@@ -440,7 +440,7 @@ proc ::critcl::class::ClassVariable {ctype name comment vloc} {
 	# instance variable which provides instances with a reference
 	# to their class (structure).
 	Variable @classtype@ class {Reference to class (variables)} [critcl::at::here!]
-	Constructor "[critcl::at::here!]instance->class = class;"
+	Constructor "[critcl::at::here!]\tinstance->class = class;\n"
     }
     return
 }
@@ -494,6 +494,7 @@ proc ::critcl::class::MethodExplicit {name mtype arguments args} {
     # mtype in {proc, command}
     MethodCheck method instance $name
 
+    set bloc     [critcl::at::get]
     set enum     [MethodEnum method $name]
     set function ${enum}_Cmd
     set cdimport "[critcl::at::here!]    @instancetype@ instance = (@instancetype@) clientdata;"
@@ -504,15 +505,19 @@ proc ::critcl::class::MethodExplicit {name mtype arguments args} {
 	# arguments is (argtype argname...)
 	# (See critcl::cproc for full details)
 
+	# Force availability of the interp in methods.
+	if {[lindex $arguments 0] ne "Tcl_Interp*"} {
+	    set arguments [linsert $arguments 0 Tcl_Interp* interp]
+	}
+
 	lassign $args rtype body
 
-	set body   [critcl::at::get][string trimright $body]
+	set body   $bloc[string trimright $body]
 	set syntax "/* Syntax: <class> $name [critcl::argnames $arguments] */"
 	set body   "\n    $syntax\n$cdimport\n    $body"
 
 	critcl::divert CMETHOD
-	critcl::cproc $function $arguments $rtype $body \
-	    -cname 1 -pass-cdata 1
+	critcl::cproc $function $arguments $rtype $body -cname 1 -pass-cdata 1
 	set code [critcl::divertend]
 
     } else {
@@ -520,14 +525,13 @@ proc ::critcl::class::MethodExplicit {name mtype arguments args} {
 	# |args| == 1, args => body
 	lassign $args body
 
-	if {$arguments ne {}} {set arguments " $arguments"}
-	set body   [critcl::at::get][string trimright $body]
+	if {$arguments ne {}} {set arguments " cmd<<$arguments>>"}
+	set body   $bloc[string trimright $body]
 	set syntax "/* Syntax: <class> $name$arguments */"
 	set body   "\n    $syntax\n$cdimport\n    $body"
 
 	critcl::divert CMETHOD
-	critcl::ccommand $function {} $body \
-	    -cname 1
+	critcl::ccommand $function {} $body -cname 1
 	set code [critcl::divertend]
     }
 
@@ -552,6 +556,7 @@ proc ::critcl::class::ClassMethodExplicit {name mtype arguments args} {
     # mtype in {proc, command}
     MethodCheck classmethod class $name
 
+    set bloc     [critcl::at::get]
     set enum     [MethodEnum method $name]
     set function ${enum}_Cmd
     set cdimport "[critcl::at::here!]    @classtype@ class = (@classtype@) clientdata;"
@@ -562,15 +567,19 @@ proc ::critcl::class::ClassMethodExplicit {name mtype arguments args} {
 	# arguments is (argtype argname...)
 	# (See critcl::cproc for full details)
 
+	# Force availability of the interp in methods.
+	if {[lindex $arguments 0] ne "Tcl_Interp*"} {
+	    set arguments [linsert $arguments 0 Tcl_Interp* interp]
+	}
+
 	lassign $args rtype body
 
-	set body   [critcl::at::get][string trimright $body]
+	set body   $bloc[string trimright $body]
 	set syntax "/* Syntax: <class> $name [critcl::argnames $arguments] */"
 	set body   "\n    $syntax\n$cdimport\n    $body"
 
 	critcl::divert CMETHOD
-	critcl::cproc $function $arguments $rtype $body \
-	    -cname 1 -pass-cdata 1
+	critcl::cproc $function $arguments $rtype $body -cname 1 -pass-cdata 1
 	set code [critcl::divertend]
 
     } else {
@@ -578,14 +587,13 @@ proc ::critcl::class::ClassMethodExplicit {name mtype arguments args} {
 	# |args| == 1, args => body
 	lassign $args body
 
-	if {$arguments ne {}} {set arguments " $arguments"}
-	set body   [critcl::at::get][string trimright $body]
+	if {$arguments ne {}} {set arguments " cmd<<$arguments>>"}
+	set body   $bloc[string trimright $body]
 	set syntax "/* Syntax: <class> $name$arguments */"
 	set body   "\n    $syntax\n$cdimport\n    $body"
 
 	critcl::divert CMETHOD
-	critcl::ccommand $function {} $body \
-	    -cname 1
+	critcl::ccommand $function {} $body -cname 1
 	set code [critcl::divertend]
     }
 
@@ -728,22 +736,10 @@ proc ::critcl::class::spec::method {name op detail args} {
     # (3) method <name> command <arguments> <body>
     #            name   op      detail      args__________
 
-    if {$op eq "as"} {
-	# instance method is external C function matching an ObjCmd in
-	# signature, possibly with additional parameters at the end.
-	#
-	# detail = name of that function
-	# args = values for the additional parameters, if any.
-
-	::critcl::class::MethodExternal $name $detail $args
-	return
-    }
-
-    # method is fully defined here.
-    # op = proc|cmd|command
+    # op = as|proc|cmd|command
 
     # op == proc
-    # detail  = argument syntax per cproc.
+    # detail  = argument list, syntax as per cproc.
     # args[0] = r(esult)type
     # args[1] = body
 
@@ -752,6 +748,17 @@ proc ::critcl::class::spec::method {name op detail args} {
     # args[0] = body
 
     switch -exact -- $op {
+	as {
+	    # The instance method is an external C function matching
+	    # an ObjCmd in signature, possibly with additional
+	    # parameters at the end.
+	    #
+	    # detail = name of that function
+	    # args   = values for the additional parameters, if any.
+
+	    ::critcl::class::MethodExternal $name $detail $args
+	    return
+	}
 	proc {
 	    if {[llength $args] != 2} {
 		return -code error "wrong#args"
@@ -770,7 +777,7 @@ proc ::critcl::class::spec::method {name op detail args} {
 
     ::critcl::at::caller
     ::critcl::at::incrt $detail
-    ::critcl::class::MethodExplicit $name [string trim $detail] {*}$args
+    ::critcl::class::MethodExplicit $name $op [string trim $detail] {*}$args
     return
 }
 
@@ -808,19 +815,7 @@ proc ::critcl::class::spec::classmethod {name op detail args} {
     # (3) classmethod <name> command <arguments> <body>
     #                 name   op      detail      args__________
 
-    if {$op eq "as"} {
-	# class method is external C function matching an ObjCmd in
-	# signature, possibly with additional parameters at the end.
-	#
-	# detail = name of that function
-	# args = values for the additional parameters, if any.
-
-	::critcl::class::ClassMethodExternal $name $detail $args
-	return
-    }
-
-    # class method is fully defined here.
-    # op = proc|cmd|command
+    # op = as|proc|cmd|command
 
     # op == proc
     # detail  = argument syntax per cproc.
@@ -832,6 +827,17 @@ proc ::critcl::class::spec::classmethod {name op detail args} {
     # args[0] = body
 
     switch -exact -- $op {
+	as {
+	    # The class method is an external C function matching an
+	    # ObjCmd in signature, possibly with additional parameters
+	    # at the end.
+	    #
+	    # detail = name of that function
+	    # args   = values for the additional parameters, if any.
+
+	    ::critcl::class::ClassMethodExternal $name $detail $args
+	    return
+	}
 	proc {
 	    if {[llength $args] != 2} {
 		return -code error "wrong#args"
