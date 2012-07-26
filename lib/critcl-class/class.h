@@ -61,7 +61,7 @@ typedef struct @classtype@_mgr_* @classtype@_mgr;
 
 /* # # ## ### ##### ######## User: General support */
 @support@
-#line 59 "class.h"
+#line 65 "class.h"
 /* # # ## ### ##### ######## */
 
 /*
@@ -74,11 +74,11 @@ static void
     @classtype@_mgr classmgr = (@classtype@_mgr) cd;
     @classtype@     class    = &classmgr->user;
     @classdestructor@
-#line 71 "class.h"
+#line 78 "class.h"
     ckfree((char*) cd);
 }
 
-static @classtype@
+static @classtype@_mgr
 @stem@_Class (Tcl_Interp* interp)
 {
 #define KEY "@package@/@class@"
@@ -88,20 +88,19 @@ static @classtype@
     @classtype@           class;
 
     classmgr = Tcl_GetAssocData (interp, KEY, &proc);
-
     if (classmgr) {
 	return classmgr;
     }
 
-    classmgr = (@classtype@) ckalloc (sizeof (@classtype@_mgr_));
+    classmgr = (@classtype@_mgr) ckalloc (sizeof (@classtype@_mgr_));
     classmgr->name = "@stem@";
     classmgr->counter = 0;
     class = &classmgr->user;
 
     @classconstructor@
-#line 94 "class.h"
+#line 102 "class.h"
 
-    Tcl_SetAssocData (interp, KEY, proc, (ClientData) class);
+    Tcl_SetAssocData (interp, KEY, proc, (ClientData) classmgr);
     return classmgr;
  error:
     ckfree ((char*) classmgr);
@@ -128,7 +127,7 @@ static @instancetype@
 @ivardecl@;
     /* # # ## ### ##### ######## User: Constructor */
     @constructor@
-#line 123 "class.h"
+#line 131 "class.h"
     /* # # ## ### ##### ######## */
     return instance;
 @ivarerror@;
@@ -142,7 +141,7 @@ static void
 {
     /* # # ## ### ##### ######## User: Post Constructor */
     @postconstructor@
-#line 137 "class.h"
+#line 145 "class.h"
     /* # # ## ### ##### ######## */
 }
 
@@ -152,14 +151,14 @@ static void
     @instancetype@ instance = (@instancetype@) clientData;
     /* # # ## ### ##### ######## User: Destructor */
     @destructor@
-#line 147 "class.h"
+#line 155 "class.h"
     /* # # ## ### ##### ######## */
 @ivarrelease@;
 }
 
 /* # # ## ### ##### ######## User: Methods */
 @method_implementations@
-#line 154 "class.h"
+#line 162 "class.h"
 /* # # ## ### ##### ######## */
 
 /*
@@ -288,8 +287,8 @@ static int
 
     name = Tcl_GetString (objv [2]);
 
-    objc -= 2;
-    objv += 2;
+    objc -= 3;
+    objv += 3;
 
     return @stem@_NewInstance (name, classmgr, interp, objc, objv);
 }
@@ -308,13 +307,16 @@ static int
 	return TCL_ERROR;
     }
 
+    objc -= 2;
+    objv += 2;
+
     name = @stem@_NewInstanceName (classmgr);
     return @stem@_NewInstance (name, classmgr, interp, objc, objv);
 }
 
 /* # # ## ### ##### ######## User: Class Methods */
 @class_method_implementations@
-#line 309 "class.h"
+#line 320 "class.h"
 /* # # ## ### ##### ######## */
 
 /*
@@ -328,6 +330,7 @@ int
 		     Tcl_Obj* CONST* objv)
 {
     @classtype@_mgr classmgr;
+    @classtype@     class;
     int mcode;
 
     if (objc < 2) {
@@ -345,6 +348,7 @@ int
     if (!classmgr) {
 	return TCL_ERROR;
     }
+    class = &classmgr->user;
 
     /*
      * Dispatch to methods. They check the #args in detail before performing
