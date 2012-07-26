@@ -511,9 +511,61 @@ proc ::critcl::at::incrt {args} {
 }
 
 # # ## ### ##### ######## ############# #####################
-## Implementation -- API: Control & Interface
+## Implementation -- API: Input and Output control
 
-proc ::critcl::owns {args} {}
+proc ::critcl::divert {slot} {
+    # Divert the collection of code fragments to slot
+    # (output control). Stack on any previous diversion.
+    variable v::this
+    # See critcl::This for where this information is injected into the
+    # code generation system.
+
+    # Prefix prevents collision of slot names and file paths.
+    lappend this critcl://$slot
+    return
+}
+
+proc ::critcl::divertend {} {
+    # Stop last diversion, and return the collected information as
+    # single string of C code.
+    variable v::this
+    # See critcl::This for where this information is injected into the
+    # code generation system.
+
+    # Ensure that a diversion is actually open.
+    if {![info exists this] || ![llength $this]} {
+	return -code error "divertend mismatch, no divert active"
+    }
+
+    set slot [Dpop]
+    set block {}
+
+    foreach digest [dict get $v::code($slot) config fragments] {
+	append block "[Separator]\n\n"
+	append block [dict get $v::code($slot) config block $digest]\n
+    }
+
+    # Drop all the collected data. Note how anything other than the C
+    # code fragments is lost, and how cbuild results are removed
+    # also. These do not belong anyway.
+    dict unset v::code($slot)
+
+    return $block
+}
+
+
+proc ::critcl::Dpop {} {
+    variable v::this
+
+    # Get current slot, and pop from the diversion stack.
+    # Remove stack when it becomes empty.
+    set slot [lindex $this end]
+    set v::this [lrange $this 0 end-1]
+    if {![llength $this]} {
+	unset this
+    }
+    return $slot
+}
 
 proc ::critcl::source {path} {
     # Source a critcl file in the context of the current file,
@@ -524,12 +576,34 @@ proc ::critcl::source {path} {
 
     msg -nonewline " (importing $path)"
 
-    variable v::slevel
-    if {![info exists slevel]} {
-	variable v::this [This]
-	set slevel 1
-    } else {
-	incr slevel
+    set undivert 0
+    variable v::this
+    if {![info exists this] || ![llength $this]} {
+	# critcl::source is recording the critcl commands in the
+	# context of the toplevel file which started the chain the
+	# critcl::source. So why are we twiddling with the diversion
+	# state?
+	#
+	# The condition above tells us that we are in the first
+	# non-diverted critcl::source called by the context. [This]
+	# returns that context. Due to our use of regular 'source' (*)
+	# during its execution [This] would return the sourced file as
+	# context. Wrong. Our fix for this is to perform, essentially,
+	# an anti-diversion. Saving [This] as diversion, forces it to
+	# return the proper value during the whole sourcing.
+	#
+	# And if the critcl::source is run in an already diverted
+	# context then the changes to [info script] by 'source' do not
+	# matter, making an anti-diversion unnecessary.
+	#
+	# Diversions inside of 'source' will work as usual, given
+	# their nesting nature.
+	#
+	# (Ad *) And we use 'source' as only this ensures proper
+	# collection of [info frame] location information.
+
+	lappend this [This]
+	set undivert 1
     }
 
     foreach f [Expand $file $path] {
@@ -540,12 +614,14 @@ proc ::critcl::source {path} {
 	unset -nocomplain v::source
     }
 
-    incr slevel -1
-    if {!$slevel} {
-	unset v::this v::slevel
-    }
+    if {$undivert} Dpop
     return
 }
+
+# # ## ### ##### ######## ############# #####################
+## Implementation -- API: Control & Interface
+
+proc ::critcl::owns {args} {}
 
 proc ::critcl::cheaders {args} {
     SkipIgnored [This]
@@ -4044,9 +4120,14 @@ proc ::critcl::IsGCC {path} {
 }
 
 proc ::critcl::This {} {
-    variable v::this ; # See critcl::source for management.
-    if {[info exists this]} { return $this }
-    return [file normalize [info script]]
+    variable v::this
+    # For management of v::this see critcl::{source,divert,divertend}
+    # If present, an output redirection is active.
+    if {[info exists this] && [llength $this]} {
+	return [lindex $this end]
+    }
+    # Prefix prevents collision with slot names used by 'divert'.
+    return file://[file normalize [info script]]
 }
 
 proc ::critcl::Here {} {
