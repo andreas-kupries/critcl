@@ -179,22 +179,31 @@ proc ::critcl::ccommand {name anames args} {
 
     set clientdata NULL
     set delproc    0
+    set acname     0
     while {[string match "-*" $args]} {
         switch -- [set opt [lindex $args 0]] {
 	    -clientdata { set clientdata [lindex $args 1] }
 	    -delproc    { set delproc    [lindex $args 1] }
+	    -cname      { set acname     [lindex $args 1] }
 	    default {
-		error "Unknown option $opt, expected one of -clientdata, or -delproc"
+		error "Unknown option $opt, expected one of -clientdata, -cname, or -delproc"
 	    }
         }
         set args [lrange $args 2 end]
     }
 
-    lassign [BeginCommand $name $anames $args] ns cns name
+    if {$acname} {
+	BeginCommand $name $anames $args
+	set ns  {}
+	set cns {}
+	set key $name
+    } else {
+	lassign [BeginCommand $name $anames $args] ns cns name
+	set key [string map {:: _} $ns$name]
+    }
 
     # XXX clientdata/delproc, either note clashes, or keep information per-file.
 
-    set key [string map {:: _} $ns$name]
     set v::clientdata($key) $clientdata
     set v::delproc($key) $delproc
 
@@ -351,20 +360,39 @@ proc ::critcl::argconversion {adefs {n 1}} {
     return $result
 }
 
-proc ::critcl::cproc {name adefs rtype {body "#"}} {
+proc ::critcl::cproc {name adefs rtype {body "#"} args} {
     SkipIgnored [set file [This]]
     AbortWhenCalledAfterBuild
 
-    lassign [BeginCommand $name $adefs $rtype $body] ns cns name
-    set cname c_$cns$name
-    set wname tcl_$cns$name
+    set acname 0
+    while {[string match "-*" $args]} {
+        switch -- [set opt [lindex $args 0]] {
+	    -cname { set acname 1 [lindex $args 1] }
+	    default {
+		error "Unknown option $opt, expected -cname"
+	    }
+        }
+        set args [lrange $args 2 end]
+    }
+
+    if {$acname} {
+	BeginCommand $name $adefs $rtype $body
+	set ns  {}
+	set cns {}
+	set cname c_$name
+	set wname $name
+    } else {
+	lassign [BeginCommand $name $adefs $rtype $body] ns cns name
+	set cname c_$cns$name
+	set wname tcl_$cns$name
+    }
 
     set names  [argnames      $adefs]
     set cargs  [argcsignature $adefs]
     set cnames [argcnames     $adefs]
 
     # Emit either the low-level function, or, if it wasn't defined
-    # here, a reference to it the shim can use.
+    # here, a reference to the shim we can use.
     if {$body ne "#"} {
 	Emit   "static [ResultCType $rtype] "
 	Emitln "${cname}([join $cargs {, }])"
