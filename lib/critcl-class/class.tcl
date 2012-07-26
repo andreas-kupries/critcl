@@ -409,11 +409,7 @@ proc ::critcl::class::Variable {ctype name comment vloc} {
 	# that the instance structure will have a field named 'cmd'.
 	# Declared here.
 	dict set state variable def cmd {}
-	critcl::at::here ; MethodExplicit destroy {} {
-	    if (objc != 2) {
-		Tcl_WrongNumArgs (interp, 2, objv, NULL);
-		return TCL_ERROR;
-	    }
+	critcl::at::here ; MethodExplicit destroy proc {} ok {
 	    Tcl_DeleteCommandFromToken(interp, instance->cmd);
 	    return TCL_OK;
 	}
@@ -911,20 +907,12 @@ ComputeMethodList (CONST char** table)
 #endif /* CRITCL_CLASS__HAVE_COMPUTE_METHOD_LIST */
     }
 
-    ::critcl::class::spec::method methods {} {
-	if (objc != 2) {
-	    Tcl_WrongNumArgs (interp, 0, objv, NULL);
-	    return TCL_ERROR;
-	}
+    ::critcl::class::spec::method methods proc {} ok {
 	Tcl_SetObjResult (interp, instance->class->methods);
 	return TCL_OK;
     }
 
-    ::critcl::class::spec::classmethod methods {} {
-	if (objc != 2) {
-	    Tcl_WrongNumArgs (interp, 0, objv, NULL);
-	    return TCL_ERROR;
-	}
+    ::critcl::class::spec::classmethod methods proc {} ok {
 	Tcl_SetObjResult (interp, class->methods);
 	return TCL_OK;
     }
