@@ -572,7 +572,11 @@ proc ::critcl::collect_begin {{slot {}}} {
     # See critcl::This for where this information is injected into the
     # code generation system.
 
-    if {$slot eq {}} { set slot MEMORY[llength $this] }
+    if {$slot eq {}} {
+	set slot MEMORY[expr { [info exists this]
+			       ? [llength $this]
+			       : 0 }]
+    }
     # Prefix prevents collision of slot names and file paths.
     lappend this critcl://$slot
     return
