@@ -75,4 +75,15 @@ Any additional arguments specified will be added after these and are
 passed into the C code as is, i.e. are considered to be C expressions.
 
 [comment {- - -- --- ----- -------- ------------- ---------------------}]
+[call [cmd method_introspection]]
+
+This command generates one class- and one instance-method both of
+which will return a list of the instance methods of the class, and
+supporting structures, like the function to compute the information,
+and a class variable caching it.
+
+[para] The two methods and the class variable are all named
+[const methods].
+
+[comment {- - -- --- ----- -------- ------------- ---------------------}]
 [list_end]
