@@ -135,7 +135,6 @@ proc ::critcl::class::ProcessInstanceVariables {} {
 
     set decl {}
     lappend decl "typedef struct ${itype}__ \{"
-    lappend decl "    Tcl_Command cmd;"
 
     foreach fname [dict get $state variable names] {
 	set ctype   [dict get $state variable def $fname ctype]
@@ -157,9 +156,6 @@ proc ::critcl::class::ProcessInstanceVariables {} {
     dict set state ivarerror   "error:\n    ckfree ((char*) instance);\n    return NULL;"
     dict set state ivarrelease "    ckfree ((char*) instance)"
     dict set state itypedecl   [join $decl \n]
-
-    # Extend the constructor
-    dict lappend state postconstructor "[critcl::at::here!]\tinstance->cmd = cmd;\n    "
 
     # For ProcessMethods
     dict set state method typedef $itype
@@ -392,23 +388,39 @@ proc ::critcl::class::Variable {ctype name comment vloc} {
 	return -code error "Duplicate definition of instance variable \"$name\""
     }
 
+    # Create the automatic instance variable to hold the instance
+    # command token.
+
+    if {![dict exists $state stop] &&
+	(![dict exists $state variable] ||
+	 ![llength [dict get $state variable names]])
+    } {
+	# To make it easier on us we reuse the existing definition
+	# commands to set everything up. To avoid infinite recursion
+	# we set a flag stopping us from re-entering this block.
+
+	dict set state stop 1
+	critcl::at::here ; Variable Tcl_Command cmd {
+	    Automatically generated. Holds the token for the instance command,
+	    for use by the automatically created destroy method.
+	} [critcl::at::get]
+	dict unset state stop
+
+	PostConstructor "[critcl::at::here!]\tinstance->cmd = cmd;\n"
+
+	# And the destroy method using the above instance variable.
+	critcl::at::here ; MethodExplicit destroy proc {} ok {
+	    Tcl_DeleteCommandFromToken(interp, instance->cmd);
+	    return TCL_OK;
+	}
+    }
+
     dict update state variable f {
 	dict lappend f names $name
     }
     dict set state variable def $name ctype   $ctype
     dict set state variable def $name loc     $vloc
     dict set state variable def $name comment [string trim $comment]
-
-    if {[llength [dict get $state variable names]] == 1} {
-	# Generate a destroy method. We can do that, because we know
-	# that the instance structure will have a field named 'cmd'.
-	# Declared here.
-	dict set state variable def cmd {}
-	critcl::at::here ; MethodExplicit destroy proc {} ok {
-	    Tcl_DeleteCommandFromToken(interp, instance->cmd);
-	    return TCL_OK;
-	}
-    }
     return
 }
 
