@@ -1,18 +1,13 @@
-Temp files of notes of things I should do, when I have time off from
-kinetcl
 
-(1) Rename command	field		-> variable
-(2) Rename command	mdef		-> method
-(3) Change command	variable	Allow per-variable constructor/destructor code fragments.
-			classvariable
-(5) Change command	method		Accept a description argument. Essentially the command
-			classmethod	syntax and/or arguments.
-
-(6) Document the new commands (classvar, classmethod, introspect-methods, create/new).
-
-(7) Document for all C code fragments the environment they have
-    available. Possibly including even which @placeholders@
+(7) Document the @placeholders@ available to the various C code fragments.
 
 (8) Note that we can use #define's to make the class and instance
     types available as fixed named without resorting to placeholders,
     and still keeping it in a local scope.
+
+---
+
+idea: critcl::cproc -- api to register return types, argument types
+
+      argument types: conversion from Tcl_Obj*, type checking (values)
+      return types:   conversion to Tcl_Obj*, (type/value checking ?)
