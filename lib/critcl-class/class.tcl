@@ -531,9 +531,9 @@ proc ::critcl::class::MethodExplicit {name mtype arguments args} {
 	set syntax "/* Syntax: <class> $name [critcl::argnames $arguments] */"
 	set body   "\n    $syntax\n$cdimport\n    $body"
 
-	critcl::divert CMETHOD
-	critcl::cproc $function $arguments $rtype $body -cname 1 -pass-cdata 1 -arg-offset 1
-	set code [critcl::divertend]
+	set code [critcl::collect {
+	    critcl::cproc $function $arguments $rtype $body -cname 1 -pass-cdata 1 -arg-offset 1
+	}]
 
     } else {
 	# Method is ccommand.
@@ -545,9 +545,9 @@ proc ::critcl::class::MethodExplicit {name mtype arguments args} {
 	set syntax "/* Syntax: <class> $name$arguments */"
 	set body   "\n    $syntax\n$cdimport\n    $body"
 
-	critcl::divert CMETHOD
-	critcl::ccommand $function {} $body -cname 1
-	set code [critcl::divertend]
+	set code [critcl::collect {
+	    critcl::ccommand $function {} $body -cname 1
+	}]
     }
 
     MethodDef method instance $name $enum $syntax $function {} $code
@@ -593,9 +593,9 @@ proc ::critcl::class::ClassMethodExplicit {name mtype arguments args} {
 	set syntax "/* Syntax: <class> $name [critcl::argnames $arguments] */"
 	set body   "\n    $syntax\n$cdimport\n    $body"
 
-	critcl::divert CMETHOD
-	critcl::cproc $function $arguments $rtype $body -cname 1 -pass-cdata 1 -arg-offset 1
-	set code [critcl::divertend]
+	set code [critcl::collect {
+	    critcl::cproc $function $arguments $rtype $body -cname 1 -pass-cdata 1 -arg-offset 1
+	}]
 
     } else {
 	# Method is ccommand.
@@ -607,9 +607,9 @@ proc ::critcl::class::ClassMethodExplicit {name mtype arguments args} {
 	set syntax "/* Syntax: <class> $name$arguments */"
 	set body   "\n    $syntax\n$cdimport\n    $body"
 
-	critcl::divert CMETHOD
-	critcl::ccommand $function {} $body -cname 1
-	set code [critcl::divertend]
+	set code [critcl::collect {
+	    critcl::ccommand $function {} $body -cname 1
+	}]
     }
 
     MethodDef classmethod class $name $enum $syntax $function {} $code

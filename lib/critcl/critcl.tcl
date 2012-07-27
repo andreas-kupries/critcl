@@ -559,19 +559,26 @@ proc ::critcl::at::incrt {args} {
 # # ## ### ##### ######## ############# #####################
 ## Implementation -- API: Input and Output control
 
-proc ::critcl::divert {slot} {
+proc ::critcl::collect {script {slot {}}} {
+    collect_begin $slot
+    uplevel 1 $script
+    return [collect_end]
+}
+
+proc ::critcl::collect_begin {{slot {}}} {
     # Divert the collection of code fragments to slot
     # (output control). Stack on any previous diversion.
     variable v::this
     # See critcl::This for where this information is injected into the
     # code generation system.
 
+    if {$slot eq {}} { set slot MEMORY[llength $this] }
     # Prefix prevents collision of slot names and file paths.
     lappend this critcl://$slot
     return
 }
 
-proc ::critcl::divertend {} {
+proc ::critcl::collect_end {} {
     # Stop last diversion, and return the collected information as
     # single string of C code.
     variable v::this
@@ -580,7 +587,7 @@ proc ::critcl::divertend {} {
 
     # Ensure that a diversion is actually open.
     if {![info exists this] || ![llength $this]} {
-	return -code error "divertend mismatch, no divert active"
+	return -code error "collect_end mismatch, no diversions active"
     }
 
     set slot [Dpop]
@@ -4171,7 +4178,7 @@ proc ::critcl::IsGCC {path} {
 
 proc ::critcl::This {} {
     variable v::this
-    # For management of v::this see critcl::{source,divert,divertend}
+    # For management of v::this see critcl::{source,collect*}
     # If present, an output redirection is active.
     if {[info exists this] && [llength $this]} {
 	return [lindex $this end]
