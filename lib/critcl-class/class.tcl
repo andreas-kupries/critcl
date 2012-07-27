@@ -409,9 +409,8 @@ proc ::critcl::class::Variable {ctype name comment vloc} {
 	PostConstructor "[critcl::at::here!]\tinstance->cmd = cmd;\n"
 
 	# And the destroy method using the above instance variable.
-	critcl::at::here ; MethodExplicit destroy proc {} ok {
+	critcl::at::here ; MethodExplicit destroy proc {} void {
 	    Tcl_DeleteCommandFromToken(interp, instance->cmd);
-	    return TCL_OK;
 	}
     }
 
