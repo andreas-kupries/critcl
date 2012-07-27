@@ -17,10 +17,6 @@ the use of an external C [cmd type] for the instance structure.
 automatically causes the definition of an instance variable named
 [const class], pointing to the class structure.
 
-[para] [emph Attention:] The three identifiers [const name],
-[const counter], and [const buf] are special and cannot be used as the
-names of class variables.
-
 [para] Beyond the basic [arg name] and C type of the new variable the
 definition may also contain a [arg comment] describing it, and C code
 blocks to initialize and release the variable.

@@ -25,8 +25,6 @@ individual commands here they are pulled together to see at a glance.
 
 [list_begin enum]
 [enum]	You cannot use [cmd type].
-[enum]	You cannot use the identifiers [const name], [const counter],
-	nor [const buf] as class variable names.
 [enum]	The system generates an instance variable [const class] for
 	you, which points from instance to class structure. This makes
 	you also subject to the rules below, for instance variables.
