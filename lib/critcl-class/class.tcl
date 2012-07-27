@@ -449,9 +449,12 @@ proc ::critcl::class::ClassVariable {ctype name comment vloc} {
 
     if {[llength [dict get $state classvariable names]] == 1} {
 	# On declaration of the first class variable we declare an
-	# instance variable which provides instances with a reference
-	# to their class (structure).
-	Variable @classtype@ class {Reference to class (variables)} [critcl::at::here!]
+	# instance variable which provides the instances with a
+	# reference to their class (structure).
+	critcl::at::here ; Variable @classtype@ class {
+	    Automatically generated. Reference to the class (variables)
+	    from the instance.
+	} [critcl::at::get]
 	Constructor "[critcl::at::here!]\tinstance->class = class;\n"
     }
     return
@@ -887,6 +890,12 @@ proc ::critcl::class::spec::method_introspection {} {
 	Tcl_DecrRefCount (class->methods);
 	class->methods = NULL;
     }
+
+    # The ifdef/define/endif block below ensures that the supporting
+    # code will be defined only once, even if multiple classes
+    # activate method-introspection. Note that what we cannot prevent
+    # is the appearance of multiple copies of the code below in the
+    # generated output, only that it is compiled multiple times.
 
     ::critcl::class::spec::support {
 #ifndef CRITCL_CLASS__HAVE_COMPUTE_METHOD_LIST
