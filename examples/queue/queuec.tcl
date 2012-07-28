@@ -52,7 +52,7 @@ critcl::class::define ::queuec {
 
     constructor {
 	if (objc > 0) {
-	    Tcl_AppendResult (interp, "wrong\#args", NULL);
+	    Tcl_AppendResult (interp, "wrong\#args for constructor, expected none", NULL);
 	    goto error;
 	}
     }
