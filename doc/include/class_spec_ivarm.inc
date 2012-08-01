@@ -34,10 +34,17 @@ code for easier cross-referencing from generated [file .c] file to
 class specification.
 
 [comment {- - -- --- ----- -------- ------------- ---------------------}]
-[call [cmd method] [arg name] [arg arguments] [arg body]]
+[call [cmd method] [arg name] [method command] [arg arguments] \
+	[arg body]]
 
 This command specifies an instance method and the C code block
-implementing its functionality. This body has access to
+implementing its functionality. This is the first of three forms. The
+method is specified like a [cmd critcl::ccommand], with a fixed set of
+C-level arguments. The [arg body] has to perform everything
+(i.e. argument extraction, checking, result return, and of course the
+actual functionality) by itself.
+
+[para] For this the [arg body] has access to
 
 [list_begin definitions]
 [def [var instance]] Pointer to the instance structure.
@@ -48,17 +55,47 @@ instance structure is associated with
 [list_end]
 
 The [arg arguments] of the definition are only a human readable form
-of the method arguments and are not used in the C code, except as
-comments. It is still the responsibility of the user to check the
-number of arguments, extract them, check their types, etc.
+of the method arguments and syntax and are not used in the C code,
+except as comments put into the generated code. Again, it is the
+responsibility of the [arg body] to check the number of arguments,
+extract them, check their types, etc.
 
 [comment {- - -- --- ----- -------- ------------- ---------------------}]
-[call [cmd method] [arg name] [const as] [arg funname] [opt [arg arg]...]]
+[call [cmd method] [arg name] [method proc] [arg arguments] \
+	[arg resulttype] [arg body]]
 
-This variant of the command above defines an instance method of the
-class as implemented by the external function [arg funname],
-i.e. which is declared outside of the class code itself, or in a
-[cmd support] block.
+This command specifies an instance method and the C code block
+implementing its functionality.  This is the second of three
+forms. The method is specified like a [cmd critcl::cproc].
+
+Contrary to the first variant here the [arg arguments] are computer
+readable, expected to be in the same format as the [arg arguments] of
+[cmd critcl::cproc]. The same is true for the [arg resulttype].
+
+The system automatically generates a wrapper doing argument checking
+and conversion, and result conversion, like for [cmd critcl::cproc].
+
+[para] The [arg body] has access to
+
+[list_begin definitions]
+[def [var instance]] Pointer to the instance structure.
+[def [var interp]] Pointer to the Tcl interpreter (Tcl_Interp*) the
+instance structure is associated with
+[def ...] All [arg arguments] under their specified names and C types
+as per their definition.
+[list_end]
+
+[comment {- - -- --- ----- -------- ------------- ---------------------}]
+[call [cmd method] [arg name] [method as] [arg funname] \
+	[opt [arg arg]...]]
+
+This command specifies an instance method and the C code block
+implementing its functionality. This is the third and last of three
+forms.
+
+[para] The instance method is implemented by the external function
+[arg funname], i.e. a function which is declared outside of the instance
+code itself, or in a [cmd support] block.
 
 [para] It is assumed that the first four arguments of that function
 represent the parameters
