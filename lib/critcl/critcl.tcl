@@ -1298,7 +1298,7 @@ proc ::critcl::API_setup_export {file} {
     set upname  [string toupper  $cname]
     set capname [stubs::gen::cap $cname]
 
-    set import [subst -nocommands {
+    set import [at::here!][subst -nocommands {
 	/* Import our own exported API: $ename, mapping disabled */
 	#undef USE_${upname}_STUBS
 	#include <$cname/${cname}Decls.h>
