@@ -156,6 +156,48 @@ proc _install {{ldir {}} {mode {}}} {
     }
     return
 }
+proc Hdebug {} { return "?destination? ?mode?\n\tInstall debug builds of all packages.\n\tdestination = path of package directory, default \[info library\].\n\tmode        = Build mode, one of system, system-static, or local. Default is system." }
+proc _debug {{ldir {}} {mode {}}} {
+    global packages
+    if {$ldir eq {}} {
+	set ldir [info library]
+	set idir [file dirname [file dirname $ldir]]/include
+    } else {
+	set idir [file dirname $ldir]/include
+    }
+
+    # Create directories, might not exist.
+    file mkdir $idir
+    file mkdir $ldir
+
+    package require critcl::app
+
+    foreach p $packages {
+	set src     [file dirname $::me]/$p.tcl
+	set version [version $src]
+
+	file delete -force [pwd]/BUILD
+
+	if {$mode eq {}} {
+	    critcl::app::main [list -keep -debug all -cache [pwd]/BUILD -libdir $ldir -includedir $idir -pkg $src]
+	} else {
+	    critcl::app::main [list -keep -debug all -with-mode $mode -cache [pwd]/BUILD -libdir $ldir -includedir $idir -pkg $src]
+	}
+
+	if {![file exists $ldir/$p]} {
+	    set ::NOTE {warn {DONE, with FAILURES}}
+	    break
+	}
+
+	file delete -force $ldir/$p$version
+	file rename        $ldir/$p $ldir/$p$version
+
+	puts -nonewline "Installed package:     "
+	tag ok
+	puts $ldir/$p$version
+    }
+    return
+}
 proc Hgui {} { return "\n\tInstall all packages, and application.\n\tDone from a small GUI." }
 proc _gui {} {
     global INSTALLPATH

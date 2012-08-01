@@ -151,6 +151,43 @@ proc _install {{ldir {}}} {
     }
     return
 }
+proc Hdebug {} { return "?destination?\n\tInstall debug build of package.\n\tdestination = path of package directory, default \[info library\]." }
+proc _debug {{ldir {}}} {
+    global packages
+    if {[llength [info level 0]] < 2} {
+	set ldir [info library]
+	set idir [file dirname [file dirname $ldir]]/include
+    } else {
+	set idir [file dirname $ldir]/include
+    }
+
+    # Create directories, might not exist.
+    file mkdir $idir
+    file mkdir $ldir
+
+    package require critcl::app
+
+    foreach p $packages {
+	set src     [file dirname $::me]/$p.tcl
+	set version [version $src]
+
+	file delete -force             [pwd]/BUILD
+	critcl::app::main [list -cache [pwd]/BUILD -keep -debug all -libdir $ldir -includedir $idir -pkg $src]
+
+	if {![file exists $ldir/$p]} {
+	    set ::NOTE {warn {DONE, with FAILURES}}
+	    break
+	}
+
+	file delete -force $ldir/$p$version
+	file rename        $ldir/$p $ldir/$p$version
+
+	puts -nonewline "Installed package:     "
+	tag ok
+	puts $ldir/$p$version
+    }
+    return
+}
 proc Hgui {} { return "\n\tInstall all packages, and application.\n\tDone from a small GUI." }
 proc _gui {} {
     global INSTALLPATH
