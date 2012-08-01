@@ -527,7 +527,9 @@ proc ::critcl::class::MethodExplicit {name mtype arguments args} {
 	lassign $args rtype body
 
 	set body   $bloc[string trimright $body]
-	set syntax "/* Syntax: <class> $name [critcl::argnames $arguments] */"
+	set cargs  [critcl::argnames $arguments]
+	if {[llength $cargs]} { set cargs " $cargs" }
+	set syntax "/* Syntax: <class> $name$cargs */"
 	set body   "\n    $syntax\n$cdimport\n    $body"
 
 	set code [critcl::collect {
@@ -589,7 +591,9 @@ proc ::critcl::class::ClassMethodExplicit {name mtype arguments args} {
 	lassign $args rtype body
 
 	set body   $bloc[string trimright $body]
-	set syntax "/* Syntax: <class> $name [critcl::argnames $arguments] */"
+	set cargs  [critcl::argnames $arguments]
+	if {[llength $cargs]} { set cargs " $cargs" }
+	set syntax "/* Syntax: <class> $name$cargs */"
 	set body   "\n    $syntax\n$cdimport\n    $body"
 
 	set code [critcl::collect {
