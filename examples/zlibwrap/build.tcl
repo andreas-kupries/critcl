@@ -176,12 +176,12 @@ proc _debug {{ldir {}} {mode {}}} {
 	set src     [file dirname $::me]/$p.tcl
 	set version [version $src]
 
-	file delete -force [pwd]/BUILD
+	file delete -force [pwd]/BUILD.$p
 
 	if {$mode eq {}} {
-	    critcl::app::main [list -keep -debug all -cache [pwd]/BUILD -libdir $ldir -includedir $idir -pkg $src]
+	    critcl::app::main [list -keep -debug all -cache [pwd]/BUILD.$p -libdir $ldir -includedir $idir -pkg $src]
 	} else {
-	    critcl::app::main [list -keep -debug all -with-mode $mode -cache [pwd]/BUILD -libdir $ldir -includedir $idir -pkg $src]
+	    critcl::app::main [list -keep -debug all -with-mode $mode -cache [pwd]/BUILD.$p -libdir $ldir -includedir $idir -pkg $src]
 	}
 
 	if {![file exists $ldir/$p]} {

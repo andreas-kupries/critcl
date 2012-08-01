@@ -171,8 +171,8 @@ proc _debug {{ldir {}}} {
 	set src     [file dirname $::me]/$p.tcl
 	set version [version $src]
 
-	file delete -force             [pwd]/BUILD
-	critcl::app::main [list -cache [pwd]/BUILD -keep -debug all -libdir $ldir -includedir $idir -pkg $src]
+	file delete -force             [pwd]/BUILD.$p
+	critcl::app::main [list -cache [pwd]/BUILD.$p -keep -debug all -libdir $ldir -includedir $idir -pkg $src]
 
 	if {![file exists $ldir/$p]} {
 	    set ::NOTE {warn {DONE, with FAILURES}}
