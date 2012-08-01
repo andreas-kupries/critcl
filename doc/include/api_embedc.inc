@@ -161,6 +161,9 @@ dstring   char*    String   Ditto.
 -------   -------- -------- -------------------
 double    double   Double
 float     float    Double
+-------   -------- -------- -------------------
+bool      int      Int
+boolean   int      Int
 int       int      Int
 long      long     Long
 -------   -------- -------- -------------------
@@ -195,6 +198,8 @@ double    double   Double
 float*    float*            Pointer into ByteArray representation ?!
 float     float    Double
 int*      int*              Pointer into ByteArray representation ?!
+bool      int      Boolean
+boolean   int      Boolean
 int       int      Int
 long      long     Long
 rawchar*  char*    ByteArray

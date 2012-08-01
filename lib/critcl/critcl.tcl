@@ -373,6 +373,10 @@ proc ::critcl::resulttype {name conversion {ctype {}}} {
     variable v::rctype
     variable v::rconv
 
+    if {[info exists rconv($name)]} {
+	return -code error "Illegal duplicate definition of '$name'."
+    }
+
     # Handle aliases by copying the original definition.
     if {$conversion eq "="} {
 	set conversion $rconv($ctype) 
@@ -4257,6 +4261,8 @@ proc ::critcl::Initialize {} {
 	Tcl_SetObjResult(ip, Tcl_NewIntObj(rv));
 	return TCL_OK;
     }
+    resulttype boolean = int
+    resulttype bool    = int
 
     resulttype long {
 	Tcl_SetObjResult(ip, Tcl_NewLongObj(rv));
@@ -4418,6 +4424,8 @@ namespace eval ::critcl {
 
 	variable actype
 	array set actype {
+	    bool      int
+	    boolean   int
 	    int       int     
 	    long      long    
 	    float     float   
