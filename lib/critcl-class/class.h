@@ -35,7 +35,7 @@ static CONST char* @stem@_class_methodnames [] = {
 typedef enum @stem@_classmethods {
     @stem@_CM_create,
     @stem@_CM_new@class_method_enumeration@
-} @stem@_class_methods;
+} @stem@_classmethods;
 
 /*
  * Class structures. Instance counter.
@@ -355,7 +355,7 @@ int
      * the requested functionality
      */
 
-    switch ((@stem@_methods) mcode) {
+    switch ((@stem@_classmethods) mcode) {
 	case @stem@_CM_create: return @stem@_CM_createCmd (classmgr, interp, objc, objv); break;
 	case @stem@_CM_new:    return @stem@_CM_newCmd    (classmgr, interp, objc, objv); break;@class_method_dispatch@
     }
