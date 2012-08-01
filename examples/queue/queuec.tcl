@@ -98,7 +98,7 @@ critcl::class::define ::queuec {
     } ; # no need for a destructor
 
     # # ## ### ##### ######## ############# #####################
-    method clear proc {} ok {
+    method clear proc {} void {
 	/*
 	 * Delete and recreate the queue memory. A combination of delete/new,
 	 * except the main structure is left unchanged
@@ -116,8 +116,6 @@ critcl::class::define ::queuec {
 	Tcl_IncrRefCount (instance->unget); 
 	Tcl_IncrRefCount (instance->queue); 
 	Tcl_IncrRefCount (instance->append);
-
-	return TCL_OK;
     }
 
     # # ## ### ##### ######## ############# #####################
@@ -143,9 +141,8 @@ critcl::class::define ::queuec {
     }
 
     # # ## ### ##### ######## ############# #####################
-    method size proc {} ok {
-	Tcl_SetObjResult (interp, Tcl_NewIntObj (QueueSize (instance, NULL, NULL, NULL)));
-	return TCL_OK;
+    method size proc {} int {
+	return QueueSize (instance, NULL, NULL, NULL);
     }
 
     # # ## ### ##### ######## ############# #####################
