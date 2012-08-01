@@ -1,5 +1,5 @@
 '\"
-'\" Generated from file '/home/aku/Projects/Critcl/dev-dev31/embedded/man/files/critcl_iassoc.n' by tcllib/doctools with format 'nroff'
+'\" Generated from file '/home/aku/Projects/Critcl/Dev/src/embedded/man/files/critcl_iassoc.n' by tcllib/doctools with format 'nroff'
 '\" Copyright (c) 2011-2012 Andreas Kupries
 '\"
 '\" The definitions below are for supplemental macros used in Tcl/Tk
@@ -261,12 +261,15 @@ faster.
 .PP
 This document is the reference manpage for the \fBcritcl::iassoc\fR
 package. This package provides convenience commands for advanced
-functionality built on top of the core.
-Namely, the specification of structures associated with Tcl interpreters
-through their association mechanism and accessor functions for these
-structures, without having to write all the required boilerplate.
-Its intended audience are mainly developers wishing to write Tcl
-packages with embedded C code.
+functionality built on top of the critcl core.
+.PP
+With it a user wishing to associate some data with a Tcl
+interpreter via Tcl's \fBTcl_(Get|Set)AssocData()\fR APIs can now
+concentrate on the data itself, while all the necessary boilerplate
+around it is managed by this package.
+.PP
+Its intended audience are mainly developers wishing to write
+Tcl packages with embedded C code.
 .PP
 This package resides in the Core Package Layer of CriTcl.
 .PP
@@ -303,7 +306,7 @@ provides access to a structure associated with a Tcl interpreter.
 The C code code fragment \fIstruct\fR defines the elements of
 said structure, whereas the fragments \fIconstructor\fR and
 \fIdestructor\fR are C code blocks executed to initialize and release
-any dynamically allocated parts of the structure, when needed. Note
+any dynamically allocated parts of this structure, when needed. Note
 that the structure itself is managed by the system.
 .sp
 The new function takes a \fBTcl_Interp*\fR pointer refering
@@ -327,16 +330,18 @@ The C code blocks can rely on the following C environments:
 .RS
 .TP
 \fBdata\fR
-Pointer to the structure to initialize.
+Pointer to the structure (type: \fIname\fR_data) to
+initialize.
 .TP
 \fBinterp\fR
-Pointer to the Tcl interpreter the new structure
-will be associated with.
+Pointer to the Tcl interpreter (type: Tcl_Interp*)
+the new structure will be associated with.
 .TP
 error
-A C code label the constructor can jump to to signal a
-construction failure. It is the responsibility of the constructor to
-release any fields already initialized before jumping to this label.
+A C code label the constructor can jump to should it have
+to signal a construction failure. It is the responsibility of the
+constructor to release any fields already initialized before jumping
+to this label.
 .TP
 ...
 The names of the constructor arguments specified with
@@ -377,6 +382,17 @@ critcl::iassoc::def icounter {} {
 } {
     /* Nothing to release */
 }
+
+critcl::ccode {
+    ... function (...)
+    {
+         /* Access to the data ... */
+         icounter_data D = icounter (interp /* ... any declared arguments, here, none */);
+	 ... D->counter ...
+    }
+}
+# or, of course, 'cproc's, 'ccommand's etc.
+
 package provide icounter 1
 
 .CE

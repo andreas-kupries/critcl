@@ -92,7 +92,7 @@
     }
 --></style>
 </head>
-<! -- Generated from file '/home/aku/Projects/Critcl/dev-dev31/embedded/www/files/critcl_app.html' by tcllib/doctools with format 'html'
+<! -- Generated from file '/home/aku/Projects/Critcl/Dev/src/embedded/www/files/critcl_app.html' by tcllib/doctools with format 'html'
    -->
 <! -- Copyright &copy; Jean-Claude Wippler   -- Copyright &copy; Steve Landers   -- Copyright &copy; 2011 Andreas Kupries
    -->
@@ -749,10 +749,34 @@ file on execution of the first critcl command.</p></li>
 <li><p>Extended the API with a command, <b class="cmd">critcl::name2c</b> exposing
 the process of converting a Tcl name into base name, namespace, and C
 namespace.</p></li>
-<li><p>Extended the API with a command, <b class="cmd">critcl::source</b> executing
-critcl commands in a separate file in the context of the current file,
-allowing for easier management of larger bodies of code by splitting
-it up.</p></li>
+<li><p>Extended the API with a command, <b class="cmd">critcl::source</b>,
+executing critcl commands in a separate file in the context of the
+current file, allowing for easier management of larger bodies of code
+by splitting it up.</p></li>
+<li><p>Related to the previous item, extended the API with commands to
+divert code collection into memory, making the use of commands for
+embedded C code by higher level code generators easier.</p>
+<p>See the section <b class="sectref">Advanced: Diversions</b> for details of
+the provided commands, and the package <b class="package"><a href="critcl_class.html">critcl::class</a></b> for a
+user of these facilities.</p></li>
+<li><p>Extended the API with commands helping developers of
+higher-level packages generating their own C code to deal with the
+embedding of proper C <i class="term">#line</i> directives.</p>
+<p>See the section <b class="sectref">Advanced: Location management</b> for
+details of the provided commands, and the packages
+<b class="package"><a href="critcl_iassoc.html">critcl::iassoc</a></b> and <b class="package"><a href="critcl_class.html">critcl::class</a></b> for users of
+these facilities.</p></li>
+<li><p>Added the higher-level package <b class="package"><a href="critcl_iassoc.html">critcl::iassoc</a></b>.</p>
+<p>This package simplifies the creation of code associating data
+with an interpreter via Tcl's <b class="function">Tcl_(Get|Set)AssocData()</b> APIs. The
+user can concentrate on his data while all the neccessary boilerplate
+to support it is generated/handled by the package.</p></li>
+<li><p>Added the higher-level package <b class="package"><a href="critcl_class.html">critcl::class</a></b>.</p>
+<p>This package simplifies the creation of C level objects with
+class and instance commands. The user sees a class definition with
+class- and instance-variables and -methods similar to a TclOO class,
+with all the necessary boilerplate to support them generated/handled
+by the package.</p></li>
 </ol>
 </div>
 <div id="section14" class="section"><h2><a name="section14">Authors</a></h2>

@@ -1,5 +1,5 @@
 '\"
-'\" Generated from file '/home/aku/Projects/Critcl/dev-dev31/embedded/man/files/critcl_class.n' by tcllib/doctools with format 'nroff'
+'\" Generated from file '/home/aku/Projects/Critcl/Dev/src/embedded/man/files/critcl_class.n' by tcllib/doctools with format 'nroff'
 '\" Copyright (c) 2011-2012 Andreas Kupries
 '\"
 '\" The definitions below are for supplemental macros used in Tcl/Tk
@@ -251,21 +251,33 @@ package require \fBcritcl::class  ?1?\fR
 .sp
 \fB::critcl::class::def\fR \fIname\fR \fIscript\fR
 .sp
-\fBconstructor\fR \fIbody\fR ?\fIpostbody\fR?
-.sp
-\fBdestructor\fR \fIbody\fR
-.sp
-\fBfield\fR \fIctype\fR \fIname\fR ?\fIcomment\fR?
-.sp
 \fBinclude\fR \fIpath\fR
-.sp
-\fBmdef\fR \fIname\fR \fIbody\fR
-.sp
-\fBmdef\fR \fIname\fR \fBas\fR \fIfunname\fR ?\fIarg\fR...?
 .sp
 \fBsupport\fR \fIcode\fR
 .sp
 \fBtype\fR \fIname\fR
+.sp
+\fBclassconstructor\fR \fIbody\fR
+.sp
+\fBclassdestructor\fR \fIbody\fR
+.sp
+\fBconstructor\fR \fIbody\fR ?\fIpostbody\fR?
+.sp
+\fBdestructor\fR \fIbody\fR
+.sp
+\fBclassvariable\fR \fIctype\fR \fIname\fR ?\fIcomment\fR? ?\fIconstructor\fR? ?\fIdestructor\fR?
+.sp
+\fBclassmethod\fR \fIname\fR \fIarguments\fR \fIbody\fR
+.sp
+\fBclassmethod\fR \fIname\fR \fBas\fR \fIfunname\fR ?\fIarg\fR...?
+.sp
+\fBinsvariable\fR \fIctype\fR \fIname\fR ?\fIcomment\fR? ?\fIconstructor\fR? ?\fIdestructor\fR?
+.sp
+\fBmethod\fR \fIname\fR \fIarguments\fR \fIbody\fR
+.sp
+\fBmethod\fR \fIname\fR \fBas\fR \fIfunname\fR ?\fIarg\fR...?
+.sp
+\fBmethod_introspection\fR
 .sp
 .BE
 .SH DESCRIPTION
@@ -278,11 +290,15 @@ faster.
 This document is the reference manpage for the \fBcritcl::class\fR
 package. This package provides convenience commands for advanced
 functionality built on top of the core.
-Namely, the specification of classes and objects without having to
-write all the required boilerplate, only the methods themselves,
-essentially.
-Its intended audience are mainly developers wishing to write Tcl
-packages with embedded C code.
+.PP
+With it a user wishing to create a C level object with class
+and instance commands can concentrate on specifying the class- and
+instance-variables and -methods in a manner similar to a TclOO class,
+while all the necessary boilerplate around it is managed by this
+package.
+.PP
+Its intended audience are mainly developers wishing to write
+Tcl packages with embedded C code.
 .PP
 This package resides in the Core Package Layer of CriTcl.
 .PP
@@ -313,145 +329,451 @@ This package resides in the Core Package Layer of CriTcl.
 .SH API
 .TP
 \fB::critcl::class::def\fR \fIname\fR \fIscript\fR
-This command defines a new class \fIname\fR, where \fIname\fR is the
-name of the Tcl command representing the class. The \fIscript\fR
-provides the specification of the class, i.e. information about
-included headers, instance data, methods, etc.
-The section \fBClass Specification API\fR below explains the
-commands available to the developer.
+This is the main command to define a new class \fIname\fR, where
+\fIname\fR is the name of the Tcl command representing the class,
+i.e. the \fIclass command\fR. The \fIscript\fR provides the
+specification of the class, i.e. information about included headers,
+class- and instance variables, class- and instance-methods, etc.
+See the section \fBClass Specification API\fR below for the
+detailed list of the available commands and their semantics.
 .PP
 .SH "CLASS SPECIFICATION API"
-.TP
-\fBconstructor\fR \fIbody\fR ?\fIpostbody\fR?
-This command specifies the C code for the construction,
-i.e. allocation of instance structures.
-While technically optional in practice it should be specified.
-.sp
-The C code in \fIbody\fR has to contain the statements
-initializing the instance structure, which is accessible through the
-variable \fBinstance\fR.
-It further has access to the variable \fBinterp\fR, a pointer to the
-Tcl interpreter the command is created in, enabling it to set an error
-message should the construction fail.
-The C code in \fIpostbody\fR is then responsible for connecting the
-\fBinstance\fR with the created Tcl command, accessible through the
-variable \fBcmd\fR, of type \fBTcl_Command\fR.
-.sp
-If the instance structure is specified as a series of
-\fBfield\fRs then the system will automatically generate code to
-allocate the instance structure.
-It will also provide a label \fBerror:\fR to jump to in case of a
-failure, at which point the instance will be cleaned up and NULL
-returned as the result of the constructor, to notify the calling
-environment of that failure.
-.sp
-Otherwise, i.e. for an external \fBtype\fR all of this,
-i.e. allocation, possible deallocation on failure, etc. will be the
-responsibility of the \fIbody\fR and writer of the class.
-.TP
-\fBdestructor\fR \fIbody\fR
-This command specifies the C code for the destruction, i.e. release of
-instance structures.
-While technically optional in practice it should be specified.
-.sp
-The \fIbody\fR has to contain the code releasing the contents
-of the instance structure, accessible through the variable
-\fBinstance\fR.
-.sp
-If the instance structure is specified as a series of
-\fBfield\fRs then the system will automatically generate code to free
-the instance structure (not the fields) after the \fIbody\fR was run.
-It will further generate a \fBdestroy\fR method too, owing to its
-knowledge of the instance structure, i.e. the existence of field
-\fBcmd\fR.
-Otherwise, i.e. for an external \fBtype\fR it is the responsibility of
-the \fIbody\fR to free the structure itself as well.
-.TP
-\fBfield\fR \fIctype\fR \fIname\fR ?\fIcomment\fR?
-This command specifies a field in the instance structure of the class,
-naming it, the C type used, and possibly a comment. Multiple fields
-can be specified, and are saved in the order specified.
-This specification is mutually exclusive with the use of an external C
-\fBtype\fR for the instance structure.
-.sp
-Note that for this way of declaring the instance data the
-system will automatically generate code for the basic allocation and
-release of the instance structure. The constructor and destructor C
-code supplied by the user has to deal only with the specified fields.
-.sp
-Note further that in this case a predefined field \fBcmd\fR of
-type \fBTcl_Command\fR is present, to allow the association of
-instance structure and instance command. And the \fIpostbody\fR will
-implictly contain the assignment
-.CS
-
-
-    instance->cmd = cmd;
-
-.CE
+Here we documents all class specification commands available inside of
+the class definition script argument of \fB::critcl::class::define\fR.
+.SS "GENERAL CONFIGURATION"
 .TP
 \fBinclude\fR \fIpath\fR
-This command specified the path of a header file to include within the
+This command specifies the path of a header file to include within the
 code generated for the class. This is separate from the \fBsupport\fR
-because these include will be at the very beginning of the generated
-code to allow the use of the import declarations within the instance
-type, etc.
+because the generated include directives will be put at the very
+beginning of the generated code. This is done to allow the use of the
+imported declarations within the instance type, and elsewhere.
+.sp
+The command can be used multiple times, each adding a header to
+include. It is of course possible to not use this command at all, for
+classing not making use of external definitions.
+.sp
+The result of the command is the empty string.
 .TP
-\fBmdef\fR \fIname\fR \fIbody\fR
-This command specifies a method and the C code implementing it. The
-body has access to the variables
+\fBsupport\fR \fIcode\fR
+This command specifies supporting C code, i.e. any definitions (types,
+functions, etc.) needed by the \fIwhole\fR class and not fitting into
+class- and instance-methods. The code is embedded at global level,
+outside of any function or other definition.
+.sp
+The command can be used multiple times, each adding another
+segment of C code to insert. It is of course possible to not use this
+command at all, for classes not requiring swupporting code.
+.sp
+The result of the command is the empty string.
+.TP
+\fBtype\fR \fIname\fR
+This command specifies the name of an external C type to be used as
+the type of the instance structure.
+.sp
+Initialization and release of the structure with the given type
+are the responsibility of the user, through \fBconstructor\fR and
+\fBdestructor\fR code fragments.
+.sp
+\fIAttention:\fR Using this command precludes the use of
+regular class- and instance variables. It further precludes the use of
+\fBmethod-introspection\fR as well, as this make use of generated
+instance-variables.
+.sp
+If class- and/or instance-variable have to be used in
+conjunction with an external C type, simply create and use a class- or
+instance-variable with that type.
+.sp
+The result of the command is the empty string.
+.PP
+.SS "CLASS LIFETIME MANAGEMENT"
+.TP
+\fBclassconstructor\fR \fIbody\fR
+This command specifies a C code block surrounding the initialization
+of the class variables, i.e. the fields of the class structure.
+\fINote\fR that allocation and release of the class structure itself
+is done by the system andf not the responsibility of the user.
+.sp
+For the initialization (and release) of a class variable it is
+recommended to use the \fIconstructor\fR and \fIdestructor\fR
+arguments of the variable's definition (See command
+\fBclassvariable\fR) for this instead of using a separate
+\fBclassconstructor\fR.
+.sp
+This is an optional command. Using it more than once is allowed
+too and each use will add another C code fragment to use during
+construction. I.e. multiple calls aggregate.
+.sp
+The C code blocks of multiple calls (including the constructors
+of classvariable definitions) are executed in order of specification.
+.sp
+The result of the command is the empty string.
+.sp
+The C code in \fIbody\fR has access to the following
+environment:
+.RS
+.TP
+\fBinterp\fR
+Pointer to the Tcl interpreter (Tcl_Interp*) the
+class structure will be associated with. It enables the generation
+of a Tcl error message should construction fail.
+.TP
+\fBclass\fR
+Pointer to the class structure to initialize.
+.TP
+error
+A C code label the constructor can jump to should it have
+to signal a construction failure. It is the responsibility of the
+constructor to release any variables already initialized before
+jumping to this label. This also why the 'execution in order of
+specification' is documented and can be relied on. It gives us the
+knowledge which other constructors have already been run and
+initialized what other fields.
+.RE
+.TP
+\fBclassdestructor\fR \fIbody\fR
+This command specifies a C code block surrounding the release of the
+class variables, i.e. the fields of the class structure.
+\fINote\fR that allocation and release of the class structure itself
+is done by the system and not the responsibility of the user.
+.sp
+For the initialization (and release) of a class variable it is
+recommended to use the \fIconstructor\fR and \fIdestructor\fR
+arguments of the variable's definition (See command
+\fBclassvariable\fR) for this instead of using a separate
+\fBclassconstructor\fR.
+.sp
+This is an optional command. Using it more than once is allowed
+too and each use will add another C code fragment to use during
+construction. I.e. multiple calls aggregate.
+.sp
+The C code blocks of multiple calls (including the constructors
+of class variable definitions) are executed in order of specification.
+.sp
+The result of the command is the empty string.
+.sp
+The C code in \fIbody\fR has access to the same
+environment as the class constructor code blocks.
+.PP
+.SS "INSTANCE LIFETIME MANAGEMENT"
+.TP
+\fBconstructor\fR \fIbody\fR ?\fIpostbody\fR?
+This command specifies a C code block surrounding the initialization
+of the instance variables, i.e. the fields of the instance structure.
+\fINote\fR that allocation and release of the instance structure
+itself is done by the system and not the responsibility of the user.
+\fIOn the other hand\fR, if an external \fBtype\fR was specified
+for the instance structure, then instance variables are not possible,
+and the system has no knowledge of the type's structure. In that case
+it is the responsibility of the \fIbody\fR to allocate and free the
+structure itself too.
+.sp
+For the initialization (and release) of an instance variable it
+is recommended to use the \fIconstructor\fR and \fIdestructor\fR
+arguments of the variable's definition (See command \fBinsvariable\fR)
+for this instead of using a separate \fBconstructor\fR.
+.sp
+This is an optional command. Using it more than once is allowed
+too and each use will add another C code fragment to use during
+construction. I.e. multiple calls aggregate.
+.sp
+The C code blocks of multiple calls (including the constructors
+of instance variable definitions) are executed in order of specification.
+.sp
+The result of the command is the empty string.
+.sp
+The C code in \fIbody\fR has access to the following
+environment:
+.RS
+.TP
+\fBinterp\fR
+Pointer to the Tcl interpreter (Tcl_Interp*) the
+instance structure will be associated with. It enables the generation
+of a Tcl error message should construction fail.
+.TP
+\fBinstance\fR
+Pointer to the instance structure to initialize.
+.TP
+error
+A C code label the constructor can jump to should it have
+to signal a construction failure. It is the responsibility of the
+constructor to release any variables already initialized before
+jumping to this label. This also why the 'execution in order of
+specification' is documented and can be relied on. It gives us the
+knowledge which other constructors have already been run and
+initialized what other fields.
+.RE
+.sp
+The C code in \fIpostbody\fR is responsible construction action
+to be done after the primary construction was done and the Tcl-level
+instance command was successfully created. It has access to a slightly
+different environment:
+.RS
+.TP
+\fBinterp\fR
+Pointer to the Tcl interpreter (Tcl_Interp*) the
+instance structure will be associated with. It enables the generation
+of a Tcl error message should construction fail.
+.TP
+\fBinstance\fR
+Pointer to the instance structure to initialize.
+.TP
+\fBcmd\fR
+The Tcl_Command token of the Tcl-level instance
+command.
+.TP
+\fBfqn\fR
+The fully qualified name of the instance command,
+stored in a Tcl_Obj*.
+.RE
+.TP
+\fBdestructor\fR \fIbody\fR
+This command specifies a C code block surrounding the release of the
+instance variables, i.e. the fields of the instance structure.
+\fINote\fR that allocation and release of the instance structure
+itself is done by the system and not the responsibility of the user.
+\fIOn the other hand\fR, if an external \fBtype\fR was specified
+for the instance structure, then instance variables are not possible,
+and the system has no knowledge of the type's structure. In that case
+it is the responsibility of the \fIbody\fR to allocate and free the
+structure itself too.
+.sp
+For the initialization (and release) of an instance variable it
+is recommended to use the \fIconstructor\fR and \fIdestructor\fR
+arguments of the variable's definition (See command \fBinsvariable\fR)
+for this instead of using a separate \fBconstructor\fR.
+.sp
+This is an optional command. Using it more than once is allowed
+too and each use will add another C code fragment to use during
+construction. I.e. multiple calls aggregate.
+.sp
+The C code blocks of multiple calls (including the constructors
+of instance variable definitions) are executed in order of specification.
+.sp
+The result of the command is the empty string.
+.sp
+The C code in \fIbody\fR has access to the following
+environment:
 .RS
 .TP
 \fBinstance\fR
+Pointer to the instance structure to release.
+.RE
+.PP
+.SS "CLASS VARIABLES AND METHODS"
+.TP
+\fBclassvariable\fR \fIctype\fR \fIname\fR ?\fIcomment\fR? ?\fIconstructor\fR? ?\fIdestructor\fR?
+This command specifies a field in the class structure of the class.
+Multiple fields can be specified, and are saved in the order
+specified.
+.sp
+\fIAttention:\fR Specification of a class variable precludes
+the use of an external C \fBtype\fR for the instance structure.
+.sp
+\fIAttention:\fR Specification of a class variable
+automatically causes the definition of an instance variable named
+\fBclass\fR, pointing to the class structure.
+.sp
+Beyond the basic \fIname\fR and C type of the new variable the
+definition may also contain a \fIcomment\fR describing it, and C code
+blocks to initialize and release the variable.
+These are effectively local forms of the commands
+\fBclassconstructor\fR and \fBclassdestructor\fR. Please read their
+descriptions for details regarding the C environment available to the
+code.
+.sp
+The comment, if specified will be embedded into the generated C
+code for easier cross-referencing from generated "\fI.c\fR" file to
+class specification.
+.TP
+\fBclassmethod\fR \fIname\fR \fIarguments\fR \fIbody\fR
+This command specifies a class method and the C code block
+implementing its functionality. This body has access to
+.RS
+.TP
+\fBclass\fR
+Pointer to the class structure.
 .TP
 \fBinterp\fR
+Pointer to the Tcl interpreter (Tcl_Interp*) the
+class structure is associated with
 .TP
 \fBobjc\fR
+The number of method arguments.
 .TP
 \fBobjv\fR
+The method arguments, as C array of Tcl_Obj pointers.
 .RE
+.IP
+The \fIarguments\fR of the definition are only a human readable form
+of the method arguments and are not used in the C code, except as
+comments. It is still the responsibility of the user to check the
+number of arguments, extract them, check their types, etc.
 .TP
-\fBmdef\fR \fIname\fR \fBas\fR \fIfunname\fR ?\fIarg\fR...?
-This variant of the command above defines a method of the class as
+\fBclassmethod\fR \fIname\fR \fBas\fR \fIfunname\fR ?\fIarg\fR...?
+This variant of the command above defines a class method which is
 implemented by the external function \fIfunname\fR, i.e. which is
-declared outside of the class code itself.
+declared outside of the class code itself, or in a \fBsupport\fR
+block.
+.sp
+It is assumed that the first four arguments of that function
+represent the parameters
+.RS
+.TP
+\fBclass\fR
+Pointer to the class structure.
+.TP
+\fBinterp\fR
+Pointer to the Tcl interpreter (Tcl_Interp*) the
+class structure is associated with
+.TP
+\fBobjc\fR
+The number of method arguments.
+.TP
+\fBobjv\fR
+The method arguments, as C array of Tcl_Obj pointers.
+.RE
+.IP
+Any additional arguments specified will be added after these and are
+passed into the C code as is, i.e. are considered to be C expressions.
+.PP
+.SS "INSTANCE VARIABLES AND METHODS"
+.TP
+\fBinsvariable\fR \fIctype\fR \fIname\fR ?\fIcomment\fR? ?\fIconstructor\fR? ?\fIdestructor\fR?
+This command specifies a field in the instance structure of the class.
+Multiple fields can be specified, and are saved in the order
+specified.
+.sp
+\fIAttention:\fR Specification of an instance variable
+precludes the use of an external C \fBtype\fR for the instance
+structure.
+.sp
+\fIAttention:\fR Specification of an instance variable
+automatically causes the definition of an instance variable of type
+\fBTcl_Command\fR, and named \fBcmd\fR, holding the token of the
+instance command, and the definition of an instance method named
+\fBdestroy\fR. This implicit instance variable is managed by the
+system.
+.sp
+Beyond the basic \fIname\fR and C type of the new variable the
+definition may also contain a \fIcomment\fR describing it, and C code
+blocks to initialize and release the variable.
+These are effectively local forms of the commands \fBconstructor\fR
+and \fBdestructor\fR. Please read their descriptions for details
+regarding the C environment available to the code.
+.sp
+The comment, if specified will be embedded into the generated C
+code for easier cross-referencing from generated "\fI.c\fR" file to
+class specification.
+.TP
+\fBmethod\fR \fIname\fR \fIarguments\fR \fIbody\fR
+This command specifies an instance method and the C code block
+implementing its functionality. This body has access to
+.RS
+.TP
+\fBinstance\fR
+Pointer to the instance structure.
+.TP
+\fBinterp\fR
+Pointer to the Tcl interpreter (Tcl_Interp*) the
+instance structure is associated with
+.TP
+\fBobjc\fR
+The number of method arguments.
+.TP
+\fBobjv\fR
+The method arguments, as C array of Tcl_Obj pointers.
+.RE
+.IP
+The \fIarguments\fR of the definition are only a human readable form
+of the method arguments and are not used in the C code, except as
+comments. It is still the responsibility of the user to check the
+number of arguments, extract them, check their types, etc.
+.TP
+\fBmethod\fR \fIname\fR \fBas\fR \fIfunname\fR ?\fIarg\fR...?
+This variant of the command above defines an instance method of the
+class as implemented by the external function \fIfunname\fR,
+i.e. which is declared outside of the class code itself, or in a
+\fBsupport\fR block.
 .sp
 It is assumed that the first four arguments of that function
 represent the parameters
 .RS
 .TP
 \fBinstance\fR
+Pointer to the instance structure.
 .TP
 \fBinterp\fR
+Pointer to the Tcl interpreter (Tcl_Interp*) the
+instance structure is associated with
 .TP
 \fBobjc\fR
+The number of method arguments.
 .TP
 \fBobjv\fR
+The method arguments, as C array of Tcl_Obj pointers.
 .RE
 .IP
 Any additional arguments specified will be added after these and are
 passed into the C code as is, i.e. are considered to be C expressions.
-.sp
-Note that the system automatically generates a method
-\fBdestroy\fR when the instance structure is specified as a series
-of \fBfield\fRs.
 .TP
-\fBsupport\fR \fIcode\fR
-This command specifies the \fIsupport\fRing C code, i.e. any
-definitions (types, functions, etc.) needed by the \fIwhole\fR class.
-It is optional, i.e. if the class doesn't need supporting code, this
-command can be left out of the specification.
-.TP
-\fBtype\fR \fIname\fR
-This command specifies the name of an external C type, i.e. found
-outside of the class definition itself, for the instance
-structure.
-This specification is mutually exclusive with the declaration of the
-structure as a series of \fBfield\fRs within the class definition
-itself.
+\fBmethod_introspection\fR
+This command generates one class- and one instance-method both of
+which will return a list of the instance methods of the class, and
+supporting structures, like the function to compute the information,
+and a class variable caching it.
 .sp
-It is the responsibility of the constructor and destructor C
-code to allocate and release this structure, and its contents.
+The two methods and the class variable are all named
+\fBmethods\fR.
+.PP
+.SS "CONTEXT DEPENDENT INTERACTIONS"
+This section documents the various interactions between the
+specification commands. While these are are all documented with the
+individual commands here they are pulled together to see at a glance.
+.IP [1]
+If you are using the command \fBtype\fR to specify an external
+C type to use for the instance structure you are subject to
+the following constraints and rules:
+.RS
+.IP [1]
+You cannot define your own instance variables.
+.IP [2]
+You cannot define your own class variables.
+.IP [3]
+You cannot use \fBmethod_introspection\fR.
+.IP [4]
+You have to allocate and release the instance structure on your
+own, through \fBconstructor\fR and \fBdestructor\fR code blocks.
+.RE
+.IP [2]
+If you declare class variables you are subject to the
+following constraints and rules:
+.RS
+.IP [1]
+You cannot use \fBtype\fR.
+.IP [2]
+The system generates an instance variable \fBclass\fR for
+you, which points from instance to class structure. This makes
+you also subject to the rules below, for instance variables.
+.RE
+.IP [3]
+If you declare instance variables (possibly automatic, see
+above) you are subject to following constraints and rules:
+.RS
+.IP [1]
+You cannot use \fBtype\fR.
+.IP [2]
+The system generates and manages an instance variable
+\fBcmd\fR for you, which holds the Tcl_Command token
+of the instance command.
+.IP [3]
+The system generates an instance method \fBdestroy\fR for
+you.
+.IP [4]
+The system manages allocation and release of the instance
+structure for you. You have to care only about the instance
+variables themselves.
+.RE
 .PP
 .SH EXAMPLE
 The example shown below is the specification of queue data structure,
@@ -475,53 +797,60 @@ critcl::cheaders util.h
 critcl::class::def ::queuec {
     include util.h
 
-    field Tcl_Obj* unget  {List object unget elements}
-    field Tcl_Obj* queue  {List object holding the main queue}
-    field Tcl_Obj* append {List object holding new elements}
-    field int      at     {Index of next element to return from the main queue}
-
-    constructor {
-	instance->at     = 0;
-	instance->unget  = Tcl_NewListObj (0,NULL);
-	instance->queue  = Tcl_NewListObj (0,NULL);
-	instance->append = Tcl_NewListObj (0,NULL);
-
+    insvariable Tcl_Obj* unget {
+	List object unget elements
+    } {
+	instance->unget = Tcl_NewListObj (0,NULL);
 	Tcl_IncrRefCount (instance->unget);
-	Tcl_IncrRefCount (instance->queue);
-	Tcl_IncrRefCount (instance->append);
+    } {
+	Tcl_DecrRefCount (instance->unget);
     }
 
-    destructor {
-	Tcl_DecrRefCount (instance->unget);
+    insvariable Tcl_Obj* queue {
+	List object holding the main queue
+    } {
+	instance->queue = Tcl_NewListObj (0,NULL);
+	Tcl_IncrRefCount (instance->queue);
+    } {
 	Tcl_DecrRefCount (instance->queue);
+    }
+
+    insvariable Tcl_Obj* append {
+	List object holding new elements
+    } {
+	instance->append = Tcl_NewListObj (0,NULL);
+	Tcl_IncrRefCount (instance->append);
+    } {
 	Tcl_DecrRefCount (instance->append);
+    }
+
+    insvariable int at {
+	Index of next element to return from the main queue
+    } {
+	instance->at = 0;
     }
 
     support {... queue_peekget, queue_size, etc.}
 
-    mdef clear {...}
-    mdef destroy {...}
+    method clear {} {...}
+    method destroy {...}
 
-    mdef get  as queue_peekget 1
-    mdef peek as queue_peekget 0
+    method get  as queue_peekget 1
+    method peek as queue_peekget 0
 
-    mdef put {...}
+    method put {item ...}
 
-    mdef size {
-	/* Syntax: queue size
-	 *	       [0]   [1]
-	 */
-
+    method size {} {
 	if ((objc != 2)) {
 	    Tcl_WrongNumArgs (interp, 2, objv, NULL);
 	    return TCL_ERROR;
 	}
 
-	Tcl_SetObjResult  (interp, Tcl_NewIntObj (queue_size (instance, NULL, NULL, NULL)));
+	Tcl_SetObjResult (interp, Tcl_NewIntObj (queue_size (instance, NULL, NULL, NULL)));
 	return TCL_OK;
     }
 
-    mdef unget {...}
+    method unget {item} {...}
 }
 
 package provide queuec 1
