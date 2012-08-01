@@ -18,7 +18,8 @@ namespace.
 [enum] Extended the API with a command, [cmd critcl::source],
 executing critcl commands in a separate file in the context of the
 current file, allowing for easier management of larger bodies of code
-by splitting it up.
+by allowing the user to split it up in easier to digest chunks without
+causing the generation of multiple packages.
 
 [comment {- - -- --- ----- -------- ------------- ---------------------}]
 [enum] Related to the previous item, extended the API with commands to
@@ -55,6 +56,13 @@ class and instance commands. The user sees a class definition with
 class- and instance-variables and -methods similar to a TclOO class,
 with all the necessary boilerplate to support them generated/handled
 by the package.
+
+[comment {- - -- --- ----- -------- ------------- ---------------------}]
+[enum] Extended the API with commands extending the set of result
+types understood by [cmd ::critcl::cproc].
+
+See the section [sectref {Advanced: Extending cproc}] for details of
+the provided commands.
 
 [comment {- - -- --- ----- -------- ------------- ---------------------}]
 [list_end]

@@ -362,11 +362,28 @@ proc ::critcl::argconversion {adefs {n 1}} {
 
     set result {}
     foreach {t a} $adefs {
-	lappend result [string map [list @@ $n @A $a @T $t] [ArgumentConversion $t]]
+	lappend result [string map [list @@ "ov\[$n\]" @A _$a @T $t] [ArgumentConversion $t]]
 	incr n
     }
 
     return $result
+}
+
+proc ::critcl::resulttype {name conversion {ctype {}}} {
+    variable v::rctype
+    variable v::rconv
+
+    # Handle aliases by copying the original definition.
+    if {$conversion eq "="} {
+	set conversion $rconv($ctype) 
+	set ctype      $rctype($ctype)
+    }
+    if {$ctype eq {}} {
+	set ctype $name
+    }
+    set rconv($name)  $conversion
+    set rctype($name) $ctype
+    return
 }
 
 proc ::critcl::cproc {name adefs rtype {body "#"} args} {
@@ -2903,7 +2920,6 @@ proc ::critcl::EmitShimFooter {rtype} {
 
     set code [ResultConversion $rtype]
     if {$code ne {}} { Emitln $code }
-    if {$rtype ne "ok"} { Emitln "  return TCL_OK;" }
     Emitln \}
     return
 }
@@ -2920,17 +2936,21 @@ proc ::critcl::ArgumentCTypeB {type} {
 
 proc ::critcl::ArgumentConversion {type} {
     if {[info exists v::aconv($type)]} { return $v::aconv($type) }
-    return "  _@A = ov\[@@];"
+    return "  @A = @@;"
 }
 
 proc ::critcl::ResultCType {type} {
-    if {[info exists v::rctype($type)]} { return $v::rctype($type) }
-    return $type
+    if {[info exists v::rctype($type)]} {
+	return $v::rctype($type)
+    }
+    return -code error "Unknown result type $type"
 }
 
 proc ::critcl::ResultConversion {type} {
-    if {[info exists v::rconv($type)]} { return $v::rconv($type) }
-    return "  if (rv == NULL) \{ return TCL_ERROR ; \}\n  Tcl_SetObjResult(ip, rv); Tcl_DecrRefCount(rv);"
+    if {[info exists v::rconv($type)]} {
+	return $v::rconv($type)
+    }
+    return -code error "Unknown result type $type"
 }
 
 # # ## ### ##### ######## ############# #####################
@@ -4223,6 +4243,63 @@ proc ::critcl::Initialize {} {
     # target platform.
     readconfig [file join $mydir Config]
 
+    # Declare the standard result types for cproc.
+    # System has special casing for:
+    # - void (no rv result variable).
+
+    resulttype void {}
+
+    resulttype ok {
+	return rv;
+    } int
+
+    resulttype int {
+	Tcl_SetObjResult(ip, Tcl_NewIntObj(rv));
+	return TCL_OK;
+    }
+
+    resulttype long {
+	Tcl_SetObjResult(ip, Tcl_NewLongObj(rv));
+	return TCL_OK;
+    }
+
+    resulttype double {
+	Tcl_SetObjResult(ip, Tcl_NewDoubleObj(rv));
+	return TCL_OK;
+    }
+    resulttype float {
+	Tcl_SetObjResult(ip, Tcl_NewDoubleObj(rv));
+	return TCL_OK;
+    }
+
+    # Static and volatile strings. Duplicate.
+    resulttype char* {
+	Tcl_SetObjResult(ip, Tcl_NewStringObj(rv,-1));
+	return TCL_OK;
+    }
+    resulttype vstring = char*
+
+    # Dynamic strings, allocated via Tcl_Alloc.
+    #
+    # We are avoiding the Tcl_Obj* API here, as its use requires an
+    # additional duplicate of the string, churning memory and
+    # requiring more copying.
+    #   Tcl_SetObjResult(ip, Tcl_NewStringObj(rv,-1));
+    #   Tcl_Free (rv);
+    resulttype string {
+	Tcl_SetResult (ip, rv, TCL_DYNAMIC);
+	return TCL_OK;
+    } char*
+    resulttype dstring = string
+
+    resulttype Tcl_Obj* {
+	if (rv == NULL) { return TCL_ERROR; }
+	Tcl_SetObjResult(ip, rv);
+	Tcl_DecrRefCount(rv);
+	return TCL_OK;
+    }
+    resulttype object = Tcl_Obj*
+
     rename ::critcl::Initialize {}
     return
 }
@@ -4360,41 +4437,39 @@ namespace eval ::critcl {
 	    rawchar   char*
 	}
 
+	# In the code fragments below we have the following environment (placeholders, variables):
+	# ip - C variable, Tcl_Interp* of the interpreter providing the arguments.
+	# @@ - Name of the variable holding the argument.
+	# @A - (C) name of the argument (variable).
+	# @T - cproc type name of the argument.
+	#
 	variable aconv
 	array set aconv {
-	    int       "  if (Tcl_GetIntFromObj(ip, ov\[@@], &_@A) != TCL_OK)\n    return TCL_ERROR;"
-	    long      "  if (Tcl_GetLongFromObj(ip, ov\[@@], &_@A) != TCL_OK)\n    return TCL_ERROR;"
-	    float     "  \{ double t;\n    if (Tcl_GetDoubleFromObj(ip, ov\[@@], &t) != TCL_OK)\n    return TCL_ERROR;\n    _@A = (float) t;\n  \}"
-	    double    "  if (Tcl_GetDoubleFromObj(ip, ov\[@@], &_@A) != TCL_OK)\n    return TCL_ERROR;"
-	    char*     "  _@A = Tcl_GetString(ov\[@@]);"
-	    int*      "  _@A = (@T) Tcl_GetByteArrayFromObj(ov\[@@], NULL);\n  Tcl_InvalidateStringRep(ov\[@@]);"
-	    float*    "  _@A = (@T) Tcl_GetByteArrayFromObj(ov\[@@], NULL);\n  Tcl_InvalidateStringRep(ov\[@@]);"
-	    double*   "  _@A = (@T) Tcl_GetByteArrayFromObj(ov\[@@], NULL);\n  Tcl_InvalidateStringRep(ov\[@@]);"
-	    bytearray "  _@A = (char*) Tcl_GetByteArrayFromObj(ov\[@@], NULL);\n  Tcl_InvalidateStringRep(ov\[@@]);"
-	    rawchar*  "  _@A = (char*) Tcl_GetByteArrayFromObj(ov\[@@], NULL);\n  Tcl_InvalidateStringRep(ov\[@@]);"
+	    bool      "  if (Tcl_GetBooleanFromObj(ip, @@, &@A) != TCL_OK)\n    return TCL_ERROR;"
+	    boolean   "  if (Tcl_GetBooleanFromObj(ip, @@, &@A) != TCL_OK)\n    return TCL_ERROR;"
+	    int       "  if (Tcl_GetIntFromObj(ip, @@, &@A) != TCL_OK)\n    return TCL_ERROR;"
+	    long      "  if (Tcl_GetLongFromObj(ip, @@, &@A) != TCL_OK)\n    return TCL_ERROR;"
+	    float     "  \{ double t;\n    if (Tcl_GetDoubleFromObj(ip, @@, &t) != TCL_OK)\n    return TCL_ERROR;\n    @A = (float) t;\n  \}"
+	    double    "  if (Tcl_GetDoubleFromObj(ip, @@, &@A) != TCL_OK)\n    return TCL_ERROR;"
+	    char*     "  @A = Tcl_GetString(@@);"
+	    int*      "  @A = (@T) Tcl_GetByteArrayFromObj(@@, NULL);\n  Tcl_InvalidateStringRep(@@);"
+	    float*    "  @A = (@T) Tcl_GetByteArrayFromObj(@@, NULL);\n  Tcl_InvalidateStringRep(@@);"
+	    double*   "  @A = (@T) Tcl_GetByteArrayFromObj(@@, NULL);\n  Tcl_InvalidateStringRep(@@);"
+	    bytearray "  @A = (char*) Tcl_GetByteArrayFromObj(@@, NULL);\n  Tcl_InvalidateStringRep(@@);"
+	    rawchar*  "  @A = (char*) Tcl_GetByteArrayFromObj(@@, NULL);\n  Tcl_InvalidateStringRep(@@);"
 	}
 
+	# Mapping from cproc result to C result type of the function.
+	# This is also the C type of the helper variable holding the result.
+	# NOTE: 'void' is special, as it has no result, nor result variable.
 	variable rctype
-	array set rctype {
-	    ok      int
-	    string  char*
-	    dstring char*
-	    vstring char*
-	}
+	array set rctype {}
 
+	# In the code fragments for result conversion:
+	# 'rv' == variable capturing the return value of the C function.
+	# 'ip' == variable containing pointer to the interp to set the result into.
 	variable rconv
-	array set rconv {
-	    void    ""
-	    ok      "  return rv;"
-	    int     "  Tcl_SetObjResult(ip, Tcl_NewIntObj(rv));"
-	    long    "  Tcl_SetObjResult(ip, Tcl_NewLongObj(rv));"
-	    float   "  Tcl_SetObjResult(ip, Tcl_NewDoubleObj(rv));"
-	    double  "  Tcl_SetObjResult(ip, Tcl_NewDoubleObj(rv));"
-	    char*   "  Tcl_SetResult(ip, rv, TCL_STATIC);"
-	    string  "  Tcl_SetResult(ip, rv, TCL_DYNAMIC);"
-	    dstring "  Tcl_SetResult(ip, rv, TCL_DYNAMIC);"
-	    vstring "  Tcl_SetResult(ip, rv, TCL_VOLATILE);"
-	}
+	array set rconv {}
 
 	variable storageclass {
 /*

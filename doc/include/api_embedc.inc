@@ -154,21 +154,26 @@ The following values are allowed for the [arg resulttype]:
 Name      C        Tcl      Notes
 -------   -------- -------- -------------------
 Tcl_Obj*  Tcl_Obj* Tcl_Obj* Default, pass-through
-char*     char*    String
+char*     char*    String   Static string
+vstring   char*    String   String is volatile.
+string    char*    String   Dynamically allocated (Tcl_Alloc)
+dstring   char*    String   Ditto.
+-------   -------- -------- -------------------
 double    double   Double
-dstring   char*    String   Dynamic
 float     float    Double
 int       int      Int
 long      long     Long
+-------   -------- -------- -------------------
 ok        int      ---      Result code, pass-through
-string    char*    String   Dynamic
 void      void     ---      No result.
-vstring   char*    String   !Volatile
 -------   -------- -------- -------------------
 }]
 
+[para] Please note that it is possible to extend the above with custom
+types if these types are not enough. See section
+[sectref {Advanced: Extending cproc}] for details.
 
-The [arg arguments] parameter has the overall syntax of a Tcl
+[para] The [arg arguments] parameter has the overall syntax of a Tcl
 dictionary value, except that keys (argument names) and values
 (argument types) are specified in reverse order. Consider the
 example [example {
@@ -237,4 +242,5 @@ which should not be accessible by any other parts of the C code.
 [para]
 The result of the command is the empty string.
 
+[comment ---------------------------------------------------------------------]
 [list_end]
