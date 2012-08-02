@@ -385,7 +385,7 @@ proc ::critcl::resulttype {name conversion {ctype {}}} {
     if {$ctype eq {}} {
 	set ctype $name
     }
-    set rconv($name)  $conversion
+    set rconv($name)  \t[string trim $conversion]
     set rctype($name) $ctype
     return
 }
@@ -4251,7 +4251,9 @@ proc ::critcl::Initialize {} {
     # System has special casing for:
     # - void (no rv result variable).
 
-    resulttype void {}
+    resulttype void {
+	return TCL_OK;
+    }
 
     resulttype ok {
 	return rv;
@@ -4436,7 +4438,7 @@ namespace eval ::critcl {
 	    double*   double* 
 	    Tcl_Obj*  Tcl_Obj*
 	    bytearray char*
-	    rawchar*  char*
+	    rawchar   char*
 	}
 
 	variable actypeb
