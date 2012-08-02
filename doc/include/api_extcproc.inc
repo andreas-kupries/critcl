@@ -3,23 +3,28 @@ While the [cmd critcl::cproc] command understands the most common C
 types (see section [sectref {Embedded C Code}]), sometimes this is not
 enough.
 
-[para] To get around this limiation the command in this section
-enables users of [package critcl] to extend the set of result types
-understood by [cmd critcl::cproc]:
+[para] To get around this limitation the commands in this section
+enable users of [package critcl] to extend the set of argument and
+result types understood by [cmd critcl::cproc]. In other words, to
+define their own custom types.
 
 [list_begin definitions]
 
 [comment {- - -- --- ----- -------- ------------- ---------------------}]
 [call [cmd ::critcl::resulttype] [arg name] [arg body] [opt [arg ctype]]]
 
-This command defines the resulttype [arg name], and associates it with
-the C code doing the conversion ([arg body]) to Tcl. The C result type
-of the associated function and result variable is [arg ctype], which
-defaults to [arg name] if it is not specified.
+This command defines the result type [arg name], and associates it
+with the C code doing the conversion ([arg body]) from C to Tcl.
+
+The C return type of the associated function, also the C type of the
+result variable, is [arg ctype]. This type defaults to [arg name] if
+it is not specified.
 
 [para] If [arg name] is declared already an error will be thrown.
 
-[emph Attention!] The result type [const void] is special as it has no accompanying result variable. 
+[emph Attention!] The standard result type [const void] is special as
+it has no accompanying result variable. This cannot be expressed
+by the this extension command.
 
 [para] The [arg body]'s responsibility is the conversion of the
 functions result into a Tcl result and a Tcl status. The first has to
@@ -57,6 +62,58 @@ As examples here are the definitions of two standard result types:
 This form of the [cmd resulttype] command declares [arg name] as an
 alias of result type [arg origname], which has to be defined
 already. If this is not the case an error is thrown.
+
+[comment {- - -- --- ----- -------- ------------- ---------------------}]
+[call [cmd ::critcl::argtype] [arg name] [arg body] [opt [arg ctype]] [opt [arg ctypefun]]]
+
+This command defines the argument type [arg name], and associates it
+with the C code doing the conversion ([arg body]) from Tcl to C
+
+The C type of the variable to hold the conversion result is
+[arg ctype] and the type of the function argument itself is
+[arg ctypefun].  Both types default to [arg name] if they are not
+specified (or the empty string).
+
+[para] If [arg name] is declared already an error will be thrown.
+
+[para] The [arg body]'s responsibility is the conversion of a
+command's Tcl_Obj* argument into a C value for the underlying
+function and its storage in a helper variable.
+
+[para] The C code of [arg body] is guaranteed to be called inside of a
+separate C code block (thus allowing the use of local variables) which
+has access to the following environment:
+
+[list_begin definitions]
+[def [var ip]] A Tcl_Interp* typed C variable referencing the interpreter
+               the result has to be stored into.
+[def [const @@]] A placeholder for the Tcl_Obj*-valued C expression
+     	    	 providing the value of the argument to convert.
+
+[def [const @A]] A placeholder for the name of the C variable to store the
+     	    	 converted argument into.
+[list_end]
+
+As examples here are the definitions of two standard argument types:
+
+[example {
+    argtype int {
+	if (Tcl_GetIntFromObj(ip, @@, &@A) != TCL_OK) return TCL_ERROR;
+    }
+
+    argtype float {
+	double t;
+	if (Tcl_GetDoubleFromObj(ip, @@, &t) != TCL_OK) return TCL_ERROR;
+	@A = (float) t;
+    }
+}]
+
+[comment {- - -- --- ----- -------- ------------- ---------------------}]
+[call [cmd ::critcl::argtype] [arg name] [method =] [arg origname]
+
+This form of the [cmd argtype] command declares [arg name] as an alias
+of argument type [arg origname], which has to be defined already. If
+this is not the case an error is thrown.
 
 [comment {- - -- --- ----- -------- ------------- ---------------------}]
 [list_end]

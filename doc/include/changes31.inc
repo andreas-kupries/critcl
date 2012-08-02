@@ -58,8 +58,8 @@ with all the necessary boilerplate to support them generated/handled
 by the package.
 
 [comment {- - -- --- ----- -------- ------------- ---------------------}]
-[enum] Extended the API with commands extending the set of result
-types understood by [cmd ::critcl::cproc].
+[enum] Extended the API with commands for the definition of custom
+argument and result types for use by [cmd ::critcl::cproc].
 
 See the section [sectref {Advanced: Extending cproc}] for details of
 the provided commands.

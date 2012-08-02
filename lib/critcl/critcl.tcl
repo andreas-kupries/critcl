@@ -353,7 +353,6 @@ proc ::critcl::argvardecls {adefs} {
 }
 
 proc ::critcl::argconversion {adefs {n 1}} {
-
     # A 1st argument matching "Tcl_Interp*" does not count as a user
     # visible command argument.
     if {[lindex $adefs 0] eq "Tcl_Interp*"} {
@@ -362,11 +361,45 @@ proc ::critcl::argconversion {adefs {n 1}} {
 
     set result {}
     foreach {t a} $adefs {
-	lappend result [string map [list @@ "ov\[$n\]" @A _$a @T $t] [ArgumentConversion $t]]
+	set map [list @@ "ov\[$n\]" @A _$a]
+	lappend result [string map $map [ArgumentConversion $t]]
 	incr n
     }
 
     return $result
+}
+
+proc ::critcl::argtype {name conversion {ctype {}} {ctypeb {}}} {
+    variable v::actype
+    variable v::actypeb
+    variable v::aconv
+
+    if {[info exists aconv($name)]} {
+	return -code error "Illegal duplicate definition of '$name'."
+    }
+
+    # Handle aliases by copying the original definition.
+    if {$conversion eq "="} {
+	if {![info exists aconv($ctype)]} {
+	    return -code error "Unable to alias unknown type '$ctype'."
+	}
+	set conversion $aconv($ctype) 
+	set ctypeb     $actypeb($ctype)
+	set ctype      $actype($ctype)
+    } else {
+	lassign [HeaderLines $conversion] leadoffset conversion
+	set conversion "\t\{\n[at::caller! $leadoffset]\t[string trim $conversion] \}"
+    }
+    if {$ctype eq {}} {
+	set ctype $name
+    }
+    if {$ctypeb eq {}} {
+	set ctypeb $name
+    }
+    set aconv($name)  $conversion
+    set actype($name) $ctype
+    set actypeb($name) $ctypeb
+    return
 }
 
 proc ::critcl::resulttype {name conversion {ctype {}}} {
@@ -379,13 +412,19 @@ proc ::critcl::resulttype {name conversion {ctype {}}} {
 
     # Handle aliases by copying the original definition.
     if {$conversion eq "="} {
+	if {![info exists rconv($ctype)]} {
+	    return -code error "Unable to alias unknown type '$ctype'."
+	}
 	set conversion $rconv($ctype) 
 	set ctype      $rctype($ctype)
+    } else {
+	lassign [HeaderLines $conversion] leadoffset conversion
+	set conversion [at::caller! $leadoffset]\t[string trimright $conversion]
     }
     if {$ctype eq {}} {
 	set ctype $name
     }
-    set rconv($name)  \t[string trim $conversion]
+    set rconv($name)  $conversion
     set rctype($name) $ctype
     return
 }
@@ -2930,17 +2969,17 @@ proc ::critcl::EmitShimFooter {rtype} {
 
 proc ::critcl::ArgumentCType {type} {
     if {[info exists v::actype($type)]} { return $v::actype($type) }
-    return void*
+    return -code error "Unknown argument type $type"
 }
 
 proc ::critcl::ArgumentCTypeB {type} {
     if {[info exists v::actypeb($type)]} { return $v::actypeb($type) }
-    return $type
+    return -code error "Unknown argument type $type"
 }
 
 proc ::critcl::ArgumentConversion {type} {
     if {[info exists v::aconv($type)]} { return $v::aconv($type) }
-    return "  @A = @@;"
+    return -code error "Unknown argument type $type"
 }
 
 proc ::critcl::ResultCType {type} {
@@ -4247,8 +4286,66 @@ proc ::critcl::Initialize {} {
     # target platform.
     readconfig [file join $mydir Config]
 
+    # Declare the standard argument types for cproc.
+
+    argtype int {
+	if (Tcl_GetIntFromObj(ip, @@, &@A) != TCL_OK) return TCL_ERROR;
+    }
+    argtype boolean {
+	if (Tcl_GetBooleanFromObj(ip, @@, &@A) != TCL_OK) return TCL_ERROR;
+    } int int
+    argtype bool = boolean
+
+    argtype long {
+	if (Tcl_GetLongFromObj(ip, @@, &@A) != TCL_OK) return TCL_ERROR;
+    }
+
+    argtype double {
+	if (Tcl_GetDoubleFromObj(ip, @@, &@A) != TCL_OK) return TCL_ERROR;
+    }
+    argtype float {
+	double t;
+	if (Tcl_GetDoubleFromObj(ip, @@, &t) != TCL_OK) return TCL_ERROR;
+	@A = (float) t;
+    }
+
+    argtype char* {
+	@A = Tcl_GetString(@@);
+    }
+
+    argtype Tcl_Obj* {
+	@A = @@;
+    }
+    argtype object = Tcl_Obj*
+
+    ## The next set of argument types looks to be very broken. We are
+    ## keeping them for now, but declare them as DEPRECATED. Their
+    ## documentation will be removed in version 3.2, and their
+    ## implementation in 3.3 as well, fully exterminating them
+
+    argtype int* {
+	/* Raw pointer in binary Tcl value */
+	@A = (int*) Tcl_GetByteArrayFromObj(@@, NULL);
+	Tcl_InvalidateStringRep(@@);
+    }
+    argtype float* {
+	/* Raw pointer in binary Tcl value */
+	@A = (float*) Tcl_GetByteArrayFromObj(@@, NULL);
+    }
+    argtype double* {
+	/* Raw pointer in binary Tcl value */
+	@A = (double*) Tcl_GetByteArrayFromObj(@@, NULL);
+    }
+    argtype bytearray {
+	/* Raw binary string. Length information is _NOT_ propagated */
+	@A = (char*) Tcl_GetByteArrayFromObj(@@, NULL);
+	Tcl_InvalidateStringRep(@@);
+    } char* char*
+    argtype rawchar = bytearray
+    argtype rawchar* = bytearray
+
     # Declare the standard result types for cproc.
-    # System has special casing for:
+    # System still has special case code for:
     # - void (no rv result variable).
 
     resulttype void {
@@ -4424,61 +4521,30 @@ namespace eval ::critcl {
 	# "ResultConversion". These commands also supply the default
 	# values for unknown types.
 
-	variable actype
-	array set actype {
-	    bool      int
-	    boolean   int
-	    int       int     
-	    long      long    
-	    float     float   
-	    double    double  
-	    char*     char*   
-	    int*      int*    
-	    float*    float*  
-	    double*   double* 
-	    Tcl_Obj*  Tcl_Obj*
-	    bytearray char*
-	    rawchar   char*
-	}
+	variable  actype
+	array set actype {}
 
-	variable actypeb
-	array set actypeb {
-	    bytearray char*
-	    rawchar   char*
-	}
+	variable  actypeb
+	array set actypeb {}
 
 	# In the code fragments below we have the following environment (placeholders, variables):
 	# ip - C variable, Tcl_Interp* of the interpreter providing the arguments.
-	# @@ - Name of the variable holding the argument.
-	# @A - (C) name of the argument (variable).
-	# @T - cproc type name of the argument.
+	# @@ - Tcl_Obj* valued expression returning the Tcl argument value.
+	# @A - Name of the C-level argument variable.
 	#
-	variable aconv
-	array set aconv {
-	    bool      "  if (Tcl_GetBooleanFromObj(ip, @@, &@A) != TCL_OK)\n    return TCL_ERROR;"
-	    boolean   "  if (Tcl_GetBooleanFromObj(ip, @@, &@A) != TCL_OK)\n    return TCL_ERROR;"
-	    int       "  if (Tcl_GetIntFromObj(ip, @@, &@A) != TCL_OK)\n    return TCL_ERROR;"
-	    long      "  if (Tcl_GetLongFromObj(ip, @@, &@A) != TCL_OK)\n    return TCL_ERROR;"
-	    float     "  \{ double t;\n    if (Tcl_GetDoubleFromObj(ip, @@, &t) != TCL_OK)\n    return TCL_ERROR;\n    @A = (float) t;\n  \}"
-	    double    "  if (Tcl_GetDoubleFromObj(ip, @@, &@A) != TCL_OK)\n    return TCL_ERROR;"
-	    char*     "  @A = Tcl_GetString(@@);"
-	    int*      "  @A = (@T) Tcl_GetByteArrayFromObj(@@, NULL);\n  Tcl_InvalidateStringRep(@@);"
-	    float*    "  @A = (@T) Tcl_GetByteArrayFromObj(@@, NULL);\n  Tcl_InvalidateStringRep(@@);"
-	    double*   "  @A = (@T) Tcl_GetByteArrayFromObj(@@, NULL);\n  Tcl_InvalidateStringRep(@@);"
-	    bytearray "  @A = (char*) Tcl_GetByteArrayFromObj(@@, NULL);\n  Tcl_InvalidateStringRep(@@);"
-	    rawchar*  "  @A = (char*) Tcl_GetByteArrayFromObj(@@, NULL);\n  Tcl_InvalidateStringRep(@@);"
-	}
+	variable  aconv
+	array set aconv {}
 
 	# Mapping from cproc result to C result type of the function.
 	# This is also the C type of the helper variable holding the result.
 	# NOTE: 'void' is special, as it has no result, nor result variable.
-	variable rctype
+	variable  rctype
 	array set rctype {}
 
 	# In the code fragments for result conversion:
 	# 'rv' == variable capturing the return value of the C function.
 	# 'ip' == variable containing pointer to the interp to set the result into.
-	variable rconv
+	variable  rconv
 	array set rconv {}
 
 	variable storageclass {
