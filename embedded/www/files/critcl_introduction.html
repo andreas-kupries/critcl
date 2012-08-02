@@ -560,7 +560,8 @@ namespace.</p></li>
 <li><p>Extended the API with a command, <b class="cmd">critcl::source</b>,
 executing critcl commands in a separate file in the context of the
 current file, allowing for easier management of larger bodies of code
-by splitting it up.</p></li>
+by allowing the user to split it up in easier to digest chunks without
+causing the generation of multiple packages.</p></li>
 <li><p>Related to the previous item, extended the API with commands to
 divert code collection into memory, making the use of commands for
 embedded C code by higher level code generators easier.</p>
@@ -585,6 +586,10 @@ class and instance commands. The user sees a class definition with
 class- and instance-variables and -methods similar to a TclOO class,
 with all the necessary boilerplate to support them generated/handled
 by the package.</p></li>
+<li><p>Extended the API with commands for the definition of custom
+argument and result types for use by <b class="cmd">::critcl::cproc</b>.
+See the section <b class="sectref">Advanced: Extending cproc</b> for details of
+the provided commands.</p></li>
 </ol>
 </div>
 <div id="section16" class="section"><h2><a name="section16">Authors</a></h2>

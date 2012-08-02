@@ -57,7 +57,7 @@ As examples here are the definitions of two standard result types:
 }]
 
 [comment {- - -- --- ----- -------- ------------- ---------------------}]
-[call [cmd ::critcl::resulttype] [arg name] [method =] [arg origname]
+[call [cmd ::critcl::resulttype] [arg name] [method =] [arg origname]]
 
 This form of the [cmd resulttype] command declares [arg name] as an
 alias of result type [arg origname], which has to be defined
@@ -109,7 +109,7 @@ As examples here are the definitions of two standard argument types:
 }]
 
 [comment {- - -- --- ----- -------- ------------- ---------------------}]
-[call [cmd ::critcl::argtype] [arg name] [method =] [arg origname]
+[call [cmd ::critcl::argtype] [arg name] [method =] [arg origname]]
 
 This form of the [cmd argtype] command declares [arg name] as an alias
 of argument type [arg origname], which has to be defined already. If

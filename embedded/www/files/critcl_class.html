@@ -148,12 +148,14 @@
 <li><a href="#7"><b class="cmd">constructor</b> <i class="arg">body</i> <span class="opt">?<i class="arg">postbody</i>?</span></a></li>
 <li><a href="#8"><b class="cmd">destructor</b> <i class="arg">body</i></a></li>
 <li><a href="#9"><b class="cmd">classvariable</b> <i class="arg">ctype</i> <i class="arg">name</i> <span class="opt">?<i class="arg">comment</i>?</span> <span class="opt">?<i class="arg">constructor</i>?</span> <span class="opt">?<i class="arg">destructor</i>?</span></a></li>
-<li><a href="#10"><b class="cmd">classmethod</b> <i class="arg">name</i> <i class="arg">arguments</i> <i class="arg">body</i></a></li>
-<li><a href="#11"><b class="cmd">classmethod</b> <i class="arg">name</i> <b class="const">as</b> <i class="arg">funname</i> <span class="opt">?<i class="arg">arg</i>...?</span></a></li>
-<li><a href="#12"><b class="cmd">insvariable</b> <i class="arg">ctype</i> <i class="arg">name</i> <span class="opt">?<i class="arg">comment</i>?</span> <span class="opt">?<i class="arg">constructor</i>?</span> <span class="opt">?<i class="arg">destructor</i>?</span></a></li>
-<li><a href="#13"><b class="cmd">method</b> <i class="arg">name</i> <i class="arg">arguments</i> <i class="arg">body</i></a></li>
-<li><a href="#14"><b class="cmd">method</b> <i class="arg">name</i> <b class="const">as</b> <i class="arg">funname</i> <span class="opt">?<i class="arg">arg</i>...?</span></a></li>
-<li><a href="#15"><b class="cmd">method_introspection</b></a></li>
+<li><a href="#10"><b class="cmd">classmethod</b> <i class="arg">name</i> <b class="method">command</b> <i class="arg">arguments</i> <i class="arg">body</i></a></li>
+<li><a href="#11"><b class="cmd">classmethod</b> <i class="arg">name</i> <b class="method">proc</b> <i class="arg">arguments</i> <i class="arg">resulttype</i> <i class="arg">body</i></a></li>
+<li><a href="#12"><b class="cmd">classmethod</b> <i class="arg">name</i> <b class="method">as</b> <i class="arg">funname</i> <span class="opt">?<i class="arg">arg</i>...?</span></a></li>
+<li><a href="#13"><b class="cmd">insvariable</b> <i class="arg">ctype</i> <i class="arg">name</i> <span class="opt">?<i class="arg">comment</i>?</span> <span class="opt">?<i class="arg">constructor</i>?</span> <span class="opt">?<i class="arg">destructor</i>?</span></a></li>
+<li><a href="#14"><b class="cmd">method</b> <i class="arg">name</i> <b class="method">command</b> <i class="arg">arguments</i> <i class="arg">body</i></a></li>
+<li><a href="#15"><b class="cmd">method</b> <i class="arg">name</i> <b class="method">proc</b> <i class="arg">arguments</i> <i class="arg">resulttype</i> <i class="arg">body</i></a></li>
+<li><a href="#16"><b class="cmd">method</b> <i class="arg">name</i> <b class="method">as</b> <i class="arg">funname</i> <span class="opt">?<i class="arg">arg</i>...?</span></a></li>
+<li><a href="#17"><b class="cmd">method_introspection</b></a></li>
 </ul>
 </div>
 </div>
@@ -390,9 +392,14 @@ code.</p>
 <p>The comment, if specified will be embedded into the generated C
 code for easier cross-referencing from generated &quot;<b class="file">.c</b>&quot; file to
 class specification.</p></dd>
-<dt><a name="10"><b class="cmd">classmethod</b> <i class="arg">name</i> <i class="arg">arguments</i> <i class="arg">body</i></a></dt>
+<dt><a name="10"><b class="cmd">classmethod</b> <i class="arg">name</i> <b class="method">command</b> <i class="arg">arguments</i> <i class="arg">body</i></a></dt>
 <dd><p>This command specifies a class method and the C code block
-implementing its functionality. This body has access to</p>
+implementing its functionality. This is the first of three forms. The
+method is specified like a <b class="cmd">critcl::ccommand</b>, with a fixed set of
+C-level arguments. The <i class="arg">body</i> has to perform everything
+(i.e. argument extraction, checking, result return, and of course the
+actual functionality) by itself.</p>
+<p>For this the <i class="arg">body</i> has access to</p>
 <dl class="definitions">
 <dt><b class="variable">class</b></dt>
 <dd><p>Pointer to the class structure.</p></dd>
@@ -405,14 +412,37 @@ class structure is associated with</p></dd>
 <dd><p>The method arguments, as C array of Tcl_Obj pointers.</p></dd>
 </dl>
 <p>The <i class="arg">arguments</i> of the definition are only a human readable form
-of the method arguments and are not used in the C code, except as
-comments. It is still the responsibility of the user to check the
-number of arguments, extract them, check their types, etc.</p></dd>
-<dt><a name="11"><b class="cmd">classmethod</b> <i class="arg">name</i> <b class="const">as</b> <i class="arg">funname</i> <span class="opt">?<i class="arg">arg</i>...?</span></a></dt>
-<dd><p>This variant of the command above defines a class method which is
-implemented by the external function <i class="arg">funname</i>, i.e. which is
-declared outside of the class code itself, or in a <b class="cmd">support</b>
-block.</p>
+of the method arguments and syntax and are not used in the C code,
+except as comments put into the generated code. Again, it is the
+responsibility of the <i class="arg">body</i> to check the number of arguments,
+extract them, check their types, etc.</p></dd>
+<dt><a name="11"><b class="cmd">classmethod</b> <i class="arg">name</i> <b class="method">proc</b> <i class="arg">arguments</i> <i class="arg">resulttype</i> <i class="arg">body</i></a></dt>
+<dd><p>This command specifies a class method and the C code block
+implementing its functionality.  This is the second of three forms. The
+method is specified like a <b class="cmd">critcl::cproc</b>.
+Contrary to the first variant here the <i class="arg">arguments</i> are computer
+readable, expected to be in the same format as the <i class="arg">arguments</i> of
+<b class="cmd">critcl::cproc</b>. The same is true for the <i class="arg">resulttype</i>.
+The system automatically generates a wrapper doing argument checking
+and conversion, and result conversion, like for <b class="cmd">critcl::cproc</b>.</p>
+<p>The <i class="arg">body</i> has access to</p>
+<dl class="definitions">
+<dt><b class="variable">class</b></dt>
+<dd><p>Pointer to the class structure.</p></dd>
+<dt><b class="variable">interp</b></dt>
+<dd><p>Pointer to the Tcl interpreter (Tcl_Interp*) the
+class structure is associated with</p></dd>
+<dt>...</dt>
+<dd><p>All <i class="arg">arguments</i> under their specified names and C types
+as per their definition.</p></dd>
+</dl></dd>
+<dt><a name="12"><b class="cmd">classmethod</b> <i class="arg">name</i> <b class="method">as</b> <i class="arg">funname</i> <span class="opt">?<i class="arg">arg</i>...?</span></a></dt>
+<dd><p>This command specifies a class method and the C code block
+implementing its functionality. This is the third and last of three
+forms.</p>
+<p>The class method is implemented by the external function
+<i class="arg">funname</i>, i.e. a function which is declared outside of the class
+code itself, or in a <b class="cmd">support</b> block.</p>
 <p>It is assumed that the first four arguments of that function
 represent the parameters</p>
 <dl class="definitions">
@@ -432,7 +462,7 @@ passed into the C code as is, i.e. are considered to be C expressions.</p></dd>
 </div>
 <div id="subsection5" class="subsection"><h3><a name="subsection5">Instance variables and methods</a></h3>
 <dl class="definitions">
-<dt><a name="12"><b class="cmd">insvariable</b> <i class="arg">ctype</i> <i class="arg">name</i> <span class="opt">?<i class="arg">comment</i>?</span> <span class="opt">?<i class="arg">constructor</i>?</span> <span class="opt">?<i class="arg">destructor</i>?</span></a></dt>
+<dt><a name="13"><b class="cmd">insvariable</b> <i class="arg">ctype</i> <i class="arg">name</i> <span class="opt">?<i class="arg">comment</i>?</span> <span class="opt">?<i class="arg">constructor</i>?</span> <span class="opt">?<i class="arg">destructor</i>?</span></a></dt>
 <dd><p>This command specifies a field in the instance structure of the class.
 Multiple fields can be specified, and are saved in the order
 specified.</p>
@@ -454,9 +484,14 @@ regarding the C environment available to the code.</p>
 <p>The comment, if specified will be embedded into the generated C
 code for easier cross-referencing from generated &quot;<b class="file">.c</b>&quot; file to
 class specification.</p></dd>
-<dt><a name="13"><b class="cmd">method</b> <i class="arg">name</i> <i class="arg">arguments</i> <i class="arg">body</i></a></dt>
+<dt><a name="14"><b class="cmd">method</b> <i class="arg">name</i> <b class="method">command</b> <i class="arg">arguments</i> <i class="arg">body</i></a></dt>
 <dd><p>This command specifies an instance method and the C code block
-implementing its functionality. This body has access to</p>
+implementing its functionality. This is the first of three forms. The
+method is specified like a <b class="cmd">critcl::ccommand</b>, with a fixed set of
+C-level arguments. The <i class="arg">body</i> has to perform everything
+(i.e. argument extraction, checking, result return, and of course the
+actual functionality) by itself.</p>
+<p>For this the <i class="arg">body</i> has access to</p>
 <dl class="definitions">
 <dt><b class="variable">instance</b></dt>
 <dd><p>Pointer to the instance structure.</p></dd>
@@ -469,14 +504,37 @@ instance structure is associated with</p></dd>
 <dd><p>The method arguments, as C array of Tcl_Obj pointers.</p></dd>
 </dl>
 <p>The <i class="arg">arguments</i> of the definition are only a human readable form
-of the method arguments and are not used in the C code, except as
-comments. It is still the responsibility of the user to check the
-number of arguments, extract them, check their types, etc.</p></dd>
-<dt><a name="14"><b class="cmd">method</b> <i class="arg">name</i> <b class="const">as</b> <i class="arg">funname</i> <span class="opt">?<i class="arg">arg</i>...?</span></a></dt>
-<dd><p>This variant of the command above defines an instance method of the
-class as implemented by the external function <i class="arg">funname</i>,
-i.e. which is declared outside of the class code itself, or in a
-<b class="cmd">support</b> block.</p>
+of the method arguments and syntax and are not used in the C code,
+except as comments put into the generated code. Again, it is the
+responsibility of the <i class="arg">body</i> to check the number of arguments,
+extract them, check their types, etc.</p></dd>
+<dt><a name="15"><b class="cmd">method</b> <i class="arg">name</i> <b class="method">proc</b> <i class="arg">arguments</i> <i class="arg">resulttype</i> <i class="arg">body</i></a></dt>
+<dd><p>This command specifies an instance method and the C code block
+implementing its functionality.  This is the second of three
+forms. The method is specified like a <b class="cmd">critcl::cproc</b>.
+Contrary to the first variant here the <i class="arg">arguments</i> are computer
+readable, expected to be in the same format as the <i class="arg">arguments</i> of
+<b class="cmd">critcl::cproc</b>. The same is true for the <i class="arg">resulttype</i>.
+The system automatically generates a wrapper doing argument checking
+and conversion, and result conversion, like for <b class="cmd">critcl::cproc</b>.</p>
+<p>The <i class="arg">body</i> has access to</p>
+<dl class="definitions">
+<dt><b class="variable">instance</b></dt>
+<dd><p>Pointer to the instance structure.</p></dd>
+<dt><b class="variable">interp</b></dt>
+<dd><p>Pointer to the Tcl interpreter (Tcl_Interp*) the
+instance structure is associated with</p></dd>
+<dt>...</dt>
+<dd><p>All <i class="arg">arguments</i> under their specified names and C types
+as per their definition.</p></dd>
+</dl></dd>
+<dt><a name="16"><b class="cmd">method</b> <i class="arg">name</i> <b class="method">as</b> <i class="arg">funname</i> <span class="opt">?<i class="arg">arg</i>...?</span></a></dt>
+<dd><p>This command specifies an instance method and the C code block
+implementing its functionality. This is the third and last of three
+forms.</p>
+<p>The instance method is implemented by the external function
+<i class="arg">funname</i>, i.e. a function which is declared outside of the instance
+code itself, or in a <b class="cmd">support</b> block.</p>
 <p>It is assumed that the first four arguments of that function
 represent the parameters</p>
 <dl class="definitions">
@@ -492,7 +550,7 @@ instance structure is associated with</p></dd>
 </dl>
 <p>Any additional arguments specified will be added after these and are
 passed into the C code as is, i.e. are considered to be C expressions.</p></dd>
-<dt><a name="15"><b class="cmd">method_introspection</b></a></dt>
+<dt><a name="17"><b class="cmd">method_introspection</b></a></dt>
 <dd><p>This command generates one class- and one instance-method both of
 which will return a list of the instance methods of the class, and
 supporting structures, like the function to compute the information,

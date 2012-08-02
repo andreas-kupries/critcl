@@ -267,13 +267,17 @@ package require \fBcritcl::class  ?1?\fR
 .sp
 \fBclassvariable\fR \fIctype\fR \fIname\fR ?\fIcomment\fR? ?\fIconstructor\fR? ?\fIdestructor\fR?
 .sp
-\fBclassmethod\fR \fIname\fR \fIarguments\fR \fIbody\fR
+\fBclassmethod\fR \fIname\fR \fBcommand\fR \fIarguments\fR \fIbody\fR
+.sp
+\fBclassmethod\fR \fIname\fR \fBproc\fR \fIarguments\fR \fIresulttype\fR \fIbody\fR
 .sp
 \fBclassmethod\fR \fIname\fR \fBas\fR \fIfunname\fR ?\fIarg\fR...?
 .sp
 \fBinsvariable\fR \fIctype\fR \fIname\fR ?\fIcomment\fR? ?\fIconstructor\fR? ?\fIdestructor\fR?
 .sp
-\fBmethod\fR \fIname\fR \fIarguments\fR \fIbody\fR
+\fBmethod\fR \fIname\fR \fBcommand\fR \fIarguments\fR \fIbody\fR
+.sp
+\fBmethod\fR \fIname\fR \fBproc\fR \fIarguments\fR \fIresulttype\fR \fIbody\fR
 .sp
 \fBmethod\fR \fIname\fR \fBas\fR \fIfunname\fR ?\fIarg\fR...?
 .sp
@@ -586,9 +590,15 @@ The comment, if specified will be embedded into the generated C
 code for easier cross-referencing from generated "\fI.c\fR" file to
 class specification.
 .TP
-\fBclassmethod\fR \fIname\fR \fIarguments\fR \fIbody\fR
+\fBclassmethod\fR \fIname\fR \fBcommand\fR \fIarguments\fR \fIbody\fR
 This command specifies a class method and the C code block
-implementing its functionality. This body has access to
+implementing its functionality. This is the first of three forms. The
+method is specified like a \fBcritcl::ccommand\fR, with a fixed set of
+C-level arguments. The \fIbody\fR has to perform everything
+(i.e. argument extraction, checking, result return, and of course the
+actual functionality) by itself.
+.sp
+For this the \fIbody\fR has access to
 .RS
 .TP
 \fBclass\fR
@@ -606,15 +616,44 @@ The method arguments, as C array of Tcl_Obj pointers.
 .RE
 .IP
 The \fIarguments\fR of the definition are only a human readable form
-of the method arguments and are not used in the C code, except as
-comments. It is still the responsibility of the user to check the
-number of arguments, extract them, check their types, etc.
+of the method arguments and syntax and are not used in the C code,
+except as comments put into the generated code. Again, it is the
+responsibility of the \fIbody\fR to check the number of arguments,
+extract them, check their types, etc.
+.TP
+\fBclassmethod\fR \fIname\fR \fBproc\fR \fIarguments\fR \fIresulttype\fR \fIbody\fR
+This command specifies a class method and the C code block
+implementing its functionality.  This is the second of three forms. The
+method is specified like a \fBcritcl::cproc\fR.
+Contrary to the first variant here the \fIarguments\fR are computer
+readable, expected to be in the same format as the \fIarguments\fR of
+\fBcritcl::cproc\fR. The same is true for the \fIresulttype\fR.
+The system automatically generates a wrapper doing argument checking
+and conversion, and result conversion, like for \fBcritcl::cproc\fR.
+.sp
+The \fIbody\fR has access to
+.RS
+.TP
+\fBclass\fR
+Pointer to the class structure.
+.TP
+\fBinterp\fR
+Pointer to the Tcl interpreter (Tcl_Interp*) the
+class structure is associated with
+.TP
+...
+All \fIarguments\fR under their specified names and C types
+as per their definition.
+.RE
 .TP
 \fBclassmethod\fR \fIname\fR \fBas\fR \fIfunname\fR ?\fIarg\fR...?
-This variant of the command above defines a class method which is
-implemented by the external function \fIfunname\fR, i.e. which is
-declared outside of the class code itself, or in a \fBsupport\fR
-block.
+This command specifies a class method and the C code block
+implementing its functionality. This is the third and last of three
+forms.
+.sp
+The class method is implemented by the external function
+\fIfunname\fR, i.e. a function which is declared outside of the class
+code itself, or in a \fBsupport\fR block.
 .sp
 It is assumed that the first four arguments of that function
 represent the parameters
@@ -666,9 +705,15 @@ The comment, if specified will be embedded into the generated C
 code for easier cross-referencing from generated "\fI.c\fR" file to
 class specification.
 .TP
-\fBmethod\fR \fIname\fR \fIarguments\fR \fIbody\fR
+\fBmethod\fR \fIname\fR \fBcommand\fR \fIarguments\fR \fIbody\fR
 This command specifies an instance method and the C code block
-implementing its functionality. This body has access to
+implementing its functionality. This is the first of three forms. The
+method is specified like a \fBcritcl::ccommand\fR, with a fixed set of
+C-level arguments. The \fIbody\fR has to perform everything
+(i.e. argument extraction, checking, result return, and of course the
+actual functionality) by itself.
+.sp
+For this the \fIbody\fR has access to
 .RS
 .TP
 \fBinstance\fR
@@ -686,15 +731,44 @@ The method arguments, as C array of Tcl_Obj pointers.
 .RE
 .IP
 The \fIarguments\fR of the definition are only a human readable form
-of the method arguments and are not used in the C code, except as
-comments. It is still the responsibility of the user to check the
-number of arguments, extract them, check their types, etc.
+of the method arguments and syntax and are not used in the C code,
+except as comments put into the generated code. Again, it is the
+responsibility of the \fIbody\fR to check the number of arguments,
+extract them, check their types, etc.
+.TP
+\fBmethod\fR \fIname\fR \fBproc\fR \fIarguments\fR \fIresulttype\fR \fIbody\fR
+This command specifies an instance method and the C code block
+implementing its functionality.  This is the second of three
+forms. The method is specified like a \fBcritcl::cproc\fR.
+Contrary to the first variant here the \fIarguments\fR are computer
+readable, expected to be in the same format as the \fIarguments\fR of
+\fBcritcl::cproc\fR. The same is true for the \fIresulttype\fR.
+The system automatically generates a wrapper doing argument checking
+and conversion, and result conversion, like for \fBcritcl::cproc\fR.
+.sp
+The \fIbody\fR has access to
+.RS
+.TP
+\fBinstance\fR
+Pointer to the instance structure.
+.TP
+\fBinterp\fR
+Pointer to the Tcl interpreter (Tcl_Interp*) the
+instance structure is associated with
+.TP
+...
+All \fIarguments\fR under their specified names and C types
+as per their definition.
+.RE
 .TP
 \fBmethod\fR \fIname\fR \fBas\fR \fIfunname\fR ?\fIarg\fR...?
-This variant of the command above defines an instance method of the
-class as implemented by the external function \fIfunname\fR,
-i.e. which is declared outside of the class code itself, or in a
-\fBsupport\fR block.
+This command specifies an instance method and the C code block
+implementing its functionality. This is the third and last of three
+forms.
+.sp
+The instance method is implemented by the external function
+\fIfunname\fR, i.e. a function which is declared outside of the instance
+code itself, or in a \fBsupport\fR block.
 .sp
 It is assumed that the first four arguments of that function
 represent the parameters

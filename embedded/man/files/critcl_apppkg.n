@@ -1091,7 +1091,8 @@ namespace.
 Extended the API with a command, \fBcritcl::source\fR,
 executing critcl commands in a separate file in the context of the
 current file, allowing for easier management of larger bodies of code
-by splitting it up.
+by allowing the user to split it up in easier to digest chunks without
+causing the generation of multiple packages.
 .IP [4]
 Related to the previous item, extended the API with commands to
 divert code collection into memory, making the use of commands for
@@ -1124,6 +1125,11 @@ class and instance commands. The user sees a class definition with
 class- and instance-variables and -methods similar to a TclOO class,
 with all the necessary boilerplate to support them generated/handled
 by the package.
+.IP [8]
+Extended the API with commands for the definition of custom
+argument and result types for use by \fB::critcl::cproc\fR.
+See the section \fBAdvanced: Extending cproc\fR for details of
+the provided commands.
 .PP
 .SH AUTHORS
 Jean Claude Wippler, Steve Landers, Andreas Kupries

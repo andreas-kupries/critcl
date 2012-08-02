@@ -425,6 +425,14 @@ package require \fBmd5  ?2?\fR
 .sp
 \fB::critcl::collect\fR \fIscript\fR
 .sp
+\fB::critcl::resulttype\fR \fIname\fR \fIbody\fR ?\fIctype\fR?
+.sp
+\fB::critcl::resulttype\fR \fIname\fR \fB=\fR \fIorigname\fR
+.sp
+\fB::critcl::argtype\fR \fIname\fR \fIbody\fR ?\fIctype\fR? ?\fIctypefun\fR?
+.sp
+\fB::critcl::argtype\fR \fIname\fR \fB=\fR \fIorigname\fR
+.sp
 \fB::preload\fR \fIlibrary\fR
 .sp
 .BE
@@ -613,20 +621,29 @@ The following values are allowed for the \fIresulttype\fR:
 Name      C        Tcl      Notes
 -------   -------- -------- -------------------
 Tcl_Obj*  Tcl_Obj* Tcl_Obj* Default, pass-through
-char*     char*    String
+char*     char*    String   Static string
+vstring   char*    String   String is volatile.
+string    char*    String   Dynamically allocated (Tcl_Alloc)
+dstring   char*    String   Ditto.
+-------   -------- -------- -------------------
 double    double   Double
-dstring   char*    String   Dynamic
 float     float    Double
+-------   -------- -------- -------------------
+bool      int      Int
+boolean   int      Int
 int       int      Int
 long      long     Long
+-------   -------- -------- -------------------
 ok        int      ---      Result code, pass-through
-string    char*    String   Dynamic
 void      void     ---      No result.
-vstring   char*    String   !Volatile
 -------   -------- -------- -------------------
 
 .CE
-.IP
+.sp
+Please note that it is possible to extend the above with custom
+types if these types are not enough. See section
+\fBAdvanced: Extending cproc\fR for details.
+.sp
 The \fIarguments\fR parameter has the overall syntax of a Tcl
 dictionary value, except that keys (argument names) and values
 (argument types) are specified in reverse order. Consider the
@@ -654,6 +671,8 @@ double    double   Double
 float*    float*            Pointer into ByteArray representation ?!
 float     float    Double
 int*      int*              Pointer into ByteArray representation ?!
+bool      int      Boolean
+boolean   int      Boolean
 int       int      Int
 long      long     Long
 rawchar*  char*    ByteArray
@@ -1848,6 +1867,121 @@ This is a convenience command which runs the \fIscript\fR under
 diversion and returns the collected C code, ensuring the correct
 pairing of \fBcollect_begin\fR and \fBcollect_end\fR.
 .PP
+.SS "ADVANCED: EXTENDING CPROC"
+While the \fBcritcl::cproc\fR command understands the most common C
+types (see section \fBEmbedded C Code\fR), sometimes this is not
+enough.
+.PP
+To get around this limitation the commands in this section
+enable users of \fBcritcl\fR to extend the set of argument and
+result types understood by \fBcritcl::cproc\fR. In other words, to
+define their own custom types.
+.TP
+\fB::critcl::resulttype\fR \fIname\fR \fIbody\fR ?\fIctype\fR?
+This command defines the result type \fIname\fR, and associates it
+with the C code doing the conversion (\fIbody\fR) from C to Tcl.
+The C return type of the associated function, also the C type of the
+result variable, is \fIctype\fR. This type defaults to \fIname\fR if
+it is not specified.
+.sp
+If \fIname\fR is declared already an error will be thrown.
+\fIAttention!\fR The standard result type \fBvoid\fR is special as
+it has no accompanying result variable. This cannot be expressed
+by the this extension command.
+.sp
+The \fIbody\fR's responsibility is the conversion of the
+functions result into a Tcl result and a Tcl status. The first has to
+be set into the interpreter we are in, and the second has to be
+returned.
+.sp
+The C code of \fIbody\fR is guaranteed to be called last in the
+wrapper around the actual implementation of the \fBcproc\fR in
+question and has access to the following environment:
+.RS
+.TP
+\fBrv\fR
+The C variable holding the result to convert, of type
+\fIctype\fR.
+.TP
+\fBip\fR
+A Tcl_Interp* typed C variable referencing the interpreter
+the result has to be stored into.
+.RE
+.IP
+As examples here are the definitions of two standard result types:
+.CS
+
+
+    resulttype int {
+	Tcl_SetObjResult(ip, Tcl_NewIntObj(rv));
+	return TCL_OK;
+    }
+
+    resulttype ok {
+	/* ip result must be set by cproc body */
+	return rv;
+    } int
+
+.CE
+.TP
+\fB::critcl::resulttype\fR \fIname\fR \fB=\fR \fIorigname\fR
+This form of the \fBresulttype\fR command declares \fIname\fR as an
+alias of result type \fIorigname\fR, which has to be defined
+already. If this is not the case an error is thrown.
+.TP
+\fB::critcl::argtype\fR \fIname\fR \fIbody\fR ?\fIctype\fR? ?\fIctypefun\fR?
+This command defines the argument type \fIname\fR, and associates it
+with the C code doing the conversion (\fIbody\fR) from Tcl to C
+The C type of the variable to hold the conversion result is
+\fIctype\fR and the type of the function argument itself is
+\fIctypefun\fR.  Both types default to \fIname\fR if they are not
+specified (or the empty string).
+.sp
+If \fIname\fR is declared already an error will be thrown.
+.sp
+The \fIbody\fR's responsibility is the conversion of a
+command's Tcl_Obj* argument into a C value for the underlying
+function and its storage in a helper variable.
+.sp
+The C code of \fIbody\fR is guaranteed to be called inside of a
+separate C code block (thus allowing the use of local variables) which
+has access to the following environment:
+.RS
+.TP
+\fBip\fR
+A Tcl_Interp* typed C variable referencing the interpreter
+the result has to be stored into.
+.TP
+\fB@@\fR
+A placeholder for the Tcl_Obj*-valued C expression
+providing the value of the argument to convert.
+.TP
+\fB@A\fR
+A placeholder for the name of the C variable to store the
+converted argument into.
+.RE
+.IP
+As examples here are the definitions of two standard argument types:
+.CS
+
+
+    argtype int {
+	if (Tcl_GetIntFromObj(ip, @@, &@A) != TCL_OK) return TCL_ERROR;
+    }
+
+    argtype float {
+	double t;
+	if (Tcl_GetDoubleFromObj(ip, @@, &t) != TCL_OK) return TCL_ERROR;
+	@A = (float) t;
+    }
+
+.CE
+.TP
+\fB::critcl::argtype\fR \fIname\fR \fB=\fR \fIorigname\fR
+This form of the \fBargtype\fR command declares \fIname\fR as an alias
+of argument type \fIorigname\fR, which has to be defined already. If
+this is not the case an error is thrown.
+.PP
 .SH CONCEPTS
 .SS "MODES OF OPERATION/USE"
 CriTcl can be used in three different modes of operation, called
@@ -2893,7 +3027,8 @@ namespace.
 Extended the API with a command, \fBcritcl::source\fR,
 executing critcl commands in a separate file in the context of the
 current file, allowing for easier management of larger bodies of code
-by splitting it up.
+by allowing the user to split it up in easier to digest chunks without
+causing the generation of multiple packages.
 .IP [4]
 Related to the previous item, extended the API with commands to
 divert code collection into memory, making the use of commands for
@@ -2926,6 +3061,11 @@ class and instance commands. The user sees a class definition with
 class- and instance-variables and -methods similar to a TclOO class,
 with all the necessary boilerplate to support them generated/handled
 by the package.
+.IP [8]
+Extended the API with commands for the definition of custom
+argument and result types for use by \fB::critcl::cproc\fR.
+See the section \fBAdvanced: Extending cproc\fR for details of
+the provided commands.
 .PP
 .SH AUTHORS
 Jean Claude Wippler, Steve Landers, Andreas Kupries
