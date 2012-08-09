@@ -36,22 +36,22 @@ wrapper around the actual implementation of the [cmd cproc] in
 question and has access to the following environment:
 
 [list_begin definitions]
+[def [var interp]] A Tcl_Interp* typed C variable referencing the
+                   interpreter the result has to be stored into.
 [def [var rv]] The C variable holding the result to convert, of type
                [arg ctype].
-[def [var ip]] A Tcl_Interp* typed C variable referencing the interpreter
-               the result has to be stored into.
 [list_end]
 
 As examples here are the definitions of two standard result types:
 
 [example {
     resulttype int {
-	Tcl_SetObjResult(ip, Tcl_NewIntObj(rv));
+	Tcl_SetObjResult(interp, Tcl_NewIntObj(rv));
 	return TCL_OK;
     }
 
     resulttype ok {
-	/* ip result must be set by cproc body */
+	/* interp result must be set by cproc body */
 	return rv;
     } int
 }]
@@ -85,8 +85,8 @@ separate C code block (thus allowing the use of local variables) which
 has access to the following environment:
 
 [list_begin definitions]
-[def [var ip]] A Tcl_Interp* typed C variable referencing the interpreter
-               the result has to be stored into.
+[def [var interp]] A Tcl_Interp* typed C variable referencing the
+                   interpreter the code is running in.
 [def [const @@]] A placeholder for the Tcl_Obj*-valued C expression
      	    	 providing the value of the argument to convert.
 
@@ -98,12 +98,12 @@ As examples here are the definitions of two standard argument types:
 
 [example {
     argtype int {
-	if (Tcl_GetIntFromObj(ip, @@, &@A) != TCL_OK) return TCL_ERROR;
+	if (Tcl_GetIntFromObj(interp, @@, &@A) != TCL_OK) return TCL_ERROR;
     }
 
     argtype float {
 	double t;
-	if (Tcl_GetDoubleFromObj(ip, @@, &t) != TCL_OK) return TCL_ERROR;
+	if (Tcl_GetDoubleFromObj(interp, @@, &t) != TCL_OK) return TCL_ERROR;
 	@A = (float) t;
     }
 }]

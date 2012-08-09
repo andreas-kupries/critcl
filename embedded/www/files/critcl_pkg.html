@@ -393,26 +393,27 @@ See section <span class="sectref"><a href="#subsection16">Runtime Behaviour</a><
 <p>The result of <b class="cmd">critcl::cproc</b> itself is the empty string.
 The following values are allowed for the <i class="arg">resulttype</i>:</p>
 <pre class="example">
-          Types
-Name      C        Tcl      Notes
--------   -------- -------- -------------------
-Tcl_Obj*  Tcl_Obj* Tcl_Obj* Default, pass-through
-char*     char*    String   Static string
-vstring   char*    String   String is volatile.
-string    char*    String   Dynamically allocated (Tcl_Alloc)
-dstring   char*    String   Ditto.
--------   -------- -------- -------------------
-double    double   Double
-float     float    Double
--------   -------- -------- -------------------
-bool      int      Int
-boolean   int      Int
-int       int      Int
-long      long     Long
--------   -------- -------- -------------------
-ok        int      ---      Result code, pass-through
-void      void     ---      No result.
--------   -------- -------- -------------------
+             Types
+Name         C           Tcl      Notes
+-------      --------    -------- -------------------
+Tcl_Obj*     Tcl_Obj*    Tcl_Obj* Default, pass-through
+char*        char*       String   Static string
+const char*  const char* String   Constant string
+vstring      char*       String   String is volatile.
+string       char*       String   Dynamically allocated (Tcl_Alloc)
+dstring      char*       String   Ditto.
+-------      --------    -------- -------------------
+double       double      Double
+float        float       Double
+-------      --------    -------- -------------------
+bool         int         Int
+boolean      int         Int
+int          int         Int
+long         long        Long
+-------      --------    -------- -------------------
+ok           int         ---      Result code, pass-through
+void         void        ---      No result.
+-------      --------    -------- -------------------
 </pre>
 <p>Please note that it is possible to extend the above with custom
 types if these types are not enough. See section
@@ -1441,21 +1442,21 @@ returned.</p>
 wrapper around the actual implementation of the <b class="cmd">cproc</b> in
 question and has access to the following environment:</p>
 <dl class="definitions">
+<dt><b class="variable">interp</b></dt>
+<dd><p>A Tcl_Interp* typed C variable referencing the
+                   interpreter the result has to be stored into.</p></dd>
 <dt><b class="variable">rv</b></dt>
 <dd><p>The C variable holding the result to convert, of type
                <i class="arg">ctype</i>.</p></dd>
-<dt><b class="variable">ip</b></dt>
-<dd><p>A Tcl_Interp* typed C variable referencing the interpreter
-               the result has to be stored into.</p></dd>
 </dl>
 <p>As examples here are the definitions of two standard result types:</p>
 <pre class="example">
     resulttype int {
-	Tcl_SetObjResult(ip, Tcl_NewIntObj(rv));
+	Tcl_SetObjResult(interp, Tcl_NewIntObj(rv));
 	return TCL_OK;
     }
     resulttype ok {
-	/* ip result must be set by cproc body */
+	/* interp result must be set by cproc body */
 	return rv;
     } int
 </pre>
@@ -1479,9 +1480,9 @@ function and its storage in a helper variable.</p>
 separate C code block (thus allowing the use of local variables) which
 has access to the following environment:</p>
 <dl class="definitions">
-<dt><b class="variable">ip</b></dt>
-<dd><p>A Tcl_Interp* typed C variable referencing the interpreter
-               the result has to be stored into.</p></dd>
+<dt><b class="variable">interp</b></dt>
+<dd><p>A Tcl_Interp* typed C variable referencing the
+                   interpreter the code is running in.</p></dd>
 <dt><b class="const">@@</b></dt>
 <dd><p>A placeholder for the Tcl_Obj*-valued C expression
      	    	 providing the value of the argument to convert.</p></dd>
@@ -1492,11 +1493,11 @@ has access to the following environment:</p>
 <p>As examples here are the definitions of two standard argument types:</p>
 <pre class="example">
     argtype int {
-	if (Tcl_GetIntFromObj(ip, @@, &amp;@A) != TCL_OK) return TCL_ERROR;
+	if (Tcl_GetIntFromObj(interp, @@, &amp;@A) != TCL_OK) return TCL_ERROR;
     }
     argtype float {
 	double t;
-	if (Tcl_GetDoubleFromObj(ip, @@, &amp;t) != TCL_OK) return TCL_ERROR;
+	if (Tcl_GetDoubleFromObj(interp, @@, &amp;t) != TCL_OK) return TCL_ERROR;
 	@A = (float) t;
     }
 </pre>

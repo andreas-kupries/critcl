@@ -304,7 +304,7 @@ proc ::critcl::argcnames {adefs {interp ip}} {
     set cnames {}
 
     if {[lindex $adefs 0] eq "Tcl_Interp*"} {
-	lappend cnames ip
+	lappend cnames interp
 	set     adefs  [lrange $adefs 2 end]
     }
 
@@ -2902,7 +2902,7 @@ proc ::critcl::scan::critcl::userconfig {cmd args} {
 proc ::critcl::EmitShimHeader {wname} {
 
     # Function head
-    set ca "(ClientData cd, Tcl_Interp *ip, int oc, Tcl_Obj *CONST ov\[])"
+    set ca "(ClientData cd, Tcl_Interp *interp, int oc, Tcl_Obj *CONST ov\[])"
     Emitln
     Emitln "static int"
     Emitln "$wname$ca"
@@ -2931,7 +2931,7 @@ proc ::critcl::EmitWrongArgsCheck {names offset} {
 
     Emitln ""
     Emitln "  if (oc != $count) \{"
-    Emitln "    Tcl_WrongNumArgs(ip, 1, ov, \"$names\");"
+    Emitln "    Tcl_WrongNumArgs(interp, 1, ov, \"$names\");"
     Emitln "    return TCL_ERROR;"
     Emitln "  \}"
     Emitln ""
@@ -4289,23 +4289,23 @@ proc ::critcl::Initialize {} {
     # Declare the standard argument types for cproc.
 
     argtype int {
-	if (Tcl_GetIntFromObj(ip, @@, &@A) != TCL_OK) return TCL_ERROR;
+	if (Tcl_GetIntFromObj(interp, @@, &@A) != TCL_OK) return TCL_ERROR;
     }
     argtype boolean {
-	if (Tcl_GetBooleanFromObj(ip, @@, &@A) != TCL_OK) return TCL_ERROR;
+	if (Tcl_GetBooleanFromObj(interp, @@, &@A) != TCL_OK) return TCL_ERROR;
     } int int
     argtype bool = boolean
 
     argtype long {
-	if (Tcl_GetLongFromObj(ip, @@, &@A) != TCL_OK) return TCL_ERROR;
+	if (Tcl_GetLongFromObj(interp, @@, &@A) != TCL_OK) return TCL_ERROR;
     }
 
     argtype double {
-	if (Tcl_GetDoubleFromObj(ip, @@, &@A) != TCL_OK) return TCL_ERROR;
+	if (Tcl_GetDoubleFromObj(interp, @@, &@A) != TCL_OK) return TCL_ERROR;
     }
     argtype float {
 	double t;
-	if (Tcl_GetDoubleFromObj(ip, @@, &t) != TCL_OK) return TCL_ERROR;
+	if (Tcl_GetDoubleFromObj(interp, @@, &t) != TCL_OK) return TCL_ERROR;
 	@A = (float) t;
     }
 
@@ -4357,29 +4357,33 @@ proc ::critcl::Initialize {} {
     } int
 
     resulttype int {
-	Tcl_SetObjResult(ip, Tcl_NewIntObj(rv));
+	Tcl_SetObjResult(interp, Tcl_NewIntObj(rv));
 	return TCL_OK;
     }
     resulttype boolean = int
     resulttype bool    = int
 
     resulttype long {
-	Tcl_SetObjResult(ip, Tcl_NewLongObj(rv));
+	Tcl_SetObjResult(interp, Tcl_NewLongObj(rv));
 	return TCL_OK;
     }
 
     resulttype double {
-	Tcl_SetObjResult(ip, Tcl_NewDoubleObj(rv));
+	Tcl_SetObjResult(interp, Tcl_NewDoubleObj(rv));
 	return TCL_OK;
     }
     resulttype float {
-	Tcl_SetObjResult(ip, Tcl_NewDoubleObj(rv));
+	Tcl_SetObjResult(interp, Tcl_NewDoubleObj(rv));
 	return TCL_OK;
     }
 
     # Static and volatile strings. Duplicate.
     resulttype char* {
-	Tcl_SetObjResult(ip, Tcl_NewStringObj(rv,-1));
+	Tcl_SetObjResult(interp, Tcl_NewStringObj(rv,-1));
+	return TCL_OK;
+    }
+    resulttype {const char*} {
+	Tcl_SetObjResult(interp, Tcl_NewStringObj(rv,-1));
 	return TCL_OK;
     }
     resulttype vstring = char*
@@ -4389,17 +4393,17 @@ proc ::critcl::Initialize {} {
     # We are avoiding the Tcl_Obj* API here, as its use requires an
     # additional duplicate of the string, churning memory and
     # requiring more copying.
-    #   Tcl_SetObjResult(ip, Tcl_NewStringObj(rv,-1));
+    #   Tcl_SetObjResult(interp, Tcl_NewStringObj(rv,-1));
     #   Tcl_Free (rv);
     resulttype string {
-	Tcl_SetResult (ip, rv, TCL_DYNAMIC);
+	Tcl_SetResult (interp, rv, TCL_DYNAMIC);
 	return TCL_OK;
     } char*
     resulttype dstring = string
 
     resulttype Tcl_Obj* {
 	if (rv == NULL) { return TCL_ERROR; }
-	Tcl_SetObjResult(ip, rv);
+	Tcl_SetObjResult(interp, rv);
 	Tcl_DecrRefCount(rv);
 	return TCL_OK;
     }

@@ -150,26 +150,27 @@ See section [sectref {Runtime Behaviour}] for more details.
 The following values are allowed for the [arg resulttype]:
 
 [example {
-          Types
-Name      C        Tcl      Notes
--------   -------- -------- -------------------
-Tcl_Obj*  Tcl_Obj* Tcl_Obj* Default, pass-through
-char*     char*    String   Static string
-vstring   char*    String   String is volatile.
-string    char*    String   Dynamically allocated (Tcl_Alloc)
-dstring   char*    String   Ditto.
--------   -------- -------- -------------------
-double    double   Double
-float     float    Double
--------   -------- -------- -------------------
-bool      int      Int
-boolean   int      Int
-int       int      Int
-long      long     Long
--------   -------- -------- -------------------
-ok        int      ---      Result code, pass-through
-void      void     ---      No result.
--------   -------- -------- -------------------
+             Types
+Name         C           Tcl      Notes
+-------      --------    -------- -------------------
+Tcl_Obj*     Tcl_Obj*    Tcl_Obj* Default, pass-through
+char*        char*       String   Static string
+const char*  const char* String   Constant string
+vstring      char*       String   String is volatile.
+string       char*       String   Dynamically allocated (Tcl_Alloc)
+dstring      char*       String   Ditto.
+-------      --------    -------- -------------------
+double       double      Double
+float        float       Double
+-------      --------    -------- -------------------
+bool         int         Int
+boolean      int         Int
+int          int         Int
+long         long        Long
+-------      --------    -------- -------------------
+ok           int         ---      Result code, pass-through
+void         void        ---      No result.
+-------      --------    -------- -------------------
 }]
 
 [para] Please note that it is possible to extend the above with custom

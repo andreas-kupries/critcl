@@ -617,26 +617,27 @@ The following values are allowed for the \fIresulttype\fR:
 .CS
 
 
-          Types
-Name      C        Tcl      Notes
--------   -------- -------- -------------------
-Tcl_Obj*  Tcl_Obj* Tcl_Obj* Default, pass-through
-char*     char*    String   Static string
-vstring   char*    String   String is volatile.
-string    char*    String   Dynamically allocated (Tcl_Alloc)
-dstring   char*    String   Ditto.
--------   -------- -------- -------------------
-double    double   Double
-float     float    Double
--------   -------- -------- -------------------
-bool      int      Int
-boolean   int      Int
-int       int      Int
-long      long     Long
--------   -------- -------- -------------------
-ok        int      ---      Result code, pass-through
-void      void     ---      No result.
--------   -------- -------- -------------------
+             Types
+Name         C           Tcl      Notes
+-------      --------    -------- -------------------
+Tcl_Obj*     Tcl_Obj*    Tcl_Obj* Default, pass-through
+char*        char*       String   Static string
+const char*  const char* String   Constant string
+vstring      char*       String   String is volatile.
+string       char*       String   Dynamically allocated (Tcl_Alloc)
+dstring      char*       String   Ditto.
+-------      --------    -------- -------------------
+double       double      Double
+float        float       Double
+-------      --------    -------- -------------------
+bool         int         Int
+boolean      int         Int
+int          int         Int
+long         long        Long
+-------      --------    -------- -------------------
+ok           int         ---      Result code, pass-through
+void         void        ---      No result.
+-------      --------    -------- -------------------
 
 .CE
 .sp
@@ -1899,13 +1900,13 @@ wrapper around the actual implementation of the \fBcproc\fR in
 question and has access to the following environment:
 .RS
 .TP
+\fBinterp\fR
+A Tcl_Interp* typed C variable referencing the
+interpreter the result has to be stored into.
+.TP
 \fBrv\fR
 The C variable holding the result to convert, of type
 \fIctype\fR.
-.TP
-\fBip\fR
-A Tcl_Interp* typed C variable referencing the interpreter
-the result has to be stored into.
 .RE
 .IP
 As examples here are the definitions of two standard result types:
@@ -1913,12 +1914,12 @@ As examples here are the definitions of two standard result types:
 
 
     resulttype int {
-	Tcl_SetObjResult(ip, Tcl_NewIntObj(rv));
+	Tcl_SetObjResult(interp, Tcl_NewIntObj(rv));
 	return TCL_OK;
     }
 
     resulttype ok {
-	/* ip result must be set by cproc body */
+	/* interp result must be set by cproc body */
 	return rv;
     } int
 
@@ -1948,9 +1949,9 @@ separate C code block (thus allowing the use of local variables) which
 has access to the following environment:
 .RS
 .TP
-\fBip\fR
-A Tcl_Interp* typed C variable referencing the interpreter
-the result has to be stored into.
+\fBinterp\fR
+A Tcl_Interp* typed C variable referencing the
+interpreter the code is running in.
 .TP
 \fB@@\fR
 A placeholder for the Tcl_Obj*-valued C expression
@@ -1966,12 +1967,12 @@ As examples here are the definitions of two standard argument types:
 
 
     argtype int {
-	if (Tcl_GetIntFromObj(ip, @@, &@A) != TCL_OK) return TCL_ERROR;
+	if (Tcl_GetIntFromObj(interp, @@, &@A) != TCL_OK) return TCL_ERROR;
     }
 
     argtype float {
 	double t;
-	if (Tcl_GetDoubleFromObj(ip, @@, &t) != TCL_OK) return TCL_ERROR;
+	if (Tcl_GetDoubleFromObj(interp, @@, &t) != TCL_OK) return TCL_ERROR;
 	@A = (float) t;
     }
 
