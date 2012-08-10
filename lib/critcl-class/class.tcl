@@ -933,14 +933,12 @@ ComputeMethodList (CONST char** table)
 #endif /* CRITCL_CLASS__HAVE_COMPUTE_METHOD_LIST */
     }
 
-    ::critcl::class::spec::method methods proc {} ok {
+    ::critcl::class::spec::method methods proc {} void {
 	Tcl_SetObjResult (interp, instance->class->methods);
-	return TCL_OK;
     }
 
-    ::critcl::class::spec::classmethod methods proc {} ok {
+    ::critcl::class::spec::classmethod methods proc {} void {
 	Tcl_SetObjResult (interp, class->methods);
-	return TCL_OK;
     }
     return
 }
