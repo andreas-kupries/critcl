@@ -257,13 +257,13 @@ package require \fBmd5  ?2?\fR
 .sp
 \fB::critcl::ccommand\fR \fItclname\fR \fIcfunname\fR
 .sp
-\fB::critcl::ccommand\fR \fItclname\fR \fIarguments\fR ?\fIoption\fR \fIvalue\fR...? \fIbody\fR
+\fB::critcl::ccommand\fR \fItclname\fR \fIarguments\fR \fIbody\fR ?\fIoption\fR \fIvalue\fR...?
 .sp
 \fB::critcl::cdata\fR \fItclname\fR \fIdata\fR
 .sp
 \fB::critcl::cdefines\fR \fIdefinitions\fR ?\fInamespace\fR?
 .sp
-\fB::critcl::cproc\fR \fIname\fR \fIarguments\fR \fIresulttype\fR \fIbody\fR
+\fB::critcl::cproc\fR \fIname\fR \fIarguments\fR \fIresulttype\fR \fIbody\fR ?\fIoption\fR \fIvalue\fR...?
 .sp
 \fB::critcl::cproc\fR \fIname\fR \fIarguments\fR \fIresulttype\fR
 .sp
@@ -511,7 +511,7 @@ command function, and was declared already.
 The result of \fB::critcl::ccommand\fR itself is the empty
 string.
 .TP
-\fB::critcl::ccommand\fR \fItclname\fR \fIarguments\fR ?\fIoption\fR \fIvalue\fR...? \fIbody\fR
+\fB::critcl::ccommand\fR \fItclname\fR \fIarguments\fR \fIbody\fR ?\fIoption\fR \fIvalue\fR...?
 This form of \fBcritcl::ccommand\fR creates a new Tcl command named
 \fItclname\fR which is implemented by the C code in \fIbody\fR.
 .sp
@@ -559,6 +559,11 @@ new Tcl command, i.e. a function which is run by Tcl when the Tcl
 command is deleted again.
 If not specified the expression defaults to \fBNULL\fR, i.e. no
 deletion function.
+.TP
+\fB-cname\fR \fIc-identifier\fR
+The value of this option is the C level name of the command
+function. If not specified the system will derive a name from the Tcl
+level command name, including its namespace.
 .RE
 .IP
 A ccommand is, in comparison to functions defined via
@@ -599,7 +604,7 @@ As these checks are run at the time the embedded C code of a
 \fIall\fR C fragments defined with \fBcritcl::ccode\fR, plus all the
 headers it has access to via \fBcritcl::cheaders\fR, for that file.
 .TP
-\fB::critcl::cproc\fR \fIname\fR \fIarguments\fR \fIresulttype\fR \fIbody\fR
+\fB::critcl::cproc\fR \fIname\fR \fIarguments\fR \fIresulttype\fR \fIbody\fR ?\fIoption\fR \fIvalue\fR...?
 This command creates a new Tcl command named \fItclname\fR which is
 implemented by the C code in \fIbody\fR.
 In contrast to the low-level \fBcritcl::ccommand\fR here the arguments
@@ -613,33 +618,108 @@ to all definitions which came before it.
 See section \fBRuntime Behaviour\fR for more details.
 .sp
 The result of \fBcritcl::cproc\fR itself is the empty string.
-The following values are allowed for the \fIresulttype\fR:
-.CS
-
-
-             Types
-Name         C           Tcl      Notes
--------      --------    -------- -------------------
-Tcl_Obj*     Tcl_Obj*    Tcl_Obj* Default, pass-through
-char*        char*       String   Static string
-const char*  const char* String   Constant string
-vstring      char*       String   String is volatile.
-string       char*       String   Dynamically allocated (Tcl_Alloc)
-dstring      char*       String   Ditto.
--------      --------    -------- -------------------
-double       double      Double
-float        float       Double
--------      --------    -------- -------------------
-bool         int         Int
-boolean      int         Int
-int          int         Int
-long         long        Long
--------      --------    -------- -------------------
-ok           int         ---      Result code, pass-through
-void         void        ---      No result.
--------      --------    -------- -------------------
-
-.CE
+.sp
+The only options accepted by this command are:
+.RS
+.TP
+\fB-cname\fR \fIc-identifier\fR
+The value of this option is the C level name of the function.
+If not specified the system will derive a name from the Tcl
+level command name, including its namespace.
+.TP
+\fB-pass-cdata\fR \fIflag\fR
+The value of this option is a boolean flag. If specified and set the
+shim translating from Tcl to C level and back will pass the command's
+ClientData to the function.
+If not specified the flag defaults to \fBfalse\fR, i.e. no passing
+of client data.
+.TP
+\fB-arg-offset\fR \fIint\fR
+The value of this option is a positive integer number specifying the
+number of hidden arguments preceding the actual procedure
+arguments.
+If not specified the flag defaults to \fB0\fR.
+This is useful to higher-order code generator using the command in
+settings with prefix arguments which are not directly seen by the
+function, but influence argument counting and extraction.
+.RE
+.IP
+The list below shows the values which are legal for \fIresulttype\fR,
+and details their semantics:
+.RS
+.TP
+Tcl_Obj*
+.TP
+object
+The function returns a value of type "Tcl_Obj*".
+This value becomes the interpreter result, if not \fB0\fR.
+The Tcl status is TCL_ERROR when a \fB0\fR is returned, and TCL_OK otherwise.
+.sp
+\fIAttention\fR: The conversion assumes that the value belonged to
+the function, with an associated reference count, and decrements the
+reference count to indicate the loss of ownership by the
+function. This means that it is an error to return a value whose
+reference count is zero.
+.TP
+char*
+.TP
+vstring
+The function returns a value of type "char*".
+This value becomes the interpreter result, wrapped in a String.
+It is assumed that the string is volatile in some way, with the
+wrapping in a String duplicating it before making it the result,
+ensuring that we will not access a dangling pointer in the future.
+The Tcl status is always TCL_OK.
+.TP
+const char*
+Like type \fBchar*\fR above, except that the returned string is const-qualified.
+.TP
+string
+.TP
+dstring
+The function returns a value of type "char*".
+Contrary to the previous string types here it is assumed that the
+value is dynamically allocated, via \fBTcl_Alloc\fR.
+This value becomes the interpreter result, as usual, but is \fInot\fR copied.
+The Tcl status is always TCL_OK.
+.TP
+double
+The function returns a value of type "double".
+This value becomes the interpreter result, properly wrapped (Int).
+The Tcl status is always TCL_OK.
+.TP
+float
+The function returns a value of type "float".
+This value becomes the interpreter result, properly wrapped (Double).
+The Tcl status is always TCL_OK.
+.TP
+boolean
+.TP
+bool
+The function returns a value of type "int", interpreted as boolean.
+This value becomes the interpreter result, properly wrapped (Int).
+The Tcl status is always TCL_OK.
+.TP
+int
+The function returns a value of type "int".
+This value becomes the interpreter result, properly wrapped (Int).
+The Tcl status is always TCL_OK.
+.TP
+long
+The function returns a value of type "long int".
+This value becomes the interpreter result, properly wrapped (Long).
+The Tcl status is always TCL_OK.
+.TP
+ok
+The function returns a value of type "int".
+It is interpreted as the Tcl status code.
+The interpreter result is left untouched (empty).
+.TP
+void
+The function does not return a value.
+The interpreter result is left untouched (empty).
+The Tcl status is always TCL_OK.
+.RE
 .sp
 Please note that it is possible to extend the above with custom
 types if these types are not enough. See section
@@ -657,30 +737,81 @@ int x int y
 .CE
 .IP where \fIx\fR and \fIy\fR are the arguments/keys, both
 mapped to type/value \fBint\fR.
-The following values are allowed as argument-types:
-.CS
-
-
-          Types
-Name      C        Tcl      Notes
--------   -------- -------- -------------------
-Tcl_Obj*  Tcl_Obj* Tcl_Obj* Pass-through
-bytearray char*    ByteArray
-char*     char*    String
-double*   double*           Pointer into ByteArray representation ?!
-double    double   Double
-float*    float*            Pointer into ByteArray representation ?!
-float     float    Double
-int*      int*              Pointer into ByteArray representation ?!
-bool      int      Boolean
-boolean   int      Boolean
-int       int      Int
-long      long     Long
-rawchar*  char*    ByteArray
-void*     void*             Default
--------   -------- -------- -------------------
-
-.CE
+.sp
+The list below shows the values which are legal for argument
+types, and details their semantics:
+.RS
+.TP
+Tcl_Obj*
+.TP
+object
+The function takes an argument of type "Tcl_Obj*".
+No argument checking is done.
+The Tcl level word is passed to the argument as-is.
+.TP
+bytearray
+.TP
+rawchar*
+.TP
+rawchar
+The function takes an argument of type "char*".
+The Tcl argument must be convertible to ByteArray, an error is thrown
+otherwise.
+\fINote\fR that the length of the ByteArray is \fInot\fR passed to
+the function.
+.TP
+char*
+The function takes an argument of type "char*".
+The string representation of the Tcl argument is passed in.
+.TP
+double
+The function takes an argument of type "double".
+The Tcl argument must be convertible to Double, an error is thrown
+otherwise.
+.TP
+float
+The function takes an argument of type "float".
+The Tcl argument must be convertible to Double, an error is thrown
+otherwise.
+.TP
+boolean
+.TP
+bool
+The function takes an argument of type "int".
+The Tcl argument must be convertible to Boolean, an error is thrown
+otherwise.
+.TP
+int
+The function takes an argument of type "int".
+The Tcl argument must be convertible to Int, an error is thrown
+otherwise.
+.TP
+long
+The function takes an argument of type "long int".
+The Tcl argument must be convertible to Long, an error is thrown
+otherwise.
+.TP
+void*
+.TP
+double*
+.TP
+float*
+.TP
+int*
+The function takes an argument of the same-named C type.
+The Tcl argument must be convertible to ByteArray, an error is thrown
+otherwise.
+The bytes in the ByteArray are then re-interpreted as the raw
+representation of a C pointer of the given type which is then passed
+as argument to the function.
+In other words, this is for Tcl values somehow holding raw C pointers,
+i.e. memory addresses.
+.sp
+\fIAttention\fR: These types are considered \fIDEPRECATED\fR.
+It is planned to remove their documentation in release 3.2, and their
+implementation in release 3.3.  Their deprecation can be undone if
+good use cases are shown.
+.RE
 .sp
 \fINote\fR that optional arguments are not possible. This
 restriction is inherited from C.

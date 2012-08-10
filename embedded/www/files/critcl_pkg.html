@@ -170,10 +170,10 @@
 <ul class="syntax">
 <li><a href="#1"><b class="cmd">::critcl::ccode</b> <i class="arg">text</i></a></li>
 <li><a href="#2"><b class="cmd">::critcl::ccommand</b> <i class="arg">tclname</i> <i class="arg">cfunname</i></a></li>
-<li><a href="#3"><b class="cmd">::critcl::ccommand</b> <i class="arg">tclname</i> <i class="arg">arguments</i> <span class="opt">?<i class="arg">option</i> <i class="arg">value</i>...?</span> <i class="arg">body</i></a></li>
+<li><a href="#3"><b class="cmd">::critcl::ccommand</b> <i class="arg">tclname</i> <i class="arg">arguments</i> <i class="arg">body</i> <span class="opt">?<i class="arg">option</i> <i class="arg">value</i>...?</span></a></li>
 <li><a href="#4"><b class="cmd">::critcl::cdata</b> <i class="arg">tclname</i> <i class="arg">data</i></a></li>
 <li><a href="#5"><b class="cmd">::critcl::cdefines</b> <i class="arg">definitions</i> <span class="opt">?<i class="arg">namespace</i>?</span></a></li>
-<li><a href="#6"><b class="cmd">::critcl::cproc</b> <i class="arg">name</i> <i class="arg">arguments</i> <i class="arg">resulttype</i> <i class="arg">body</i></a></li>
+<li><a href="#6"><b class="cmd">::critcl::cproc</b> <i class="arg">name</i> <i class="arg">arguments</i> <i class="arg">resulttype</i> <i class="arg">body</i> <span class="opt">?<i class="arg">option</i> <i class="arg">value</i>...?</span></a></li>
 <li><a href="#7"><b class="cmd">::critcl::cproc</b> <i class="arg">name</i> <i class="arg">arguments</i> <i class="arg">resulttype</i></a></li>
 <li><a href="#8"><b class="cmd">::critcl::cinit</b> <i class="arg">text</i> <i class="arg">externals</i></a></li>
 <li><a href="#9"><b class="cmd">::critcl::api</b> <b class="method">import</b> <i class="arg">name</i> <i class="arg">version</i></a></li>
@@ -307,7 +307,7 @@ It is expected that <i class="arg">cfunname</i> has the proper signature for a T
 command function, and was declared already.</p>
 <p>The result of <b class="cmd">::critcl::ccommand</b> itself is the empty
 string.</p></dd>
-<dt><a name="3"><b class="cmd">::critcl::ccommand</b> <i class="arg">tclname</i> <i class="arg">arguments</i> <span class="opt">?<i class="arg">option</i> <i class="arg">value</i>...?</span> <i class="arg">body</i></a></dt>
+<dt><a name="3"><b class="cmd">::critcl::ccommand</b> <i class="arg">tclname</i> <i class="arg">arguments</i> <i class="arg">body</i> <span class="opt">?<i class="arg">option</i> <i class="arg">value</i>...?</span></a></dt>
 <dd><p>This form of <b class="cmd">critcl::ccommand</b> creates a new Tcl command named
 <i class="arg">tclname</i> which is implemented by the C code in <i class="arg">body</i>.</p>
 <p>The command wraps the <i class="arg">body</i> in an invisible C function,
@@ -345,6 +345,10 @@ new Tcl command, i.e. a function which is run by Tcl when the Tcl
 command is deleted again.
 If not specified the expression defaults to <b class="const">NULL</b>, i.e. no
 deletion function.</p></dd>
+<dt><b class="option">-cname</b> <i class="arg">c-identifier</i></dt>
+<dd><p>The value of this option is the C level name of the command
+function. If not specified the system will derive a name from the Tcl
+level command name, including its namespace.</p></dd>
 </dl>
 <p>A ccommand is, in comparison to functions defined via
 <b class="cmd">critcl::cproc</b>, more lower level.
@@ -378,7 +382,7 @@ defines have no value which could be used in the mapping.</p>
 &quot;<b class="file">.critcl</b>&quot; file is actually compiled they have access to and check
 <em>all</em> C fragments defined with <b class="cmd">critcl::ccode</b>, plus all the
 headers it has access to via <b class="cmd">critcl::cheaders</b>, for that file.</p></dd>
-<dt><a name="6"><b class="cmd">::critcl::cproc</b> <i class="arg">name</i> <i class="arg">arguments</i> <i class="arg">resulttype</i> <i class="arg">body</i></a></dt>
+<dt><a name="6"><b class="cmd">::critcl::cproc</b> <i class="arg">name</i> <i class="arg">arguments</i> <i class="arg">resulttype</i> <i class="arg">body</i> <span class="opt">?<i class="arg">option</i> <i class="arg">value</i>...?</span></a></dt>
 <dd><p>This command creates a new Tcl command named <i class="arg">tclname</i> which is
 implemented by the C code in <i class="arg">body</i>.
 In contrast to the low-level <b class="cmd">critcl::ccommand</b> here the arguments
@@ -390,31 +394,92 @@ compiles them and makes the resulting definitions available to all C
 code fragments declared later on. It itself can assume to have access
 to all definitions which came before it.
 See section <span class="sectref"><a href="#subsection16">Runtime Behaviour</a></span> for more details.</p>
-<p>The result of <b class="cmd">critcl::cproc</b> itself is the empty string.
-The following values are allowed for the <i class="arg">resulttype</i>:</p>
-<pre class="example">
-             Types
-Name         C           Tcl      Notes
--------      --------    -------- -------------------
-Tcl_Obj*     Tcl_Obj*    Tcl_Obj* Default, pass-through
-char*        char*       String   Static string
-const char*  const char* String   Constant string
-vstring      char*       String   String is volatile.
-string       char*       String   Dynamically allocated (Tcl_Alloc)
-dstring      char*       String   Ditto.
--------      --------    -------- -------------------
-double       double      Double
-float        float       Double
--------      --------    -------- -------------------
-bool         int         Int
-boolean      int         Int
-int          int         Int
-long         long        Long
--------      --------    -------- -------------------
-ok           int         ---      Result code, pass-through
-void         void        ---      No result.
--------      --------    -------- -------------------
-</pre>
+<p>The result of <b class="cmd">critcl::cproc</b> itself is the empty string.</p>
+<p>The only options accepted by this command are:</p>
+<dl class="options">
+<dt><b class="option">-cname</b> <i class="arg">c-identifier</i></dt>
+<dd><p>The value of this option is the C level name of the function.
+If not specified the system will derive a name from the Tcl
+level command name, including its namespace.</p></dd>
+<dt><b class="option">-pass-cdata</b> <i class="arg">flag</i></dt>
+<dd><p>The value of this option is a boolean flag. If specified and set the
+shim translating from Tcl to C level and back will pass the command's
+ClientData to the function.
+If not specified the flag defaults to <b class="const">false</b>, i.e. no passing
+of client data.</p></dd>
+<dt><b class="option">-arg-offset</b> <i class="arg">int</i></dt>
+<dd><p>The value of this option is a positive integer number specifying the
+number of hidden arguments preceding the actual procedure
+arguments.
+If not specified the flag defaults to <b class="const">0</b>.
+This is useful to higher-order code generator using the command in
+settings with prefix arguments which are not directly seen by the
+function, but influence argument counting and extraction.</p></dd>
+</dl>
+<p>The list below shows the values which are legal for <i class="arg">resulttype</i>,
+and details their semantics:</p>
+<dl class="definitions">
+<dt>Tcl_Obj*</dt>
+<dd></dd>
+<dt>object</dt>
+<dd><p>The function returns a value of type &quot;Tcl_Obj*&quot;.
+This value becomes the interpreter result, if not <b class="const">0</b>.
+The Tcl status is TCL_ERROR when a <b class="const">0</b> is returned, and TCL_OK otherwise.</p>
+<p><em>Attention</em>: The conversion assumes that the value belonged to
+the function, with an associated reference count, and decrements the
+reference count to indicate the loss of ownership by the
+function. This means that it is an error to return a value whose
+reference count is zero.</p></dd>
+<dt>char*</dt>
+<dd></dd>
+<dt>vstring</dt>
+<dd><p>The function returns a value of type &quot;char*&quot;.
+This value becomes the interpreter result, wrapped in a String.
+It is assumed that the string is volatile in some way, with the
+wrapping in a String duplicating it before making it the result,
+ensuring that we will not access a dangling pointer in the future.
+The Tcl status is always TCL_OK.</p></dd>
+<dt>const char*</dt>
+<dd><p>Like type <b class="const">char*</b> above, except that the returned string is const-qualified.</p></dd>
+<dt>string</dt>
+<dd></dd>
+<dt>dstring</dt>
+<dd><p>The function returns a value of type &quot;char*&quot;.
+Contrary to the previous string types here it is assumed that the
+value is dynamically allocated, via <b class="function">Tcl_Alloc</b>.
+This value becomes the interpreter result, as usual, but is <em>not</em> copied.
+The Tcl status is always TCL_OK.</p></dd>
+<dt>double</dt>
+<dd><p>The function returns a value of type &quot;double&quot;.
+This value becomes the interpreter result, properly wrapped (Int).
+The Tcl status is always TCL_OK.</p></dd>
+<dt>float</dt>
+<dd><p>The function returns a value of type &quot;float&quot;.
+This value becomes the interpreter result, properly wrapped (Double).
+The Tcl status is always TCL_OK.</p></dd>
+<dt>boolean</dt>
+<dd></dd>
+<dt>bool</dt>
+<dd><p>The function returns a value of type &quot;int&quot;, interpreted as boolean.
+This value becomes the interpreter result, properly wrapped (Int).
+The Tcl status is always TCL_OK.</p></dd>
+<dt>int</dt>
+<dd><p>The function returns a value of type &quot;int&quot;.
+This value becomes the interpreter result, properly wrapped (Int).
+The Tcl status is always TCL_OK.</p></dd>
+<dt>long</dt>
+<dd><p>The function returns a value of type &quot;long int&quot;.
+This value becomes the interpreter result, properly wrapped (Long).
+The Tcl status is always TCL_OK.</p></dd>
+<dt>ok</dt>
+<dd><p>The function returns a value of type &quot;int&quot;.
+It is interpreted as the Tcl status code.
+The interpreter result is left untouched (empty).</p></dd>
+<dt>void</dt>
+<dd><p>The function does not return a value.
+The interpreter result is left untouched (empty).
+The Tcl status is always TCL_OK.</p></dd>
+</dl>
 <p>Please note that it is possible to extend the above with custom
 types if these types are not enough. See section
 <span class="sectref"><a href="#subsection14">Advanced: Extending cproc</a></span> for details.</p>
@@ -426,28 +491,71 @@ example</p>
 int x int y
 </pre>
 <p>where <i class="arg">x</i> and <i class="arg">y</i> are the arguments/keys, both
-mapped to type/value <b class="const">int</b>.
-The following values are allowed as argument-types:</p>
-<pre class="example">
-          Types
-Name      C        Tcl      Notes
--------   -------- -------- -------------------
-Tcl_Obj*  Tcl_Obj* Tcl_Obj* Pass-through
-bytearray char*    ByteArray
-char*     char*    String
-double*   double*           Pointer into ByteArray representation ?!
-double    double   Double
-float*    float*            Pointer into ByteArray representation ?!
-float     float    Double
-int*      int*              Pointer into ByteArray representation ?!
-bool      int      Boolean
-boolean   int      Boolean
-int       int      Int
-long      long     Long
-rawchar*  char*    ByteArray
-void*     void*             Default
--------   -------- -------- -------------------
-</pre>
+mapped to type/value <b class="const">int</b>.</p>
+<p>The list below shows the values which are legal for argument
+types, and details their semantics:</p>
+<dl class="definitions">
+<dt>Tcl_Obj*</dt>
+<dd></dd>
+<dt>object</dt>
+<dd><p>The function takes an argument of type &quot;Tcl_Obj*&quot;.
+No argument checking is done.
+The Tcl level word is passed to the argument as-is.</p></dd>
+<dt>bytearray</dt>
+<dd></dd>
+<dt>rawchar*</dt>
+<dd></dd>
+<dt>rawchar</dt>
+<dd><p>The function takes an argument of type &quot;char*&quot;.
+The Tcl argument must be convertible to ByteArray, an error is thrown
+otherwise.
+<em>Note</em> that the length of the ByteArray is <em>not</em> passed to
+the function.</p></dd>
+<dt>char*</dt>
+<dd><p>The function takes an argument of type &quot;char*&quot;.
+The string representation of the Tcl argument is passed in.</p></dd>
+<dt>double</dt>
+<dd><p>The function takes an argument of type &quot;double&quot;.
+The Tcl argument must be convertible to Double, an error is thrown
+otherwise.</p></dd>
+<dt>float</dt>
+<dd><p>The function takes an argument of type &quot;float&quot;.
+The Tcl argument must be convertible to Double, an error is thrown
+otherwise.</p></dd>
+<dt>boolean</dt>
+<dd></dd>
+<dt>bool</dt>
+<dd><p>The function takes an argument of type &quot;int&quot;.
+The Tcl argument must be convertible to Boolean, an error is thrown
+otherwise.</p></dd>
+<dt>int</dt>
+<dd><p>The function takes an argument of type &quot;int&quot;.
+The Tcl argument must be convertible to Int, an error is thrown
+otherwise.</p></dd>
+<dt>long</dt>
+<dd><p>The function takes an argument of type &quot;long int&quot;.
+The Tcl argument must be convertible to Long, an error is thrown
+otherwise.</p></dd>
+<dt>void*</dt>
+<dd></dd>
+<dt>double*</dt>
+<dd></dd>
+<dt>float*</dt>
+<dd></dd>
+<dt>int*</dt>
+<dd><p>The function takes an argument of the same-named C type.
+The Tcl argument must be convertible to ByteArray, an error is thrown
+otherwise.
+The bytes in the ByteArray are then re-interpreted as the raw
+representation of a C pointer of the given type which is then passed
+as argument to the function.
+In other words, this is for Tcl values somehow holding raw C pointers,
+i.e. memory addresses.</p>
+<p><em>Attention</em>: These types are considered <em>DEPRECATED</em>.
+It is planned to remove their documentation in release 3.2, and their
+implementation in release 3.3.  Their deprecation can be undone if
+good use cases are shown.</p></dd>
+</dl>
 <p><em>Note</em> that optional arguments are not possible. This
 restriction is inherited from C.</p>
 <p>Further note that the type of the first argument is allowed to
