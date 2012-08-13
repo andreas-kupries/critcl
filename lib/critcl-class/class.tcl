@@ -529,7 +529,7 @@ proc ::critcl::class::MethodExplicit {name mtype arguments args} {
 	set body   $bloc[string trimright $body]
 	set cargs  [critcl::argnames $arguments]
 	if {[llength $cargs]} { set cargs " $cargs" }
-	set syntax "/* Syntax: <class> $name$cargs */"
+	set syntax "/* Syntax: <instance> $name$cargs */"
 	set body   "\n    $syntax\n$cdimport\n    $body"
 
 	set code [critcl::collect {
@@ -543,7 +543,7 @@ proc ::critcl::class::MethodExplicit {name mtype arguments args} {
 
 	if {$arguments ne {}} {set arguments " cmd<<$arguments>>"}
 	set body   $bloc[string trimright $body]
-	set syntax "/* Syntax: <class> $name$arguments */"
+	set syntax "/* Syntax: <instance> $name$arguments */"
 	set body   "\n    $syntax\n$cdimport\n    $body"
 
 	set code [critcl::collect {
@@ -563,7 +563,7 @@ proc ::critcl::class::ClassMethodExternal {name function details} {
 	lappend map objv "objv, [join $details {, }]"
     }
 
-    MethodDef classmethod "&classmgr->user" $name [MethodEnum method $name] {} $function $map \
+    MethodDef classmethod "&classmgr->user" $name [MethodEnum classmethod $name] {} $function $map \
 	"/* $name : External function @function@ */"
     return
 }
@@ -573,7 +573,7 @@ proc ::critcl::class::ClassMethodExplicit {name mtype arguments args} {
     MethodCheck classmethod class $name
 
     set bloc     [critcl::at::get]
-    set enum     [MethodEnum method $name]
+    set enum     [MethodEnum classmethod $name]
     set function ${enum}_Cmd
     set cdimport "[critcl::at::here!]    @classtype@ class = (@classtype@) clientdata;"
 
@@ -640,8 +640,9 @@ proc ::critcl::class::MethodEnum {section name} {
     regsub -all -- {_+} $name _ name
 
     set serial [llength [dict get $state $section names]]
+    set M [expr {$section eq "method" ? "M" : "CM"}]
 
-    return @stem@_M_${serial}_[string toupper $name]
+    return @stem@_${M}_${serial}_[string toupper $name]
 }
 
 proc ::critcl::class::MethodDef {section var name enum syntax function xmap code} {
