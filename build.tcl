@@ -136,6 +136,25 @@ proc _doc {} {
 
     return
 }
+proc Htextdoc {} { return "destination\n\tGenerate plain text documentation in specified directory." }
+proc _textdoc {dst} {
+    set destination [file normalize $dst]
+
+    cd [file dirname $::me]/doc
+
+    puts "Removing old text documentation at ${dst}..."
+    file delete -force $destination
+
+    file mkdir $destination
+
+    puts "Generating pages..."
+    exec 2>@ stderr >@ stdout dtplite -ext txt -o $destination text .
+
+    cd  $destination
+    file delete -force .idxdoc .tocdoc
+
+    return
+}
 proc Hfigures {} { return "\n\t(Re)Generate the figures and diagrams for the documentation." }
 proc _figures {} {
     cd [file dirname $::me]/doc/figures
