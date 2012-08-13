@@ -200,7 +200,7 @@ $resultget
     set nmin [expr {$np + 1}]
     set nmax [expr {$np + 2}]
 
-    critcl::ccommand ::random::$name {cd ip oc ov} [subst -nocommands {
+    critcl::ccommand ::random::$name {cd interp oc ov} [subst -nocommands {
 	RNMATHparam* rnmathp;
 	char* name;
 $argvars
@@ -210,12 +210,12 @@ $argvars
 	    name = Tcl_GetString (ov [1]);
 	    ov++;
 	} else {
-	    Tcl_WrongNumArgs (ip, 1, ov, "?name? $argnames");
+	    Tcl_WrongNumArgs (interp, 1, ov, "?name? $argnames");
 	    return TCL_ERROR;
 	}
 
 $argcheck
-	rnmathp = RNMATHnewCmd (ip, "$name", name, r_${name}_objcmd);
+	rnmathp = RNMATHnewCmd (interp, "$name", name, r_${name}_objcmd);
 
 	if (!rnmathp) {
 	    return TCL_ERROR;
