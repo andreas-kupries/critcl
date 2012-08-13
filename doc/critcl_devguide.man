@@ -175,6 +175,22 @@ The Tcl code implementing the package.
 The Tcl code implementing the package.
 [list_end][comment -----------------------------critcl::app]
 
+[def [package critcl::iassoc]]
+[list_begin definitions][comment ---------------critcl::iassoc]
+[def [file lib/critcl-iassoc/iassoc.tcl]]
+The Tcl code implementing the package.
+[def [file lib/critcl-iassoc/iassoc.h]]
+C code template used by the package.
+[list_end][comment -----------------------------critcl::iassoc]
+
+[def [package critcl::class]]
+[list_begin definitions][comment ---------------critcl::class]
+[def [file lib/critcl-class/class.tcl]]
+The Tcl code implementing the package.
+[def [file lib/critcl-class/class.h]]
+C code template used by the package.
+[list_end][comment -----------------------------critcl::class]
+
 [def [package dict84]]
 [def [package lassign84]]
 [list_begin definitions][comment ---------------util84]
