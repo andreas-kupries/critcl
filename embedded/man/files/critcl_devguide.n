@@ -1,8 +1,8 @@
 '\"
-'\" Generated from file '/home/aku/Projects/Critcl/Dev/src/embedded/man/files/critcl_devguide.n' by tcllib/doctools with format 'nroff'
+'\" Generated from file '/home/aku/Projects/Critcl/dev-dev31/embedded/man/files/critcl_devguide.n' by tcllib/doctools with format 'nroff'
 '\" Copyright (c) Jean-Claude Wippler
 '\" Copyright (c) Steve Landers
-'\" Copyright (c) 2011 Andreas Kupries
+'\" Copyright (c) 2011-2012 Andreas Kupries
 '\"
 '\" The definitions below are for supplemental macros used in Tcl/Tk
 '\" manual entries.
@@ -492,6 +492,26 @@ The Tcl code implementing the package.
 The Tcl code implementing the package.
 .RE
 .TP
+\fBcritcl::iassoc\fR
+.RS
+.TP
+"\fIlib/critcl-iassoc/iassoc.tcl\fR"
+The Tcl code implementing the package.
+.TP
+"\fIlib/critcl-iassoc/iassoc.h\fR"
+C code template used by the package.
+.RE
+.TP
+\fBcritcl::class\fR
+.RS
+.TP
+"\fIlib/critcl-class/class.tcl\fR"
+The Tcl code implementing the package.
+.TP
+"\fIlib/critcl-class/class.h\fR"
+C code template used by the package.
+.RE
+.TP
 \fBdict84\fR
 .TP
 \fBlassign84\fR
@@ -573,6 +593,6 @@ Glueing/Embedded C code
 .nf
 Copyright (c) Jean-Claude Wippler
 Copyright (c) Steve Landers
-Copyright (c) 2011 Andreas Kupries
+Copyright (c) 2011-2012 Andreas Kupries
 
 .fi

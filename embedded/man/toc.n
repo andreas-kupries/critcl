@@ -260,6 +260,9 @@ doc
 \fBcritcl::app\fR
 \fIfiles/critcl_apppkg.n\fR: CriTcl Application Package Reference
 .TP
+\fBcritcl_changes\fR
+\fIfiles/changes.n\fR: CriTcl Changes
+.TP
 \fBcritcl\fR
 \fIfiles/critcl_pkg.n\fR: CriTcl Package Reference
 .TP

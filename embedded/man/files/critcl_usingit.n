@@ -1,8 +1,8 @@
 '\"
-'\" Generated from file '/home/aku/Projects/Critcl/Dev/src/embedded/man/files/critcl_usingit.n' by tcllib/doctools with format 'nroff'
+'\" Generated from file '/home/aku/Projects/Critcl/dev-dev31/embedded/man/files/critcl_usingit.n' by tcllib/doctools with format 'nroff'
 '\" Copyright (c) Jean-Claude Wippler
 '\" Copyright (c) Steve Landers
-'\" Copyright (c) 2011 Andreas Kupries
+'\" Copyright (c) 2011-2012 Andreas Kupries
 '\"
 '\" The definitions below are for supplemental macros used in Tcl/Tk
 '\" manual entries.
@@ -1539,6 +1539,6 @@ Glueing/Embedded C code
 .nf
 Copyright (c) Jean-Claude Wippler
 Copyright (c) Steve Landers
-Copyright (c) 2011 Andreas Kupries
+Copyright (c) 2011-2012 Andreas Kupries
 
 .fi

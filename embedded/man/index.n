@@ -250,6 +250,9 @@ critcl::class
 C code
 .RS
 .TP
+\fBfiles/changes.n\fR
+critcl_changes
+.TP
 \fBfiles/critcl_app.n\fR
 critcl_app
 .TP
@@ -301,6 +304,9 @@ critcl::class
 code generator
 .RS
 .TP
+\fBfiles/changes.n\fR
+critcl_changes
+.TP
 \fBfiles/critcl_app.n\fR
 critcl_app
 .TP
@@ -339,6 +345,9 @@ critcl_license
 .RE
 compile & run
 .RS
+.TP
+\fBfiles/changes.n\fR
+critcl_changes
 .TP
 \fBfiles/critcl_app.n\fR
 critcl_app
@@ -379,6 +388,9 @@ critcl_license
 compiler
 .RS
 .TP
+\fBfiles/changes.n\fR
+critcl_changes
+.TP
 \fBfiles/critcl_app.n\fR
 critcl_app
 .TP
@@ -417,6 +429,9 @@ critcl_license
 .RE
 dynamic code generation
 .RS
+.TP
+\fBfiles/changes.n\fR
+critcl_changes
 .TP
 \fBfiles/critcl_app.n\fR
 critcl_app
@@ -457,6 +472,9 @@ critcl_license
 dynamic compilation
 .RS
 .TP
+\fBfiles/changes.n\fR
+critcl_changes
+.TP
 \fBfiles/critcl_app.n\fR
 critcl_app
 .TP
@@ -495,6 +513,9 @@ critcl_license
 .RE
 Embedded C Code
 .RS
+.TP
+\fBfiles/changes.n\fR
+critcl_changes
 .TP
 \fBfiles/critcl_app.n\fR
 critcl_app
@@ -535,6 +556,9 @@ critcl_license
 generate package
 .RS
 .TP
+\fBfiles/changes.n\fR
+critcl_changes
+.TP
 \fBfiles/critcl_app.n\fR
 critcl_app
 .TP
@@ -573,6 +597,9 @@ critcl_license
 .RE
 linker
 .RS
+.TP
+\fBfiles/changes.n\fR
+critcl_changes
 .TP
 \fBfiles/critcl_app.n\fR
 critcl_app
@@ -613,6 +640,9 @@ critcl_license
 on demand compilation
 .RS
 .TP
+\fBfiles/changes.n\fR
+critcl_changes
+.TP
 \fBfiles/critcl_app.n\fR
 critcl_app
 .TP
@@ -651,6 +681,9 @@ critcl_license
 .RE
 on-the-fly compilation
 .RS
+.TP
+\fBfiles/changes.n\fR
+critcl_changes
 .TP
 \fBfiles/critcl_app.n\fR
 critcl_app
