@@ -38,7 +38,7 @@ file on execution of the first critcl command.
 [comment {- - -- --- ----- -------- ------------- ---------------------}]
 [enum] Extended the API with a command, [cmd critcl::name2c], exposing
 the process of converting a Tcl name into base name, namespace, and C
-namespace. This enables higherl-level code generators to generate the same
+namespace. This enables higher-level code generators to generate the same
 type of C identifiers as [package critcl] itself.
 
 [para] The new package [package critcl::class] (see above) is a user
@@ -48,8 +48,8 @@ of this command.
 [enum] Extended the API with a command, [cmd critcl::source],
 executing critcl commands found in a separate file in the context of
 the current file. This enables easier management of larger bodies of
-code as it allows the user to split such up into easier smaller chunks
-without causing the generation of multiple packages.
+code as it allows the user to split such up into easier to digest
+smaller chunks without causing the generation of multiple packages.
 
 [comment {- - -- --- ----- -------- ------------- ---------------------}]
 [enum] Related to the previous item, extended the API with commands to
@@ -67,7 +67,8 @@ of these facilities.
 [enum] Extended the API with commands helping developers with the
 generation of proper C [term #line] directives. This allows
 higher-level code generators to generate and insert their own
-directives, ensuring that bugs in their code is properly attributed.
+directives, ensuring that compile errors in their code are properly
+attributed.
 
 [para] See the section [sectref {Advanced: Location management}] for
 details of the provided commands.
