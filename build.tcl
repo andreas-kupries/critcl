@@ -177,31 +177,31 @@ proc _release {} {
 
     # # ## ### ##### ######## #############
     puts {Generate starkit...}
-    _starkit $tmpdir/critcl3.kit
+    _starkit $tmpdir/critcl31.kit
 
     # # ## ### ##### ######## #############
     puts {Collecting starpack prefix...}
     # which we use the existing starpack for, from the gh-pages branch
 
     exec 2>@ stderr >@ stdout git checkout gh-pages
-    file copy download/critcl3.exe $tmpdir/prefix.exe
+    file copy download/critcl31.exe $tmpdir/prefix.exe
     exec 2>@ stderr >@ stdout git checkout $commit
 
     # # ## ### ##### ######## #############
     puts {Generate starpack...}
-    _starpack $tmpdir/prefix.exe $tmpdir/critcl3.exe
+    _starpack $tmpdir/prefix.exe $tmpdir/critcl31.exe
     # TODO: vacuum the thing. fix permissions if so.
 
     # # ## ### ##### ######## #############
     2website
     placedoc $tmpdir
 
-    file copy -force $tmpdir/critcl3.kit download/critcl3.kit
-    file copy -force $tmpdir/critcl3.exe download/critcl3.exe
+    file copy -force $tmpdir/critcl31.kit download/critcl31.kit
+    file copy -force $tmpdir/critcl31.exe download/critcl31.exe
 
     set index   [fileutil::cat index.html]
-    set pattern "\\\[commit .*\\\] \\(v\[^)\]*\\)"
-    set replacement "\[commit $commit\] (v$version)"
+    set pattern "<li>\\\[commit .*\\\] \\(v\[^)\]*\\)"
+    set replacement "<li>\[commit $commit\] (v$version)"
     regsub $pattern $index $replacement index
     fileutil::writeFile index.html $index
 
