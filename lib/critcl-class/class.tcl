@@ -7,7 +7,7 @@
 # class made easy, with code for object command and method dispatch
 # generated.
 
-package provide critcl::class 1
+package provide critcl::class 1.0.1
 
 # # ## ### ##### ######## ############# #####################
 ## Requirements.
@@ -34,17 +34,26 @@ proc ::critcl::class::define {classname script} {
     #puts "=== |$classname|"
     #puts "--- $script"
 
-    # Pull the package we are working on out of the 
+    # Pull the package we are working on out of the system.
 
     set package [critcl::meta? name]
-    lassign [uplevel 1 [list ::critcl::name2c $classname]] ns cns cclassname
+    set qpackage [expr {[string match ::* $package] 
+			? "$package"
+			: "::$package"}]
+    lassign [uplevel 1 [list ::critcl::name2c $classname]] ns  cns  cclassname
+    lassign [uplevel 1 [list ::critcl::name2c $qpackage]]  pns pcns cpackage
 
-    #puts "%%% Pkg |$package|"
-    #puts "%%% NS  |$ns|"
-    #puts "%%% CNS |$cns|"
-    #puts "%%% CCN |$cclassname|"
+    #puts "%%% Pkg  |$package|"
+    #puts "%%% pNS  |$pns|"
+    #puts "%%% pCNS |$pcns|"
+    #puts "%%% cPkg |$cpackage|"
 
-    set stem ${package}_$cns$cclassname
+    #puts "%%% Class |$classname|"
+    #puts "%%% NS    |$ns|"
+    #puts "%%% CNS   |$cns|"
+    #puts "%%% CCN   |$cclassname|"
+
+    set stem ${pcns}${cpackage}_$cns$cclassname
 
     dict set state package     $package
     dict set state class       $classname
