@@ -7,7 +7,7 @@
 # class made easy, with code for object command and method dispatch
 # generated.
 
-package provide critcl::class 1.0.2
+package provide critcl::class 1.0.3
 
 # # ## ### ##### ######## ############# #####################
 ## Requirements.
@@ -108,7 +108,7 @@ proc ::critcl::class::ProcessExternalType {} {
     set itype [dict get $state instancetype]
     dict set state ivardecl    "    $itype instance"
     dict set state ivarrelease ""
-    dict set state ivarerror   ""
+    dict set state ivarerror   "error:\n    return NULL;"
     dict set state itypedecl   "/* External type for instance state: $itype */"
 
     # For ProcessMethods

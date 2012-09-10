@@ -121,6 +121,7 @@ static CONST char*
 static @instancetype@
 @stem@_Constructor (Tcl_Interp* interp,
 		    @classtype@ class,
+		    int            objcskip,
 		    int            objc,
 		    Tcl_Obj*const* objv)
 {
@@ -201,6 +202,7 @@ static int
 @stem@_NewInstance (const char*     name,
 		    @classtype@_mgr classmgr,
 		    Tcl_Interp*     interp,
+		    int             objcskip,
 		    int             objc,
 		    Tcl_Obj* CONST* objv)
 {
@@ -254,7 +256,7 @@ static int
      * Construct instance state, and command.
      */
 
-    instance = @stem@_Constructor (interp, &classmgr->user, objc, objv);
+    instance = @stem@_Constructor (interp, &classmgr->user, objcskip, objc, objv);
     if (!instance) {
 	return TCL_ERROR;
     }
@@ -290,7 +292,7 @@ static int
     objc -= 3;
     objv += 3;
 
-    return @stem@_NewInstance (name, classmgr, interp, objc, objv);
+    return @stem@_NewInstance (name, classmgr, interp, 3, objc, objv);
 }
 
 static int
@@ -311,7 +313,7 @@ static int
     objv += 2;
 
     name = @stem@_NewInstanceName (classmgr);
-    return @stem@_NewInstance (name, classmgr, interp, objc, objv);
+    return @stem@_NewInstance (name, classmgr, interp, 2, objc, objv);
 }
 
 /* # # ## ### ##### ######## User: Class Methods */
