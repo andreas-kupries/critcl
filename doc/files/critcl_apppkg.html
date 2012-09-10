@@ -92,7 +92,7 @@
     }
 --></style>
 </head>
-<! -- Generated from file '/home/aku/Projects/Critcl/dev-dev31/embedded/www/files/critcl_apppkg.html' by tcllib/doctools with format 'html'
+<! -- Generated from file '/home/aku/Projects/Critcl/the-master/embedded/www/files/critcl_apppkg.html' by tcllib/doctools with format 'html'
    -->
 <! -- Copyright &copy; Jean-Claude Wippler   -- Copyright &copy; Steve Landers   -- Copyright &copy; 2011-2012 Andreas Kupries
    -->
@@ -126,8 +126,9 @@
 <li class="section"><a href="#section13">Changes for version 3.0.6</a></li>
 <li class="section"><a href="#section14">Changes for version 3.0.7</a></li>
 <li class="section"><a href="#section15">Changes for version 3.1</a></li>
-<li class="section"><a href="#section16">Authors</a></li>
-<li class="section"><a href="#section17">Bugs, Ideas, Feedback</a></li>
+<li class="section"><a href="#section16">Changes for version 3.1.1</a></li>
+<li class="section"><a href="#section17">Authors</a></li>
+<li class="section"><a href="#section18">Bugs, Ideas, Feedback</a></li>
 <li class="section"><a href="#keywords">Keywords</a></li>
 <li class="section"><a href="#category">Category</a></li>
 <li class="section"><a href="#copyright">Copyright</a></li>
@@ -842,10 +843,24 @@ define custom argument and result types for <b class="cmd">::critcl::cproc</b>.<
 details of the provided commands.</p></li>
 </ol>
 </div>
-<div id="section16" class="section"><h2><a name="section16">Authors</a></h2>
+<div id="section16" class="section"><h2><a name="section16">Changes for version 3.1.1</a></h2>
+<ol class="enumerated">
+<li><p>Bugfixes all around. In detail:</p></li>
+<li><p>Fixed the generation of wrong#args errors for
+<b class="cmd">critcl::cproc</b> and derived code (<b class="package"><a href="critcl_class.html">critcl::class</a></b>
+cproc-based methods). Use NULL if there are no arguments, and
+take the offset into account.</p></li>
+<li><p>Fixed the handling of package names by
+<b class="package"><a href="critcl_class.html">critcl::class</a></b>. Forgot that they may contain namespace
+separators. Bumped to version 1.0.1.</p></li>
+<li><p>Extended a <b class="package"><a href="critcl_class.html">critcl::class</a></b> generated error message in
+instance creation for clarity. Bumped to version 1.0.2.</p></li>
+</ol>
+</div>
+<div id="section17" class="section"><h2><a name="section17">Authors</a></h2>
 <p>Jean Claude Wippler, Steve Landers, Andreas Kupries</p>
 </div>
-<div id="section17" class="section"><h2><a name="section17">Bugs, Ideas, Feedback</a></h2>
+<div id="section18" class="section"><h2><a name="section18">Bugs, Ideas, Feedback</a></h2>
 <p>This document, and the package it describes, will undoubtedly contain
 bugs and other problems.
 Please report them at <a href="https://github.com/jcw/critcl/issues">https://github.com/jcw/critcl/issues</a>.
