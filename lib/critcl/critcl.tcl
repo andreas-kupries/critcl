@@ -6,7 +6,7 @@
 
 # CriTcl Core.
 
-package provide critcl 3.1
+package provide critcl 3.1.1
 
 # # ## ### ##### ######## ############# #####################
 ## Requirements.
@@ -2927,11 +2927,18 @@ proc ::critcl::EmitWrongArgsCheck {names offset} {
     set  count [llength $names]
     incr count
     incr count $offset
+    set keep 1
+    incr keep $offset
     set  names [join $names { }]
+    if {$names eq {}} {
+	set names NULL
+    } else {
+	set names \"$names\"
+    }
 
     Emitln ""
     Emitln "  if (oc != $count) \{"
-    Emitln "    Tcl_WrongNumArgs(interp, 1, ov, \"$names\");"
+    Emitln "    Tcl_WrongNumArgs(interp, $keep, ov, $names);"
     Emitln "    return TCL_ERROR;"
     Emitln "  \}"
     Emitln ""
