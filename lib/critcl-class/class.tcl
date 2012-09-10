@@ -7,7 +7,7 @@
 # class made easy, with code for object command and method dispatch
 # generated.
 
-package provide critcl::class 1.0.1
+package provide critcl::class 1.0.2
 
 # # ## ### ##### ######## ############# #####################
 ## Requirements.

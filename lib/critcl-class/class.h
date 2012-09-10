@@ -243,7 +243,7 @@ static int
 	err = Tcl_NewObj ();
 	Tcl_AppendToObj    (err, "command \"", -1);
 	Tcl_AppendObjToObj (err, fqn);
-	Tcl_AppendToObj    (err, "\" already exists, unable to create @class@", -1);
+	Tcl_AppendToObj    (err, "\" already exists, unable to create @class@ instance", -1);
 
 	Tcl_DecrRefCount (fqn);
 	Tcl_SetObjResult (interp, err);
