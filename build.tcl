@@ -280,7 +280,7 @@ proc _install {{dst {}}} {
     puts "Installed application: $dsta/critcl"
     return
 }
-proc Hdrop {} { return "?destination?\n\tRemove all packages, and application.\n\tdestination = path of package directory, default \[info library\]." }
+proc Hdrop {} { return "?destination?\n\tRemove packages.\n\tdestination = path of package directory, default \[info library\]." }
 proc _drop {{dst {}}} {
     global packages
 
