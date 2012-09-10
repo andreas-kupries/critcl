@@ -1,5 +1,5 @@
 '\"
-'\" Generated from file '/home/aku/Projects/Critcl/dev-dev31/embedded/man/files/critcl_class.n' by tcllib/doctools with format 'nroff'
+'\" Generated from file '/home/aku/Projects/Critcl/the-master/embedded/man/files/critcl_class.n' by tcllib/doctools with format 'nroff'
 '\" Copyright (c) 2011-2012 Andreas Kupries
 '\"
 '\" The definitions below are for supplemental macros used in Tcl/Tk
@@ -238,7 +238,7 @@ Database Class:	\\fB\\$3\\fR
 .de UL
 \\$1\l'|0\(ul'\\$2
 ..
-.TH "critcl::class" n 1 doc "C Runtime In Tcl (CriTcl)"
+.TH "critcl::class" n 1.0.2 doc "C Runtime In Tcl (CriTcl)"
 .BS
 .SH NAME
 critcl::class \- CriTcl Utilities: C Classes
@@ -247,7 +247,7 @@ package require \fBTcl  8.4\fR
 .sp
 package require \fBcritcl  ?3.1?\fR
 .sp
-package require \fBcritcl::class  ?1?\fR
+package require \fBcritcl::class  ?1.0.2?\fR
 .sp
 \fB::critcl::class::def\fR \fIname\fR \fIscript\fR
 .sp

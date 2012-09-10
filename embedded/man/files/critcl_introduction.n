@@ -1,5 +1,5 @@
 '\"
-'\" Generated from file '/home/aku/Projects/Critcl/dev-dev31/embedded/man/files/critcl_introduction.n' by tcllib/doctools with format 'nroff'
+'\" Generated from file '/home/aku/Projects/Critcl/the-master/embedded/man/files/critcl_introduction.n' by tcllib/doctools with format 'nroff'
 '\" Copyright (c) Jean-Claude Wippler
 '\" Copyright (c) Steve Landers
 '\" Copyright (c) 2011-2012 Andreas Kupries
@@ -836,6 +836,22 @@ define custom argument and result types for \fB::critcl::cproc\fR.
 .sp
 See the section \fBAdvanced: Extending cproc\fR for
 details of the provided commands.
+.PP
+.SH "CHANGES FOR VERSION 3.1.1"
+.IP [1]
+Bugfixes all around. In detail:
+.IP [2]
+Fixed the generation of wrong#args errors for
+\fBcritcl::cproc\fR and derived code (\fBcritcl::class\fR
+cproc-based methods). Use NULL if there are no arguments, and
+take the offset into account.
+.IP [3]
+Fixed the handling of package names by
+\fBcritcl::class\fR. Forgot that they may contain namespace
+separators. Bumped to version 1.0.1.
+.IP [4]
+Extended a \fBcritcl::class\fR generated error message in
+instance creation for clarity. Bumped to version 1.0.2.
 .PP
 .SH AUTHORS
 Jean Claude Wippler, Steve Landers, Andreas Kupries
