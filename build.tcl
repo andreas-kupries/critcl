@@ -200,8 +200,8 @@ proc _release {} {
     file copy -force $tmpdir/critcl31.exe download/critcl31.exe
 
     set index   [fileutil::cat index.html]
-    set pattern "<li>\\\[commit .*\\\] \\(v\[^)\]*\\)"
-    set replacement "<li>\[commit $commit\] (v$version)"
+    set pattern   "\\\[commit .*\\\] \\(v\[^)\]*\\)<!-- current"
+    set replacement "\[commit $commit\] (v$version)<!-- current"
     regsub $pattern $index $replacement index
     fileutil::writeFile index.html $index
 
