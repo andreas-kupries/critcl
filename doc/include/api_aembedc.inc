@@ -34,11 +34,28 @@ visible arguments found in the declaration. The names used in these
 declarations match the names returned by [cmd ::critcl::argcnames].
 
 [comment ---------------------------------------------------------------------]
-[call [cmd ::critcl::argconversion] [arg arguments]]
+[call [cmd ::critcl::argconversion] [arg arguments] [opt [arg n]]]
 
 This command takes an argument declaration as taken by [cmd critcl::cproc]
 and returns a list of C code fragments converting the user visible arguments
 found in the declaration from Tcl_Obj* to C types. The names used in these
 statements match the names returned by [cmd ::critcl::argcnames].
+
+[para] The generated code assumes that the procedure arguments start
+at index [arg n] of the [var objv] array. If this argument is not
+specified [const 1] will be assumed.
+
+[comment ---------------------------------------------------------------------]
+[call [cmd ::critcl::argoptional] [arg arguments]]
+
+This command takes an argument declaration as taken by [cmd critcl::cproc]
+and returns a list of boolean values indicating which arguments are
+optional ([const true]) and not ([const false]).
+
+[comment ---------------------------------------------------------------------]
+[call [cmd ::critcl::argdefaults] [arg arguments]]
+
+This command takes an argument declaration as taken by [cmd critcl::cproc]
+and returns a list containing the default values for all optional arguments.
 
 [list_end]

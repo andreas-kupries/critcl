@@ -289,6 +289,31 @@ int x int y
 }] where [arg x] and [arg y] are the arguments/keys, both
 mapped to type/value [const int].
 
+[para] The argument names must be valid C identifiers.
+
+[para] A limited form of variadic arguments is possible, through
+optional arguments with default values. For these the argument name is
+a 2-element list containing the actual name, and the default value.
+
+For example, in the declaration [example { int {x 1} }] [arg x] is an
+optional argument of type [type int] and default value [const 1].
+
+[para] One limitation, and one caveat!
+
+[para] First, the set of optional arguments must be a single
+contiguous segment in the argument list. This limits them to a series
+of optional arguments at either the beginning, end, or middle of the
+list. Multiple segments separated by non-optional arguments are
+rejected, as the system cannot determine in these cases which
+arguments are present and what to set where.
+
+[para] Second, the default value is assigned unconditionally. If a
+custom argument type uses more complex validation, and the default may
+be invalid according to it, then the relevant checks have to be done
+in the procedure body. The argument conversion cannot do it as it is
+completely bypassed when the argument is not present. Overcoming this
+requires the separation of argument conversion and validation code.
+
 [para] The list below shows the values which are legal for argument
 types, and details their semantics:
 

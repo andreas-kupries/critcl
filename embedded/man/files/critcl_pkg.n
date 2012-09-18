@@ -385,7 +385,11 @@ package require \fBmd5  ?2?\fR
 .sp
 \fB::critcl::argvardecls\fR \fIarguments\fR
 .sp
-\fB::critcl::argconversion\fR \fIarguments\fR
+\fB::critcl::argconversion\fR \fIarguments\fR ?\fIn\fR?
+.sp
+\fB::critcl::argoptional\fR \fIarguments\fR
+.sp
+\fB::critcl::argdefaults\fR \fIarguments\fR
 .sp
 \fB::critcl::userconfig\fR \fBdefine\fR \fIname\fR \fIdescription\fR \fItype\fR ?\fIdefault\fR?
 .sp
@@ -737,6 +741,35 @@ int x int y
 .CE
 .IP where \fIx\fR and \fIy\fR are the arguments/keys, both
 mapped to type/value \fBint\fR.
+.sp
+The argument names must be valid C identifiers.
+.sp
+A limited form of variadic arguments is possible, through
+optional arguments with default values. For these the argument name is
+a 2-element list containing the actual name, and the default value.
+For example, in the declaration
+.CS
+
+ int {x 1}
+.CE
+.IP \fIx\fR is an
+optional argument of type \fBint\fR and default value \fB1\fR.
+.sp
+One limitation, and one caveat!
+.sp
+First, the set of optional arguments must be a single
+contiguous segment in the argument list. This limits them to a series
+of optional arguments at either the beginning, end, or middle of the
+list. Multiple segments separated by non-optional arguments are
+rejected, as the system cannot determine in these cases which
+arguments are present and what to set where.
+.sp
+Second, the default value is assigned unconditionally. If a
+custom argument type uses more complex validation, and the default may
+be invalid according to it, then the relevant checks have to be done
+in the procedure body. The argument conversion cannot do it as it is
+completely bypassed when the argument is not present. Overcoming this
+requires the separation of argument conversion and validation code.
 .sp
 The list below shows the values which are legal for argument
 types, and details their semantics:
@@ -1784,11 +1817,24 @@ and returns a list of C side variable declarations for the user
 visible arguments found in the declaration. The names used in these
 declarations match the names returned by \fB::critcl::argcnames\fR.
 .TP
-\fB::critcl::argconversion\fR \fIarguments\fR
+\fB::critcl::argconversion\fR \fIarguments\fR ?\fIn\fR?
 This command takes an argument declaration as taken by \fBcritcl::cproc\fR
 and returns a list of C code fragments converting the user visible arguments
 found in the declaration from Tcl_Obj* to C types. The names used in these
 statements match the names returned by \fB::critcl::argcnames\fR.
+.sp
+The generated code assumes that the procedure arguments start
+at index \fIn\fR of the \fBobjv\fR array. If this argument is not
+specified \fB1\fR will be assumed.
+.TP
+\fB::critcl::argoptional\fR \fIarguments\fR
+This command takes an argument declaration as taken by \fBcritcl::cproc\fR
+and returns a list of boolean values indicating which arguments are
+optional (\fBtrue\fR) and not (\fBfalse\fR).
+.TP
+\fB::critcl::argdefaults\fR \fIarguments\fR
+This command takes an argument declaration as taken by \fBcritcl::cproc\fR
+and returns a list containing the default values for all optional arguments.
 .PP
 .SS "CUSTOM BUILD CONFIGURATION"
 This package provides one command for the management of
@@ -3234,6 +3280,14 @@ separators. Bumped to version 1.0.1.
 .IP [4]
 Extended a \fBcritcl::class\fR generated error message in
 instance creation for clarity. Bumped to version 1.0.2.
+.PP
+.SH "CHANGES FOR VERSION 3.1.2"
+.IP [1]
+Enhancement. In detail:
+.IP [2]
+Extended \fBcritcl::cproc\fR to be able to handle optional
+arguments, in a limited way. This is automatically available to
+\fBcritcl::class\fR cproc-based methods as well.
 .PP
 .SH AUTHORS
 Jean Claude Wippler, Steve Landers, Andreas Kupries

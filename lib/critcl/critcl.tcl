@@ -6,7 +6,7 @@
 
 # CriTcl Core.
 
-package provide critcl 3.1.1
+package provide critcl 3.1.2
 
 # # ## ### ##### ######## ############# #####################
 ## Requirements.
@@ -284,6 +284,44 @@ proc ::critcl::cdefines {defines {namespace "::"}} {
     return
 }
 
+proc ::critcl::argoptional {adefs} {
+    set optional {}
+
+    # A 1st argument matching "Tcl_Interp*" does not count as a user
+    # visible command argument.
+    if {[lindex $adefs 0] eq "Tcl_Interp*"} {
+	set adefs [lrange $adefs 2 end]
+    }
+
+    foreach {t a} $adefs {
+	if {[llength $a] == 2} {
+	    lappend optional 1
+	} else {
+	    lappend optional 0
+	}
+    }
+
+    return $optional
+}
+
+proc ::critcl::argdefaults {adefs} {
+    set defaults {}
+
+    # A 1st argument matching "Tcl_Interp*" does not count as a user
+    # visible command argument.
+    if {[lindex $adefs 0] eq "Tcl_Interp*"} {
+	set adefs [lrange $adefs 2 end]
+    }
+
+    foreach {t a} $adefs {
+	if {[llength $a] == 2} {
+	    lappend defaults [lindex $a 1]
+	}
+    }
+
+    return $defaults
+}
+
 proc ::critcl::argnames {adefs} {
     set names {}
 
@@ -294,6 +332,9 @@ proc ::critcl::argnames {adefs} {
     }
 
     foreach {t a} $adefs {
+	if {[llength $a] == 2} {
+	    set a [lindex $a 0]
+	}
 	lappend names $a
     }
 
@@ -309,6 +350,9 @@ proc ::critcl::argcnames {adefs {interp ip}} {
     }
 
     foreach {t a} $adefs {
+	if {[llength $a] == 2} {
+	    set a [lindex $a 0]
+	}
 	lappend cnames _$a
     }
 
@@ -329,6 +373,9 @@ proc ::critcl::argcsignature {adefs} {
     }
 
     foreach {t a} $adefs {
+	if {[llength $a] == 2} {
+	    set a [lindex $a 0]
+	}
 	lappend cargs  "[ArgumentCTypeB $t] $a"
     }
 
@@ -346,6 +393,9 @@ proc ::critcl::argvardecls {adefs} {
 
     set result {}
     foreach {t a} $adefs {
+	if {[llength $a] == 2} {
+	    set a [lindex $a 0]
+	}
 	lappend result "[ArgumentCType $t] _$a;"
     }
 
@@ -359,11 +409,54 @@ proc ::critcl::argconversion {adefs {n 1}} {
 	set adefs [lrange $adefs 2 end]
     }
 
-    set result {}
+    set min $n ; # count all non-optional arguments. min required.
     foreach {t a} $adefs {
-	set map [list @@ "ov\[$n\]" @A _$a]
-	lappend result [string map $map [ArgumentConversion $t]]
-	incr n
+	if {[llength $a] == 2} continue
+	incr min
+    }
+
+    set result {}
+    set opt 0
+    set prefix "    idx_ = $n;\n"
+
+    foreach {t a} $adefs {
+	if {[llength $a] == 2} {
+	    # Optional argument. Can be first, or later.
+	    # For the first the prefix gives us the code to initialize idx_.
+
+	    lassign $a a default
+
+	    set map [list @@ "ov\[idx_\]" @A _$a]
+	    set code [string map $map [ArgumentConversion $t]]
+
+	    set code "${prefix}  if (oc > $min) \{\n$code\n    idx_++;\n  \} else \{\n    _$a = $default;\n  \}"
+	    incr min
+
+	    lappend result "  /* ($t $a, optional, default $default) - - -- --- ----- -------- */"
+	    lappend result $code
+	    lappend result {}
+	    set opt 1
+	    set prefix ""
+	} elseif {$opt} {
+	    # Fixed argument, after the optionals.
+	    # Main issue: Use idx_ to access the array.
+	    # We know that no optionals can follow, only the same.
+
+	    set map [list @@ "ov\[idx_\]" @A _$a]
+	    lappend result "  /* ($t $a) - - -- --- ----- -------- */"
+	    lappend result [string map $map [ArgumentConversion $t]]
+	    lappend result "  idx_++;"
+	    lappend result {}
+
+	} else {
+	    # Fixed argument, before any optionals.
+	    set map [list @@ "ov\[$n\]" @A _$a]
+	    lappend result "  /* ($t $a) - - -- --- ----- -------- */"
+	    lappend result [string map $map [ArgumentConversion $t]]
+	    lappend result {}
+	    incr n
+	    set prefix "    idx_ = $n;\n"
+	}
     }
 
     return $result
@@ -448,6 +541,18 @@ proc ::critcl::cproc {name adefs rtype {body "#"} args} {
         set args [lrange $args 2 end]
     }
 
+    switch -regexp -- [join [argoptional $adefs] {}] {
+	^0*$ -
+	^0*1+0*$ {
+	    # no optional arguments, or a single optional block at the
+	    # beginning, middle, or end of the argument list is what
+	    # we are able to handle.
+	}
+	default {
+	    error "Unable to handle multiple segments of optional arguments"
+	}
+    }
+
     if {$acname} {
 	BeginCommand static $name $adefs $rtype $body
 	set ns  {}
@@ -490,7 +595,7 @@ proc ::critcl::cproc {name adefs rtype {body "#"} args} {
 
     EmitShimHeader         $wname
     EmitShimVariables      $adefs $rtype
-    EmitWrongArgsCheck     $names $aoffset
+    EmitWrongArgsCheck     $adefs $aoffset
     EmitArgumentConversion $adefs $aoffset
     EmitCall               $cname $cnames $rtype
     EmitShimFooter         $rtype
@@ -2911,24 +3016,49 @@ proc ::critcl::EmitShimHeader {wname} {
 }
 
 proc ::critcl::EmitShimVariables {adefs rtype} {
-    foreach d [argvardecls $adefs] {
+    set opt 0
+    foreach d [argvardecls $adefs] o [argoptional $adefs] {
 	Emitln "  $d"
+	if {$o} {set opt 1}
     }
+    if {$opt} { Emitln "  int idx_;" }
 
     # Result variable, source for the C -> Tcl conversion.
     if {$rtype ne "void"} { Emit "  [ResultCType $rtype] rv;" }
     return
 }
 
-proc ::critcl::EmitWrongArgsCheck {names offset} {
+proc ::critcl::EmitWrongArgsCheck {adefs offset} {
     # Code checking for the correct count of arguments, and generating
     # the proper error if not.
 
-    set  count [llength $names]
-    incr count
-    incr count $offset
+    # A 1st argument matching "Tcl_Interp*" does not count as a user
+    # visible command argument.
+    if {[lindex $adefs 0] eq "Tcl_Interp*"} {
+	set adefs [lrange $adefs 2 end]
+    }
+
+    set min 0 ; # count all non-optional argument. min required.
+    set max 0 ; # count all arguments. max allowed.
+    set names {}
+    foreach {t a} $adefs {
+	incr max
+	if {[llength $a] == 1} {
+	    incr min
+	    lappend names $a
+	} else {
+	    lappend names ?[lindex $a 0]?
+	}
+    }
+
+    incr min
+    incr max
+    incr min $offset
+    incr max $offset
+
     set keep 1
     incr keep $offset
+
     set  names [join $names { }]
     if {$names eq {}} {
 	set names NULL
@@ -2937,7 +3067,11 @@ proc ::critcl::EmitWrongArgsCheck {names offset} {
     }
 
     Emitln ""
-    Emitln "  if (oc != $count) \{"
+    if {$min == $max} {
+	Emitln "  if (oc != $min) \{"
+    } else {
+	Emitln "  if ((oc < $min) || ($max < oc)) \{"
+    }
     Emitln "    Tcl_WrongNumArgs(interp, $keep, ov, $names);"
     Emitln "    return TCL_ERROR;"
     Emitln "  \}"
@@ -2956,7 +3090,7 @@ proc ::critcl::EmitArgumentConversion {adefs offset} {
 proc ::critcl::EmitCall {cname cnames rtype} {
     # Invoke the low-level function.
 
-    Emitln
+    Emitln  "  /* Call - - -- --- ----- -------- */"
     Emit "  "
     if {$rtype ne "void"} { Emit "rv = " }
     Emitln "${cname}([join $cnames {, }]);"

@@ -853,6 +853,14 @@ separators. Bumped to version 1.0.1.
 Extended a \fBcritcl::class\fR generated error message in
 instance creation for clarity. Bumped to version 1.0.2.
 .PP
+.SH "CHANGES FOR VERSION 3.1.2"
+.IP [1]
+Enhancement. In detail:
+.IP [2]
+Extended \fBcritcl::cproc\fR to be able to handle optional
+arguments, in a limited way. This is automatically available to
+\fBcritcl::class\fR cproc-based methods as well.
+.PP
 .SH AUTHORS
 Jean Claude Wippler, Steve Landers, Andreas Kupries
 .SH "BUGS, IDEAS, FEEDBACK"
