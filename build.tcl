@@ -24,6 +24,7 @@ set packages {
     {critcl-literals  literals.tcl}
     {critcl-platform  platform.tcl}
     {critcl-util      util.tcl}
+    {critcl-objtype   objtype.tcl}
     {dict84           dict.tcl}
     {lassign84        lassign.tcl}
     {lmap84           lmap.tcl}
