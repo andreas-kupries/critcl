@@ -240,44 +240,57 @@ proc _install {{dst {}}} {
 	set dsta [file dirname $dst]/bin
     }
 
-    # Create directories, might not exist.
-    file mkdir $dstl
-    file mkdir $dsta
+    puts {Installing into:}
+    puts \tPackages:\t$dstl
+    puts \tApplication:\t$dsta
 
-    foreach item $packages {
-	# Package: /name/
+    if {[catch {
+	# Create directories, might not exist.
+	file mkdir $dstl
+	file mkdir $dsta
+	set prefix \n
+	foreach item $packages {
+	    # Package: /name/
 
-	if {[llength $item] == 3} {
-	    foreach {dir vfile name} $item break
-	} elseif {[llength $item] == 1} {
-	    set dir   $item
-	    set vfile {}
-	    set name  $item
-	} else {
-	    foreach {dir vfile} $item break
-	    set name $dir
+	    if {[llength $item] == 3} {
+		foreach {dir vfile name} $item break
+	    } elseif {[llength $item] == 1} {
+		set dir   $item
+		set vfile {}
+		set name  $item
+	    } else {
+		foreach {dir vfile} $item break
+		set name $dir
+	    }
+
+	    if {$vfile ne {}} {
+		set version  [version [file dirname $::me]/lib/$dir/$vfile]
+	    } else {
+		set version {}
+	    }
+
+	    file copy   -force [file dirname $::me]/lib/$dir     $dstl/${name}-new
+	    file delete -force $dstl/$name$version
+	    file rename        $dstl/${name}-new     $dstl/$name$version
+	    puts "${prefix}Installed package:      $dstl/$name$version"
+	    set prefix {}
 	}
 
-	if {$vfile ne {}} {
-	    set version  [version [file dirname $::me]/lib/$dir/$vfile]
-	} else {
-	    set version {}
-	}
+	# Application: critcl
 
-	file copy   -force [file dirname $::me]/lib/$dir     $dstl/${name}-new
-	file delete -force $dstl/$name$version
-	file rename        $dstl/${name}-new     $dstl/$name$version
-	puts "Installed package:     $dstl/$name$version"
+	set    c [open $dsta/critcl w]
+	puts  $c "#!/bin/sh\n# -*- tcl -*- \\\nexec [file dirname [file normalize [info nameofexecutable]/___]] \"\$0\" \$\{1+\"\$@\"\}\npackage require critcl::app\ncritcl::app::main \$argv"
+	close $c
+	+x $dsta/critcl
+
+	puts "${prefix}Installed application:  $dsta/critcl"
+    } msg]} {
+	if {![string match {*permission denied*} $msg]} {
+	    return -code error -errorcode $::errorCode -errorinfo $::errorInfo $msg
+	}
+	puts stderr "\n$msg\n\nUse 'sudo' or some other way of running the operation under the user having access to the destination paths.\n"
+	exit
     }
-
-    # Application: critcl
-
-    set    c [open $dsta/critcl w]
-    puts  $c "#!/bin/sh\n# -*- tcl -*- \\\nexec [file dirname [file normalize [info nameofexecutable]/___]] \"\$0\" \$\{1+\"\$@\"\}\npackage require critcl::app\ncritcl::app::main \$argv"
-    close $c
-    +x $dsta/critcl
-
-    puts "Installed application: $dsta/critcl"
     return
 }
 proc Hdrop {} { return "?destination?\n\tRemove packages.\n\tdestination = path of package directory, default \[info library\]." }
