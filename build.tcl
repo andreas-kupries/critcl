@@ -44,7 +44,7 @@ proc usage {{status 1}} {
     exit $status
 }
 proc +x {path} {
-    catch { file attributes $path -permissions u+x }
+    catch { file attributes $path -permissions ugo+x }
     return
 }
 proc grep {file pattern} {
