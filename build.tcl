@@ -68,6 +68,17 @@ proc tmpdir {} {
     puts "Assembly in: $tmpdir"
     return $tmpdir
 }
+proc findlib {path} {
+    while {1} {
+	if {[file tail $path] eq "lib"} {
+	    return $path
+	}
+	set new [file dirname $path]
+	if {$new eq $path} break
+	set path $new
+    }
+    return $path
+}
 proc id {cv vv} {
     upvar 1 $cv commit $vv version
 
@@ -237,7 +248,7 @@ proc _install {{dst {}}} {
 	set dsta [file dirname [file dirname [file normalize [info nameofexecutable]/___]]]
     } else {
 	set dstl $dst
-	set dsta [file dirname $dst]/bin
+	set dsta [file dirname [findlib $dstl]]/bin
     }
 
     puts {Installing into:}
