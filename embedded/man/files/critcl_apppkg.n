@@ -1,5 +1,5 @@
 '\"
-'\" Generated from file '/home/aku/Projects/Critcl/the-master/embedded/man/files/critcl_apppkg.n' by tcllib/doctools with format 'nroff'
+'\" Generated from file '/home/aku/Projects/Critcl/dev-master/embedded/man/files/critcl_apppkg.n' by tcllib/doctools with format 'nroff'
 '\" Copyright (c) Jean-Claude Wippler
 '\" Copyright (c) Steve Landers
 '\" Copyright (c) 2011-2012 Andreas Kupries
@@ -1174,6 +1174,10 @@ Enhancement. In detail:
 Extended \fBcritcl::cproc\fR to be able to handle optional
 arguments, in a limited way. This is automatically available to
 \fBcritcl::class\fR cproc-based methods as well.
+.IP [3]
+Bugfix in \fBlassign\fR emulation for Tcl 8.4.  Properly set
+unused variables to the empty string.  Bumped version of
+emulation package \fBlassign84\fR to 1.0.1.
 .PP
 .SH AUTHORS
 Jean Claude Wippler, Steve Landers, Andreas Kupries

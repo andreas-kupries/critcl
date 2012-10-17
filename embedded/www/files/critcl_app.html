@@ -92,7 +92,7 @@
     }
 --></style>
 </head>
-<! -- Generated from file '/home/aku/Projects/Critcl/the-master/embedded/www/files/critcl_app.html' by tcllib/doctools with format 'html'
+<! -- Generated from file '/home/aku/Projects/Critcl/dev-master/embedded/www/files/critcl_app.html' by tcllib/doctools with format 'html'
    -->
 <! -- Copyright &copy; Jean-Claude Wippler   -- Copyright &copy; Steve Landers   -- Copyright &copy; 2011-2012 Andreas Kupries
    -->
@@ -817,8 +817,11 @@ instance creation for clarity. Bumped to version 1.0.2.</p></li>
 <ol class="enumerated">
 <li><p>Enhancement. In detail:</p></li>
 <li><p>Extended <b class="cmd">critcl::cproc</b> to be able to handle optional
-arguments, in a limited way. This is automatically available to
-<b class="package"><a href="critcl_class.html">critcl::class</a></b> cproc-based methods as well.</p></li>
+       arguments, in a limited way. This is automatically available to
+       <b class="package"><a href="critcl_class.html">critcl::class</a></b> cproc-based methods as well.</p></li>
+<li><p>Bugfix in <b class="cmd">lassign</b> emulation for Tcl 8.4.  Properly set
+       unused variables to the empty string.  Bumped version of
+       emulation package <b class="package">lassign84</b> to 1.0.1.</p></li>
 </ol>
 </div>
 <div id="section16" class="section"><h2><a name="section16">Authors</a></h2>
