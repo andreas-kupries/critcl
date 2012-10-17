@@ -9,8 +9,8 @@
 # # ## ### ##### ######## ############# #####################
 ## Requirements.
 
-package require Tcl 8.4     ; # Minimum supported version.
-package provide lassign84 1 ; # What we export.
+package require Tcl 8.4         ; # Minimum supported version.
+package provide lassign84 1.0.1 ; # What we export.
 
 # # ## ### ##### ######## ############# #####################
 ## I. Make sure that the Tcl interpreter has a 'lassign' command.
@@ -24,6 +24,7 @@ proc lassign {valueList args} {
     if {[llength $args] == 0} {
 	return -code error "wrong # args: lassign list varname ?varname..?"
     }
+    foreach v $args { uplevel 1 [list set $v {}] }
     uplevel 1 [list foreach $args $valueList {break}]
     return [lrange $valueList [llength $args] end]
 }
