@@ -92,7 +92,7 @@
     }
 --></style>
 </head>
-<! -- Generated from file '/home/aku/Projects/Critcl/the-master/embedded/www/files/critcl_apppkg.html' by tcllib/doctools with format 'html'
+<! -- Generated from file '/home/aku/Projects/Critcl/dev-master/embedded/www/files/critcl_apppkg.html' by tcllib/doctools with format 'html'
    -->
 <! -- Copyright &copy; Jean-Claude Wippler   -- Copyright &copy; Steve Landers   -- Copyright &copy; 2011-2012 Andreas Kupries
    -->
@@ -127,8 +127,9 @@
 <li class="section"><a href="#section14">Changes for version 3.0.7</a></li>
 <li class="section"><a href="#section15">Changes for version 3.1</a></li>
 <li class="section"><a href="#section16">Changes for version 3.1.1</a></li>
-<li class="section"><a href="#section17">Authors</a></li>
-<li class="section"><a href="#section18">Bugs, Ideas, Feedback</a></li>
+<li class="section"><a href="#section17">Changes for version 3.1.2</a></li>
+<li class="section"><a href="#section18">Authors</a></li>
+<li class="section"><a href="#section19">Bugs, Ideas, Feedback</a></li>
 <li class="section"><a href="#keywords">Keywords</a></li>
 <li class="section"><a href="#category">Category</a></li>
 <li class="section"><a href="#copyright">Copyright</a></li>
@@ -857,10 +858,21 @@ separators. Bumped to version 1.0.1.</p></li>
 instance creation for clarity. Bumped to version 1.0.2.</p></li>
 </ol>
 </div>
-<div id="section17" class="section"><h2><a name="section17">Authors</a></h2>
+<div id="section17" class="section"><h2><a name="section17">Changes for version 3.1.2</a></h2>
+<ol class="enumerated">
+<li><p>Enhancement. In detail:</p></li>
+<li><p>Extended <b class="cmd">critcl::cproc</b> to be able to handle optional
+       arguments, in a limited way. This is automatically available to
+       <b class="package"><a href="critcl_class.html">critcl::class</a></b> cproc-based methods as well.</p></li>
+<li><p>Bugfix in <b class="cmd">lassign</b> emulation for Tcl 8.4.  Properly set
+       unused variables to the empty string.  Bumped version of
+       emulation package <b class="package">lassign84</b> to 1.0.1.</p></li>
+</ol>
+</div>
+<div id="section18" class="section"><h2><a name="section18">Authors</a></h2>
 <p>Jean Claude Wippler, Steve Landers, Andreas Kupries</p>
 </div>
-<div id="section18" class="section"><h2><a name="section18">Bugs, Ideas, Feedback</a></h2>
+<div id="section19" class="section"><h2><a name="section19">Bugs, Ideas, Feedback</a></h2>
 <p>This document, and the package it describes, will undoubtedly contain
 bugs and other problems.
 Please report them at <a href="https://github.com/jcw/critcl/issues">https://github.com/jcw/critcl/issues</a>.
