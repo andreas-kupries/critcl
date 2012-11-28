@@ -1,7 +1,7 @@
 ## -*- tcl -*-
 # # ## ### ##### ######## ############# #####################
 # Pragmas for MetaData Scanner.
-# n/a
+# @mdgen OWNER: class.h
 
 # CriTcl Utility Commands. Specification of a command representing a
 # class made easy, with code for object command and method dispatch
