@@ -7,7 +7,7 @@
 # class made easy, with code for object command and method dispatch
 # generated.
 
-package provide critcl::class 1.0.4
+package provide critcl::class 1.0.5
 
 # # ## ### ##### ######## ############# #####################
 ## Requirements.
@@ -188,7 +188,15 @@ proc ::critcl::class::ProcessClassVariables {} {
     dict set state classmethod starte  ",\n"
     dict set state ctypedecl {}
 
-    if {![dict exists $state classvariable]} return
+    if {![dict exists $state classvariable]} {
+	# Some compilers are unable to handle a structure without
+	# members (notably ANSI C89 Solaris, AIX). Taking the easy way
+	# out here, adding a dummy element. A more complex solution
+	# would be to ifdef the empty structure out of the system.
+
+	dict set state ctypedecl {int __dummy__;}
+	return
+    }
 
     # Convert class variables  into class type field declarations.
 
