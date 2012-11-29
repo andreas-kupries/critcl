@@ -1,7 +1,7 @@
 ## -*- tcl -*-
 # # ## ### ##### ######## ############# #####################
 # Pragmas for MetaData Scanner.
-# n/a
+# @mdgen OWNER: iassoc.h
 
 # CriTcl Utility Commands. Specification of a C function and structure
 # associated with an interpreter made easy.
