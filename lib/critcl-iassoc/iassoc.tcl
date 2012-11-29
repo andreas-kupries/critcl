@@ -6,7 +6,7 @@
 # CriTcl Utility Commands. Specification of a C function and structure
 # associated with an interpreter made easy.
 
-package provide critcl::iassoc 1
+package provide critcl::iassoc 1.0.1
 
 # # ## ### ##### ######## ############# #####################
 ## Requirements.

@@ -694,6 +694,24 @@ Bugfix in \fBlassign\fR emulation for Tcl 8.4.  Properly set
 unused variables to the empty string.  Bumped version of
 emulation package \fBlassign84\fR to 1.0.1.
 .PP
+.SH "CHANGES FOR VERSION 3.1.3"
+.IP [1]
+Enhancement. In detail:
+.IP [2]
+Added new argument type "pstring", for "Pascal String", a
+counted string, i.e. a combination of string pointer and string
+length.
+.IP [3]
+Added new methods \fBcritcl::argtypesupport\fR and
+\fB::critcl::argsupport\fR to define and use additional
+supporting code for an argument type, here used by "pstring"
+above to define the necessary structure.
+.IP [4]
+Semi-bugfixes in the packages \fBcritcl::class\fR and
+\fBcritcl::iassoc\fR. Pragmas for the AS meta data scanner
+to ensure that the template files are made part of the package.
+Versions bumped to 1.0.4 and 1.0.1 respectively.
+.PP
 .SH AUTHORS
 Jean Claude Wippler, Steve Landers, Andreas Kupries
 .SH "BUGS, IDEAS, FEEDBACK"

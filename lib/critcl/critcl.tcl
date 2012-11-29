@@ -6,7 +6,7 @@
 
 # CriTcl Core.
 
-package provide critcl 3.1.2
+package provide critcl 3.1.3
 
 # # ## ### ##### ######## ############# #####################
 ## Requirements.
@@ -402,6 +402,27 @@ proc ::critcl::argvardecls {adefs} {
     return $result
 }
 
+proc ::critcl::argsupport {adefs} {
+    # Argument global support, outside/before function.
+
+    # A 1st argument matching "Tcl_Interp*" does not count as a user
+    # visible command argument.
+    if {[lindex $adefs 0] eq "Tcl_Interp*"} {
+	set adefs [lrange $adefs 2 end]
+    }
+
+    set has {}
+
+    set result {}
+    foreach {t a} $adefs {
+	if {[lsearch -exact $has $t] >= 0} continue
+	lappend has $t
+	lappend result "[ArgumentSupport $t]"
+    }
+
+    return $result
+}
+
 proc ::critcl::argconversion {adefs {n 1}} {
     # A 1st argument matching "Tcl_Interp*" does not count as a user
     # visible command argument.
@@ -467,6 +488,9 @@ proc ::critcl::argtype {name conversion {ctype {}} {ctypeb {}}} {
     variable v::actypeb
     variable v::aconv
 
+    # ctype  Type of variable holding the argument.
+    # ctypeb Type of formal C function argument.
+
     if {[info exists aconv($name)]} {
 	return -code error "Illegal duplicate definition of '$name'."
     }
@@ -492,6 +516,25 @@ proc ::critcl::argtype {name conversion {ctype {}} {ctypeb {}}} {
     set aconv($name)  $conversion
     set actype($name) $ctype
     set actypeb($name) $ctypeb
+    return
+}
+
+proc ::critcl::argtypesupport {name code} {
+    variable v::aconv
+    variable v::acsup
+    if {![info exists aconv($name)]} {
+	return -code error "No definition for '$name'."
+    }
+    if {[info exists acsup($name)]} {
+	return -code error "Illegal duplicate support of '$name'."
+    }
+
+    lappend lines "#ifndef CRITCL_$name"
+    lappend lines "#define CRITCL_$name"
+    lappend lines $code
+    lappend lines "#endif"
+
+    set acsup($name) [join $lines \n]
     return
 }
 
@@ -574,8 +617,11 @@ proc ::critcl::cproc {name adefs rtype {body "#"} args} {
 	set cnames [linsert $cnames 0 cd]
     }
 
+    Emit [join [argsupport $adefs] \n]
+
     # Emit either the low-level function, or, if it wasn't defined
     # here, a reference to the shim we can use.
+
     if {$body ne "#"} {
 	Emit   "static [ResultCType $rtype] "
 	Emitln "${cname}([join $cargs {, }])"
@@ -3108,6 +3154,11 @@ proc ::critcl::EmitShimFooter {rtype} {
     return
 }
 
+proc ::critcl::ArgumentSupport {type} {
+    if {[info exists v::acsup($type)]} { return $v::acsup($type) }
+    return {}
+}
+
 proc ::critcl::ArgumentCType {type} {
     if {[info exists v::actype($type)]} { return $v::actype($type) }
     return -code error "Unknown argument type $type"
@@ -4452,6 +4503,17 @@ proc ::critcl::Initialize {} {
 
     argtype char* {
 	@A = Tcl_GetString(@@);
+    }
+
+    argtype pstring {
+	@A.s = Tcl_GetStringFromObj(@@, &(@A.len));
+    } critcl_pstring critcl_pstring
+
+    argtypesupport pstring {
+	typedef struct critcl_pstring {
+	    char* s;
+	    int   len;
+	} critcl_pstring;
     }
 
     argtype Tcl_Obj* {

@@ -115,5 +115,17 @@ This form of the [cmd argtype] command declares [arg name] as an alias
 of argument type [arg origname], which has to be defined already. If
 this is not the case an error is thrown.
 
+[comment ---------------------------------------------------------------------]
+[call [cmd ::critcl::argtypesupport] [arg name] [arg code]]
+
+This command defines a C code fragment for the already defined
+argument type [arg name] which will be inserted before all functions
+using that type. Its purpose is the definition of any supporting C
+types needed by the argument type.
+
+If the type is used by many functions the system ensure that only the
+first of the multiple insertions of the code fragment is active, and
+the others disabled.
+
 [comment {- - -- --- ----- -------- ------------- ---------------------}]
 [list_end]

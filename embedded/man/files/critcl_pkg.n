@@ -391,6 +391,8 @@ package require \fBmd5  ?2?\fR
 .sp
 \fB::critcl::argdefaults\fR \fIarguments\fR
 .sp
+\fB::critcl::argsupport\fR \fIarguments\fR
+.sp
 \fB::critcl::userconfig\fR \fBdefine\fR \fIname\fR \fIdescription\fR \fItype\fR ?\fIdefault\fR?
 .sp
 \fB::critcl::userconfig\fR \fBquery\fR \fIname\fR
@@ -436,6 +438,8 @@ package require \fBmd5  ?2?\fR
 \fB::critcl::argtype\fR \fIname\fR \fIbody\fR ?\fIctype\fR? ?\fIctypefun\fR?
 .sp
 \fB::critcl::argtype\fR \fIname\fR \fB=\fR \fIorigname\fR
+.sp
+\fB::critcl::argtypesupport\fR \fIname\fR \fIcode\fR
 .sp
 \fB::preload\fR \fIlibrary\fR
 .sp
@@ -1835,6 +1839,11 @@ optional (\fBtrue\fR) and not (\fBfalse\fR).
 \fB::critcl::argdefaults\fR \fIarguments\fR
 This command takes an argument declaration as taken by \fBcritcl::cproc\fR
 and returns a list containing the default values for all optional arguments.
+.TP
+\fB::critcl::argsupport\fR \fIarguments\fR
+This command takes an argument declaration as taken by \fBcritcl::cproc\fR
+and returns a list of C code fragments needed to define the necessary
+supporting types.
 .PP
 .SS "CUSTOM BUILD CONFIGURATION"
 This package provides one command for the management of
@@ -2159,6 +2168,15 @@ As examples here are the definitions of two standard argument types:
 This form of the \fBargtype\fR command declares \fIname\fR as an alias
 of argument type \fIorigname\fR, which has to be defined already. If
 this is not the case an error is thrown.
+.TP
+\fB::critcl::argtypesupport\fR \fIname\fR \fIcode\fR
+This command defines a C code fragment for the already defined
+argument type \fIname\fR which will be inserted before all functions
+using that type. Its purpose is the definition of any supporting C
+types needed by the argument type.
+If the type is used by many functions the system ensure that only the
+first of the multiple insertions of the code fragment is active, and
+the others disabled.
 .PP
 .SH CONCEPTS
 .SS "MODES OF OPERATION/USE"
@@ -3292,6 +3310,24 @@ arguments, in a limited way. This is automatically available to
 Bugfix in \fBlassign\fR emulation for Tcl 8.4.  Properly set
 unused variables to the empty string.  Bumped version of
 emulation package \fBlassign84\fR to 1.0.1.
+.PP
+.SH "CHANGES FOR VERSION 3.1.3"
+.IP [1]
+Enhancement. In detail:
+.IP [2]
+Added new argument type "pstring", for "Pascal String", a
+counted string, i.e. a combination of string pointer and string
+length.
+.IP [3]
+Added new methods \fBcritcl::argtypesupport\fR and
+\fB::critcl::argsupport\fR to define and use additional
+supporting code for an argument type, here used by "pstring"
+above to define the necessary structure.
+.IP [4]
+Semi-bugfixes in the packages \fBcritcl::class\fR and
+\fBcritcl::iassoc\fR. Pragmas for the AS meta data scanner
+to ensure that the template files are made part of the package.
+Versions bumped to 1.0.4 and 1.0.1 respectively.
 .PP
 .SH AUTHORS
 Jean Claude Wippler, Steve Landers, Andreas Kupries

@@ -58,4 +58,11 @@ optional ([const true]) and not ([const false]).
 This command takes an argument declaration as taken by [cmd critcl::cproc]
 and returns a list containing the default values for all optional arguments.
 
+[comment ---------------------------------------------------------------------]
+[call [cmd ::critcl::argsupport] [arg arguments]]
+
+This command takes an argument declaration as taken by [cmd critcl::cproc]
+and returns a list of C code fragments needed to define the necessary
+supporting types.
+
 [list_end]
