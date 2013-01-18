@@ -16,7 +16,7 @@ critcl::buildrequirement {
 
 critcl::cheaders util.h
 
-critcl::class::def ::queuec {
+critcl::class::define ::queuec {
     include util.h
 
     insvariable Tcl_Obj* unget {

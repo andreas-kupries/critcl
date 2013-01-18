@@ -32,7 +32,7 @@ Tcl packages with embedded C code.
 [section API]
 
 [list_begin definitions]
-[call [cmd ::critcl::class::def] [arg name] [arg script]]
+[call [cmd ::critcl::class::define] [arg name] [arg script]]
 
 This is the main command to define a new class [arg name], where
 [arg name] is the name of the Tcl command representing the class,
