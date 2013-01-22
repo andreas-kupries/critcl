@@ -249,7 +249,7 @@ package require \fBcritcl  ?3.1?\fR
 .sp
 package require \fBcritcl::class  ?1.0.2?\fR
 .sp
-\fB::critcl::class::def\fR \fIname\fR \fIscript\fR
+\fB::critcl::class::define\fR \fIname\fR \fIscript\fR
 .sp
 \fBinclude\fR \fIpath\fR
 .sp
@@ -332,7 +332,7 @@ This package resides in the Core Package Layer of CriTcl.
 .PP
 .SH API
 .TP
-\fB::critcl::class::def\fR \fIname\fR \fIscript\fR
+\fB::critcl::class::define\fR \fIname\fR \fIscript\fR
 This is the main command to define a new class \fIname\fR, where
 \fIname\fR is the name of the Tcl command representing the class,
 i.e. the \fIclass command\fR. The \fIscript\fR provides the
@@ -868,7 +868,7 @@ critcl::buildrequirement {
 
 critcl::cheaders util.h
 
-critcl::class::def ::queuec {
+critcl::class::define ::queuec {
     include util.h
 
     insvariable Tcl_Obj* unget {
