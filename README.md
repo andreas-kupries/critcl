@@ -7,7 +7,7 @@
 
 # Website
 
- *  The main website of this project is http://jcw.github.com/critcl
+ *  The main website of this project is http://andreas-kupries.github.com/critcl
 
     It provides access to pre-made binaries and archives for various
     platforms, and the full documentation, especially the guides to
@@ -30,7 +30,7 @@
 
  *  Retrieve the sources:
 
-    ```% git clone http://github.com/jcw/critcl```
+    ```% git clone http://github.com/andreas-kupries/critcl```
 
     Your working directory now contains a directory ```critcl```.
 
@@ -96,12 +96,14 @@
 
 # Documentation
 
- *  Too much to cover here. Please go to http://jcw.github.com/critcl
+ *  Too much to cover here. Please go to http://andreas-kupries.github.com/critcl
     for online reading, or the directories **embedded/www** and
     **embedded/man** for local copies of the documentation in HTML
     and nroff formats, respectively.
 
 # History
+
+ *  **2013-01-21** : Move code to from jcw to andreas-kupries.
 
  *  **2011-08-18** : Move code to public repository on GitHub
 
