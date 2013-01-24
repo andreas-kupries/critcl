@@ -1197,6 +1197,18 @@ Semi-bugfixes in the packages \fBcritcl::class\fR and
 to ensure that the template files are made part of the package.
 Versions bumped to 1.0.4 and 1.0.1 respectively.
 .PP
+.SH "CHANGES FOR VERSION 3.1.4"
+.IP [1]
+Bugfix in package \fBcritcl::class\fR. Generate a dummy
+field in the class structure if the class has no class
+variables. Without this change the structure would be empty,
+and a number of compilers are not able to handle such a type.
+.IP [2]
+Fixed a typo which broke the win64 configuration.
+.IP [3]
+Fixed issue #16, a typo in the documentation of command
+\fBcritcl::class\fR.
+.PP
 .SH AUTHORS
 Jean Claude Wippler, Steve Landers, Andreas Kupries
 .SH "BUGS, IDEAS, FEEDBACK"
