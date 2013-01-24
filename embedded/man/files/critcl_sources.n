@@ -265,7 +265,7 @@ For builders and developers we additionally provide
 respectively.
 .SH "SOURCE LOCATION"
 The official repository for Critcl can be found at
-\fIhttp://jcw.github.com/critcl\fR
+\fIhttp://andreas-kupries.github.com/critcl\fR
 .SH RETRIEVAL
 Assuming that you simply wish to look at the sources, or build a
 specific revision, the easiest way of retrieving it is to:
@@ -290,7 +290,7 @@ With that tool available the full history can be retrieved via:
 .CS
 
 
-    git clone http://github.com/jcw/critcl
+    git clone http://github.com/andreas-kupries/critcl
     cd critcl
 
 .CE

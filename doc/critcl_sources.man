@@ -22,7 +22,7 @@ respectively.
 [section {Source Location}]
 
 The official repository for Critcl can be found at
-[uri http://jcw.github.com/critcl]
+[uri http://andreas-kupries.github.com/critcl]
 
 [section Retrieval]
 
@@ -50,7 +50,7 @@ Binaries for popular platforms can be found directly at its
 With that tool available the full history can be retrieved via:
 
 [example {
-    git clone http://github.com/jcw/critcl
+    git clone http://github.com/andreas-kupries/critcl
     cd critcl
 }]
 
