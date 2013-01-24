@@ -1543,7 +1543,12 @@ proc ::critcl::app::PlaceTEASupport {pkgdir pkgname pversion porg} {
 
     set here [pwd]
     cd $pkgdir
-    exec [LocateAutoconf]
+    if {$::tcl_platform(platform) eq "windows"} {
+	# msys/mingw, cygwin, or other unix emulation on windows.
+	exec sh [LocateAutoconf 1]
+    } else {
+	exec [LocateAutoconf 0]
+    }
     file delete -force autom4te.cache
 
     lappend v::meta [list included configure]
@@ -1660,14 +1665,21 @@ proc ::critcl::app::PlaceInputFiles {pkgdir} {
     return
 }
 
-proc ::critcl::app::LocateAutoconf {} {
+proc ::critcl::app::LocateAutoconf {iswin} {
     set ac [auto_execok autoconf]
 
     if {$ac eq {}} {
 	return -code error "autoconf 2.59 or higher required, not found"
     }
 
-    set v [lindex [split [eval [linsert [linsert $ac 0 exec] end --version]] \n] 0 end]
+    if {$iswin} {
+	# msys/mingw, cygwin, or other unix emulation on windows.
+	set cmd [linsert $ac 0 exec sh]
+    } else {
+	set cmd [linsert $ac 0 exec]
+    }
+
+    set v [lindex [split [eval [linsert $cmd end --version]] \n] 0 end]
 
     if {![package vsatisfies $v 2.59]} {
 	return -code error "$ac $v is not 2.59 or higher, as required"
