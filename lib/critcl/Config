@@ -289,7 +289,7 @@ if {[string match win32-* $platform]} {
 	close $chan
 	file delete $tmpfile
 
-	regexp {Compiler Version ([0-9.]*) for} $output -> msvcversion
+	regexp {Version ([0-9.]*)} $output -> msvcversion
 	#puts V=$msvcversion
 	if {[package vcompare $msvcversion 15.00.30729.01] >= 0} {
 	    # VC9 or higher. -debug:full is not supported anymore.
