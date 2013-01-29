@@ -2303,7 +2303,11 @@ proc ::critcl::cbuild {file {load 1}} {
     set buildforpackage $v::buildforpackage
     set v::buildforpackage 0
 
-    if {$file eq ""} { set file [This] }
+    set bracket 0
+    if {$file eq ""} {
+	set bracket 1
+	set file [This]
+    }
 
     # NOTE: The 4 pieces of data just below has to be copied into the
     # result even if the build and link-steps are suppressed. Because
@@ -2323,7 +2327,7 @@ proc ::critcl::cbuild {file {load 1}} {
 	API_setup $file
 
 	# Generate the main C file
-	CollectEmbeddedSources $file $base.c $object $initname
+	CollectEmbeddedSources $file $base.c $object $initname $bracket
 
 	# Set the marker for critcl::done and its user, AbortWhenCalledAfterBuild.
 	dict set v::code($file) result closed mark
@@ -3496,7 +3500,7 @@ proc ::critcl::at::SHOWFRAMES {level {all 1}} {
  
 # # ## ### ##### ######## ############# #####################
 
-proc ::critcl::CollectEmbeddedSources {file destination libfile ininame} {
+proc ::critcl::CollectEmbeddedSources {file destination libfile ininame bracket} {
     set fd [open $destination w]
 
     if {[dict exists $v::code($file) result apiprefix]} {
@@ -3525,8 +3529,16 @@ proc ::critcl::CollectEmbeddedSources {file destination libfile ininame} {
     # Stubs setup, Tcl, and, if requested, Tk as well.
     puts $fd [Separator]
     set mintcl [MinTclVersion $file]
-    puts -nonewline $fd [subst [Cat [Template stubs.c]]]
-    #                    ^=> mintcl
+
+    if {$bracket} {
+	# Full definition in the bracket code.
+	puts -nonewline $fd [subst [Cat [Template stubs.c]]]
+	#                    ^=> mintcl
+    } else {
+	# Declarations only, for linking, in the sub-packages.
+	puts -nonewline $fd [subst [Cat [Template stubs_e.c]]]
+	#                    ^=> mintcl
+    }
 
     if {[UsingTk $file]} {
 	SetupTkStubs $fd
