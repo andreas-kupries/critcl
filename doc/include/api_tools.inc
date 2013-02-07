@@ -175,11 +175,11 @@ containing a TEA-lookalike buildystem, etc.
 [call [cmd ::critcl::name2c] [arg name]]
 
 This command exposes the conversion of a Tcl level identifier of
-commands into various C-level pieces, i.e. namespace, C namespace
-prefix, and C base name.
+commands into various C-level pieces, i.e. Tcl namespace prefix, C
+namespace prefix, Tcl base name, and C base name.
 
-[para] The result of the command is a list providing the above
-mentioned information, in the named order.
+[para] The result of the command is a list of 4 elements providing the
+above mentioned information, in the named order.
 
 [para] The envisioned main use is from within utility packages
 providing Tcl commands without going through the standard commands,

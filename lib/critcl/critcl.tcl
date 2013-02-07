@@ -186,7 +186,7 @@ proc ::critcl::ccommand {name anames args} {
 
     set clientdata NULL
     set delproc    0
-    set acname     0
+    set acname     {}
     while {[string match "-*" $args]} {
         switch -- [set opt [lindex $args 0]] {
 	    -clientdata { set clientdata [lindex $args 1] }
@@ -199,16 +199,18 @@ proc ::critcl::ccommand {name anames args} {
         set args [lrange $args 2 end]
     }
 
-    if {$acname} {
-	BeginCommand static $name $anames $args
+    if {$acname ne {}} {
+	lassign [BeginCommand static $name $anames $args] ns cns _name cname
+	Emitln "#define ns_$cns$cname \"$ns$_name\""
+	Emitln "#define tcl_$cns$cname $acname"
 	set ns  {}
 	set cns {}
 	set key $name
-	set wname $name
+	set wname $acname
     } else {
-	lassign [BeginCommand public $name $anames $args] ns cns name
+	lassign [BeginCommand public $name $anames $args] ns cns name cname
 	set key [string map {:: _} $ns$name]
-	set wname tcl_$cns$name
+	set wname tcl_$cns$cname
     }
 
     # XXX clientdata/delproc, either note clashes, or keep information per-file.
@@ -237,7 +239,7 @@ proc ::critcl::ccommand {name anames args} {
 	Emitln \n\}
     } else {
 	# if no body is specified, then $anames is alias for the real cmd proc
-	Emitln "#define tcl_$cns$name $anames"
+	Emitln "#define $wname $anames"
 	Emitln "int $anames\(\);"
     }
     EndCommand
@@ -569,7 +571,7 @@ proc ::critcl::cproc {name adefs rtype {body "#"} args} {
     SkipIgnored [set file [This]]
     AbortWhenCalledAfterBuild
 
-    set acname 0
+    set acname {}
     set passcd 0
     set aoffset 0
     while {[string match "-*" $args]} {
@@ -596,16 +598,18 @@ proc ::critcl::cproc {name adefs rtype {body "#"} args} {
 	}
     }
 
-    if {$acname} {
-	BeginCommand static $name $adefs $rtype $body
+    if {$acname ne {}} {
+	lassign [BeginCommand static $name $adefs $rtype $body] ns cns _name cname
+	Emitln "#define ns_$cns$cname \"$ns$_name\""
+	Emitln "#define tcl_$cns$cname $acname"
 	set ns  {}
 	set cns {}
-	set cname c_$name
-	set wname $name
+	set wname $acname
+	set cname c_$acname
     } else {
-	lassign [BeginCommand public $name $adefs $rtype $body] ns cns name
-	set cname c_$cns$name
-	set wname tcl_$cns$name
+	lassign [BeginCommand public $name $adefs $rtype $body] ns cns name cname
+	set wname tcl_$cns$cname
+	set cname c_$cns$cname
     }
 
     set names  [argnames      $adefs]
@@ -3320,12 +3324,23 @@ proc ::critcl::name2c {name} {
     set name [namespace tail       $name]
 
     # Then ensure that everything is fully qualified, and that the C
-    # level name doesn't contain bad characters.
+    # level name doesn't contain bad characters. We have to remove any
+    # non-alphabetic characters. A serial number is further required
+    # to distinguish identifiers which would, despite having different
+    # Tcl names, transform to the same C identifier.
 
     if {$ns ne "::"} { append ns :: }
     set cns [string map {:: _} $ns]
 
-    return [list $ns $cns $name]
+    regsub -all -- {[^a-zA-Z0-9_]} $name _ cname
+    regsub -all -- {_+} $cname _ cname
+
+    regsub -all -- {[^a-zA-Z0-9_]} $cns _ cns
+    regsub -all -- {_+} $cns _ cns
+
+    set cname $cname[UUID.serial $file]
+
+    return [list $ns $cns $name $cname]
 }
 
 proc ::critcl::BeginCommand {visibility name args} {
@@ -3351,12 +3366,23 @@ proc ::critcl::BeginCommand {visibility name args} {
     set name [namespace tail       $name]
 
     # Then ensure that everything is fully qualified, and that the C
-    # level name doesn't contain bad characters.
+    # level identifiers don't contain bad characters. We have to
+    # remove any non-alphabetic characters. A serial number is further
+    # required to distinguish identifiers which would, despite having
+    # different Tcl names, transform to the same C identifier.
 
     if {$ns ne "::"} { append ns :: }
     set cns [string map {:: _} $ns]
 
-    # Setup the defered build-on-demand used by mode 'comile & run'.
+    regsub -all -- {[^a-zA-Z0-9_]} $name _ cname
+    regsub -all -- {_+} $cname _ cname
+
+    regsub -all -- {[^a-zA-Z0-9_]} $cns _ cns
+    regsub -all -- {_+} $cns _ cns
+
+    set cname $cname[UUID.serial $file]
+
+    # Set the defered build-on-demand used by mode 'comile & run' up.
     # Note: Removing the leading :: because it trips Tcl's unknown
     # command, i.e. the command will not be found when called in a
     # script without leading ::.
@@ -3365,14 +3391,14 @@ proc ::critcl::BeginCommand {visibility name args} {
     set v::curr [UUID.extend $file .function "$ns $name $args"]
 
     dict update v::code($file) config c {
-	dict lappend c functions $cns$name
+	dict lappend c functions $cns$cname
 	dict lappend c fragments $v::curr
     }
 
     if {$visibility eq "public"} {
-	Emitln "#define ns_$cns$name \"$ns$name\""
+	Emitln "#define ns_$cns$cname \"$ns$name\""
     }
-    return [list $ns $cns $name]
+    return [list $ns $cns $name $cname]
 }
 
 proc ::critcl::EndCommand {} {
@@ -4264,6 +4290,16 @@ proc ::critcl::UUID.extend {file key value} {
 	dict lappend c uuid $key $digest
     }
     return $digest
+}
+
+proc ::critcl::UUID.serial {file} {
+    InitializeFile $file
+    if {[catch {
+	set len [llength [dict get $v::code($file) config uuid]]
+    }]} {
+	set len 0
+    }
+    return $len
 }
 
 proc ::critcl::UUID {f} {
