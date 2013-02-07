@@ -1,0 +1,172 @@
+# -*- tcl -*-
+# -------------------------------------------------------------------------
+# critcl_cproc.test
+# -------------------------------------------------------------------------
+
+source [file join \
+            [file dirname [file join [pwd] [info script]]] \
+            testutilities.tcl]
+
+testsNeedTcl     8.4
+testsNeedTcltest 2
+
+support {
+    useLocal lib/util84/lassign.tcl  lassign84
+    useLocal lib/util84/dict.tcl     dict84
+
+    useLocal lib/stubs/container.tcl stubs::container
+    useLocal lib/stubs/reader.tcl    stubs::reader
+    useLocal lib/stubs/genframe.tcl  stubs::gen
+}
+testing {
+    useLocal lib/critcl/critcl.tcl critcl
+
+    # Note: The next command does not influence the standard argument-
+    # and result-types.
+    critcl::config lines 0
+}
+
+# -------------------------------------------------------------------------
+## cproc syntax
+
+test critcl-cproc-1.0 {cproc, wrong\#args} -setup {
+} -body {
+    critcl::cproc
+} -cleanup {
+} -returnCodes error -result {wrong # args: should be "critcl::cproc name adefs rtype ?body? ..."}
+
+# -------------------------------------------------------------------------
+## Go through the various knobs we can use to configure the definition and output
+
+proc get {args} {
+    set t [string trim [critcl::collect $args]]
+    #regsub -all -- {#line \d+ } $t {#line XX } t
+    return $t
+}
+
+# -------------------------------------------------------------------------
+
+test critcl-cproc-2.0 {basic cproc} -body {
+    get critcl::cproc aproc {} void {}
+} -result {/* ---------------------------------------------------------------------- */
+
+#define ns__aproc0 "::aproc"
+static void c__aproc0()
+{
+
+}
+
+static int
+tcl__aproc0(ClientData cd, Tcl_Interp *interp, int oc, Tcl_Obj *CONST ov[])
+{
+
+  if (oc != 1) {
+    Tcl_WrongNumArgs(interp, 1, ov, NULL);
+    return TCL_ERROR;
+  }
+
+  /* Call - - -- --- ----- -------- */
+  c__aproc0();
+
+#line 4603 "critcl.tcl"
+	return TCL_OK;
+}}
+
+# -------------------------------------------------------------------------
+
+test critcl-cproc-2.1 {basic cproc, namespaced} -body {
+    get critcl::cproc the::aproc {} void {}
+} -result {/* ---------------------------------------------------------------------- */
+
+#define ns__the_aproc0 "::the::aproc"
+static void c__the_aproc0()
+{
+
+}
+
+static int
+tcl__the_aproc0(ClientData cd, Tcl_Interp *interp, int oc, Tcl_Obj *CONST ov[])
+{
+
+  if (oc != 1) {
+    Tcl_WrongNumArgs(interp, 1, ov, NULL);
+    return TCL_ERROR;
+  }
+
+  /* Call - - -- --- ----- -------- */
+  c__the_aproc0();
+
+#line 4603 "critcl.tcl"
+	return TCL_OK;
+}}
+
+# -------------------------------------------------------------------------
+
+test critcl-cproc-2.2 {basic cproc, Tcl vs C identifiers} -body {
+    get critcl::cproc aproc+beta {} void {}
+} -result {/* ---------------------------------------------------------------------- */
+
+#define ns__aproc_beta0 "::aproc+beta"
+static void c__aproc_beta0()
+{
+
+}
+
+static int
+tcl__aproc_beta0(ClientData cd, Tcl_Interp *interp, int oc, Tcl_Obj *CONST ov[])
+{
+
+  if (oc != 1) {
+    Tcl_WrongNumArgs(interp, 1, ov, NULL);
+    return TCL_ERROR;
+  }
+
+  /* Call - - -- --- ----- -------- */
+  c__aproc_beta0();
+
+#line 4603 "critcl.tcl"
+	return TCL_OK;
+}}
+
+# -------------------------------------------------------------------------
+
+test critcl-cproc-2.3 {basic cproc, custom C name} -body {
+    get critcl::cproc aproc {} void {} -cname snafu
+} -result {/* ---------------------------------------------------------------------- */
+
+#define ns__aproc0 "::aproc"
+#define tcl__aproc0 snafu
+static void c_snafu()
+{
+
+}
+
+static int
+snafu(ClientData cd, Tcl_Interp *interp, int oc, Tcl_Obj *CONST ov[])
+{
+
+  if (oc != 1) {
+    Tcl_WrongNumArgs(interp, 1, ov, NULL);
+    return TCL_ERROR;
+  }
+
+  /* Call - - -- --- ----- -------- */
+  c_snafu();
+
+#line 4603 "critcl.tcl"
+	return TCL_OK;
+}}
+
+# -------------------------------------------------------------------------
+## XXX TODO one to multiple arguments
+## XXX TODO optional arguments
+## XXX TODO various argument types
+## XXX TODO various result types
+## XXX TODO ...
+
+testsuiteCleanup
+
+# Local variables:
+# mode: tcl
+# indent-tabs-mode: nil
+# End:
