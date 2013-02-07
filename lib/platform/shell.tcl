@@ -12,7 +12,7 @@
 # ### ### ### ######### ######### #########
 ## Requirements
 
-package require platform
+package require critcl::platform
 namespace eval ::platform::shell {}
 
 # ### ### ### ######### ######### #########
@@ -238,4 +238,4 @@ proc ::platform::shell::DIR {} {
 # ### ### ### ######### ######### #########
 ## Ready
 
-package provide platform::shell 1.1.4
+package provide critcl::platform::shell 1.1.4

@@ -368,7 +368,7 @@ proc ::platform::patterns {id} {
 # ### ### ### ######### ######### #########
 ## Ready
 
-package provide platform 1.0.11
+package provide critcl::platform 1.0.11
 
 # ### ### ### ######### ######### #########
 ## Demo application
