@@ -40,23 +40,23 @@ proc ::critcl::class::define {classname script} {
     set qpackage [expr {[string match ::* $package] 
 			? "$package"
 			: "::$package"}]
-    lassign [uplevel 1 [list ::critcl::name2c $classname]] ns  cns  cclassname
-    lassign [uplevel 1 [list ::critcl::name2c $qpackage]]  pns pcns cpackage
+    lassign [uplevel 1 [list ::critcl::name2c $classname]] ns  cns  classname cclassname
+    lassign [uplevel 1 [list ::critcl::name2c $qpackage]]  pns pcns package   cpackage
 
-    #puts "%%% Pkg  |$package|"
     #puts "%%% pNS  |$pns|"
+    #puts "%%% Pkg  |$package|"
     #puts "%%% pCNS |$pcns|"
     #puts "%%% cPkg |$cpackage|"
 
-    #puts "%%% Class |$classname|"
     #puts "%%% NS    |$ns|"
+    #puts "%%% CName |$classname|"
     #puts "%%% CNS   |$cns|"
-    #puts "%%% CCN   |$cclassname|"
+    #puts "%%% CCName|$cclassname|"
 
     set stem ${pcns}${cpackage}_$cns$cclassname
 
-    dict set state package     $package
-    dict set state class       $classname
+    dict set state package     $pns$package
+    dict set state class       $ns$classname
     dict set state stem        $stem
     dict set state classtype   ${stem}_CLASS
     dict set state method      names {}
