@@ -94,7 +94,7 @@
 </head>
 <! -- Generated from file '/home/aku/Projects/Critcl/dev-master/embedded/www/files/critcl_pkg.html' by tcllib/doctools with format 'html'
    -->
-<! -- Copyright &copy; Jean-Claude Wippler   -- Copyright &copy; Steve Landers   -- Copyright &copy; 2011-2012 Andreas Kupries
+<! -- Copyright &copy; Jean-Claude Wippler   -- Copyright &copy; Steve Landers   -- Copyright &copy; 2011-2013 Andreas Kupries
    -->
 <! -- CVS: $Id$ critcl.n
    -->
@@ -103,7 +103,7 @@
   <a href="../toc.html">Table Of Contents</a>
 | <a href="../index.html">Keyword Index</a>
 ] <hr>
-<h1 class="title">critcl(n) 3.1 doc &quot;C Runtime In Tcl (CriTcl)&quot;</h1>
+<h1 class="title">critcl(n) 3.1.6 doc &quot;C Runtime In Tcl (CriTcl)&quot;</h1>
 <div id="name" class="section"><h2><a name="name">Name</a></h2>
 <p>critcl - CriTcl Package Reference</p>
 </div>
@@ -157,8 +157,9 @@
 <li class="section"><a href="#section17">Changes for version 3.1.3</a></li>
 <li class="section"><a href="#section18">Changes for version 3.1.4</a></li>
 <li class="section"><a href="#section19">Changes for version 3.1.5</a></li>
-<li class="section"><a href="#section20">Authors</a></li>
-<li class="section"><a href="#section21">Bugs, Ideas, Feedback</a></li>
+<li class="section"><a href="#section20">Changes for version 3.1.6</a></li>
+<li class="section"><a href="#section21">Authors</a></li>
+<li class="section"><a href="#section22">Bugs, Ideas, Feedback</a></li>
 <li class="section"><a href="#keywords">Keywords</a></li>
 <li class="section"><a href="#category">Category</a></li>
 <li class="section"><a href="#copyright">Copyright</a></li>
@@ -168,7 +169,7 @@
 <div class="synopsis">
 <ul class="requirements">
 <li>package require <b class="pkgname">Tcl 8.4</b></li>
-<li>package require <b class="pkgname">critcl <span class="opt">?3.1?</span></b></li>
+<li>package require <b class="pkgname">critcl <span class="opt">?3.1.6?</span></b></li>
 <li>package require <b class="pkgname">platform <span class="opt">?1.0.2?</span></b></li>
 <li>package require <b class="pkgname">md5 <span class="opt">?2?</span></b></li>
 </ul>
@@ -354,10 +355,12 @@ new Tcl command, i.e. a function which is run by Tcl when the Tcl
 command is deleted again.
 If not specified the expression defaults to <b class="const">NULL</b>, i.e. no
 deletion function.</p></dd>
-<dt><b class="option">-cname</b> <i class="arg">c-identifier</i></dt>
-<dd><p>The value of this option is the C level name of the command
-function. If not specified the system will derive a name from the Tcl
-level command name, including its namespace.</p></dd>
+<dt><b class="option">-cname</b> <i class="arg">boolean</i></dt>
+<dd><p>The value of this option is a boolean flag. If <b class="const">true</b> the name
+of the command is the C identifier of the command function.
+Namespaces, etc. are in that case not relevant at all. The default
+value of this option is <b class="const">false</b>, causing the system to derive a
+name from the Tcl level command name, including its namespace.</p></dd>
 </dl>
 <p>A ccommand is, in comparison to functions defined via
 <b class="cmd">critcl::cproc</b>, more lower level.
@@ -406,11 +409,13 @@ See section <span class="sectref"><a href="#subsection16">Runtime Behaviour</a><
 <p>The result of <b class="cmd">critcl::cproc</b> itself is the empty string.</p>
 <p>The only options accepted by this command are:</p>
 <dl class="options">
-<dt><b class="option">-cname</b> <i class="arg">c-identifier</i></dt>
-<dd><p>The value of this option is the C level name of the function.
-If not specified the system will derive a name from the Tcl
-level command name, including its namespace.</p></dd>
-<dt><b class="option">-pass-cdata</b> <i class="arg">flag</i></dt>
+<dt><b class="option">-cname</b> <i class="arg">boolean</i></dt>
+<dd><p>The value of this option is a boolean flag. If <b class="const">true</b> the name
+of the command is the C identifier of the command function.
+Namespaces, etc. are in that case not relevant at all. The default
+value of this option is <b class="const">false</b>, causing the system to derive a
+name from the Tcl level command name, including its namespace.</p></dd>
+<dt><b class="option">-pass-cdata</b> <i class="arg">boolean</i></dt>
 <dd><p>The value of this option is a boolean flag. If specified and set the
 shim translating from Tcl to C level and back will pass the command's
 ClientData to the function.
@@ -1341,10 +1346,10 @@ implement processing modes like the assembly of a directory hierachy
 containing a TEA-lookalike buildystem, etc.</p></dd>
 <dt><a name="62"><b class="cmd">::critcl::name2c</b> <i class="arg">name</i></a></dt>
 <dd><p>This command exposes the conversion of a Tcl level identifier of
-commands into various C-level pieces, i.e. namespace, C namespace
-prefix, and C base name.</p>
-<p>The result of the command is a list providing the above
-mentioned information, in the named order.</p>
+commands into various C-level pieces, i.e. Tcl namespace prefix, C
+namespace prefix, Tcl base name, and C base name.</p>
+<p>The result of the command is a list of 4 elements providing the
+above mentioned information, in the named order.</p>
 <p>The envisioned main use is from within utility packages
 providing Tcl commands without going through the standard commands,
 i.e. <b class="cmd">critcl::ccommand</b>, or <b class="cmd">critcl::cproc</b>. An example of a
@@ -2607,10 +2612,32 @@ instance creation for clarity. Bumped to version 1.0.2.</p></li>
        a unix emulation environment like msys/mingw.</p></li>
 </ol>
 </div>
-<div id="section20" class="section"><h2><a name="section20">Authors</a></h2>
+<div id="section20" class="section"><h2><a name="section20">Changes for version 3.1.6</a></h2>
+<ol class="enumerated">
+<li><p>Fixed issue #21. While the multi-definition of the stub-table
+       pointer variables was ok with for all the C linkers seen so far
+       C++ linkers did not like this at all. Reworked the code to
+       ensure that this set of variables is generated only once, in
+       the wrapper around all the pieces to assemble.</p></li>
+<li><p>Fixed issue #22, the handling of the command identifier
+       arguments of <b class="cmd">critcl::ccommand</b>, <b class="cmd">critcl::cproc</b>, and
+       <b class="cmd">critcl::cdata</b>. We now properly allow any Tcl identifier
+       and generate proper internal C identifiers from them.</p>
+<p>As part of this the signature of command <b class="cmd">critcl::name2c</b>
+       changed. The command now delivers a list of four values instead
+       of three. The new value was added at the end.</p>
+<p>Further adapted the implementation of package
+       <b class="package"><a href="critcl_class.html">critcl::class</a></b>, a user of <b class="cmd">critcl::name2c</b>.
+       This package is now at version 1.0.6 and requires critcl 3.1.6</p>
+<p>Lastly fixed the mis-handling of option <b class="option">-cname</b> in
+       <b class="cmd">critcl::ccommand</b>, and <b class="cmd">critcl::cproc</b>.</p></li>
+<li><p>Fixed issue #23.</p></li>
+</ol>
+</div>
+<div id="section21" class="section"><h2><a name="section21">Authors</a></h2>
 <p>Jean Claude Wippler, Steve Landers, Andreas Kupries</p>
 </div>
-<div id="section21" class="section"><h2><a name="section21">Bugs, Ideas, Feedback</a></h2>
+<div id="section22" class="section"><h2><a name="section22">Bugs, Ideas, Feedback</a></h2>
 <p>This document, and the package it describes, will undoubtedly contain
 bugs and other problems.
 Please report them at <a href="https://github.com/andreas-kupries/critcl/issues">https://github.com/andreas-kupries/critcl/issues</a>.
@@ -2627,6 +2654,6 @@ at <a href="https://github.com/andreas-kupries/critcl/issues">https://github.com
 <div id="copyright" class="section"><h2><a name="copyright">Copyright</a></h2>
 <p>Copyright &copy; Jean-Claude Wippler<br>
 Copyright &copy; Steve Landers<br>
-Copyright &copy; 2011-2012 Andreas Kupries</p>
+Copyright &copy; 2011-2013 Andreas Kupries</p>
 </div>
 </div></body></html>
