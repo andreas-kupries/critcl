@@ -18,6 +18,7 @@ set packages {
     {app-critcl   ../critcl/critcl.tcl critcl-app}
     util84
     stubs
+    critcl-platform
 }
 proc usage {{status 1}} {
     global errorInfo

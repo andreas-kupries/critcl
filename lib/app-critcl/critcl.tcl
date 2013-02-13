@@ -21,7 +21,11 @@
 
 package provide critcl::app [package require critcl]
 package require cmdline
-package require platform
+
+# It is expected here that critcl already imported platform, or an
+# equivalent package, i.e. the critcl::platform fallback. No need to
+# do it again.
+#package require platform
 
 # Note: We can assume here that the commands lassign and dict are
 # available. The critcl package has made sure of that.

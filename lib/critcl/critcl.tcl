@@ -11,8 +11,15 @@ package provide critcl 3.1.6
 # # ## ### ##### ######## ############# #####################
 ## Requirements.
 
-package require Tcl      8.4   ; # Min supported version.
-package require platform 1.0.2 ; # Determine current platform.
+package require Tcl 8.4 ; # Minimal supported Tcl runtime.
+if {[catch {
+    package require platform 1.0.2 ; # Determine current platform.
+}]} {
+    # Fall back to our internal copy (currently at platform 1.0.11
+    # equivalent) if the environment does not have the official
+    # package.
+    package require critcl::platform
+}
 
 # Ensure forward compatibility of commands defined in 8.5+.
 package require lassign84
