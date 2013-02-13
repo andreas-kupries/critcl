@@ -94,7 +94,7 @@
 </head>
 <! -- Generated from file '/home/aku/Projects/Critcl/dev-master/embedded/www/files/critcl_introduction.html' by tcllib/doctools with format 'html'
    -->
-<! -- Copyright &copy; Jean-Claude Wippler   -- Copyright &copy; Steve Landers   -- Copyright &copy; 2011-2012 Andreas Kupries
+<! -- Copyright &copy; Jean-Claude Wippler   -- Copyright &copy; Steve Landers   -- Copyright &copy; 2011-2013 Andreas Kupries
    -->
 <! -- CVS: $Id$ critcl_introduction.n
    -->
@@ -103,7 +103,7 @@
   <a href="../toc.html">Table Of Contents</a>
 | <a href="../index.html">Keyword Index</a>
 ] <hr>
-<h1 class="title">critcl_introduction(n) 3 doc &quot;C Runtime In Tcl (CriTcl)&quot;</h1>
+<h1 class="title">critcl_introduction(n) 3.1.6 doc &quot;C Runtime In Tcl (CriTcl)&quot;</h1>
 <div id="name" class="section"><h2><a name="name">Name</a></h2>
 <p>critcl_introduction - Introduction To CriTcl</p>
 </div>
@@ -130,8 +130,9 @@
 <li class="section"><a href="#section18">Changes for version 3.1.3</a></li>
 <li class="section"><a href="#section19">Changes for version 3.1.4</a></li>
 <li class="section"><a href="#section20">Changes for version 3.1.5</a></li>
-<li class="section"><a href="#section21">Authors</a></li>
-<li class="section"><a href="#section22">Bugs, Ideas, Feedback</a></li>
+<li class="section"><a href="#section21">Changes for version 3.1.6</a></li>
+<li class="section"><a href="#section22">Authors</a></li>
+<li class="section"><a href="#section23">Bugs, Ideas, Feedback</a></li>
 <li class="section"><a href="#keywords">Keywords</a></li>
 <li class="section"><a href="#category">Category</a></li>
 <li class="section"><a href="#copyright">Copyright</a></li>
@@ -672,10 +673,32 @@ instance creation for clarity. Bumped to version 1.0.2.</p></li>
        a unix emulation environment like msys/mingw.</p></li>
 </ol>
 </div>
-<div id="section21" class="section"><h2><a name="section21">Authors</a></h2>
+<div id="section21" class="section"><h2><a name="section21">Changes for version 3.1.6</a></h2>
+<ol class="enumerated">
+<li><p>Fixed issue #21. While the multi-definition of the stub-table
+       pointer variables was ok with for all the C linkers seen so far
+       C++ linkers did not like this at all. Reworked the code to
+       ensure that this set of variables is generated only once, in
+       the wrapper around all the pieces to assemble.</p></li>
+<li><p>Fixed issue #22, the handling of the command identifier
+       arguments of <b class="cmd">critcl::ccommand</b>, <b class="cmd">critcl::cproc</b>, and
+       <b class="cmd">critcl::cdata</b>. We now properly allow any Tcl identifier
+       and generate proper internal C identifiers from them.</p>
+<p>As part of this the signature of command <b class="cmd">critcl::name2c</b>
+       changed. The command now delivers a list of four values instead
+       of three. The new value was added at the end.</p>
+<p>Further adapted the implementation of package
+       <b class="package"><a href="critcl_class.html">critcl::class</a></b>, a user of <b class="cmd">critcl::name2c</b>.
+       This package is now at version 1.0.6 and requires critcl 3.1.6</p>
+<p>Lastly fixed the mis-handling of option <b class="option">-cname</b> in
+       <b class="cmd">critcl::ccommand</b>, and <b class="cmd">critcl::cproc</b>.</p></li>
+<li><p>Fixed issue #23.</p></li>
+</ol>
+</div>
+<div id="section22" class="section"><h2><a name="section22">Authors</a></h2>
 <p>Jean Claude Wippler, Steve Landers, Andreas Kupries</p>
 </div>
-<div id="section22" class="section"><h2><a name="section22">Bugs, Ideas, Feedback</a></h2>
+<div id="section23" class="section"><h2><a name="section23">Bugs, Ideas, Feedback</a></h2>
 <p>This document, and the package it describes, will undoubtedly contain
 bugs and other problems.
 Please report them at <a href="https://github.com/andreas-kupries/critcl/issues">https://github.com/andreas-kupries/critcl/issues</a>.
@@ -692,6 +715,6 @@ at <a href="https://github.com/andreas-kupries/critcl/issues">https://github.com
 <div id="copyright" class="section"><h2><a name="copyright">Copyright</a></h2>
 <p>Copyright &copy; Jean-Claude Wippler<br>
 Copyright &copy; Steve Landers<br>
-Copyright &copy; 2011-2012 Andreas Kupries</p>
+Copyright &copy; 2011-2013 Andreas Kupries</p>
 </div>
 </div></body></html>

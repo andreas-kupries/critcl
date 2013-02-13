@@ -238,16 +238,16 @@ Database Class:	\\fB\\$3\\fR
 .de UL
 \\$1\l'|0\(ul'\\$2
 ..
-.TH "critcl::class" n 1.0.2 doc "C Runtime In Tcl (CriTcl)"
+.TH "critcl::class" n 1.0.6 doc "C Runtime In Tcl (CriTcl)"
 .BS
 .SH NAME
 critcl::class \- CriTcl Utilities: C Classes
 .SH SYNOPSIS
 package require \fBTcl  8.4\fR
 .sp
-package require \fBcritcl  ?3.1?\fR
+package require \fBcritcl  ?3.1.6?\fR
 .sp
-package require \fBcritcl::class  ?1.0.2?\fR
+package require \fBcritcl::class  ?1.0.6?\fR
 .sp
 \fB::critcl::class::define\fR \fIname\fR \fIscript\fR
 .sp

@@ -2,7 +2,7 @@
 '\" Generated from file '/home/aku/Projects/Critcl/dev-master/embedded/man/files/critcl_pkg.n' by tcllib/doctools with format 'nroff'
 '\" Copyright (c) Jean-Claude Wippler
 '\" Copyright (c) Steve Landers
-'\" Copyright (c) 2011-2012 Andreas Kupries
+'\" Copyright (c) 2011-2013 Andreas Kupries
 '\"
 '\" The definitions below are for supplemental macros used in Tcl/Tk
 '\" manual entries.
@@ -240,14 +240,14 @@ Database Class:	\\fB\\$3\\fR
 .de UL
 \\$1\l'|0\(ul'\\$2
 ..
-.TH "critcl" n 3.1 doc "C Runtime In Tcl (CriTcl)"
+.TH "critcl" n 3.1.6 doc "C Runtime In Tcl (CriTcl)"
 .BS
 .SH NAME
 critcl \- CriTcl Package Reference
 .SH SYNOPSIS
 package require \fBTcl  8.4\fR
 .sp
-package require \fBcritcl  ?3.1?\fR
+package require \fBcritcl  ?3.1.6?\fR
 .sp
 package require \fBplatform  ?1.0.2?\fR
 .sp
@@ -568,10 +568,12 @@ command is deleted again.
 If not specified the expression defaults to \fBNULL\fR, i.e. no
 deletion function.
 .TP
-\fB-cname\fR \fIc-identifier\fR
-The value of this option is the C level name of the command
-function. If not specified the system will derive a name from the Tcl
-level command name, including its namespace.
+\fB-cname\fR \fIboolean\fR
+The value of this option is a boolean flag. If \fBtrue\fR the name
+of the command is the C identifier of the command function.
+Namespaces, etc. are in that case not relevant at all. The default
+value of this option is \fBfalse\fR, causing the system to derive a
+name from the Tcl level command name, including its namespace.
 .RE
 .IP
 A ccommand is, in comparison to functions defined via
@@ -630,12 +632,14 @@ The result of \fBcritcl::cproc\fR itself is the empty string.
 The only options accepted by this command are:
 .RS
 .TP
-\fB-cname\fR \fIc-identifier\fR
-The value of this option is the C level name of the function.
-If not specified the system will derive a name from the Tcl
-level command name, including its namespace.
+\fB-cname\fR \fIboolean\fR
+The value of this option is a boolean flag. If \fBtrue\fR the name
+of the command is the C identifier of the command function.
+Namespaces, etc. are in that case not relevant at all. The default
+value of this option is \fBfalse\fR, causing the system to derive a
+name from the Tcl level command name, including its namespace.
 .TP
-\fB-pass-cdata\fR \fIflag\fR
+\fB-pass-cdata\fR \fIboolean\fR
 The value of this option is a boolean flag. If specified and set the
 shim translating from Tcl to C level and back will pass the command's
 ClientData to the function.
@@ -1783,11 +1787,11 @@ containing a TEA-lookalike buildystem, etc.
 .TP
 \fB::critcl::name2c\fR \fIname\fR
 This command exposes the conversion of a Tcl level identifier of
-commands into various C-level pieces, i.e. namespace, C namespace
-prefix, and C base name.
+commands into various C-level pieces, i.e. Tcl namespace prefix, C
+namespace prefix, Tcl base name, and C base name.
 .sp
-The result of the command is a list providing the above
-mentioned information, in the named order.
+The result of the command is a list of 4 elements providing the
+above mentioned information, in the named order.
 .sp
 The envisioned main use is from within utility packages
 providing Tcl commands without going through the standard commands,
@@ -3351,6 +3355,32 @@ for other Windows locales.
 Fixed issue #20. Made option -tea work on windows, at least in
 a unix emulation environment like msys/mingw.
 .PP
+.SH "CHANGES FOR VERSION 3.1.6"
+.IP [1]
+Fixed issue #21. While the multi-definition of the stub-table
+pointer variables was ok with for all the C linkers seen so far
+C++ linkers did not like this at all. Reworked the code to
+ensure that this set of variables is generated only once, in
+the wrapper around all the pieces to assemble.
+.IP [2]
+Fixed issue #22, the handling of the command identifier
+arguments of \fBcritcl::ccommand\fR, \fBcritcl::cproc\fR, and
+\fBcritcl::cdata\fR. We now properly allow any Tcl identifier
+and generate proper internal C identifiers from them.
+.sp
+As part of this the signature of command \fBcritcl::name2c\fR
+changed. The command now delivers a list of four values instead
+of three. The new value was added at the end.
+.sp
+Further adapted the implementation of package
+\fBcritcl::class\fR, a user of \fBcritcl::name2c\fR.
+This package is now at version 1.0.6 and requires critcl 3.1.6
+.sp
+Lastly fixed the mis-handling of option \fB-cname\fR in
+\fBcritcl::ccommand\fR, and \fBcritcl::cproc\fR.
+.IP [3]
+Fixed issue #23.
+.PP
 .SH AUTHORS
 Jean Claude Wippler, Steve Landers, Andreas Kupries
 .SH "BUGS, IDEAS, FEEDBACK"
@@ -3368,6 +3398,6 @@ Glueing/Embedded C code
 .nf
 Copyright (c) Jean-Claude Wippler
 Copyright (c) Steve Landers
-Copyright (c) 2011-2012 Andreas Kupries
+Copyright (c) 2011-2013 Andreas Kupries
 
 .fi
