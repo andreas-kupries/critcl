@@ -7,13 +7,14 @@
 # class made easy, with code for object command and method dispatch
 # generated.
 
-package provide critcl::class 1.0.5
+package provide critcl::class 1.0.6
 
 # # ## ### ##### ######## ############# #####################
 ## Requirements.
 
 package require Tcl    8.4   ; # Min supported version.
-package require critcl 3.1   ; # Need 'meta?' to get the package name.
+package require critcl 3.1.6 ; # Need 'meta?' to get the package name.
+                               # Need 'name2c' returning 4 values.
 package require critcl::util ; # Use the package's Get/Put commands.
 
 namespace eval ::critcl::class {}

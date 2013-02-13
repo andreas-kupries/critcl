@@ -1,5 +1,5 @@
 [comment {-*- tcl -*- doctools manpage}]
-[manpage_begin critcl_use n 1]
+[manpage_begin critcl_use n 3.1.6]
 [include include/module.inc]
 [titledesc {Using CriTcl}]
 [description]

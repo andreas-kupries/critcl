@@ -1,7 +1,7 @@
 [comment {--- Standard header for all manpages in this module --}]
 [copyright {Jean-Claude Wippler}]
 [copyright {Steve Landers}]
-[copyright {2011-2012 Andreas Kupries}]
+[copyright {2011-2013 Andreas Kupries}]
 [moddesc {C Runtime In Tcl (CriTcl)}]
 [category  {Glueing/Embedded C code}]
 [keywords {C code} {Embedded C Code}]

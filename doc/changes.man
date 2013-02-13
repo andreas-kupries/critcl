@@ -1,5 +1,5 @@
 [comment {-*- tcl -*- doctools manpage}]
-[manpage_begin critcl_changes n 3.1]
+[manpage_begin critcl_changes n 3.1.6]
 [include include/module.inc]
 [titledesc {CriTcl Changes}]
 [description]
