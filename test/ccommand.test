@@ -69,13 +69,11 @@ return TCL_OK;
 # -------------------------------------------------------------------------
 
 test critcl-ccommand-2.2 {basic ccommand, custom C name} -body {
-    get critcl::ccommand command {} {
+    get critcl::ccommand snafu {} {
         return TCL_OK;
-    } -cname snafu
+    } -cname 1
 } -result {/* ---------------------------------------------------------------------- */
 
-#define ns__command0 "::command"
-#define tcl__command0 snafu
 static int snafu(ClientData clientdata, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[])
 {
 return TCL_OK;

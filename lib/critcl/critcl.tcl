@@ -186,7 +186,7 @@ proc ::critcl::ccommand {name anames args} {
 
     set clientdata NULL
     set delproc    0
-    set acname     {}
+    set acname     0
     while {[string match "-*" $args]} {
         switch -- [set opt [lindex $args 0]] {
 	    -clientdata { set clientdata [lindex $args 1] }
@@ -199,14 +199,12 @@ proc ::critcl::ccommand {name anames args} {
         set args [lrange $args 2 end]
     }
 
-    if {$acname ne {}} {
-	lassign [BeginCommand static $name $anames $args] ns cns _name cname
-	Emitln "#define ns_$cns$cname \"$ns$_name\""
-	Emitln "#define tcl_$cns$cname $acname"
+    if {$acname} {
+	BeginCommand static $name $anames $args
 	set ns  {}
 	set cns {}
 	set key $name
-	set wname $acname
+	set wname $name
     } else {
 	lassign [BeginCommand public $name $anames $args] ns cns name cname
 	set key [string map {:: _} $ns$name]
@@ -571,7 +569,7 @@ proc ::critcl::cproc {name adefs rtype {body "#"} args} {
     SkipIgnored [set file [This]]
     AbortWhenCalledAfterBuild
 
-    set acname {}
+    set acname 0
     set passcd 0
     set aoffset 0
     while {[string match "-*" $args]} {
@@ -598,14 +596,12 @@ proc ::critcl::cproc {name adefs rtype {body "#"} args} {
 	}
     }
 
-    if {$acname ne {}} {
-	lassign [BeginCommand static $name $adefs $rtype $body] ns cns _name cname
-	Emitln "#define ns_$cns$cname \"$ns$_name\""
-	Emitln "#define tcl_$cns$cname $acname"
+    if {$acname} {
+	BeginCommand static $name $adefs $rtype $body
 	set ns  {}
 	set cns {}
-	set wname $acname
-	set cname c_$acname
+	set wname $name
+	set cname c_$name
     } else {
 	lassign [BeginCommand public $name $adefs $rtype $body] ns cns name cname
 	set wname tcl_$cns$cname

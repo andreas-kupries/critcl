@@ -81,11 +81,13 @@ command is deleted again.
 If not specified the expression defaults to [const NULL], i.e. no
 deletion function.
 
-[opt_def -cname [arg c-identifier]]
+[opt_def -cname [arg boolean]]
 
-The value of this option is the C level name of the command
-function. If not specified the system will derive a name from the Tcl
-level command name, including its namespace.
+The value of this option is a boolean flag. If [const true] the name
+of the command is the C identifier of the command function.
+Namespaces, etc. are in that case not relevant at all. The default
+value of this option is [const false], causing the system to derive a
+name from the Tcl level command name, including its namespace.
 
 [list_end]
 
@@ -157,13 +159,15 @@ See section [sectref {Runtime Behaviour}] for more details.
 [para] The only options accepted by this command are:
 
 [list_begin options]
-[opt_def -cname [arg c-identifier]]
+[opt_def -cname [arg boolean]]
 
-The value of this option is the C level name of the function.
-If not specified the system will derive a name from the Tcl
-level command name, including its namespace.
+The value of this option is a boolean flag. If [const true] the name
+of the command is the C identifier of the command function.
+Namespaces, etc. are in that case not relevant at all. The default
+value of this option is [const false], causing the system to derive a
+name from the Tcl level command name, including its namespace.
 
-[opt_def -pass-cdata [arg flag]]
+[opt_def -pass-cdata [arg boolean]]
 
 The value of this option is a boolean flag. If specified and set the
 shim translating from Tcl to C level and back will pass the command's
