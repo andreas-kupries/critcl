@@ -716,14 +716,20 @@ proc ::critcl::app::ProcessInput {} {
 	# maximum information about problems from a single run, not
 	# fix things one by one.
 
+	set results [critcl::cresults $fn]
 	if {$failed} {
 	    lappend v::borken $f
-	    lappend v::log    [dict get [critcl::cresults $fn] log]
+	    lappend v::log    [dict get $results log]
 	    Log "(FAILED) "
+	} elseif {[dict exists $results warnings]} {
+	    # There might be warnings to print even if the build did
+	    # not fail.
+	    set warnings [dict get $results warnings]
+	    puts stderr "\n\nWarning  [join $warnings "\nWarning  "]"
 	}
 	if {$v::failed || ($v::mode ne "pkg")} continue
 
-	array set r [critcl::cresults $fn]
+	array set r $results
 
 	append v::edecls    "extern Tcl_AppInitProc $r(initname)_Init;\n"
 	append v::initnames "    if ($r(initname)_Init(ip) != TCL_OK) return TCL_ERROR;\n"
