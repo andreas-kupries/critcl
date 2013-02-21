@@ -725,7 +725,9 @@ proc ::critcl::app::ProcessInput {} {
 	    # There might be warnings to print even if the build did
 	    # not fail.
 	    set warnings [dict get $results warnings]
-	    puts stderr "\n\nWarning  [join $warnings "\nWarning  "]"
+	    if {[llength $warnings]} {
+		puts stderr "\n\nWarning  [join $warnings "\nWarning  "]"
+	    }
 	}
 	if {$v::failed || ($v::mode ne "pkg")} continue
 
