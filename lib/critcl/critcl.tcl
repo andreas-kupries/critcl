@@ -1779,6 +1779,14 @@ proc ::critcl::msg {args} {
 }
 
 # # ## ### ##### ######## ############# #####################
+## Default print behaviour
+
+proc ::critcl::print {args} {
+    # API same as for builtin ::puts. Use as is.
+    return [eval [linsert $args 0 ::puts]]
+}
+
+# # ## ### ##### ######## ############# #####################
 ## Runtime support to handle the possibility of a prebuilt package using
 ## the .tcl file with embedded C as its own companon defining regular
 ## Tcl code for the package as well. If the critcl package is loaded
@@ -2246,7 +2254,7 @@ proc ::critcl::crosscheck {} {
 	}
 	if {$host ne $target && [info exists v::xtargets($target)]} {
 	    setconfig $target
-	    puts stderr "Cross compiling using $target"
+	    print stderr "Cross compiling using $target"
 	}
 	# XXX host != target, but not know as config ?
 	# XXX Currently ignored.
@@ -2376,7 +2384,7 @@ proc ::critcl::cbuild {file {load 1}} {
 
     if {$v::failed} {
 	if {!$buildforpackage} {
-	    puts stderr "$msgs\ncritcl build failed ($file)"
+	    print stderr "$msgs\ncritcl build failed ($file)"
 	} else {
 	    dict set v::code($file) result log $msgs
 	}
@@ -2661,18 +2669,18 @@ proc ::critcl::scan {file} {
     }
 
     set version [dict get $scan::capture version]
-    puts "\tVersion:      $version"
+    print "\tVersion:      $version"
 
     # TODO : Report requirements.
     # TODO : tsources - Scan files for dependencies!
 
     set n [llength [dict get $scan::capture files]]
-    puts -nonewline "\tInput:        $file"
+    print -nonewline "\tInput:        $file"
     if {$n} {
-	puts -nonewline " + $n Companion"
-	if {$n > 1} { puts -nonewline s }
+	print -nonewline " + $n Companion"
+	if {$n > 1} { print -nonewline s }
     }
-    puts ""
+    print ""
 
     # Merge the system and user meta data, with system overriding the
     # user. See 'GetMeta' for same operation when actually builing the
@@ -2698,7 +2706,7 @@ proc ::critcl::scan {file} {
 
     if {[dict exists $scan::capture meta require]} {
 	foreach r [dict get $scan::capture meta require] {
-	    puts "\tRequired:     $r"
+	    print "\tRequired:     $r"
 	}
     }
 
@@ -2967,7 +2975,7 @@ proc ::critcl::scan::critcl::license {who args} {
     variable ::critcl::scan::capture
     dict set capture org $who
 
-    puts "\tOrganization: $who"
+    print "\tOrganization: $who"
 
     # Meta data.
     set elicense [::critcl::LicenseText $args]
@@ -3033,7 +3041,7 @@ proc ::critcl::scan::critcl::api {cmd args} {
 	    # Syntax: critcl::api import <name> <version>
 	    lassign $args name _
 	    dict lappend capture imported $name
-	    puts "\tImported:     $name"
+	    print "\tImported:     $name"
 	}
 	default {}
     }
@@ -3052,7 +3060,7 @@ proc ::critcl::scan::critcl::userconfig {cmd args} {
 		set odefault [::critcl::UcDefault $otype]
 	    }
 	    dict lappend capture config [list $oname $odesc $otype $odefault]
-	    puts "\tUser Config:  $oname ([join $otype { }] -> $odefault) $odesc"
+	    print "\tUser Config:  $oname ([join $otype { }] -> $odefault) $odesc"
 	}
 	set - query -
 	default {}
