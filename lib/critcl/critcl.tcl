@@ -2378,6 +2378,8 @@ proc ::critcl::cbuild {file {load 1}} {
 	}
 
 	set msgs [LogClose]
+
+	dict set v::code($file) result warnings [CheckForWarnings $msgs]
     }
 
     if {$v::failed} {
@@ -4412,6 +4414,19 @@ proc ::critcl::StatusSave {file} {
     return $result
 }
 
+proc ::critcl::CheckForWarnings {text} {
+    set warnings [dict create]
+    foreach line [split $text \n] {
+	# Ignore everything not a warning.
+        if {![string match -nocase *warning* $line]} continue
+	# Ignore duplicates (which is why we store the lines as dict
+	# keys for now).
+	if {[dict exists $warnings $line]} continue
+	dict set warnings $line .
+    }
+    return [dict keys $warnings]
+}
+
 proc ::critcl::Exec {cmdline} {
     variable run
 
@@ -4427,9 +4442,9 @@ proc ::critcl::ExecWithLogging {cmdline okmsg errmsg} {
 
     LogCmdline $cmdline
 
-    # Extend the command, redirect all of its output into the current
-    # log.
-    lappend cmdline 2>@ $v::log
+    # Extend the command, redirect all of its output (stdout and
+    # stderr) into the current log.
+    lappend cmdline >&@ $v::log
 
     interp transfer {} $v::log $run
 
