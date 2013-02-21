@@ -139,7 +139,7 @@ proc ::critcl::app::main {argv} {
     StopOnFailed
 
     if {$v::keep} {
-	puts stderr "Files left in [critcl::cache]"
+	::critcl::print stderr "Files left in [critcl::cache]"
     }
     return
 }
@@ -153,10 +153,10 @@ proc ::critcl::app::PackageCache {} {
 
 proc ::critcl::app::StopOnFailed {} {
     if {!$v::failed} return
-    puts stderr "Files left in [critcl::cache]"
-    puts stderr "FAILURES $v::failed"
-    puts stderr "FAILED:  [join $v::borken "\nFAILED:  "]"
-    puts stderr "FAILED   [join [split [join $v::log \n\n] \n] "\nFAILED   "]"
+    ::critcl::print stderr "Files left in [critcl::cache]"
+    ::critcl::print stderr "FAILURES $v::failed"
+    ::critcl::print stderr "FAILED:  [join $v::borken "\nFAILED:  "]"
+    ::critcl::print stderr "FAILED   [join [split [join $v::log \n\n] \n] "\nFAILED   "]"
     exit 1 ; #return -code return
 }
 
@@ -217,7 +217,7 @@ proc ::critcl::app::Cmdline {argv} {
 	}
 	switch -exact -- $opt {
 	    v - -version {
-		puts stdout [package present critcl]
+		::critcl::print [package present critcl]
 		::exit 0
 	    }
 	    I          { AddIncludePath $arg }
@@ -231,7 +231,7 @@ proc ::critcl::app::Cmdline {argv} {
 	    }
 	    force      {
 		critcl::config force 1
-		puts stderr "Compilation forced"
+		::critcl::print stderr "Compilation forced"
 	    }
 	    keep       {
 		critcl::config keepsrc 1
@@ -331,11 +331,11 @@ proc ::critcl::app::Cmdline {argv} {
     }
 
     if {$showtarget} {
-	puts stdout [critcl::targetplatform]
+	::critcl::print [critcl::targetplatform]
     }
 
     if {$targets} {
-	puts [critcl::knowntargets]
+	::critcl::print [critcl::knowntargets]
     }
 
     if {$show || $showall || $targets || $showtarget} {
@@ -451,14 +451,14 @@ proc ::critcl::app::AddLibraryPath {path} {
 
 proc ::critcl::app::Log {text} {
     if {!$v::verbose} return
-    puts -nonewline $text
+    ::critcl::print -nonewline $text
     flush stdout
     return
 }
 
 proc ::critcl::app::LogLn {text} {
     if {!$v::verbose} return
-    puts $text
+    ::critcl::print $text
     flush stdout
     return
 }
@@ -466,10 +466,10 @@ proc ::critcl::app::LogLn {text} {
 proc ::critcl::app::Usage {args} {
     global argv0
     if {[llength $args]} {
-	puts stderr "$argv0 error: [join $args]"
+	::critcl::print stderr "$argv0 error: [join $args]"
     }
 
-    puts stderr [string map [list @ $argv0] {To compile and run a tcl script
+    ::critcl::print stderr [string map [list @ $argv0] {To compile and run a tcl script
 	@ [-force] [-keep] [-cache dir] file[.tcl]
 
 To compile and build a package
@@ -504,11 +504,11 @@ You can display the built-in help wiki on most platforms using:
 proc ::critcl::app::Help {} {
     if {[catch {package require Mk4tcl} msg] ||
 	[catch {package require Wikit} msg]} {
-	puts $msg
+	::critcl::print $msg
         set txt "Couldn't load the Critcl help Wiki\n"
         append txt "To display the Critcl help wiki run \"critcl\" "
         append txt "without any options.\n"
-        puts $txt
+        ::critcl::print $txt
         exit
     } else {
         Wikit::init [file join $::starkit::topdir doc critcl.tkd]
@@ -604,8 +604,8 @@ proc ::critcl::app::ProcessInput {} {
 		set found [file exists $fn]
 	    }
 	    if {!$found} {
-		if {!$first} { puts stderr "" }
-		puts stderr "$f doesn't exist"
+		if {!$first} { ::critcl::print stderr "" }
+		::critcl::print stderr "$f doesn't exist"
 		incr missing
 		continue
 	    }
@@ -687,7 +687,7 @@ proc ::critcl::app::ProcessInput {} {
 	uplevel #0 [list source $fn]
 
 	if {[critcl::cnothingtodo $fn]} {
-	    puts stderr "nothing to build for $f"
+	    ::critcl::print stderr "nothing to build for $f"
 	    continue
 	}
 
@@ -785,7 +785,7 @@ proc ::critcl::app::License {file text} {
 }
 
 proc ::critcl::app::BuildBracket {} {
-    puts "\nLibrary:  [file tail $v::shlname]"
+    ::critcl::print "\nLibrary:  [file tail $v::shlname]"
 
     # The overarching initialization code, the bracket, has no real
     # file behind it. Fake it based on the destination shlib, this
@@ -861,7 +861,7 @@ proc ::critcl::app::ExportHeaders {} {
 	set stem [file tail $dir]
 	set dst  [file join $incdir $stem]
 
-	puts "Headers:  $v::incdir/$stem"
+	::critcl::print "Headers:  $v::incdir/$stem"
 
 	file mkdir $dst
 	foreach f [glob -nocomplain -directory $dir *] {
@@ -892,7 +892,7 @@ proc ::critcl::app::AssemblePackage {} {
     } else {
 	set dir $pkgdir
     }
-    puts "Package:  $dir"
+    ::critcl::print "Package:  $dir"
 
     file mkdir             $pkgdir
     file mkdir             $shlibdir
@@ -956,7 +956,7 @@ proc ::critcl::app::Mapping {} {
     }
 
     if {[llength $plats]} {
-	puts "Platform: [join $plats {, }] $minver and later"
+	::critcl::print "Platform: [join $plats {, }] $minver and later"
     }
 
     set map {}
@@ -990,7 +990,7 @@ proc ::critcl::app::Preload {shlibdir} {
 	[file join [critcl::cache] preload[critcl::sharedlibext]] \
 	$shlibdir
 
-    puts "Preload:  [join $preload {, }]"
+    ::critcl::print "Preload:  [join $preload {, }]"
     return $preload
 }
 
