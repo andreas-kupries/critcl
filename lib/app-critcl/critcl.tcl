@@ -726,7 +726,7 @@ proc ::critcl::app::ProcessInput {} {
 	    # not fail.
 	    set warnings [dict get $results warnings]
 	    if {[llength $warnings]} {
-		puts stderr "\n\nWarning  [join $warnings "\nWarning  "]"
+		::critcl::print stderr "\n\nWarning  [join $warnings "\nWarning  "]"
 	    }
 	}
 	if {$v::failed || ($v::mode ne "pkg")} continue
