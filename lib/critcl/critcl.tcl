@@ -1923,6 +1923,10 @@ proc ::critcl::readconfig {config} {
 	    #                                 the result. If not
 	    #                                 specified it defaults to
 	    #                                 PLATFORM.
+            # (4c) PLATFORM copy PARENT...  - Copies the currently defined
+            #                                 configuration variables and
+            #                                 values to the settings for 
+            #                                 this platform.
 	    # (5.) VAR VALUE............... - Default configuration
 	    #                                 variable, and value.
 
@@ -1985,15 +1989,28 @@ proc ::critcl::readconfig {config} {
 		lappend knowntargets $plat
 	    }
 
-	    if {$type eq "target"} {
-		# (4b) cross compile target.
-		# cmd = actual target platform identifier.
-		if {$cmd eq ""} {
-		    set cmd $plat
-		}
-		set v::xtargets($plat) $cmd
-	    } else {
-		set v::toolchain($plat,$type) $cmd
+            switch -exact -- $type {
+                target {
+                    # (4b) cross compile target.
+                    # cmd = actual target platform identifier.
+                    if {$cmd eq ""} {
+                        set cmd $plat
+                    }
+                    set v::xtargets($plat) $cmd
+                }
+                copy {
+                    # (4c) copy an existing config
+                    # XXX - should we error out if no definitions exist
+                    # for parent platform config
+                    # $cmd contains the parent platform
+                    foreach {key val} [array get v::toolchain "$cmd,*"] {
+                        set key [lindex [split $key ,] 1]
+                        set v::toolchain($plat,$key) $val
+                    }
+                }
+                default {
+                    set v::toolchain($plat,$type) $cmd
+                }
 	    }
 	}
     }
