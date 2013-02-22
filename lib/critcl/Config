@@ -48,10 +48,9 @@
 # section for an example - "set universal ..."). These commands and the
 # "when" commands are run in a separate interpreter.
 #
-# The following will be needed/used once MS VC++ is working again
-#   link_debug      not yet used
-#   link_release    not yet used
-#   ldoutput        not yet used
+# You can also base a build configuration on an existing one by using
+# the "copy" option and then specifically setting the config bits that
+# you want to change. See win32-x86_64-cl for an example.
 
 compile         gcc -c -fPIC
 version         gcc -v
@@ -332,22 +331,11 @@ win32-ix86-cl  platform        win32-ix86
 #
 
 win32-x86_64-cl  when            $msvc
-win32-x86_64-cl  compile         cl -nologo -c
-win32-x86_64-cl  link            link -nologo
-win32-x86_64-cl  embed_manifest  mt -manifest [list $outfile].manifest -outputresource:[list $outfile]\;2
-win32-x86_64-cl  preproc_define  cl -nologo -E
-win32-x86_64-cl  preproc_enum    cl -nologo -E
-win32-x86_64-cl  object          .obj
-win32-x86_64-cl  libinclude      /LIBPATH:
-win32-x86_64-cl  debug_symbols   -W3 -Od -Zi -GZ -MDd -D_DEBUG
+win32-x86_64-cl  copy            win32-ix86-cl
+# XXX - Override inherited "optimize" with a view to remove -Op in the future
 win32-x86_64-cl  optimize        -W3 -O2 -Op -Gs -MD
-win32-x86_64-cl  output          [list -Fo$outfile]
-win32-x86_64-cl  ldoutput        -dll [list -out:$outfile]
 win32-x86_64-cl  link_debug      $msvclinkdebug -debugtype:cv -verbose:lib $msvcbufferoverflowlib
 win32-x86_64-cl  link_release    -release -opt:ref -opt:icf,3 -ws:aggressive -verbose:lib $msvcbufferoverflowlib
-win32-x86_64-cl  link_preload
-win32-x86_64-cl  strip
-win32-x86_64-cl  version         cl
 win32-x86_64-cl  platform        win32-x86_64
 
 # Cross-compile for Windows using Xmingwin

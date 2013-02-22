@@ -232,6 +232,18 @@ whether it is old-style (ix86 + ppc) versus new-style (ix86 32+64) of
 universality.
 
 [comment {============================================================}]
+[enum] A line of the special form
+"[arg platform] [const copy] [arg sourceplatform]" 
+copies the configuration variables and values currently defined in the
+[term {configuration block}] for [arg sourceplatform] to that
+for [arg platform].
+
+These values can be overridden later in the configuration file. Multiple
+[const copy] lines may exist for a platform and be intermixed with normal
+configuration definitions. In case a variable is defined multiple times,
+the last definition takes precedence.
+
+[comment {============================================================}]
 [enum] At last, a line of the form "[var variable] [arg value]"
 defines a default configuration variable and value.
 
