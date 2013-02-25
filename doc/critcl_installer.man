@@ -1,5 +1,5 @@
 [comment {-*- tcl -*- doctools manpage}]
-[manpage_begin critcl_install_guide n 3.1.6]
+[manpage_begin critcl_install_guide n 3.1.7]
 [include include/module.inc]
 [titledesc {Critcl - The Installer's Guide}]
 [description]
