@@ -235,13 +235,15 @@ universality.
 [enum] A line of the special form
 "[arg platform] [const copy] [arg sourceplatform]" 
 copies the configuration variables and values currently defined in the
-[term {configuration block}] for [arg sourceplatform] to that
-for [arg platform].
+[term {configuration block}] for [arg sourceplatform] to that of
+[arg platform], overwriting existing values, and creating missing
+ones. Variables of [arg platform] not defined by by [arg sourceplatform]
+are not touched.
 
-These values can be overridden later in the configuration file. Multiple
-[const copy] lines may exist for a platform and be intermixed with normal
-configuration definitions. In case a variable is defined multiple times,
-the last definition takes precedence.
+[para] The copied values can be overridden later in the configuration
+file. Multiple [const copy] lines may exist for a platform and be
+intermixed with normal configuration definitions. If a variable is
+defined multiple times, the last definition will be used.
 
 [comment {============================================================}]
 [enum] At last, a line of the form "[var variable] [arg value]"
