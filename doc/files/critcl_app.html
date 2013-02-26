@@ -103,7 +103,7 @@
   <a href="../toc.html">Table Of Contents</a>
 | <a href="../index.html">Keyword Index</a>
 ] <hr>
-<h1 class="title">critcl_app(n) 3.1.6 doc &quot;C Runtime In Tcl (CriTcl)&quot;</h1>
+<h1 class="title">critcl_app(n) 3.1.7 doc &quot;C Runtime In Tcl (CriTcl)&quot;</h1>
 <div id="name" class="section"><h2><a name="name">Name</a></h2>
 <p>critcl_app - CriTcl Application</p>
 </div>
@@ -130,8 +130,9 @@
 <li class="section"><a href="#section17">Changes for version 3.1.4</a></li>
 <li class="section"><a href="#section18">Changes for version 3.1.5</a></li>
 <li class="section"><a href="#section19">Changes for version 3.1.6</a></li>
-<li class="section"><a href="#section20">Authors</a></li>
-<li class="section"><a href="#section21">Bugs, Ideas, Feedback</a></li>
+<li class="section"><a href="#section20">Changes for version 3.1.7</a></li>
+<li class="section"><a href="#section21">Authors</a></li>
+<li class="section"><a href="#section22">Bugs, Ideas, Feedback</a></li>
 <li class="section"><a href="#keywords">Keywords</a></li>
 <li class="section"><a href="#category">Category</a></li>
 <li class="section"><a href="#copyright">Copyright</a></li>
@@ -164,7 +165,7 @@ The application supports the following general command line:</p>
 <dd><p>The exact set of options supported, their meaning, and interaction is
 detailed in section <span class="sectref"><a href="#section2">Application Options</a></span> below.
 For a larger set of examples please see section &quot;Building Critcl Packages&quot;
-in the document about <i class="term"><a href="critcl_usingit.html">Using CriTcl</a></i>.</p></dd>
+in the document about <i class="term">Using CriTcl</i>.</p></dd>
 </dl>
 </div>
 <div id="section2" class="section"><h2><a name="section2">Application Options</a></h2>
@@ -887,10 +888,23 @@ instance creation for clarity. Bumped to version 1.0.2.</p></li>
 <li><p>Fixed issue #23.</p></li>
 </ol>
 </div>
-<div id="section20" class="section"><h2><a name="section20">Authors</a></h2>
+<div id="section20" class="section"><h2><a name="section20">Changes for version 3.1.7</a></h2>
+<ol class="enumerated">
+<li><p>Fixed issue #24. Extract and unconditionally display compiler
+	warnings found in the build log. Prevents users from missing
+	warnings which, while not causing the build to fail, may
+	still indicate problems.</p></li>
+<li><p>New feature. Output hook. All non-messaging user output is now
+	routed through the command <b class="cmd">critcl::print</b>, and users are
+	allowed to override it when using the critcl application-as-package.</p></li>
+<li><p>New feature, by Ashok P. Nadkarni. Platform configurations can
+	inherit values from configurations defined before them.</p></li>
+</ol>
+</div>
+<div id="section21" class="section"><h2><a name="section21">Authors</a></h2>
 <p>Jean Claude Wippler, Steve Landers, Andreas Kupries</p>
 </div>
-<div id="section21" class="section"><h2><a name="section21">Bugs, Ideas, Feedback</a></h2>
+<div id="section22" class="section"><h2><a name="section22">Bugs, Ideas, Feedback</a></h2>
 <p>This document, and the package it describes, will undoubtedly contain
 bugs and other problems.
 Please report them at <a href="https://github.com/andreas-kupries/critcl/issues">https://github.com/andreas-kupries/critcl/issues</a>.
