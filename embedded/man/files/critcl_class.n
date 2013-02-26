@@ -641,7 +641,7 @@ Pointer to the class structure.
 Pointer to the Tcl interpreter (Tcl_Interp*) the
 class structure is associated with
 .TP
-...
+\...
 All \fIarguments\fR under their specified names and C types
 as per their definition.
 .RE
@@ -756,7 +756,7 @@ Pointer to the instance structure.
 Pointer to the Tcl interpreter (Tcl_Interp*) the
 instance structure is associated with
 .TP
-...
+\...
 All \fIarguments\fR under their specified names and C types
 as per their definition.
 .RE

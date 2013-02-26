@@ -343,7 +343,7 @@ to signal a construction failure. It is the responsibility of the
 constructor to release any fields already initialized before jumping
 to this label.
 .TP
-...
+\...
 The names of the constructor arguments specified with
 \fIarguments\fR.
 .RE

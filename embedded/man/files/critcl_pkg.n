@@ -240,14 +240,14 @@ Database Class:	\\fB\\$3\\fR
 .de UL
 \\$1\l'|0\(ul'\\$2
 ..
-.TH "critcl" n 3.1.6 doc "C Runtime In Tcl (CriTcl)"
+.TH "critcl" n 3.1.7 doc "C Runtime In Tcl (CriTcl)"
 .BS
 .SH NAME
-critcl \- CriTcl Package Reference
+critcl \- Critcl - Package Reference
 .SH SYNOPSIS
 package require \fBTcl  8.4\fR
 .sp
-package require \fBcritcl  ?3.1.6?\fR
+package require \fBcritcl  ?3.1.7?\fR
 .sp
 package require \fBplatform  ?1.0.2?\fR
 .sp
@@ -322,6 +322,8 @@ package require \fBmd5  ?2?\fR
 \fB::critcl::checklink\fR ?\fIlabel\fR? \fItext\fR
 .sp
 \fB::critcl::msg\fR ?\fB-nonewline\fR? \fImsg\fR
+.sp
+\fB::critcl::print\fR ?\fB-nonewline\fR? ?\fIchan\fR? \fImsg\fR
 .sp
 \fB::critcl::compiled\fR
 .sp
@@ -1435,14 +1437,27 @@ If specified, the \fIlabel\fR is used to uniquely mark the check in the
 generated log.
 .TP
 \fB::critcl::msg\fR ?\fB-nonewline\fR? \fImsg\fR
-This command can be used by to report results from \fBcritcl::check\fR
-and \fBcritcl::checklink\fR. The default implementation used by mode
-\fIcompile & run\fR ignores any calls.
+This command can be used by critc-based code to report results from
+\fBcritcl::check\fR and \fBcritcl::checklink\fR. The default
+implementation used by mode \fIcompile & run\fR ignores any calls.
 .sp
 Tools like the \fICriTcl Application\fR are allowed to
 redefine this procedure to perform their own way of message
 reporting. The package \fBcritcl::app\fR and the application on
 top print such messages to \fIstdout\fR, for example.
+.TP
+\fB::critcl::print\fR ?\fB-nonewline\fR? ?\fIchan\fR? \fImsg\fR
+This command is used by the critcl internals to report its activity.
+Its signature is equivalent to the Tcl builtin command \fB::puts\fR.
+The default implementation is effectively \fB::puts\fR.
+.sp
+Tools directly using either the critcl package, or the critcl
+application package are allowed to redefine this procedure to perform
+their own way of printing.
+.sp
+An example of this is
+\fIKettle\fR [https://chiselapp.com/user/andreas_kupries/repository/Kettle/index]
+where the newest revisions use this to highlight build warnings.
 .TP
 \fB::critcl::compiled\fR
 This command returns a boolean value. It returns \fBtrue\fR if the C
@@ -2599,6 +2614,19 @@ etc. I.e. it chooses whether the output is universal or not, and
 whether it is old-style (ix86 + ppc) versus new-style (ix86 32+64) of
 universality.
 .IP [7]
+A line of the special form
+"\fIplatform\fR \fBcopy\fR \fIsourceplatform\fR"
+copies the configuration variables and values currently defined in the
+\fIconfiguration block\fR for \fIsourceplatform\fR to that of
+\fIplatform\fR, overwriting existing values, and creating missing
+ones. Variables of \fIplatform\fR not defined by by \fIsourceplatform\fR
+are not touched.
+.sp
+The copied values can be overridden later in the configuration
+file. Multiple \fBcopy\fR lines may exist for a platform and be
+intermixed with normal configuration definitions. If a variable is
+defined multiple times, the last definition will be used.
+.IP [8]
 At last, a line of the form "\fBvariable\fR \fIvalue\fR"
 defines a default configuration variable and value.
 .PP
@@ -3380,6 +3408,20 @@ Lastly fixed the mis-handling of option \fB-cname\fR in
 \fBcritcl::ccommand\fR, and \fBcritcl::cproc\fR.
 .IP [3]
 Fixed issue #23.
+.PP
+.SH "CHANGES FOR VERSION 3.1.7"
+.IP [1]
+Fixed issue #24. Extract and unconditionally display compiler
+warnings found in the build log. Prevents users from missing
+warnings which, while not causing the build to fail, may
+still indicate problems.
+.IP [2]
+New feature. Output hook. All non-messaging user output is now
+routed through the command \fBcritcl::print\fR, and users are
+allowed to override it when using the critcl application-as-package.
+.IP [3]
+New feature, by Ashok P. Nadkarni. Platform configurations can
+inherit values from configurations defined before them.
 .PP
 .SH AUTHORS
 Jean Claude Wippler, Steve Landers, Andreas Kupries

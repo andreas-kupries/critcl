@@ -240,10 +240,10 @@ Database Class:	\\fB\\$3\\fR
 .de UL
 \\$1\l'|0\(ul'\\$2
 ..
-.TH "critcl_use" n 3.1.6 doc "C Runtime In Tcl (CriTcl)"
+.TH "critcl_use" n 3.1.7 doc "C Runtime In Tcl (CriTcl)"
 .BS
 .SH NAME
-critcl_use \- Using CriTcl
+critcl_use \- Using Critcl
 .SH DESCRIPTION
 .PP
 Welcome to the \fIC Runtime In Tcl\fR, \fICriTcl\fR for short, a
@@ -976,10 +976,10 @@ compiler available or not, and in the latter case we implement our
 command in Tcl.
 .sp
 Now what happens when we invoke mode "generate package" ?
-... compiler failure ...
-... ok   - C code - everything fine
-... fail - no package ? or just no C code ? declare self as tsource, to be used ?
-... platform-specific C/Tcl -- uuid.
+\... compiler failure ...
+\... ok   - C code - everything fine
+\... fail - no package ? or just no C code ? declare self as tsource, to be used ?
+\... platform-specific C/Tcl -- uuid.
 .PP
 .SS "UNLAZY PACKAGES"
 By default critcl is a bit inconsistent between modes "compile & run"
@@ -1122,7 +1122,7 @@ supplies the proper headers and stubs.
 
 .CE
 .SS "MAKING A WIDGET"
-... requires compiling against the Tk headers, and linking with Tk's
+\... requires compiling against the Tk headers, and linking with Tk's
 stubs. For our convenience we have a simple, single command to
 activate all the necessary machinery, with critcl supplying the header
 files and stubs C code, instead of having to make it work on our own
@@ -1142,7 +1142,7 @@ This command is \fBcritcl::tk\fR.
 Please note that this doesn't release you from the necessity of
 learning Tk's C API and how to use it to make a widget work. Sorry.
 .SS "CHECKING THE ENVIRONMENT"
-... may be necessary when creating a binding to some third-party
+\... may be necessary when creating a binding to some third-party
 library. The headers for this library may be found in non-standard
 locations, ditto for the library/ies itself. We may not have the
 headers and/or library on the build host. Types with
@@ -1233,7 +1233,7 @@ packages.
 This is the section for developers having to generate packages from
 "\fI.critcl\fR" files, i.e binaries for deployment,
 .SS "GETTING HELP ..."
-... Is easy. Running
+\... Is easy. Running
 .CS
 
 

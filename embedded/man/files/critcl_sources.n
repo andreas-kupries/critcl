@@ -240,7 +240,7 @@ Database Class:	\\fB\\$3\\fR
 .de UL
 \\$1\l'|0\(ul'\\$2
 ..
-.TH "critcl_sources" n 3.1.6 doc "C Runtime In Tcl (CriTcl)"
+.TH "critcl_sources" n 3.1.7 doc "C Runtime In Tcl (CriTcl)"
 .BS
 .SH NAME
 critcl_sources \- Critcl - How To Get The Sources

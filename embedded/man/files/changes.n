@@ -240,7 +240,7 @@ Database Class:	\\fB\\$3\\fR
 .de UL
 \\$1\l'|0\(ul'\\$2
 ..
-.TH "critcl_changes" n 3.1.6 doc "C Runtime In Tcl (CriTcl)"
+.TH "critcl_changes" n 3.1.7 doc "C Runtime In Tcl (CriTcl)"
 .BS
 .SH NAME
 critcl_changes \- CriTcl Changes
@@ -759,6 +759,20 @@ Lastly fixed the mis-handling of option \fB-cname\fR in
 \fBcritcl::ccommand\fR, and \fBcritcl::cproc\fR.
 .IP [3]
 Fixed issue #23.
+.PP
+.SH "CHANGES FOR VERSION 3.1.7"
+.IP [1]
+Fixed issue #24. Extract and unconditionally display compiler
+warnings found in the build log. Prevents users from missing
+warnings which, while not causing the build to fail, may
+still indicate problems.
+.IP [2]
+New feature. Output hook. All non-messaging user output is now
+routed through the command \fBcritcl::print\fR, and users are
+allowed to override it when using the critcl application-as-package.
+.IP [3]
+New feature, by Ashok P. Nadkarni. Platform configurations can
+inherit values from configurations defined before them.
 .PP
 .SH AUTHORS
 Jean Claude Wippler, Steve Landers, Andreas Kupries
