@@ -1,5 +1,5 @@
 '\"
-'\" Generated from file '/home/aku/Projects/Critcl/dev-master/embedded/man/files/critcl_sources.n' by tcllib/doctools with format 'nroff'
+'\" Generated from file '/home/aku/Projects/Critcl/dev-master/embedded/man/files/critcl_sources\&.n' by tcllib/doctools with format 'nroff'
 '\" Copyright (c) Jean-Claude Wippler
 '\" Copyright (c) Steve Landers
 '\" Copyright (c) 2011-2013 Andreas Kupries
@@ -240,7 +240,7 @@ Database Class:	\\fB\\$3\\fR
 .de UL
 \\$1\l'|0\(ul'\\$2
 ..
-.TH "critcl_sources" n 3.1.7 doc "C Runtime In Tcl (CriTcl)"
+.TH "critcl_sources" n 3\&.1\&.8 doc "C Runtime In Tcl (CriTcl)"
 .BS
 .SH NAME
 critcl_sources \- Critcl - How To Get The Sources
@@ -248,62 +248,62 @@ critcl_sources \- Critcl - How To Get The Sources
 Welcome to the \fIC Runtime In Tcl\fR, \fICriTcl\fR for short, a
 system to build C extension packages for Tcl on the fly, from C code
 embedded within Tcl scripts, for all who wish to make their code go
-faster.
+faster\&.
 .PP
 The audience of this document is anyone wishing to either have
 just a look at Critcl's source code, or build the packages, or to
-extend and modify them.
+extend and modify them\&.
 .PP
 For builders and developers we additionally provide
 .IP [1]
-\fICritcl - License\fR.
+\fICritcl - License\fR\&.
 .IP [2]
-\fICritcl - The Installer's Guide\fR.
+\fICritcl - The Installer's Guide\fR\&.
 .IP [3]
-\fICritcl - The Developer's Guide\fR.
+\fICritcl - The Developer's Guide\fR\&.
 .PP
-respectively.
+respectively\&.
 .SH "SOURCE LOCATION"
 The official repository for Critcl can be found at
-\fIhttp://andreas-kupries.github.com/critcl\fR
+\fIhttp://andreas-kupries\&.github\&.com/critcl\fR
 .SH RETRIEVAL
 Assuming that you simply wish to look at the sources, or build a
 specific revision, the easiest way of retrieving it is to:
 .IP [1]
-Go to this site.
+Go to this site\&.
 .IP [2]
-Follow the 'Fork me on Github' link (top-right corner) to the project sources.
+Follow the 'Fork me on Github' link (top-right corner) to the project sources\&.
 .IP [3]
 Choose the revision under the Commits panel you wish to have and
 .IP [4]
-follow its 'Browse code' link to its detailed information page.
+follow its 'Browse code' link to its detailed information page\&.
 .IP [5]
-On that page, choose either the "ZIP" link to get a copy of this revision as a Zip archive.
+On that page, choose either the "ZIP" link to get a copy of this revision as a Zip archive\&.
 .PP
 .SH "SOURCE CODE MANAGEMENT"
 For the curious (or a developer-to-be), the sources are managed by the
-\fIGit SCM\fR [http://www.git-scm.com].
+\fIGit SCM\fR [http://www\&.git-scm\&.com]\&.
 Binaries for popular platforms can be found directly at its
-\fIdownload page\fR [http://www.fossil-scm.org/downloads].
+\fIdownload page\fR [http://www\&.fossil-scm\&.org/downloads]\&.
 .PP
 With that tool available the full history can be retrieved via:
 .CS
 
 
-    git clone http://github.com/andreas-kupries/critcl
+    git clone http://github\&.com/andreas-kupries/critcl
     cd critcl
 
 .CE
-to get a checkout of the head of the trunk and move into it for browsing, editing, etc.
+to get a checkout of the head of the trunk and move into it for browsing, editing, etc\&.
 .SH AUTHORS
 Jean Claude Wippler, Steve Landers, Andreas Kupries
 .SH "BUGS, IDEAS, FEEDBACK"
 This document, and the package it describes, will undoubtedly contain
-bugs and other problems.
-Please report them at \fIhttps://github.com/andreas-kupries/critcl/issues\fR.
+bugs and other problems\&.
+Please report them at \fIhttps://github\&.com/andreas-kupries/critcl/issues\fR\&.
 Ideas for enhancements you may have for either package, application,
 and/or the documentation are also very welcome and should be reported
-at \fIhttps://github.com/andreas-kupries/critcl/issues\fR as well.
+at \fIhttps://github\&.com/andreas-kupries/critcl/issues\fR as well\&.
 .SH KEYWORDS
 C code, Embedded C Code, code generator, compile & run, compiler, dynamic code generation, dynamic compilation, generate package, linker, on demand compilation, on-the-fly compilation
 .SH CATEGORY

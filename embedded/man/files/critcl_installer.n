@@ -1,5 +1,5 @@
 '\"
-'\" Generated from file '/home/aku/Projects/Critcl/dev-master/embedded/man/files/critcl_installer.n' by tcllib/doctools with format 'nroff'
+'\" Generated from file '/home/aku/Projects/Critcl/dev-master/embedded/man/files/critcl_installer\&.n' by tcllib/doctools with format 'nroff'
 '\" Copyright (c) Jean-Claude Wippler
 '\" Copyright (c) Steve Landers
 '\" Copyright (c) 2011-2013 Andreas Kupries
@@ -240,7 +240,7 @@ Database Class:	\\fB\\$3\\fR
 .de UL
 \\$1\l'|0\(ul'\\$2
 ..
-.TH "critcl_install_guide" n 3.1.7 doc "C Runtime In Tcl (CriTcl)"
+.TH "critcl_install_guide" n 3\&.1\&.8 doc "C Runtime In Tcl (CriTcl)"
 .BS
 .SH NAME
 critcl_install_guide \- Critcl - The Installer's Guide
@@ -248,59 +248,59 @@ critcl_install_guide \- Critcl - The Installer's Guide
 Welcome to the \fIC Runtime In Tcl\fR, \fICriTcl\fR for short, a
 system to build C extension packages for Tcl on the fly, from C code
 embedded within Tcl scripts, for all who wish to make their code go
-faster.
+faster\&.
 .PP
 The audience of this document is anyone wishing to build the
-packages, for either themselves, or others.
+packages, for either themselves, or others\&.
 .PP
 For a developer intending to extend or modify the packages we
 additionally provide
 .IP [1]
-\fICritcl - License\fR.
+\fICritcl - License\fR\&.
 .IP [2]
-\fICritcl - The Developer's Guide\fR.
+\fICritcl - The Developer's Guide\fR\&.
 .PP
 .PP
 Please read \fICritcl - How To Get The Sources\fR first, if that was
-not done already. Here we assume that the sources are already
-available in a directory of your choice.
+not done already\&. Here we assume that the sources are already
+available in a directory of your choice\&.
 .PP
 .SH REQUISITES
-Before Critcl can be build and used a number of requisites must be installed. These are:
+Before Critcl can be build and used a number of requisites must be installed\&. These are:
 .IP [1]
-The scripting language Tcl.
-For details see \fBTcl\fR.
+The scripting language Tcl\&.
+For details see \fBTcl\fR\&.
 .IP [2]
-Various packages from the Tcllib bundle for \fBTcl\fR.
-For details see \fBTcllib\fR.
+Various packages from the Tcllib bundle for \fBTcl\fR\&.
+For details see \fBTcllib\fR\&.
 .PP
 This list assumes that the machine where Critcl is to be installed is
-essentially clean. Of course, if parts of the dependencies listed
-below are already installed the associated steps can be skipped. It is
+essentially clean\&. Of course, if parts of the dependencies listed
+below are already installed the associated steps can be skipped\&. It is
 still recommended to read their sections though, to validate that the
-dependencies they talk about are indeed installed.
+dependencies they talk about are indeed installed\&.
 .SS TCL
 As we are building a Tcl package that should be pretty much obvious
 that a working Tcl installation is needed, and I will not belabor the
-point.
+point\&.
 .PP
 Out of the many use whatever you are comfortable with, as long
-as it provides Tcl 8.5, or higher, and Tk 8.5 or higher.
+as it provides Tcl 8\&.5, or higher, and Tk 8\&.5 or higher\&.
 .PP
 This may a Tcl installation provided by your operating system
 distribution, from a distribution-independent vendor, or built by
-yurself.
+yurself\&.
 .PP
-Myself, I used \fIActiveState's\fR [http://www.activestate.com]
-ActiveTcl 8.5 distribution during development of the binding, as I am
-most familiar with it.
+Myself, I used \fIActiveState's\fR [http://www\&.activestate\&.com]
+ActiveTcl 8\&.5 distribution during development of the binding, as I am
+most familiar with it\&.
 .PP
-\fI(Disclosure: I, Andreas Kupries, work for ActiveState, maintaining ActiveTcl and TclDevKit for them).\fR
+\fI(Disclosure: I, Andreas Kupries, work for ActiveState, maintaining ActiveTcl and TclDevKit for them)\&.\fR
 .PP
 This distribution can be found at
-\fIhttp://www.activestate.com/activetcl\fR. Retrieve the archive of
-ActiveTcl 8.5 for your platform and install it as directed by
-ActiveState.
+\fIhttp://www\&.activestate\&.com/activetcl\fR\&. Retrieve the archive of
+ActiveTcl 8\&.5 for your platform and install it as directed by
+ActiveState\&.
 .PP
 Assuming that ActiveTcl got installed I usually run the command
 .CS
@@ -311,8 +311,8 @@ Assuming that ActiveTcl got installed I usually run the command
 .CE
 to install all packages ActiveState provides, and the kitchensink, as
 the distribution itself usually contains only the ost important set of
-packages. This ensures that the dependencies for Critcl are all
-present, and more.
+packages\&. This ensures that the dependencies for Critcl are all
+present, and more\&.
 .PP
 If that is not to your liking you have to read the sections for
 Critcl to determine the exact set of packages required, and install
@@ -325,33 +325,33 @@ only these using
 .CE
 .PP
 Both \fBteacup\fR commands above assume that ActiveState's
-TEApot repository at \fIhttp://teapot.activestate.com\fR is in the
-list of repositories accessible to \fBteacup\fR. This is automatically
-ensured for the ActiveTcl distribution. Others may have to run
+TEApot repository at \fIhttp://teapot\&.activestate\&.com\fR is in the
+list of repositories accessible to \fBteacup\fR\&. This is automatically
+ensured for the ActiveTcl distribution\&. Others may have to run
 .CS
 
 
-    teacup archive add http://teapot.activestate.com
+    teacup archive add http://teapot\&.activestate\&.com
 
 .CE
-to make this happen.
+to make this happen\&.
 .PP
 For those wishing to build Tcl/Tk on their own, their sources
 can be found at
 .TP
 Tcl
-\fIhttp://core.tcl.tk/tcl/\fR
+\fIhttp://core\&.tcl\&.tk/tcl/\fR
 .TP
 Tk
-\fIhttp://core.tcl.tk/tk/\fR
+\fIhttp://core\&.tcl\&.tk/tk/\fR
 .PP
 .SS TCLLIB
 To use Critcl a few packages found in the Tcllib bundle are
-required. These packages are:
+required\&. These packages are:
 .IP [1]
 \fBcmdline\fR
 .IP [2]
-\fBmd5\fR.
+\fBmd5\fR\&.
 .sp
 And to accelerate this package, it is recommend to get and
 install one of
@@ -365,7 +365,7 @@ install one of
 .RE
 .IP
 The system will work without them, but can become quite slow,
-especially when handling large code blocks.
+especially when handling large code blocks\&.
 .IP [3]
 \fBsnit\fR
 .PP
@@ -381,80 +381,80 @@ packages can be installed via
 .CE
 .PP
 The \fBteacup\fR command above assumes that ActiveState's
-TEApot repository at \fIhttp://teapot.activestate.com\fR is in the
-list of repositories accessible to \fBteacup\fR. This is automatically
-ensured for the ActiveTcl distribution. Others may have to run
+TEApot repository at \fIhttp://teapot\&.activestate\&.com\fR is in the
+list of repositories accessible to \fBteacup\fR\&. This is automatically
+ensured for the ActiveTcl distribution\&. Others may have to run
 .CS
 
 
-    teacup archive add http://teapot.activestate.com
+    teacup archive add http://teapot\&.activestate\&.com
 
 .CE
-to make this happen.
+to make this happen\&.
 .PP
 Now, for those wishing to install the packages from source,
 the CVS repository for the two bundles can be found at
-\fIhttps://sourceforge.net/projects/tcllib\fR.
+\fIhttps://sourceforge\&.net/projects/tcllib\fR\&.
 .PP
 Releases of Tcllib can be found in the associated Files
-section, or CVS can be used to check out the sub-project tcllib.
+section, or CVS can be used to check out the sub-project tcllib\&.
 .PP
-Tcllib comes with its own installation instructions. These will
-not be repeated here. If there are problems with its directions please
+Tcllib comes with its own installation instructions\&. These will
+not be repeated here\&. If there are problems with its directions please
 file a bug against the Tcllib project at the above url, and not
-Critcl.
+Critcl\&.
 .SH "BUILD & INSTALLATION"
 To install Critcl simply run
 .CS
 
 
-    /path/to/tclsh /path/to/critcl/build.tcl install
+    /path/to/tclsh /path/to/critcl/build\&.tcl install
 
 .CE
 where "\fI/path/to/tclsh\fR" is the tclsh of your Tcl installation, and
-"\fI/path/to/critcl\fR" the location of the Critcl sources on your system.
+"\fI/path/to/critcl\fR" the location of the Critcl sources on your system\&.
 .PP
 This builds all packages and then places them in a directory where the
-\fBtclsh\fR will find them.
+\fBtclsh\fR will find them\&.
 .PP
 It further creates a "\fIcritcl\fR" application script and places it
 into the directory \fBtclsh\fR resides in, making it a sibling of that
-executable. The critcl application is written to use that executable
-as well, and not search for it in the \fBPATH\fR.
+executable\&. The critcl application is written to use that executable
+as well, and not search for it in the \fBPATH\fR\&.
 .PP
-On Windows you can invoke the file "\fIbuild.tcl\fR" with a
-double-click.  This will pop up a small graphical interface for
-entering the destination and performing the installation. This
-handling of a double-click is restricted to Windows only however.
+On Windows you can invoke the file "\fIbuild\&.tcl\fR" with a
+double-click\&.  This will pop up a small graphical interface for
+entering the destination and performing the installation\&. This
+handling of a double-click is restricted to Windows only however\&.
 .PP
-On unix the same GUI is acessible by invoking "\fIbuild.tcl\fR" without
-any arguments.
+On unix the same GUI is acessible by invoking "\fIbuild\&.tcl\fR" without
+any arguments\&.
 .PP
-To get help about the methods of "\fIbuild.tcl\fR", and their complete
-syntax, invoke  "\fIbuild.tcl\fR" with argument \fBhelp\fR, i.e., like
+To get help about the methods of "\fIbuild\&.tcl\fR", and their complete
+syntax, invoke  "\fIbuild\&.tcl\fR" with argument \fBhelp\fR, i\&.e\&., like
 .CS
 
 
-    /path/to/tclsh /path/to/critcl/build.tcl help
+    /path/to/tclsh /path/to/critcl/build\&.tcl help
 
 .CE
 .SH "FIRST USE, TESTING THE INSTALLATION"
 With critcl installed it is now the time to try at least one of the
-examples distributed with it. This will also test if the installation
-was successful.
+examples distributed with it\&. This will also test if the installation
+was successful\&.
 .PP
 Below I show the steps to generate and then use the low- and
-high-level stack example packages. I am intentionally bypassing the
-"\fIbuild.tcl\fR" file the example is coming with, to show the use of
-\fBcritcl\fR itself.
+high-level stack example packages\&. I am intentionally bypassing the
+"\fIbuild\&.tcl\fR" file the example is coming with, to show the use of
+\fBcritcl\fR itself\&.
 .PP
 .CS
 
 
 
     > cd examples/stack
-    > /path/to/critcl -keep -cache B -pkg cstack.tcl
-    > /path/to/critcl -keep -cache B -pkg stackc.tcl
+    > /path/to/critcl -keep -cache B -pkg cstack\&.tcl
+    > /path/to/critcl -keep -cache B -pkg stackc\&.tcl
     > tclsh
     % lappend auto_path [pwd]/lib
     % package require stackc
@@ -471,29 +471,29 @@ high-level stack example packages. I am intentionally bypassing the
 Some explanations:
 .IP \(bu
 The example shows only the commands entered on the shell (and
-tclsh) command line. Their responses are left out.
+tclsh) command line\&. Their responses are left out\&.
 .IP \(bu
 Use of option \fB-keep\fR causes critcl to leave the
-generated .c files behind, for edification. Normally this
-happens only in case of trouble.
+generated \&.c files behind, for edification\&. Normally this
+happens only in case of trouble\&.
 .IP \(bu
 Use of option \fB-cache\fR redirects the location of the
 directory to hold generated and build files to a local
-directory with a known name, for an easy look after.
+directory with a known name, for an easy look after\&.
 .IP \(bu
 Both \fBcstack\fR and \fBstackc\fR have to use the
 \fIsame\fR \fB-cache\fR so that \fBstackc\fR will
-find the stub table headers exported by \fBcstack\fR.
+find the stub table headers exported by \fBcstack\fR\&.
 .PP
 .SH AUTHORS
 Jean Claude Wippler, Steve Landers, Andreas Kupries
 .SH "BUGS, IDEAS, FEEDBACK"
 This document, and the package it describes, will undoubtedly contain
-bugs and other problems.
-Please report them at \fIhttps://github.com/andreas-kupries/critcl/issues\fR.
+bugs and other problems\&.
+Please report them at \fIhttps://github\&.com/andreas-kupries/critcl/issues\fR\&.
 Ideas for enhancements you may have for either package, application,
 and/or the documentation are also very welcome and should be reported
-at \fIhttps://github.com/andreas-kupries/critcl/issues\fR as well.
+at \fIhttps://github\&.com/andreas-kupries/critcl/issues\fR as well\&.
 .SH KEYWORDS
 C code, Embedded C Code, code generator, compile & run, compiler, dynamic code generation, dynamic compilation, generate package, linker, on demand compilation, on-the-fly compilation
 .SH CATEGORY

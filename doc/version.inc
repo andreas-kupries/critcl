@@ -1,1 +1,1 @@
-[vset VERSION 3.1.7]
+[vset VERSION 3.1.8]

@@ -243,40 +243,40 @@ doc
 .RS
 .TP
 \fBcritcl\fR
-\fIfiles/critcl_pkg.n\fR: Critcl - Package Reference
+\fIfiles/critcl_pkg\&.n\fR: Critcl - Package Reference
 .TP
 \fBcritcl::app\fR
-\fIfiles/critcl_apppkg.n\fR: Critcl - Application Package Reference
+\fIfiles/critcl_apppkg\&.n\fR: Critcl - Application Package Reference
 .TP
 \fBcritcl::class\fR
-\fIfiles/critcl_class.n\fR: CriTcl Utilities: C Classes
+\fIfiles/critcl_class\&.n\fR: CriTcl Utilities: C Classes
 .TP
 \fBcritcl::iassoc\fR
-\fIfiles/critcl_iassoc.n\fR: CriTcl Utilities: Tcl Interp Associations
+\fIfiles/critcl_iassoc\&.n\fR: CriTcl Utilities: Tcl Interp Associations
 .TP
 \fBcritcl::util\fR
-\fIfiles/critcl_util.n\fR: CriTcl Utilities
+\fIfiles/critcl_util\&.n\fR: CriTcl Utilities
 .TP
 \fBcritcl_app\fR
-\fIfiles/critcl_app.n\fR: CriTcl Application
+\fIfiles/critcl_app\&.n\fR: CriTcl Application
 .TP
 \fBcritcl_changes\fR
-\fIfiles/changes.n\fR: CriTcl Changes
+\fIfiles/changes\&.n\fR: CriTcl Changes
 .TP
 \fBcritcl_devguide\fR
-\fIfiles/critcl_devguide.n\fR: Critcl - The Developer's Guide
+\fIfiles/critcl_devguide\&.n\fR: Critcl - The Developer's Guide
 .TP
 \fBcritcl_install_guide\fR
-\fIfiles/critcl_installer.n\fR: Critcl - The Installer's Guide
+\fIfiles/critcl_installer\&.n\fR: Critcl - The Installer's Guide
 .TP
 \fBcritcl_introduction\fR
-\fIfiles/critcl_introduction.n\fR: Introduction To CriTcl
+\fIfiles/critcl_introduction\&.n\fR: Introduction To CriTcl
 .TP
 \fBcritcl_license\fR
-\fIfiles/license.n\fR: Critcl - License
+\fIfiles/license\&.n\fR: Critcl - License
 .TP
 \fBcritcl_sources\fR
-\fIfiles/critcl_sources.n\fR: Critcl - How To Get The Sources
+\fIfiles/critcl_sources\&.n\fR: Critcl - How To Get The Sources
 .TP
 \fBcritcl_use\fR
-\fIfiles/critcl_usingit.n\fR: Using Critcl
+\fIfiles/critcl_usingit\&.n\fR: Using Critcl

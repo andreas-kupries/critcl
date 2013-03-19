@@ -103,7 +103,7 @@
   <a href="../toc.html">Table Of Contents</a>
 | <a href="../index.html">Keyword Index</a>
 ] <hr>
-<h1 class="title">critcl::app(n) 3.1.7 doc &quot;C Runtime In Tcl (CriTcl)&quot;</h1>
+<h1 class="title">critcl::app(n) 3.1.8 doc &quot;C Runtime In Tcl (CriTcl)&quot;</h1>
 <div id="name" class="section"><h2><a name="name">Name</a></h2>
 <p>critcl::app - Critcl - Application Package Reference</p>
 </div>
@@ -133,8 +133,9 @@
 <li class="section"><a href="#section20">Changes for version 3.1.5</a></li>
 <li class="section"><a href="#section21">Changes for version 3.1.6</a></li>
 <li class="section"><a href="#section22">Changes for version 3.1.7</a></li>
-<li class="section"><a href="#section23">Authors</a></li>
-<li class="section"><a href="#section24">Bugs, Ideas, Feedback</a></li>
+<li class="section"><a href="#section23">Changes for version 3.1.8</a></li>
+<li class="section"><a href="#section24">Authors</a></li>
+<li class="section"><a href="#section25">Bugs, Ideas, Feedback</a></li>
 <li class="section"><a href="#keywords">Keywords</a></li>
 <li class="section"><a href="#category">Category</a></li>
 <li class="section"><a href="#copyright">Copyright</a></li>
@@ -144,7 +145,7 @@
 <div class="synopsis">
 <ul class="requirements">
 <li>package require <b class="pkgname">Tcl 8.4</b></li>
-<li>package require <b class="pkgname">critcl::app <span class="opt">?3.1.7?</span></b></li>
+<li>package require <b class="pkgname">critcl::app <span class="opt">?3.1.8?</span></b></li>
 <li>package require <b class="pkgname">critcl <span class="opt">?2?</span></b></li>
 <li>package require <b class="pkgname">platform <span class="opt">?1.0.2?</span></b></li>
 <li>package require <b class="pkgname">cmdline</b></li>
@@ -946,10 +947,16 @@ instance creation for clarity. Bumped to version 1.0.2.</p></li>
 	inherit values from configurations defined before them.</p></li>
 </ol>
 </div>
-<div id="section23" class="section"><h2><a name="section23">Authors</a></h2>
+<div id="section23" class="section"><h2><a name="section23">Changes for version 3.1.8</a></h2>
+<ol class="enumerated">
+<li><p>Fixed issue with package indices generated for Tcl 8.4.
+	Join the list of commands with semi-colon, not newline.</p></li>
+</ol>
+</div>
+<div id="section24" class="section"><h2><a name="section24">Authors</a></h2>
 <p>Jean Claude Wippler, Steve Landers, Andreas Kupries</p>
 </div>
-<div id="section24" class="section"><h2><a name="section24">Bugs, Ideas, Feedback</a></h2>
+<div id="section25" class="section"><h2><a name="section25">Bugs, Ideas, Feedback</a></h2>
 <p>This document, and the package it describes, will undoubtedly contain
 bugs and other problems.
 Please report them at <a href="https://github.com/andreas-kupries/critcl/issues">https://github.com/andreas-kupries/critcl/issues</a>.
