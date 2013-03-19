@@ -1114,10 +1114,11 @@ proc ::critcl::app::LoadCommand {version libname tsources shlibdir} {
 	# for low probability of collision with anything else.
 	# NOTE: We have to catch the auto-delete command because
 	# the procedure may have been redefined and destroyed by
-	# recursive package require's.
+	# recursive calls to 'package require' of more critcl-based
+	# packages.
 	set n __critcl_load__
 	append loadcmd "\n    catch \{rename $n {}\}";# auto delete
-	set loadcmd "\"\[list proc $n \{dir\} \{$loadcmd\n\}\] ; \[list $n \$dir\]\""
+	set loadcmd "\"\[list proc $n \{dir\} \{[string map [list \n { ; }] $loadcmd]\}\] ; \[list $n \$dir\]\""
     }
 
     lappend v::meta [list entrytclcommand [list "eval $loadcmd"]]
