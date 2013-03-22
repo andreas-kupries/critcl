@@ -1212,6 +1212,9 @@ inherit values from configurations defined before them\&.
 .IP [1]
 Fixed issue with package indices generated for Tcl 8\&.4\&.
 Join the list of commands with semi-colon, not newline\&.
+.IP [2]
+Fixed issue #26 which brought up use-cases I had forgotten to
+consider while fixing bug #21 (see critcl 3\&.1\&.6)\&.
 .PP
 .SH AUTHORS
 Jean Claude Wippler, Steve Landers, Andreas Kupries
