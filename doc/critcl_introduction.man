@@ -1,5 +1,6 @@
 [comment {-*- tcl -*- doctools manpage}]
-[manpage_begin critcl_introduction n 3.1.6]
+[include version.inc]
+[manpage_begin critcl_introduction n [vset VERSION]]
 [include include/module.inc]
 [titledesc {Introduction To CriTcl}]
 [description]
@@ -42,9 +43,11 @@ user.
 [section {Related Documents}]
 [list_begin enum]
 [enum] [term {Critcl - License}].
-[enum] [term {Using CriTcl}]
+[enum] [term {Using Critcl}]
 [enum] [term {Critcl - How To Get The Sources}].
 [enum] [term {Critcl - The Installer's Guide}].
+[enum] [term {Critcl - Application Package Reference}]
+[enum] [term {Critcl - Package Reference}]
 [enum] [term {Critcl - The Developer's Guide}].
 [list_end]
 

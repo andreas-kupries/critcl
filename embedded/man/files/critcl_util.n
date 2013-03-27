@@ -1,5 +1,5 @@
 '\"
-'\" Generated from file '/home/aku/Projects/Critcl/dev-master/embedded/man/files/critcl_util.n' by tcllib/doctools with format 'nroff'
+'\" Generated from file '/home/aku/Projects/Critcl/dev-master/embedded/man/files/critcl_util\&.n' by tcllib/doctools with format 'nroff'
 '\" Copyright (c) 2011-2012 Andreas Kupries
 '\"
 '\" The definitions below are for supplemental macros used in Tcl/Tk
@@ -243,9 +243,9 @@ Database Class:	\\fB\\$3\\fR
 .SH NAME
 critcl::util \- CriTcl Utilities
 .SH SYNOPSIS
-package require \fBTcl  8.4\fR
+package require \fBTcl  8\&.4\fR
 .sp
-package require \fBcritcl  ?2.1?\fR
+package require \fBcritcl  ?2\&.1?\fR
 .sp
 package require \fBcritcl::util  ?1?\fR
 .sp
@@ -257,15 +257,15 @@ package require \fBcritcl::util  ?1?\fR
 Welcome to the \fIC Runtime In Tcl\fR, \fICriTcl\fR for short, a
 system to build C extension packages for Tcl on the fly, from C code
 embedded within Tcl scripts, for all who wish to make their code go
-faster.
+faster\&.
 .PP
 This document is the reference manpage for the \fBcritcl::util\fR
-package. This package provides convenience commands for advanced
-functionality built on top of the core.
+package\&. This package provides convenience commands for advanced
+functionality built on top of the core\&.
 Its intended audience are mainly developers wishing to write Tcl
-packages with embedded C code.
+packages with embedded C code\&.
 .PP
-This package resides in the Core Package Layer of CriTcl.
+This package resides in the Core Package Layer of CriTcl\&.
 .PP
 .PS
 .nf
@@ -285,7 +285,7 @@ This package resides in the Core Package Layer of CriTcl.
 |Support Packages|
 | stubs::*       |
 | md5, platform  |
-|  ...           |
+|  \&.\&.\&.           |
 +----------------+
 
 .fi
@@ -295,17 +295,17 @@ This package resides in the Core Package Layer of CriTcl.
 .TP
 \fB::critcl::util::checkfun\fR \fIname\fR ?\fIlabel\fR?
 This command checks the build-time environment for the existence of
-the C function \fIname\fR.
-It returns \fBtrue\fR on success, and \fBfalse\fR otherwise.
+the C function \fIname\fR\&.
+It returns \fBtrue\fR on success, and \fBfalse\fR otherwise\&.
 .PP
 .SH AUTHORS
 Andreas Kupries
 .SH "BUGS, IDEAS, FEEDBACK"
 This document, and the package it describes, will undoubtedly contain
-bugs and other problems.
-Please report such at \fIhttps://github.com/andreas-kupries/critcl\fR.
+bugs and other problems\&.
+Please report such at \fIhttps://github\&.com/andreas-kupries/critcl\fR\&.
 Please also report any ideas for enhancements you may have for either
-package and/or documentation.
+package and/or documentation\&.
 .SH KEYWORDS
 C code, Embedded C Code, code generator, compile & run, compiler, dynamic code generation, dynamic compilation, generate package, linker, on demand compilation, on-the-fly compilation
 .SH CATEGORY

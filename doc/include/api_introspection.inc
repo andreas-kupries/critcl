@@ -36,14 +36,29 @@ generated log.
 [comment ---------------------------------------------------------------------]
 [call [cmd ::critcl::msg] [opt [option -nonewline]] [arg msg]]
 
-This command can be used by to report results from [cmd critcl::check]
-and [cmd critcl::checklink]. The default implementation used by mode
-[term {compile & run}] ignores any calls.
+This command can be used by critc-based code to report results from
+[cmd critcl::check] and [cmd critcl::checklink]. The default
+implementation used by mode [term {compile & run}] ignores any calls.
 
 [para] Tools like the [manpage {CriTcl Application}] are allowed to
 redefine this procedure to perform their own way of message
 reporting. The package [package critcl::app] and the application on
 top print such messages to [term stdout], for example.
+
+[comment ---------------------------------------------------------------------]
+[call [cmd ::critcl::print] [opt [option -nonewline]] [opt [arg chan]] [arg msg]]
+
+This command is used by the critcl internals to report its activity.
+Its signature is equivalent to the Tcl builtin command [cmd ::puts].
+The default implementation is effectively [cmd ::puts].
+
+[para] Tools directly using either the critcl package, or the critcl
+application package are allowed to redefine this procedure to perform
+their own way of printing.
+
+[para] An example of this is
+[uri https://chiselapp.com/user/andreas_kupries/repository/Kettle/index Kettle]
+where the newest revisions use this to highlight build warnings.
 
 [comment ---------------------------------------------------------------------]
 [call [cmd ::critcl::compiled]]

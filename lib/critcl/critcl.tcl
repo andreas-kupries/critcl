@@ -6,7 +6,7 @@
 
 # CriTcl Core.
 
-package provide critcl 3.1.6
+package provide critcl 3.1.8
 
 # # ## ### ##### ######## ############# #####################
 ## Requirements.
@@ -2331,13 +2331,14 @@ proc ::critcl::cbuild {file {load 1}} {
 
     StatusReset
 
+    # Determine if we should place stubs code into the generated file.
+    set placestubs [expr {!$v::buildforpackage}]
+
     # Determine the requested mode and reset for next call.
     set buildforpackage $v::buildforpackage
     set v::buildforpackage 0
 
-    set bracket 0
     if {$file eq ""} {
-	set bracket 1
 	set file [This]
     }
 
@@ -2359,7 +2360,7 @@ proc ::critcl::cbuild {file {load 1}} {
 	API_setup $file
 
 	# Generate the main C file
-	CollectEmbeddedSources $file $base.c $object $initname $bracket
+	CollectEmbeddedSources $file $base.c $object $initname $placestubs
 
 	# Set the marker for critcl::done and its user, AbortWhenCalledAfterBuild.
 	dict set v::code($file) result closed mark
@@ -3556,7 +3557,7 @@ proc ::critcl::at::SHOWFRAMES {level {all 1}} {
  
 # # ## ### ##### ######## ############# #####################
 
-proc ::critcl::CollectEmbeddedSources {file destination libfile ininame bracket} {
+proc ::critcl::CollectEmbeddedSources {file destination libfile ininame placestubs} {
     set fd [open $destination w]
 
     if {[dict exists $v::code($file) result apiprefix]} {
@@ -3586,8 +3587,10 @@ proc ::critcl::CollectEmbeddedSources {file destination libfile ininame bracket}
     puts $fd [Separator]
     set mintcl [MinTclVersion $file]
 
-    if {$bracket} {
-	# Full definition in the bracket code.
+    if {$placestubs} {
+	# Put full stubs definitions into the code, which can be
+	# either the bracket generated for a -pkg, or the package
+	# itself, build in mode "compile & run".
 	puts -nonewline $fd [subst [Cat [Template stubs.c]]]
 	#                    ^=> mintcl
     } else {
