@@ -258,8 +258,13 @@ macosx-x86_64 strip
 #         the platform default (32 on 32, 64 on 64)
 linux-32-*  compile   gcc -c -m32
 linux-32-*  link      gcc -shared -m32
+linux-32-*  platform  linux-ix86
+# NOTE: Above fails when not on intel platform, ex: arm, mips, etc.
+
 linux-64-*  compile   gcc -c -m64
 linux-64-*  link      gcc -shared -m64
+linux-64-*  platform  linux-x86_64
+# NOTE: Above fails when not on intel platform, ex: arm, mips, etc.
 
 # Windows - Check if bufferoverflowU.lib is required, or not. We
 # assume that "requiredness" coincides with "presence". IOW, if the
