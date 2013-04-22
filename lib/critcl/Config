@@ -253,18 +253,35 @@ macosx-x86_64 link          gcc -bundle -arch x86_64
 macosx-x86_64 link_preload  -undefined dynamic_lookup
 macosx-x86_64 strip
 
+# Linux - 32 bit or 64 bit build - select using "-target" if you don't
+#         want the platform default (32 on 32, 64 on 64). This requires
+#         some work to detect the cpu class in use and then set a platform
+#         with the proper variant name.
 
-# Linux - 32 bit or 64 bit build - select using "-target" if you don't want
-#         the platform default (32 on 32, 64 on 64)
+if {[string match linux-* $platform]} {
+    # platform = os-cpu(-compiler)
+    set cpu [lindex [split $platform -] 1]
+
+    switch -- $cpu {
+	x86_64 - ix86 {
+	    set cpu32 ix86
+	    set cpu64 x86_64
+	}
+	* {
+	    #error "Unknown architecture"
+	    set cpu32 unknown32fixme_$cpu
+	    set cpu64 unknown64fixme_$cpu
+	}
+    }
+}
+
 linux-32-*  compile   gcc -c -m32
 linux-32-*  link      gcc -shared -m32
-linux-32-*  platform  linux-ix86
-# NOTE: Above fails when not on intel platform, ex: arm, mips, etc.
+linux-32-*  platform  linux-$cpu32
 
 linux-64-*  compile   gcc -c -m64
 linux-64-*  link      gcc -shared -m64
-linux-64-*  platform  linux-x86_64
-# NOTE: Above fails when not on intel platform, ex: arm, mips, etc.
+linux-64-*  platform  linux-$cpu64
 
 # Windows - Check if bufferoverflowU.lib is required, or not. We
 # assume that "requiredness" coincides with "presence". IOW, if the
