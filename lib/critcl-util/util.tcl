@@ -76,7 +76,7 @@ namespace eval ::critcl::util {
 	 * we pull in a system header defining the __stub macros, and a
 	 * few prototypes only possibly in conflict with @@@, we hope.
 	 * As <limits.h> exists even on free-standing compilers its use
-	 * is prefered when __STDC__ is active.
+	 * is preferred when __STDC__ is active.
 	 */
 
 	#define @@@ innocuous_@@@

@@ -871,7 +871,7 @@ still has to be done via <b class="cmd">critcl::ccode</b> where necessary.
 It does simply ensure that the compiler will be able to find these
 files when invoked, by providing the necessary command line flags
 extending the compiler's search paths.</p>
-<p>Multiple invokations of this command accumulate their
+<p>Multiple invocations of this command accumulate their
 information.</p></dd>
 <dt><a name="21"><b class="cmd">::critcl::csources</b> <span class="opt">?<i class="arg">pattern</i>...?</span></a></dt>
 <dd><p>This command provides the compile step with additional C source files.</p>
@@ -884,7 +884,7 @@ means that the files in question are compiled together with the
 <p><em>Note</em> that patterns which are not beginning with an
 absolute path are interpreted relative to the directory containing the
 current &quot;<b class="file">.critcl</b>&quot; file.</p>
-<p>Multiple invokations of this command accumulate their
+<p>Multiple invocations of this command accumulate their
 information.</p></dd>
 <dt><a name="22"><b class="cmd">::critcl::clibraries</b> <span class="opt">?<i class="arg">arg</i>...?</span></a></dt>
 <dd><p>This command provides the link step with additional libraries to link
@@ -901,7 +901,7 @@ file backing the &quot;<b class="file">.critcl</b>&quot; file into a single shar
 <p><em>Note</em> that patterns which are not beginning with an
 absolute path are interpreted relative to the directory containing the
 current &quot;<b class="file">.critcl</b>&quot; file.</p>
-<p>Multiple invokations of this command accumulate their
+<p>Multiple invocations of this command accumulate their
 information.</p></dd>
 <dt><a name="23"><b class="cmd">::critcl::source</b> <i class="arg">path</i></a></dt>
 <dd><p>This command evaluates the critcl commands in the file specified by
@@ -923,7 +923,7 @@ non-existing files cause the command to throw an error.</p>
 <p><em>Note</em> that patterns which are not beginning with an
 absolute path are interpreted relative to the directory containing the
 current &quot;<b class="file">.critcl</b>&quot; file.</p>
-<p>Multiple invokations of this command accumulate their
+<p>Multiple invocations of this command accumulate their
 information.</p>
 <p>The declared files are sourced after the shared library has
 been loaded, in the same order they were provided to <b class="cmd">critcl::tsources</b>.</p></dd>
@@ -941,13 +941,13 @@ way.</p></dd>
 <dd><p>This command provides the compile step with additional compiler flags.</p>
 <p>All arguments are forwarded to the compiler's command line when
 it is invoked for the current &quot;<b class="file">.critcl</b>&quot; file.</p>
-<p>Multiple invokations of this command accumulate their
+<p>Multiple invocations of this command accumulate their
 information.</p></dd>
 <dt><a name="27"><b class="cmd">::critcl::ldflags</b> <span class="opt">?<i class="arg">arg</i>...?</span></a></dt>
 <dd><p>This command provides the link step with additional linker flags.</p>
 <p>All arguments are forwarded to the linkers's command line when
 it is invoked for the current &quot;<b class="file">.critcl</b>&quot; file.</p>
-<p>Multiple invokations of this command accumulate their
+<p>Multiple invocations of this command accumulate their
 information.</p></dd>
 <dt><a name="28"><b class="cmd">::critcl::framework</b> <span class="opt">?<i class="arg">arg</i>...?</span></a></dt>
 <dd><p>This command provides the link step with the names of additional
@@ -957,7 +957,7 @@ specific frameworks unconditionally. The package itself takes care to
 not use them when building for non-OS X platforms.</p>
 <p>All arguments are forwarded to the linkers's command line when
 it is invoked for the current &quot;<b class="file">.critcl</b>&quot; file.</p>
-<p>Multiple invokations of this command accumulate their
+<p>Multiple invocations of this command accumulate their
 information.</p></dd>
 <dt><a name="29"><b class="cmd">::critcl::tcl</b> <i class="arg">version</i></a></dt>
 <dd><p>This command tells critcl for what minimum version of the Tcl runtime
@@ -970,7 +970,7 @@ stubs for linking.</p></dd>
 <dt><a name="31"><b class="cmd">::critcl::preload</b> <i class="arg">lib</i>...</a></dt>
 <dd><p>This command arranges that the named dependent external shared library is loaded
 before the generated package's shared library.</p>
-<p>Multiple invokations of this command accumulate their
+<p>Multiple invocations of this command accumulate their
 information.</p>
 <p>Each library <i class="arg">FOO</i> named for preload will be searched at the
 locations listed below, in the order listed, and the search will stop
@@ -1307,7 +1307,7 @@ one constraint they are not allowed to change: The procedure must
 <em>not return</em> to the caller.</p></dd>
 <dt><a name="56"><b class="cmd">::critcl::knowntargets</b></a></dt>
 <dd><p>This command returns a list containing the identifiers of all targets
-found during the last invokation of <b class="cmd">critcl::readconfig</b>.</p></dd>
+found during the last invocation of <b class="cmd">critcl::readconfig</b>.</p></dd>
 <dt><a name="57"><b class="cmd">::critcl::sharedlibext</b></a></dt>
 <dd><p>This command returns the file extension used by shared libraries on the
 target platform.</p></dd>
@@ -1339,7 +1339,7 @@ files in question are linked together with the object file backing the
 <p><em>Note</em> that patterns which are not beginning with an
 absolute path are interpreted relative to the directory containing the
 current &quot;<b class="file">.critcl</b>&quot; file.</p>
-<p>Multiple invokations of this command accumulate their
+<p>Multiple invocations of this command accumulate their
 information.</p></dd>
 <dt><a name="62"><b class="cmd">::critcl::scan</b> <i class="arg">path</i></a></dt>
 <dd><p>This command is the main entry point to critcl's static code scanner.
@@ -1355,7 +1355,7 @@ the following pieces information about it:</p>
 all relative to the location (directory) of the input file.</p></dd>
 </dl>
 <p>This command and the information it returns can be used by tools to
-implement processing modes like the assembly of a directory hierachy
+implement processing modes like the assembly of a directory hierarchy
 containing a TEA-lookalike buildystem, etc.</p></dd>
 <dt><a name="63"><b class="cmd">::critcl::name2c</b> <i class="arg">name</i></a></dt>
 <dd><p>This command exposes the conversion of a Tcl level identifier of
@@ -1810,7 +1810,7 @@ directly support the loading of a shared library from it.</p></dd>
 &quot;<b class="file">critcl-rt.tcl</b>&quot; in the generated package, as is the command
 <b class="cmd">::critcl::runtime::loadlib</b> which generates the
 <i class="term">ifneeded script</i> expected by Tcl's package management. This
-generated ifneeded script contains the invokations of <b class="cmd">::preload</b>.</p>
+generated ifneeded script contains the invocations of <b class="cmd">::preload</b>.</p>
 <p>The C code for the supporting library is found in the file
 &quot;<b class="file">critcl_c/preload.c</b>&quot;, which is part of the <b class="package">critcl</b>
 package.</p>
@@ -2052,7 +2052,7 @@ generated and must contain (in the order specified):</p>
 <li><p>the declarations of the exported, i.e. public, functions of
 	<b class="package">foo</b>,</p></li>
 <li><p>the declaration of structure &quot;FooStubs&quot; for the stub table,</p></li>
-<li><p>the C preprocessor macros which route the invokations of the
+<li><p>the C preprocessor macros which route the invocations of the
 	public functions through the stubs table.</p>
 <p>These macros must be defined if, and only if, the C preprocessor
 	macro USE_FOO_STUBS is defined. Package <b class="package">foo</b> does not
@@ -2520,7 +2520,7 @@ which violate this assumption.</p></li>
 <li><p>Added a new higher-level package <b class="package"><a href="critcl_iassoc.html">critcl::iassoc</a></b>.</p>
 <p>This package simplifies the creation of code associating data
 with an interpreter via Tcl's <b class="function">Tcl_(Get|Set)AssocData()</b> APIs. The
-user can concentrate on his data while all the neccessary boilerplate
+user can concentrate on his data while all the necessary boilerplate
 C code to support this is generated by the package.</p>
 <p>This package uses several of the new features which were added
 to the core <b class="package">critcl</b> package, see below.</p></li>
