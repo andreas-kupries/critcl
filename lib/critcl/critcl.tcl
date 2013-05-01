@@ -1563,7 +1563,7 @@ proc ::critcl::API_setup_export {file} {
     package require stubs::writer
 
     # Implied .decls file. Not actually written, only implied in the
-    # stubs container invokations, as if read from such a file.
+    # stubs container invocations, as if read from such a file.
 
     set T [stubs::container::new]
     stubs::container::library   T $ename

@@ -1190,7 +1190,7 @@ It does simply ensure that the compiler will be able to find these
 files when invoked, by providing the necessary command line flags
 extending the compiler's search paths\&.
 .sp
-Multiple invokations of this command accumulate their
+Multiple invocations of this command accumulate their
 information\&.
 .TP
 \fB::critcl::csources\fR ?\fIpattern\fR\&.\&.\&.?
@@ -1207,7 +1207,7 @@ means that the files in question are compiled together with the
 absolute path are interpreted relative to the directory containing the
 current "\fI\&.critcl\fR" file\&.
 .sp
-Multiple invokations of this command accumulate their
+Multiple invocations of this command accumulate their
 information\&.
 .TP
 \fB::critcl::clibraries\fR ?\fIarg\fR\&.\&.\&.?
@@ -1229,7 +1229,7 @@ file backing the "\fI\&.critcl\fR" file into a single shared library\&.
 absolute path are interpreted relative to the directory containing the
 current "\fI\&.critcl\fR" file\&.
 .sp
-Multiple invokations of this command accumulate their
+Multiple invocations of this command accumulate their
 information\&.
 .TP
 \fB::critcl::source\fR \fIpath\fR
@@ -1258,7 +1258,7 @@ non-existing files cause the command to throw an error\&.
 absolute path are interpreted relative to the directory containing the
 current "\fI\&.critcl\fR" file\&.
 .sp
-Multiple invokations of this command accumulate their
+Multiple invocations of this command accumulate their
 information\&.
 .sp
 The declared files are sourced after the shared library has
@@ -1282,7 +1282,7 @@ This command provides the compile step with additional compiler flags\&.
 All arguments are forwarded to the compiler's command line when
 it is invoked for the current "\fI\&.critcl\fR" file\&.
 .sp
-Multiple invokations of this command accumulate their
+Multiple invocations of this command accumulate their
 information\&.
 .TP
 \fB::critcl::ldflags\fR ?\fIarg\fR\&.\&.\&.?
@@ -1291,7 +1291,7 @@ This command provides the link step with additional linker flags\&.
 All arguments are forwarded to the linkers's command line when
 it is invoked for the current "\fI\&.critcl\fR" file\&.
 .sp
-Multiple invokations of this command accumulate their
+Multiple invocations of this command accumulate their
 information\&.
 .TP
 \fB::critcl::framework\fR ?\fIarg\fR\&.\&.\&.?
@@ -1304,7 +1304,7 @@ not use them when building for non-OS X platforms\&.
 All arguments are forwarded to the linkers's command line when
 it is invoked for the current "\fI\&.critcl\fR" file\&.
 .sp
-Multiple invokations of this command accumulate their
+Multiple invocations of this command accumulate their
 information\&.
 .TP
 \fB::critcl::tcl\fR \fIversion\fR
@@ -1321,7 +1321,7 @@ stubs for linking\&.
 This command arranges that the named dependent external shared library is loaded
 before the generated package's shared library\&.
 .sp
-Multiple invokations of this command accumulate their
+Multiple invocations of this command accumulate their
 information\&.
 .sp
 Each library \fIFOO\fR named for preload will be searched at the
@@ -1736,7 +1736,7 @@ one constraint they are not allowed to change: The procedure must
 .TP
 \fB::critcl::knowntargets\fR
 This command returns a list containing the identifiers of all targets
-found during the last invokation of \fBcritcl::readconfig\fR\&.
+found during the last invocation of \fBcritcl::readconfig\fR\&.
 .TP
 \fB::critcl::sharedlibext\fR
 This command returns the file extension used by shared libraries on the
@@ -1776,7 +1776,7 @@ files in question are linked together with the object file backing the
 absolute path are interpreted relative to the directory containing the
 current "\fI\&.critcl\fR" file\&.
 .sp
-Multiple invokations of this command accumulate their
+Multiple invocations of this command accumulate their
 information\&.
 .TP
 \fB::critcl::scan\fR \fIpath\fR
@@ -1797,7 +1797,7 @@ all relative to the location (directory) of the input file\&.
 .RE
 .IP
 This command and the information it returns can be used by tools to
-implement processing modes like the assembly of a directory hierachy
+implement processing modes like the assembly of a directory hierarchy
 containing a TEA-lookalike buildystem, etc\&.
 .TP
 \fB::critcl::name2c\fR \fIname\fR
@@ -2336,7 +2336,7 @@ The command \fB::critcl::runtime::precopy\fR is provided by the file
 "\fIcritcl-rt\&.tcl\fR" in the generated package, as is the command
 \fB::critcl::runtime::loadlib\fR which generates the
 \fIifneeded script\fR expected by Tcl's package management\&. This
-generated ifneeded script contains the invokations of \fB::preload\fR\&.
+generated ifneeded script contains the invocations of \fB::preload\fR\&.
 .PP
 The C code for the supporting library is found in the file
 "\fIcritcl_c/preload\&.c\fR", which is part of the \fBcritcl\fR
@@ -2666,7 +2666,7 @@ the declarations of the exported, i\&.e\&. public, functions of
 .IP [2]
 the declaration of structure "FooStubs" for the stub table,
 .IP [3]
-the C preprocessor macros which route the invokations of the
+the C preprocessor macros which route the invocations of the
 public functions through the stubs table\&.
 .sp
 These macros must be defined if, and only if, the C preprocessor
@@ -3245,7 +3245,7 @@ Added a new higher-level package \fBcritcl::iassoc\fR\&.
 .sp
 This package simplifies the creation of code associating data
 with an interpreter via Tcl's \fBTcl_(Get|Set)AssocData()\fR APIs\&. The
-user can concentrate on his data while all the neccessary boilerplate
+user can concentrate on his data while all the necessary boilerplate
 C code to support this is generated by the package\&.
 .sp
 This package uses several of the new features which were added
