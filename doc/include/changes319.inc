@@ -1,6 +1,10 @@
 [section {Changes for version 3.1.9 to be}]
 [list_begin enumerated]
 
+[enum]	Fixed issue #29. Replaced the use of raw "cheaders"
+	information in the processing of "cdefines" with the proper
+	include directives derived from it.
+
 [enum]	Fixed issue #31. Accepted patch by Andrew Shadoura, with
 	changes (comments), for easier integration of critcl with
 	OS package systems, replacing critcl's copies of Tcl headers

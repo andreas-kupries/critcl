@@ -4038,7 +4038,7 @@ proc ::critcl::BuildDefines {fd file} {
     # For the command lines to be constructed we need all the include
     # information the regular files will get during their compilation.
 
-    set hdrs [GetParam $file cheaders]
+    set hdrs [SystemIncludes $file]
 
     # The result of the next two steps, a list of triples (namespace +
     # label + value) of the defines to export.
