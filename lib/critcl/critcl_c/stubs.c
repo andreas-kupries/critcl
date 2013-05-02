@@ -2,8 +2,8 @@
 # line 1 "MyInitTclStubs"
 
 #if USE_TCL_STUBS
-  const TclStubs *tclStubsPtr;
-  const TclPlatStubs *tclPlatStubsPtr;
+  $stubs
+  $platstubs
   const struct TclIntStubs *tclIntStubsPtr;
   const struct TclIntPlatStubs *tclIntPlatStubsPtr;
 
