@@ -4563,14 +4563,36 @@ proc ::critcl::TclPlatDecls {file} {
 proc ::critcl::TclDef {file hdr var} {
     #puts F|$file
     set hdr [TclHeader $file $hdr]
+
+    if {![file exists   $hdr]} { error "Header file not found: $hdr" }
+    if {![file isfile   $hdr]} { error "Header not a file: $hdr" }
+    if {![file readable $hdr]} { error "Header not readable: $hdr (no permission)" }
+
     #puts H|$hdr
-    set hdr [Cat $hdr]
-    set hdr [split $hdr \n]
-    set ext [Grep *extern* $hdr]
-    set var [Grep *${var}* $ext]
-    set def [lindex $var 0]
-    #puts D|$def|
-    return [string map {extern {}} $def]
+    if {[catch {
+	set hdrcontent [split [Cat $hdr] \n]
+    } msg]} {
+	error "Header not readable: $hdr ($msg)"
+    }
+
+    # Note, Danger: The code below is able to use declarations which
+    # are commented out in various ways (#if 0, /* ... */, and //
+    # ...), because it is performing a simple line-oriented search
+    # without context, and not matching against comment syntax either.
+
+    set ext [Grep *extern* $hdrcontent]
+    if {![llength $ext]} {
+	error "No extern declarations found in $hdr"
+    }
+
+    set vardecl [Grep *${var}* $ext]
+    if {![llength $vardecl]} {
+	error "No declarations for $var found in $hdr"
+    }
+
+    set def [string map {extern {}} [lindex $vardecl 0]]
+    msg " ($var => $def)"
+    return $def
 }
 
 proc ::critcl::Grep {pattern lines} {
