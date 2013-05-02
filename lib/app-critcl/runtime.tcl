@@ -119,15 +119,16 @@ proc ::critcl::runtime::MapPlatform {{mapping {}}} {
 	set v2 [lindex $v 1]
 	incr v1 -4
 	set version 10.$v1.$v2
+    } else {
+	# Strip trailing non-version info
+	regsub -- {-.*$} $version {} version
     }
     foreach {config map} $mapping {
-	if {[string match $config $platform]} {
-	    set minver [lindex $map 1]
-	    if {[package vcompare $version $minver] != -1} {
-		set platform [lindex $map 0]
-		break
-	    }
-	}
+	if {![string match $config $platform]} continue
+	set minver [lindex $map 1]
+	if {[package vcompare $version $minver] < 0} continue
+	set platform [lindex $map 0]
+	break
     }
     return $platform
 }
