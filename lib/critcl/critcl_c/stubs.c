@@ -1,9 +1,6 @@
-
 # line 1 "MyInitTclStubs"
 
 #if USE_TCL_STUBS
-  const TclStubs *tclStubsPtr;
-  const TclPlatStubs *tclPlatStubsPtr;
   const struct TclIntStubs *tclIntStubsPtr;
   const struct TclIntPlatStubs *tclIntPlatStubsPtr;
 
