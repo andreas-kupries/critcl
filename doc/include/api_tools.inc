@@ -96,7 +96,7 @@ one constraint they are not allowed to change: The procedure must
 [call [cmd ::critcl::knowntargets]]
 
 This command returns a list containing the identifiers of all targets
-found during the last invokation of [cmd critcl::readconfig].
+found during the last invocation of [cmd critcl::readconfig].
 
 [comment ---------------------------------------------------------------------]
 [call [cmd ::critcl::sharedlibext]]
@@ -147,7 +147,7 @@ files in question are linked together with the object file backing the
 absolute path are interpreted relative to the directory containing the
 current [file .critcl] file.
 
-[para] Multiple invokations of this command accumulate their
+[para] Multiple invocations of this command accumulate their
 information.
 
 
@@ -168,7 +168,7 @@ all relative to the location (directory) of the input file.
 [list_end]
 
 This command and the information it returns can be used by tools to
-implement processing modes like the assembly of a directory hierachy
+implement processing modes like the assembly of a directory hierarchy
 containing a TEA-lookalike buildystem, etc.
 
 [comment ---------------------------------------------------------------------]

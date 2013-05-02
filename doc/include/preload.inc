@@ -31,7 +31,7 @@ The command [cmd ::critcl::runtime::precopy] is provided by the file
 
 [cmd ::critcl::runtime::loadlib] which generates the
 [term {ifneeded script}] expected by Tcl's package management. This
-generated ifneeded script contains the invokations of [cmd ::preload].
+generated ifneeded script contains the invocations of [cmd ::preload].
 
 [para]
 
