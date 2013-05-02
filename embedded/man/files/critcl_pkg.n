@@ -3431,6 +3431,17 @@ Join the list of commands with semi-colon, not newline\&.
 Fixed issue #26 which brought up use-cases I had forgotten to
 consider while fixing bug #21 (see critcl 3\&.1\&.6)\&.
 .PP
+.SH "CHANGES FOR VERSION 3\&.1\&.9 TO BE"
+.IP [1]
+Fixed issue #28\&. Added missing -mXX flags for linking at the
+linux-{32,64}-* targets\&.
+.IP [2]
+Fixed issue #27\&. Added missing platform definitions for
+various alternate linux and OS X targets\&.
+.IP [3]
+Fixed issue #32\&. Merged pull request by Andrew Shadoura\&.
+Various typos in documentation and comments\&.
+.PP
 .SH AUTHORS
 Jean Claude Wippler, Steve Landers, Andreas Kupries
 .SH "BUGS, IDEAS, FEEDBACK"
