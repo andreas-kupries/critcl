@@ -19,4 +19,11 @@
 [enum]	Fixed issue #32. Merged pull request by Andrew Shadura.
 	Various typos in documentation and comments.
 
+[enum]	Fixed the issue behind rejected pull request #30 by Andrew
+	Shadoura. Dynamically extract the stubs variable declarations
+	from the Tcl header files and generate matching variable
+	definitions for use in the package code. The generated code
+	will now be always consistent with the headers, even when
+	critcl's own copy of them is replaced by system headers.
+
 [list_end]

@@ -3591,8 +3591,10 @@ proc ::critcl::CollectEmbeddedSources {file destination libfile ininame placestu
 	# Put full stubs definitions into the code, which can be
 	# either the bracket generated for a -pkg, or the package
 	# itself, build in mode "compile & run".
+	set stubs     [TclDecls     $file]
+	set platstubs [TclPlatDecls $file]
 	puts -nonewline $fd [subst [Cat [Template stubs.c]]]
-	#                    ^=> mintcl
+	#                    ^=> mintcl, stubs, platstubs
     } else {
 	# Declarations only, for linking, in the sub-packages.
 	puts -nonewline $fd [subst [Cat [Template stubs_e.c]]]
@@ -3678,6 +3680,13 @@ proc ::critcl::TclIncludes {file} {
     }
 
     return [list $c::include$path]
+}
+
+proc ::critcl::TclHeader {file {header {}}} {
+    # Provide access to the Tcl/Tk headers in the critcl package
+    # directory hierarchy. No copying of files required.
+    set hdrs tcl[MinTclVersion $file]
+    return [file join $v::hdrdir $hdrs $header]
 }
 
 proc ::critcl::SystemIncludes {file} {
@@ -4547,6 +4556,58 @@ proc ::critcl::This {} {
 
 proc ::critcl::Here {} {
     return [file dirname [This]]
+}
+
+proc ::critcl::TclDecls {file} {
+    return [TclDef $file tclDecls.h tclStubsPtr]
+}
+
+proc ::critcl::TclPlatDecls {file} {
+    return [TclDef $file tclPlatDecls.h tclPlatStubsPtr]
+}
+
+proc ::critcl::TclDef {file hdr var} {
+    #puts F|$file
+    set hdr [TclHeader $file $hdr]
+
+    if {![file exists   $hdr]} { error "Header file not found: $hdr" }
+    if {![file isfile   $hdr]} { error "Header not a file: $hdr" }
+    if {![file readable $hdr]} { error "Header not readable: $hdr (no permission)" }
+
+    #puts H|$hdr
+    if {[catch {
+	set hdrcontent [split [Cat $hdr] \n]
+    } msg]} {
+	error "Header not readable: $hdr ($msg)"
+    }
+
+    # Note, Danger: The code below is able to use declarations which
+    # are commented out in various ways (#if 0, /* ... */, and //
+    # ...), because it is performing a simple line-oriented search
+    # without context, and not matching against comment syntax either.
+
+    set ext [Grep *extern* $hdrcontent]
+    if {![llength $ext]} {
+	error "No extern declarations found in $hdr"
+    }
+
+    set vardecl [Grep *${var}* $ext]
+    if {![llength $vardecl]} {
+	error "No declarations for $var found in $hdr"
+    }
+
+    set def [string map {extern {}} [lindex $vardecl 0]]
+    msg " ($var => $def)"
+    return $def
+}
+
+proc ::critcl::Grep {pattern lines} {
+    set r {}
+    foreach line $lines {
+	if {![string match $pattern $line]} continue
+	lappend r $line
+    }
+    return $r
 }
 
 # # ## ### ##### ######## ############# #####################
