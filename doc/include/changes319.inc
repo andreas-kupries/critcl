@@ -5,7 +5,7 @@
 	information in the processing of "cdefines" with the proper
 	include directives derived from it.
 
-[enum]	Fixed issue #31. Accepted patch by Andrew Shadoura, with
+[enum]	Fixed issue #31. Accepted patch by Andrew Shadura, with
 	changes (comments), for easier integration of critcl with
 	OS package systems, replacing critcl's copies of Tcl headers
 	with their own.
@@ -16,7 +16,7 @@
 [enum]	Fixed issue #27. Added missing platform definitions for
 	various alternate linux and OS X targets.
 
-[enum]	Fixed issue #32. Merged pull request by Andrew Shadoura.
+[enum]	Fixed issue #32. Merged pull request by Andrew Shadura.
 	Various typos in documentation and comments.
 
 [list_end]
