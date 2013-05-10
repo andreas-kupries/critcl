@@ -1216,7 +1216,7 @@ Join the list of commands with semi-colon, not newline\&.
 Fixed issue #26 which brought up use-cases I had forgotten to
 consider while fixing bug #21 (see critcl 3\&.1\&.6)\&.
 .PP
-.SH "CHANGES FOR VERSION 3\&.1\&.9 TO BE"
+.SH "CHANGES FOR VERSION 3\&.1\&.9"
 .IP [1]
 Fixed issue #27\&. Added missing platform definitions for
 various alternate linux and OS X targets\&.
@@ -1242,6 +1242,8 @@ with their own\&.
 .IP [6]
 Fixed issue #32\&. Merged pull request by Andrew Shadura\&.
 Various typos in documentation and comments\&.
+.IP [7]
+Fixed issue #33\&. Handle files starting with a dot better\&.
 .PP
 .SH AUTHORS
 Jean Claude Wippler, Steve Landers, Andreas Kupries
