@@ -368,6 +368,7 @@ proc ::critcl::app::Cmdline {argv} {
 
     if {$v::mode ne "cache"} {
 	set name [lindex $argv 0]
+	set addext 0
 
 	# Split a version number off the package name.
 	set ver {}
@@ -385,6 +386,7 @@ proc ::critcl::app::Cmdline {argv} {
 		# files.
 		set v::outname [file rootname $name]
 		set v::src     [lrange $v::src 1 end]
+		set addext 1
 	    }
 	    .tcl {
 		# We have no discernible result shlib, take
@@ -392,6 +394,7 @@ proc ::critcl::app::Cmdline {argv} {
 		# name
 
 		set v::outname [file rootname $name]
+		set addext 1
 	    }
 	    "" {
 		# See above for .tcl, except that there is no stem to
@@ -418,9 +421,10 @@ proc ::critcl::app::Cmdline {argv} {
 	    append v::outname $ver
 	}
 
-	if {[file extension $v::shlname] eq ""} {
+	if {$addext || ([file extension $v::shlname] eq "")} {
 	    append v::shlname [critcl::sharedlibext]
 	}
+
 	critcl::config combine dynamic
 
 	if {![llength $v::src]} {
@@ -907,7 +911,7 @@ proc ::critcl::app::AssemblePackage {} {
 
     set shl [file tail $v::shlname]
 
-    CreatePackageIndex     $shlibdir [file root $shl] \
+    CreatePackageIndex     $shlibdir [file rootname $shl] \
 	[PlaceTclCompanionFiles $pkgdir]
     CreateLicenseTerms     $pkgdir
     CreateRuntimeSupport   $pkgdir

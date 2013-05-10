@@ -1,4 +1,4 @@
-[section {Changes for version 3.1.9 to be}]
+[section {Changes for version 3.1.9}]
 [list_begin enumerated]
 
 [enum]	Fixed issue #27. Added missing platform definitions for
@@ -25,5 +25,7 @@
 
 [enum]	Fixed issue #32. Merged pull request by Andrew Shadura.
 	Various typos in documentation and comments.
+
+[enum]	Fixed issue #33. Handle files starting with a dot better.
 
 [list_end]

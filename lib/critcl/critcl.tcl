@@ -4282,7 +4282,8 @@ proc ::critcl::PkgInit {file} {
     if {$file eq {}} {
 	return Stdin
     } else {
-	regexp {^\w+} [file tail $file] ininame
+	set ininame [file rootname [file tail $file]]
+	regsub -all {[^[:alnum:]_]} $ininame {} ininame
 	return [string totitle $ininame]
     }
 }
