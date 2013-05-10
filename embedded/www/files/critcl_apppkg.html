@@ -92,7 +92,7 @@
     }
 --></style>
 </head>
-<! -- Generated from file '/home/aku/Projects/Critcl/dev-master/embedded/www/files/critcl_apppkg.html' by tcllib/doctools with format 'html'
+<! -- Generated from file '/home/aku/Projects/Packages/Critcl/dev-master/embedded/www/files/critcl_apppkg.html' by tcllib/doctools with format 'html'
    -->
 <! -- Copyright &copy; Jean-Claude Wippler   -- Copyright &copy; Steve Landers   -- Copyright &copy; 2011-2013 Andreas Kupries
    -->
@@ -958,11 +958,24 @@ instance creation for clarity. Bumped to version 1.0.2.</p></li>
 </div>
 <div id="section24" class="section"><h2><a name="section24">Changes for version 3.1.9 to be</a></h2>
 <ol class="enumerated">
-<li><p>Fixed issue #28. Added missing -mXX flags for linking at the
-	linux-{32,64}-* targets.</p></li>
 <li><p>Fixed issue #27. Added missing platform definitions for
 	various alternate linux and OS X targets.</p></li>
-<li><p>Fixed issue #32. Merged pull request by Andrew Shadoura.
+<li><p>Fixed issue #28. Added missing -mXX flags for linking at the
+	linux-{32,64}-* targets.</p></li>
+<li><p>Fixed issue #29. Replaced the use of raw &quot;cheaders&quot;
+	information in the processing of &quot;cdefines&quot; with the proper
+	include directives derived from it.</p></li>
+<li><p>Fixed the issue behind rejected pull request #30 by Andrew
+	Shadura. Dynamically extract the stubs variable declarations
+	from the Tcl header files and generate matching variable
+	definitions for use in the package code. The generated code
+	will now be always consistent with the headers, even when
+	critcl's own copy of them is replaced by system headers.</p></li>
+<li><p>Fixed issue #31. Accepted patch by Andrew Shadura, with
+	changes (comments), for easier integration of critcl with
+	OS package systems, replacing critcl's copies of Tcl headers
+	with their own.</p></li>
+<li><p>Fixed issue #32. Merged pull request by Andrew Shadura.
 	Various typos in documentation and comments.</p></li>
 </ol>
 </div>

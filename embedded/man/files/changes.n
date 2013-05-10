@@ -1,5 +1,5 @@
 '\"
-'\" Generated from file '/home/aku/Projects/Critcl/dev-master/embedded/man/files/changes\&.n' by tcllib/doctools with format 'nroff'
+'\" Generated from file '/home/aku/Projects/Packages/Critcl/dev-master/embedded/man/files/changes\&.n' by tcllib/doctools with format 'nroff'
 '\" Copyright (c) Jean-Claude Wippler
 '\" Copyright (c) Steve Landers
 '\" Copyright (c) 2011-2013 Andreas Kupries
@@ -784,13 +784,29 @@ consider while fixing bug #21 (see critcl 3\&.1\&.6)\&.
 .PP
 .SH "CHANGES FOR VERSION 3\&.1\&.9 TO BE"
 .IP [1]
-Fixed issue #28\&. Added missing -mXX flags for linking at the
-linux-{32,64}-* targets\&.
-.IP [2]
 Fixed issue #27\&. Added missing platform definitions for
 various alternate linux and OS X targets\&.
+.IP [2]
+Fixed issue #28\&. Added missing -mXX flags for linking at the
+linux-{32,64}-* targets\&.
 .IP [3]
-Fixed issue #32\&. Merged pull request by Andrew Shadoura\&.
+Fixed issue #29\&. Replaced the use of raw "cheaders"
+information in the processing of "cdefines" with the proper
+include directives derived from it\&.
+.IP [4]
+Fixed the issue behind rejected pull request #30 by Andrew
+Shadura\&. Dynamically extract the stubs variable declarations
+from the Tcl header files and generate matching variable
+definitions for use in the package code\&. The generated code
+will now be always consistent with the headers, even when
+critcl's own copy of them is replaced by system headers\&.
+.IP [5]
+Fixed issue #31\&. Accepted patch by Andrew Shadura, with
+changes (comments), for easier integration of critcl with
+OS package systems, replacing critcl's copies of Tcl headers
+with their own\&.
+.IP [6]
+Fixed issue #32\&. Merged pull request by Andrew Shadura\&.
 Various typos in documentation and comments\&.
 .PP
 .SH AUTHORS

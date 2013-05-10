@@ -1,5 +1,5 @@
 '\"
-'\" Generated from file '/home/aku/Projects/Critcl/dev-master/embedded/man/files/license\&.n' by tcllib/doctools with format 'nroff'
+'\" Generated from file '/home/aku/Projects/Packages/Critcl/dev-master/embedded/man/files/license\&.n' by tcllib/doctools with format 'nroff'
 '\" Copyright (c) Jean-Claude Wippler
 '\" Copyright (c) Steve Landers
 '\" Copyright (c) 2011-2013 Andreas Kupries
