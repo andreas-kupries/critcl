@@ -240,14 +240,14 @@ Database Class:	\\fB\\$3\\fR
 .de UL
 \\$1\l'|0\(ul'\\$2
 ..
-.TH "critcl::app" n 3\&.1\&.8 doc "C Runtime In Tcl (CriTcl)"
+.TH "critcl::app" n 3\&.1\&.10 doc "C Runtime In Tcl (CriTcl)"
 .BS
 .SH NAME
 critcl::app \- Critcl - Application Package Reference
 .SH SYNOPSIS
 package require \fBTcl  8\&.4\fR
 .sp
-package require \fBcritcl::app  ?3\&.1\&.8?\fR
+package require \fBcritcl::app  ?3\&.1\&.10?\fR
 .sp
 package require \fBcritcl  ?2?\fR
 .sp
