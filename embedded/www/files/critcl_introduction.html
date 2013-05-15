@@ -134,8 +134,9 @@
 <li class="section"><a href="#section22">Changes for version 3.1.7</a></li>
 <li class="section"><a href="#section23">Changes for version 3.1.8</a></li>
 <li class="section"><a href="#section24">Changes for version 3.1.9</a></li>
-<li class="section"><a href="#section25">Authors</a></li>
-<li class="section"><a href="#section26">Bugs, Ideas, Feedback</a></li>
+<li class="section"><a href="#section25">Changes for version 3.1.10</a></li>
+<li class="section"><a href="#section26">Authors</a></li>
+<li class="section"><a href="#section27">Bugs, Ideas, Feedback</a></li>
 <li class="section"><a href="#keywords">Keywords</a></li>
 <li class="section"><a href="#category">Category</a></li>
 <li class="section"><a href="#copyright">Copyright</a></li>
@@ -745,10 +746,22 @@ instance creation for clarity. Bumped to version 1.0.2.</p></li>
 <li><p>Fixed issue #33. Handle files starting with a dot better.</p></li>
 </ol>
 </div>
-<div id="section25" class="section"><h2><a name="section25">Authors</a></h2>
+<div id="section25" class="section"><h2><a name="section25">Changes for version 3.1.10</a></h2>
+<ol class="enumerated">
+<li><p>Fixed code version numbering forgotten with 3.1.9.</p></li>
+<li><p>Fixed issue #35. In package mode (-pkg) the object cache
+	directory is unique to the process, thus we do not need
+	content-hashing to generate unique file names. A simple
+	counter is sufficient and much faster.</p>
+<p>Note that mode &quot;compile &amp; run&quot; is not as blessed and still
+	uses content-hasing with md5 to ensure unique file names
+	in its per-user object cache.</p></li>
+</ol>
+</div>
+<div id="section26" class="section"><h2><a name="section26">Authors</a></h2>
 <p>Jean Claude Wippler, Steve Landers, Andreas Kupries</p>
 </div>
-<div id="section26" class="section"><h2><a name="section26">Bugs, Ideas, Feedback</a></h2>
+<div id="section27" class="section"><h2><a name="section27">Bugs, Ideas, Feedback</a></h2>
 <p>This document, and the package it describes, will undoubtedly contain
 bugs and other problems.
 Please report them at <a href="https://github.com/andreas-kupries/critcl/issues">https://github.com/andreas-kupries/critcl/issues</a>.

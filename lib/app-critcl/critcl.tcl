@@ -111,6 +111,7 @@ proc ::critcl::app::main {argv} {
     if {$v::mode eq "pkg"} {
 	set pkgcache [PackageCache]
 	critcl::cache $pkgcache
+	critcl::fastuuid
     }
 
     ProcessInput

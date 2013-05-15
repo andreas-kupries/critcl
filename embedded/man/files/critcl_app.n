@@ -1245,6 +1245,19 @@ Various typos in documentation and comments\&.
 .IP [7]
 Fixed issue #33\&. Handle files starting with a dot better\&.
 .PP
+.SH "CHANGES FOR VERSION 3\&.1\&.10"
+.IP [1]
+Fixed code version numbering forgotten with 3\&.1\&.9\&.
+.IP [2]
+Fixed issue #35\&. In package mode (-pkg) the object cache
+directory is unique to the process, thus we do not need
+content-hashing to generate unique file names\&. A simple
+counter is sufficient and much faster\&.
+.sp
+Note that mode "compile & run" is not as blessed and still
+uses content-hasing with md5 to ensure unique file names
+in its per-user object cache\&.
+.PP
 .SH AUTHORS
 Jean Claude Wippler, Steve Landers, Andreas Kupries
 .SH "BUGS, IDEAS, FEEDBACK"

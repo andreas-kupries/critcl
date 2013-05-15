@@ -67,9 +67,15 @@ namespace eval ::critcl {}
 
 # ouch, some md5 implementations return hex, others binary
 if {[string length [md5 ""]] == 32} {
-    proc ::critcl::md5_hex {s} { return [md5 $s] }
+    proc ::critcl::md5_hex {s} {
+	if {$v::uuidcounter} { return [format %032d [incr v::uuidcounter]] }
+	return [md5 $s]
+    }
 } else {
-    proc ::critcl::md5_hex {s} { binary scan [md5 $s] H* md; return $md }
+    proc ::critcl::md5_hex {s} {
+	if {$v::uuidcounter} { return [format %032d [incr v::uuidcounter]] }
+	binary scan [md5 $s] H* md; return $md
+    }
 }
 
 # # ## ### ##### ######## ############# #####################
@@ -2320,6 +2326,11 @@ proc ::critcl::sharedlibext {} {
 
 proc ::critcl::buildforpackage {{buildforpackage 1}} {
     set v::buildforpackage $buildforpackage
+    return
+}
+
+proc ::critcl::fastuuid {} {
+    set v::uuidcounter 1 ;# Activates it.
     return
 }
 
@@ -5041,6 +5052,9 @@ namespace eval ::critcl {
 				  # "Log*" and "ExecWithLogging".
 	variable failed  0       ;# Build status. Used by "Status*"
 	variable err     ""	 ;# and "Exec*". Build error text.
+
+	variable uuidcounter 0   ;# Counter for uuid generation in package mode.
+	                         ;# md5 is bypassed when used.
 
 	variable buildforpackage 0 ;# Boolean flag controlling
 				    # cbuild's behaviour. Named after
