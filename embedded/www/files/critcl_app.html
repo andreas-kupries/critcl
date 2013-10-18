@@ -946,6 +946,10 @@ instance creation for clarity. Bumped to version 1.0.2.</p></li>
 <p>Note that mode &quot;compile &amp; run&quot; is not as blessed and still
 	uses content-hasing with md5 to ensure unique file names
 	in its per-user object cache.</p></li>
+<li><p>Fixed issue where the <b class="cmd">ccommand</b> forgot to use its body as
+	input for the UUID generation. Thus ignoring changes to it in
+	mode compile &amp; run, and not rebuilding a library for changed
+	sources. Bug and fix reported by Peter Spjuth.</p></li>
 </ol>
 </div>
 <div id="section24" class="section"><h2><a name="section24">Authors</a></h2>

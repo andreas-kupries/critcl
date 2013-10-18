@@ -3472,6 +3472,11 @@ counter is sufficient and much faster\&.
 Note that mode "compile & run" is not as blessed and still
 uses content-hasing with md5 to ensure unique file names
 in its per-user object cache\&.
+.IP [3]
+Fixed issue where the \fBccommand\fR forgot to use its body as
+input for the UUID generation\&. Thus ignoring changes to it in
+mode compile & run, and not rebuilding a library for changed
+sources\&. Bug and fix reported by Peter Spjuth\&.
 .PP
 .SH AUTHORS
 Jean Claude Wippler, Steve Landers, Andreas Kupries
