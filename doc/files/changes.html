@@ -92,7 +92,7 @@
     }
 --></style>
 </head>
-<! -- Generated from file '/home/aku/Projects/Packages/Critcl/dev-master/embedded/www/files/changes.html' by tcllib/doctools with format 'html'
+<! -- Generated from file 'changes.man' by tcllib/doctools with format 'html'
    -->
 <! -- Copyright &copy; Jean-Claude Wippler   -- Copyright &copy; Steve Landers   -- Copyright &copy; 2011-2013 Andreas Kupries
    -->
@@ -103,7 +103,7 @@
   <a href="../toc.html">Table Of Contents</a>
 | <a href="../index.html">Keyword Index</a>
 ] <hr>
-<h1 class="title">critcl_changes(n) 3.1.8 doc &quot;C Runtime In Tcl (CriTcl)&quot;</h1>
+<h1 class="title">critcl_changes(n) 3.1.10 doc &quot;C Runtime In Tcl (CriTcl)&quot;</h1>
 <div id="name" class="section"><h2><a name="name">Name</a></h2>
 <p>critcl_changes - CriTcl Changes</p>
 </div>
@@ -130,8 +130,9 @@
 <li class="section"><a href="#section18">Changes for version 3.1.7</a></li>
 <li class="section"><a href="#section19">Changes for version 3.1.8</a></li>
 <li class="section"><a href="#section20">Changes for version 3.1.9</a></li>
-<li class="section"><a href="#section21">Authors</a></li>
-<li class="section"><a href="#section22">Bugs, Ideas, Feedback</a></li>
+<li class="section"><a href="#section21">Changes for version 3.1.10</a></li>
+<li class="section"><a href="#section22">Authors</a></li>
+<li class="section"><a href="#section23">Bugs, Ideas, Feedback</a></li>
 <li class="section"><a href="#keywords">Keywords</a></li>
 <li class="section"><a href="#category">Category</a></li>
 <li class="section"><a href="#copyright">Copyright</a></li>
@@ -607,13 +608,29 @@ instance creation for clarity. Bumped to version 1.0.2.</p></li>
 	with their own.</p></li>
 <li><p>Fixed issue #32. Merged pull request by Andrew Shadura.
 	Various typos in documentation and comments.</p></li>
-<li><p>Fixed issue #33. Handle files starting with a dot better.</p></li>
+<li><p>Fixed issue #34. Handle files starting with a dot better.</p></li>
 </ol>
 </div>
-<div id="section21" class="section"><h2><a name="section21">Authors</a></h2>
+<div id="section21" class="section"><h2><a name="section21">Changes for version 3.1.10</a></h2>
+<ol class="enumerated">
+<li><p>Fixed code version numbering forgotten with 3.1.9.</p></li>
+<li><p>Fixed issue #35. In package mode (-pkg) the object cache
+	directory is unique to the process, thus we do not need
+	content-hashing to generate unique file names. A simple
+	counter is sufficient and much faster.</p>
+<p>Note that mode &quot;compile &amp; run&quot; is not as blessed and still
+	uses content-hasing with md5 to ensure unique file names
+	in its per-user object cache.</p></li>
+<li><p>Fixed issue where the <b class="cmd">ccommand</b> forgot to use its body as
+	input for the UUID generation. Thus ignoring changes to it in
+	mode compile &amp; run, and not rebuilding a library for changed
+	sources. Bug and fix reported by Peter Spjuth.</p></li>
+</ol>
+</div>
+<div id="section22" class="section"><h2><a name="section22">Authors</a></h2>
 <p>Jean Claude Wippler, Steve Landers, Andreas Kupries</p>
 </div>
-<div id="section22" class="section"><h2><a name="section22">Bugs, Ideas, Feedback</a></h2>
+<div id="section23" class="section"><h2><a name="section23">Bugs, Ideas, Feedback</a></h2>
 <p>This document, and the package it describes, will undoubtedly contain
 bugs and other problems.
 Please report them at <a href="https://github.com/andreas-kupries/critcl/issues">https://github.com/andreas-kupries/critcl/issues</a>.
