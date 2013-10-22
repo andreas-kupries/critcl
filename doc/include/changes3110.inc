@@ -12,4 +12,9 @@
 	uses content-hasing with md5 to ensure unique file names
 	in its per-user object cache.
 
+[enum]	Fixed issue where the [cmd ccommand] forgot to use its body as
+	input for the UUID generation. Thus ignoring changes to it in
+	mode compile & run, and not rebuilding a library for changed
+	sources. Bug and fix reported by Peter Spjuth.
+
 [list_end]

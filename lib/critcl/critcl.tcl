@@ -212,6 +212,11 @@ proc ::critcl::ccommand {name anames args} {
         set args [lrange $args 2 end]
     }
 
+    # Put body back into args for integration into the MD5 uuid
+    # generated for mode compile&run. Bug and fix reported by Peter
+    # Spjuth.
+    lappend args $body
+
     if {$acname} {
 	BeginCommand static $name $anames $args
 	set ns  {}
