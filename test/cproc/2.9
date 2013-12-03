@@ -1,23 +1,24 @@
 /* ---------------------------------------------------------------------- */
 
-#define ns__aproc_beta0 "::aproc+beta"
-static void c__aproc_beta0()
+#define ns__aproc0 "::aproc"
+static int c__aproc0()
 {
 
 }
 
 static int
-tcl__aproc_beta0(ClientData cd, Tcl_Interp *interp, int oc, Tcl_Obj *CONST ov[])
+tcl__aproc0(ClientData cd, Tcl_Interp *interp, int oc, Tcl_Obj *CONST ov[])
 {
-
+  int rv;
   if (oc != 1) {
     Tcl_WrongNumArgs(interp, 1, ov, NULL);
     return TCL_ERROR;
   }
 
   /* Call - - -- --- ----- -------- */
-  c__aproc_beta0();
+  rv = c__aproc0();
 
-#line 4748 "critcl.tcl"
+#line 4756 "critcl.tcl"
+	Tcl_SetObjResult(interp, Tcl_NewIntObj(rv));
 	return TCL_OK;
 }

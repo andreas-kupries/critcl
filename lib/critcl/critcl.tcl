@@ -610,6 +610,8 @@ proc ::critcl::cproc {name adefs rtype {body "#"} args} {
 	    # we are able to handle.
 	}
 	default {
+	    # TODO FUTURE: We can handle this, see how cmdr does it
+	    # with thresholds.
 	    error "Unable to handle multiple segments of optional arguments"
 	}
     }

@@ -70,6 +70,31 @@ test critcl-cproc-2.5 {cproc, client data} -body {
     get critcl::cproc aproc {} void {} -arg-offset 3
 } -result [viewFile [localPath test/cproc/2.5]]
 
+test critcl-cproc-2.6 {cproc, int argument} -body {
+    get critcl::cproc aproc {
+        int anargument
+    } void {}
+} -result [viewFile [localPath test/cproc/2.6]]
+
+test critcl-cproc-2.7 {cproc, optional int argument} -body {
+    get critcl::cproc aproc {
+        int {anargument -1}
+    } void {}
+} -result [viewFile [localPath test/cproc/2.7]]
+
+test critcl-cproc-2.8 {cproc, optional args, separate blocks, not allowed (yet)} -body {
+    get critcl::cproc aproc {
+        int {x -1}
+        int y
+        int {z -1}
+    } void {}
+} -returnCodes error -result {Unable to handle multiple segments of optional arguments}
+
+
+test critcl-cproc-2.9 {cproc, int result} -body {
+    get critcl::cproc aproc {} int {}
+} -result [viewFile [localPath test/cproc/2.9]]
+
 # -------------------------------------------------------------------------
 ## XXX TODO one to multiple arguments
 ## XXX TODO optional arguments
