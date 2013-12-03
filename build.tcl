@@ -125,6 +125,13 @@ proc _recipes {} {
     puts [lsort -dict $r]
     return
 }
+proc Htest {} { return "\n\tRun the testsuite." }
+proc _test {} {
+    global argv
+    set    argv {} ;# clear for tcltest to see nothing
+    source [file dirname $::me]/test/all.tcl
+    return
+}
 proc Hdoc {} { return "\n\t(Re)Generate the embedded documentation." }
 proc _doc {} {
     cd [file dirname $::me]/doc
