@@ -1,5 +1,5 @@
 '\"
-'\" Generated from file '/home/aku/Projects/Packages/Critcl/dev-master/embedded/man/files/critcl_app\&.n' by tcllib/doctools with format 'nroff'
+'\" Generated from file 'critcl_app\&.man' by tcllib/doctools with format 'nroff'
 '\" Copyright (c) Jean-Claude Wippler
 '\" Copyright (c) Steve Landers
 '\" Copyright (c) 2011-2013 Andreas Kupries
@@ -1243,7 +1243,7 @@ with their own\&.
 Fixed issue #32\&. Merged pull request by Andrew Shadura\&.
 Various typos in documentation and comments\&.
 .IP [7]
-Fixed issue #33\&. Handle files starting with a dot better\&.
+Fixed issue #34\&. Handle files starting with a dot better\&.
 .PP
 .SH "CHANGES FOR VERSION 3\&.1\&.10"
 .IP [1]
