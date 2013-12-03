@@ -46,114 +46,29 @@ proc get {args} {
 
 # -------------------------------------------------------------------------
 
-test critcl-cproc-2.0 {basic cproc} -body {
+test critcl-cproc-2.0 {cproc, simple name} -body {
     get critcl::cproc aproc {} void {}
-} -result {/* ---------------------------------------------------------------------- */
+} -result [viewFile [localPath test/cproc/2.0]]
 
-#define ns__aproc0 "::aproc"
-static void c__aproc0()
-{
-
-}
-
-static int
-tcl__aproc0(ClientData cd, Tcl_Interp *interp, int oc, Tcl_Obj *CONST ov[])
-{
-
-  if (oc != 1) {
-    Tcl_WrongNumArgs(interp, 1, ov, NULL);
-    return TCL_ERROR;
-  }
-
-  /* Call - - -- --- ----- -------- */
-  c__aproc0();
-
-#line 4603 "critcl.tcl"
-	return TCL_OK;
-}}
-
-# -------------------------------------------------------------------------
-
-test critcl-cproc-2.1 {basic cproc, namespaced} -body {
+test critcl-cproc-2.1 {cproc, namespaced name} -body {
     get critcl::cproc the::aproc {} void {}
-} -result {/* ---------------------------------------------------------------------- */
+} -result [viewFile [localPath test/cproc/2.1]]
 
-#define ns__the_aproc0 "::the::aproc"
-static void c__the_aproc0()
-{
-
-}
-
-static int
-tcl__the_aproc0(ClientData cd, Tcl_Interp *interp, int oc, Tcl_Obj *CONST ov[])
-{
-
-  if (oc != 1) {
-    Tcl_WrongNumArgs(interp, 1, ov, NULL);
-    return TCL_ERROR;
-  }
-
-  /* Call - - -- --- ----- -------- */
-  c__the_aproc0();
-
-#line 4603 "critcl.tcl"
-	return TCL_OK;
-}}
-
-# -------------------------------------------------------------------------
-
-test critcl-cproc-2.2 {basic cproc, Tcl vs C identifiers} -body {
+test critcl-cproc-2.2 {cproc, Tcl vs C identifiers} -body {
     get critcl::cproc aproc+beta {} void {}
-} -result {/* ---------------------------------------------------------------------- */
+} -result [viewFile [localPath test/cproc/2.2]]
 
-#define ns__aproc_beta0 "::aproc+beta"
-static void c__aproc_beta0()
-{
-
-}
-
-static int
-tcl__aproc_beta0(ClientData cd, Tcl_Interp *interp, int oc, Tcl_Obj *CONST ov[])
-{
-
-  if (oc != 1) {
-    Tcl_WrongNumArgs(interp, 1, ov, NULL);
-    return TCL_ERROR;
-  }
-
-  /* Call - - -- --- ----- -------- */
-  c__aproc_beta0();
-
-#line 4603 "critcl.tcl"
-	return TCL_OK;
-}}
-
-# -------------------------------------------------------------------------
-
-test critcl-cproc-2.3 {basic cproc, custom C name} -body {
+test critcl-cproc-2.3 {cproc, custom C name} -body {
     get critcl::cproc snafu {} void {} -cname 1
-} -result {/* ---------------------------------------------------------------------- */
+} -result [viewFile [localPath test/cproc/2.3]]
 
-static void c_snafu()
-{
+test critcl-cproc-2.4 {cproc, client data} -body {
+    get critcl::cproc aproc {} void {} -pass-cdata 1
+} -result [viewFile [localPath test/cproc/2.4]]
 
-}
-
-static int
-snafu(ClientData cd, Tcl_Interp *interp, int oc, Tcl_Obj *CONST ov[])
-{
-
-  if (oc != 1) {
-    Tcl_WrongNumArgs(interp, 1, ov, NULL);
-    return TCL_ERROR;
-  }
-
-  /* Call - - -- --- ----- -------- */
-  c_snafu();
-
-#line 4603 "critcl.tcl"
-	return TCL_OK;
-}}
+test critcl-cproc-2.5 {cproc, client data} -body {
+    get critcl::cproc aproc {} void {} -arg-offset 3
+} -result [viewFile [localPath test/cproc/2.5]]
 
 # -------------------------------------------------------------------------
 ## XXX TODO one to multiple arguments
