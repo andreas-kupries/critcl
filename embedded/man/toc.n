@@ -248,11 +248,17 @@ doc
 \fBcritcl::app\fR
 \fIfiles/critcl_apppkg\&.n\fR: Critcl - Application Package Reference
 .TP
+\fBcritcl::bitmap\fR
+\fIfiles/critcl_bitmap\&.n\fR: CriTcl Utilities: Bitset en- and decoding
+.TP
 \fBcritcl::class\fR
 \fIfiles/critcl_class\&.n\fR: CriTcl Utilities: C Classes
 .TP
 \fBcritcl::iassoc\fR
 \fIfiles/critcl_iassoc\&.n\fR: CriTcl Utilities: Tcl Interp Associations
+.TP
+\fBcritcl::literals\fR
+\fIfiles/critcl_literals\&.n\fR: CriTcl Utilities: Constant string pools
 .TP
 \fBcritcl::util\fR
 \fIfiles/critcl_util\&.n\fR: CriTcl Utilities

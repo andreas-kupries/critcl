@@ -240,7 +240,7 @@ Database Class:	\\fB\\$3\\fR
 .de UL
 \\$1\l'|0\(ul'\\$2
 ..
-.TH "critcl_introduction" n 3\&.1\&.10 doc "C Runtime In Tcl (CriTcl)"
+.TH "critcl_introduction" n 3\&.1\&.11 doc "C Runtime In Tcl (CriTcl)"
 .BS
 .SH NAME
 critcl_introduction \- Introduction To CriTcl
@@ -1003,6 +1003,24 @@ Fixed issue where the \fBccommand\fR forgot to use its body as
 input for the UUID generation\&. Thus ignoring changes to it in
 mode compile & run, and not rebuilding a library for changed
 sources\&. Bug and fix reported by Peter Spjuth\&.
+.PP
+.SH "CHANGES FOR VERSION 3\&.1\&.11"
+.IP [1]
+New convenience command \fBcritcl::include\fR for easy
+inclusion of headers and other C files\&.
+.IP [2]
+New command \fBcritcl::make\fR to generate a local header of
+other C files for use by other parts of a package through
+inclusion\&.
+.IP [3]
+New utility package \fBcritcl::literals\fR for quick and
+easy setup of and access to pools of fixed Tcl_Obj* strings\&.
+Built on top of \fBcritcl::iassoc\fR\&.
+.IP [4]
+New utility package \fBcritcl::bitmap\fR for quick and easy
+setup and use of mappings between C bitsets and Tcl lists whose
+string elements represent that set\&.
+Built on top of \fBcritcl::iassoc\fR\&.
 .PP
 .SH AUTHORS
 Jean Claude Wippler, Steve Landers, Andreas Kupries

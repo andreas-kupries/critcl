@@ -1,0 +1,118 @@
+[comment {-*- tcl -*- doctools manpage}]
+[manpage_begin critcl::literals n 1]
+[include include/module2.inc]
+[keywords singleton {Tcl Interp Association}]
+[keywords {string pool} {literal pool}]
+[titledesc {CriTcl Utilities: Constant string pools}]
+[require Tcl 8.4]
+[require critcl [opt 3.1.11]]
+[require critcl::literals [opt 1]]
+[description]
+[para]
+[include include/welcome.inc]
+[para]
+
+This document is the reference manpage for the
+[package critcl::literals] package. This package provides convenience
+commands for advanced functionality built on top of both critcl core
+and package [package critcl::iassoc].
+
+[para] Many packages will have a fixed set of string constants
+occuring in one or places. Most of them will be coded to create a new
+string [const Tcl_Obj*] from a C [const char*] every time the constant
+is needed, as this is easy to to, despite the inherent waste of
+memory.
+
+[para] This package was written to make declaration and management of
+string pools which do not waste memory as easy as the wasteful
+solution, hiding all attendant complexity from the user.
+
+[para] Its intended audience are mainly developers wishing to write
+Tcl packages with embedded C code.
+
+[para] This package resides in the Core Package Layer of CriTcl.
+[para][image arch_core][para]
+
+[comment {===================================================================}]
+
+[section API]
+
+[list_begin definitions]
+[call [cmd ::critcl::literals::def] [arg name] [arg definition]]
+
+This command defines a C function with the given [arg name] which
+provides access to a pool of constant strings with a Tcl interpreter.
+
+[para] The [arg definition] dictionary provides the mapping from the
+C-level symbolic names to the string themselves.
+
+[para] The new function has two parameters, a [const Tcl_Interp*]
+pointer refering to the interpreter holding the string pool, and a
+code of type "[arg name]_names" (seebelow), the symbolic name of the
+literal to return. Tcl result of the function is a [const Tcl_Obj*]
+pointer to the request string constant.
+
+[para] The underlying string pool is automatically initialized on
+first access, and finalized on interpreter destruction.
+
+[para] The package generates multiple things (declarations and
+definitions) with names derived from [arg name], which has to be a
+proper C identifier.
+
+[list_begin definitions]
+[def [arg name]]
+The function providing access to the string pool.
+
+Its signature is
+[para][example_begin]
+Tcl_Obj* [arg name] (Tcl_Interp* interp, [arg name]_names literal);
+[example_end]
+
+[def [arg name]_names]
+A C enumeration type containing the symbolic names of the strings
+provided by the pool.
+
+[def [arg name].h]
+A header file containing the declarations for the accessor function
+and enumeration type, for use by other parts of the system, if
+necessary.
+
+[para] The generated file is stored in a place where it will not
+interfere with the overall system outside of the package, yet also be
+available for easy inclusion by package files ([cmd csources]).
+
+[list_end]
+[list_end]
+
+[comment {===================================================================}]
+[section Example]
+
+The example shown below is the specification of the string pool pulled
+from the draft work on a Tcl binding to Linux's inotify APIs.
+
+[example {
+package require Tcl 8.5
+package require critcl 3.1.11
+
+critcl::buildrequirement {
+    package require critcl::literals
+}
+
+critcl::literals::def tcl_inotify_strings {
+    w_create	"create"
+    w_directory	"directory"
+    w_events	"events"
+    w_file	"file"
+    w_handler	"handler"
+    w_remove	"remove"
+}
+
+# Declarations: tcl_inotify_strings.h
+# Type:         tcl_inotify_strings_names
+# Accessor:     Tcl_Obj* tcl_inotify_strings (Tcl_Interp*               interp,
+#                                             tcl_inotify_strings_names literal);
+}]
+
+[comment {===================================================================}]
+[include include/feedback2.inc]
+[manpage_end]

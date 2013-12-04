@@ -6,7 +6,7 @@
 
 # CriTcl Core.
 
-package provide critcl 3.1.10
+package provide critcl 3.1.11
 
 # # ## ### ##### ######## ############# #####################
 ## Requirements.
@@ -552,7 +552,7 @@ proc ::critcl::argtypesupport {name code} {
     lappend lines $code
     lappend lines "#endif"
 
-    set acsup($name) [join $lines \n]
+    set acsup($name) [join $lines \n]\n
     return
 }
 
@@ -853,6 +853,26 @@ proc ::critcl::Dpop {} {
 	unset this
     }
     return $slot
+}
+
+proc ::critcl::include {path} {
+    # Include a header or other C file into the current code.
+    msg -nonewline " (include <$path>)"
+    ccode "#include <$path>"
+}
+
+proc ::critcl::make {path contents} {
+    # Generate a header or other C file for pickup by other parts of
+    # the current package. Stored in the cache dir, making it local.
+    file mkdir [cache]
+    set cname [file join [cache] $path]
+
+    set c [open $cname.[pid] w]
+    puts -nonewline $c $contents\n\n
+    close $c
+    file rename -force $cname.[pid] $cname
+
+    return $path
 }
 
 proc ::critcl::source {path} {
@@ -4700,13 +4720,28 @@ proc ::critcl::Initialize {} {
 
     argtype pstring {
 	@A.s = Tcl_GetStringFromObj(@@, &(@A.len));
+	@A.o = @@;
     } critcl_pstring critcl_pstring
 
     argtypesupport pstring {
 	typedef struct critcl_pstring {
-	    char* s;
-	    int   len;
+	    Tcl_Obj* o;
+	    char*    s;
+	    int      len;
 	} critcl_pstring;
+    }
+
+    argtype list {
+	if (Tcl_ListObjGetElements (interp, @@, &(@A.c), &(@A.v)) != TCL_OK) return TCL_ERROR;
+	@A.o = @@;
+    } critcl_list critcl_list
+
+    argtypesupport list {
+	typedef struct critcl_list {
+	    Tcl_Obj*  o;
+	    Tcl_Obj** v;
+	    int       c;
+	} critcl_list;
     }
 
     argtype Tcl_Obj* {
@@ -5156,7 +5191,8 @@ namespace eval ::critcl {
 	at cache ccode ccommand cdata cdefines cflags cheaders \
 	check cinit clibraries compiled compiling config cproc \
 	csources debug done failed framework ldflags platform \
-	tk tsources preload license load tcl api userconfig meta
+	tk tsources preload license load tcl api userconfig meta \
+	source include make
     # This is exported for critcl::app to pick up when generating the
     # dummy commands in the runtime support of a generated package.
     namespace export Ignore

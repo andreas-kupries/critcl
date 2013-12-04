@@ -331,6 +331,37 @@ No argument checking is done.
 The Tcl level word is passed to the argument as-is.
 
 [comment {% % %% %%% %%%%% %%%%%%%% %%%%%%%%%%%%%}]
+[def pstring]
+The function takes an argument of type "critcl_pstring" containing the
+original Tcl_Obj* reference of the Tcl argument, plus the length of
+the string and pointer to the characters.
+
+[example {
+typedef struct critcl_pstring {
+    Tcl_Obj* o;
+    char*    s;
+    int      len;
+} critcl_pstring;
+}]
+
+[comment {% % %% %%% %%%%% %%%%%%%% %%%%%%%%%%%%%}]
+[def list]
+The function takes an argument of type "critcl_list" containing the
+original Tcl_Obj* reference of the Tcl argument, plus the length of
+the Tcl list and pointer to the list elements.
+
+[example {
+typedef struct critcl_list {
+    Tcl_Obj*  o;
+    Tcl_Obj** v;
+    int       c;
+} critcl_list;
+}]
+
+The Tcl argument must be convertible to List, an error is thrown
+otherwise.
+
+[comment {% % %% %%% %%%%% %%%%%%%% %%%%%%%%%%%%%}]
 [def bytearray]
 [def rawchar*]
 [def rawchar]
@@ -450,6 +481,17 @@ which should not be accessible by any other parts of the C code.
 
 [para]
 The result of the command is the empty string.
+
+[comment ---------------------------------------------------------------------]
+[call [cmd ::critcl::include] [arg path]]
+
+This command is a convenient shorthand for
+
+[example {
+critcl::code {
+  #include <${path}>
+}
+}]
 
 [comment ---------------------------------------------------------------------]
 [list_end]

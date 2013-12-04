@@ -240,7 +240,7 @@ Database Class:	\\fB\\$3\\fR
 .de UL
 \\$1\l'|0\(ul'\\$2
 ..
-.TH "critcl_install_guide" n 3\&.1\&.10 doc "C Runtime In Tcl (CriTcl)"
+.TH "critcl_install_guide" n 3\&.1\&.11 doc "C Runtime In Tcl (CriTcl)"
 .BS
 .SH NAME
 critcl_install_guide \- Critcl - The Installer's Guide
