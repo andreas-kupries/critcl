@@ -190,6 +190,7 @@ proc ::critcl::ccommand {name anames args} {
     SkipIgnored [set file [This]]
     AbortWhenCalledAfterBuild
 
+    # Basic key for the clientdata and delproc arrays.
     set cname $name[UUID.serial $file]
 
     if {[llength $args]} {
@@ -221,13 +222,13 @@ proc ::critcl::ccommand {name anames args} {
 
     if {$acname} {
 	BeginCommand static $name $anames $args
-	set ns  {}
-	set cns {}
-	set key $cname
+	set ns    {}
+	set cns   {}
+	set key   $cname
 	set wname $name
     } else {
 	lassign [BeginCommand public $name $anames $args] ns cns name cname
-	set key [string map {:: _} $ns$cname]
+	set key   [string map {:: _} $ns$cname]
 	set wname tcl_$cns$cname
     }
 

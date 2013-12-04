@@ -85,18 +85,16 @@ test critcl-ccommand-3.0 {ccommand, defaults} -setup setup -body {
 } -cleanup cleanup -match glob \
     -result [viewFile [localPath test/ccommand/3.0]]
 
-test critcl-ccommand-3.4 {ccommand, -delproc} -constraints knownBug -setup setup -body {
+test critcl-ccommand-3.4 {ccommand, -delproc} -setup setup -body {
     critcl::ccommand command {} { return TCL_OK; } -delproc DELE
     critcl::cbuild [the-file]
-    #parray critcl::v::delproc
     inspect v*.c
 } -cleanup cleanup -match glob \
     -result [viewFile [localPath test/ccommand/3.4]]
 
-test critcl-ccommand-3.5 {ccommand, -clientdata} -constraints knownBug -setup setup -body {
+test critcl-ccommand-3.5 {ccommand, -clientdata} -setup setup -body {
     critcl::ccommand command {} { return TCL_OK; } -clientdata ABC
     critcl::cbuild [the-file]
-    #parray critcl::v::clientdata
     inspect v*.c
 } -cleanup cleanup -match glob \
     -result [viewFile [localPath test/ccommand/3.5]]
