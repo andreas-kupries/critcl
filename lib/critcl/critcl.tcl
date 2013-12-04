@@ -190,6 +190,8 @@ proc ::critcl::ccommand {name anames args} {
     SkipIgnored [set file [This]]
     AbortWhenCalledAfterBuild
 
+    set cname $name[UUID.serial $file]
+
     if {[llength $args]} {
 	set body [lindex $args 0]
 	set args [lrange $args 1 end]
@@ -221,11 +223,11 @@ proc ::critcl::ccommand {name anames args} {
 	BeginCommand static $name $anames $args
 	set ns  {}
 	set cns {}
-	set key $name
+	set key $cname
 	set wname $name
     } else {
 	lassign [BeginCommand public $name $anames $args] ns cns name cname
-	set key [string map {:: _} $ns$name]
+	set key [string map {:: _} $ns$cname]
 	set wname tcl_$cns$cname
     }
 
