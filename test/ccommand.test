@@ -17,9 +17,14 @@ support {
     useLocal lib/stubs/container.tcl stubs::container
     useLocal lib/stubs/reader.tcl    stubs::reader
     useLocal lib/stubs/genframe.tcl  stubs::gen
+
+    # Helper procedures
+    useLocalFile test/support.tcl
 }
 testing {
     useLocal lib/critcl/critcl.tcl critcl
+
+    overrides
 }
 
 # -------------------------------------------------------------------------
@@ -34,67 +39,53 @@ test critcl-ccommand-1.0 {ccommand, wrong\#args} -setup {
 # -------------------------------------------------------------------------
 ## Go through the various knobs we can use to configure the definition and output
 
-proc get {args} {
-    set t [string trim [critcl::collect $args]]
-    #regsub -all -- {#line \d+ } $t {#line XX } t
-    return $t
-}
-
-test critcl-ccommand-2.0 {basic ccommand} -body {
+test critcl-ccommand-2.0 {ccommand, defaults} -body {
     get critcl::ccommand command {} {
         return TCL_OK;
     }
-} -result {/* ---------------------------------------------------------------------- */
+} -result [viewFile [localPath test/ccommand/2.0]]
 
-#define ns__command0 "::command"
-static int tcl__command0(ClientData clientdata, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[])
-{
-return TCL_OK;
-}}
-
-# -------------------------------------------------------------------------
-
-test critcl-ccommand-2.1 {basic ccommand, custom arguments} -body {
+test critcl-ccommand-2.1 {ccommand, custom arguments} -body {
     get critcl::ccommand command {CD IP OC OV} {
         return TCL_OK;
     }
-} -result {/* ---------------------------------------------------------------------- */
+} -result [viewFile [localPath test/ccommand/2.1]]
 
-#define ns__command0 "::command"
-static int tcl__command0(ClientData CD, Tcl_Interp *IP, int OC, Tcl_Obj *CONST OV[])
-{
-return TCL_OK;
-}}
-
-# -------------------------------------------------------------------------
-
-test critcl-ccommand-2.2 {basic ccommand, custom C name} -body {
+test critcl-ccommand-2.2 {ccommand, -cname (custom C name)} -body {
     get critcl::ccommand snafu {} {
         return TCL_OK;
     } -cname 1
-} -result {/* ---------------------------------------------------------------------- */
+} -result [viewFile [localPath test/ccommand/2.2]]
 
-static int snafu(ClientData clientdata, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[])
-{
-return TCL_OK;
-}}
-
-# -------------------------------------------------------------------------
-
-test critcl-ccommand-2.2 {basic ccommand, namespaced, and Tcl vs C} -body {
+test critcl-ccommand-2.3 {ccommand, namespaced name, and Tcl vs C} -body {
     get critcl::ccommand the::command+max {} {
         return TCL_OK;
     }
-} -result {/* ---------------------------------------------------------------------- */
+} -result [viewFile [localPath test/ccommand/2.3]]
 
-#define ns__the_command_max0 "::the::command+max"
-static int tcl__the_command_max0(ClientData clientdata, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[])
-{
-return TCL_OK;
-}}
+test critcl-ccommand-2.4 {ccommand, -delproc} -body {
+    get critcl::ccommand command {} {
+        return TCL_OK;
+    } -delproc 1
+} -result [viewFile [localPath test/ccommand/2.0]]
+
+test critcl-ccommand-2.5 {ccommand, -clientdata} -body {
+    get critcl::ccommand command {} {
+        return TCL_OK;
+    } -clientdata CD
+} -result [viewFile [localPath test/ccommand/2.0]]
 
 # -------------------------------------------------------------------------
+## Full builds.
 
+test critcl-ccommand-3.0 {ccommand, defaults} -setup setup -body {
+    critcl::ccommand command {} { return TCL_OK; }
+    critcl::cbuild [the-file]
+    inspect v*.c
+} -cleanup cleanup -match glob \
+    -result [viewFile [localPath test/ccommand/3.0]]
+
+# -------------------------------------------------------------------------
 testsuiteCleanup
 
 # Local variables:
