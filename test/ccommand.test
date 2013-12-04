@@ -66,13 +66,13 @@ test critcl-ccommand-2.3 {ccommand, namespaced name, and Tcl vs C} -body {
 test critcl-ccommand-2.4 {ccommand, -delproc} -body {
     get critcl::ccommand command {} {
         return TCL_OK;
-    } -delproc 1
+    } -delproc DELE
 } -result [viewFile [localPath test/ccommand/2.0]]
 
 test critcl-ccommand-2.5 {ccommand, -clientdata} -body {
     get critcl::ccommand command {} {
         return TCL_OK;
-    } -clientdata CD
+    } -clientdata ABC
 } -result [viewFile [localPath test/ccommand/2.0]]
 
 # -------------------------------------------------------------------------
@@ -84,6 +84,25 @@ test critcl-ccommand-3.0 {ccommand, defaults} -setup setup -body {
     inspect v*.c
 } -cleanup cleanup -match glob \
     -result [viewFile [localPath test/ccommand/3.0]]
+
+test critcl-ccommand-3.4 {ccommand, -delproc} -constraints knownBug -setup setup -body {
+    critcl::ccommand command {} { return TCL_OK; } -delproc DELE
+    critcl::cbuild [the-file]
+    #parray critcl::v::delproc
+    inspect v*.c
+} -cleanup cleanup -match glob \
+    -result [viewFile [localPath test/ccommand/3.4]]
+
+test critcl-ccommand-3.5 {ccommand, -clientdata} -constraints knownBug -setup setup -body {
+    critcl::ccommand command {} { return TCL_OK; } -clientdata ABC
+    critcl::cbuild [the-file]
+    #parray critcl::v::clientdata
+    inspect v*.c
+} -cleanup cleanup -match glob \
+    -result [viewFile [localPath test/ccommand/3.5]]
+
+
+
 
 # -------------------------------------------------------------------------
 testsuiteCleanup

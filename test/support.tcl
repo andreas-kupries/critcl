@@ -20,6 +20,9 @@ proc the-file {} {
 
 proc cleanup {} {
     unset critcl::v::this
+    unset critcl::v::code
+    unset critcl::v::delproc
+    unset critcl::v::clientdata
     file delete -force -- [localPath test/CACHE]
     return
 }

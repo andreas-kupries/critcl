@@ -197,8 +197,8 @@ proc ::critcl::ccommand {name anames args} {
 	set body {}
     }
 
-    set clientdata NULL
-    set delproc    0
+    set clientdata NULL ;# Default: ClientData expression
+    set delproc    NULL ;# Default: Function pointer expression
     set acname     0
     while {[string match "-*" $args]} {
         switch -- [set opt [lindex $args 0]] {
