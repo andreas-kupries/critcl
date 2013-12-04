@@ -101,9 +101,6 @@ test critcl-ccommand-3.5 {ccommand, -clientdata} -constraints knownBug -setup se
 } -cleanup cleanup -match glob \
     -result [viewFile [localPath test/ccommand/3.5]]
 
-
-
-
 # -------------------------------------------------------------------------
 testsuiteCleanup
 
