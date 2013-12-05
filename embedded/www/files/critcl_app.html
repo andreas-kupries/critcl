@@ -955,6 +955,10 @@ instance creation for clarity. Bumped to version 1.0.2.</p></li>
 </div>
 <div id="section24" class="section"><h2><a name="section24">Changes for version 3.1.11</a></h2>
 <ol class="enumerated">
+<li><p>Fixed issue #37, via pull request #38, with thanks to
+       Jos DeCoster. Information was stored into the v::delproc
+       and v::clientdata arrays using a different key than when
+       retrieving the same information, thus failing the latter.</p></li>
 <li><p>New convenience command <b class="cmd">critcl::include</b> for easy
        inclusion of headers and other C files.</p></li>
 <li><p>New command <b class="cmd">critcl::make</b> to generate a local header of
