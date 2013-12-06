@@ -103,7 +103,7 @@
   <a href="../toc.html">Table Of Contents</a>
 | <a href="../index.html">Keyword Index</a>
 ] <hr>
-<h1 class="title">critcl_changes(n) 3.1.10 doc &quot;C Runtime In Tcl (CriTcl)&quot;</h1>
+<h1 class="title">critcl_changes(n) 3.1.11 doc &quot;C Runtime In Tcl (CriTcl)&quot;</h1>
 <div id="name" class="section"><h2><a name="name">Name</a></h2>
 <p>critcl_changes - CriTcl Changes</p>
 </div>
@@ -131,8 +131,9 @@
 <li class="section"><a href="#section19">Changes for version 3.1.8</a></li>
 <li class="section"><a href="#section20">Changes for version 3.1.9</a></li>
 <li class="section"><a href="#section21">Changes for version 3.1.10</a></li>
-<li class="section"><a href="#section22">Authors</a></li>
-<li class="section"><a href="#section23">Bugs, Ideas, Feedback</a></li>
+<li class="section"><a href="#section22">Changes for version 3.1.11</a></li>
+<li class="section"><a href="#section23">Authors</a></li>
+<li class="section"><a href="#section24">Bugs, Ideas, Feedback</a></li>
 <li class="section"><a href="#keywords">Keywords</a></li>
 <li class="section"><a href="#category">Category</a></li>
 <li class="section"><a href="#copyright">Copyright</a></li>
@@ -627,10 +628,30 @@ instance creation for clarity. Bumped to version 1.0.2.</p></li>
 	sources. Bug and fix reported by Peter Spjuth.</p></li>
 </ol>
 </div>
-<div id="section22" class="section"><h2><a name="section22">Authors</a></h2>
+<div id="section22" class="section"><h2><a name="section22">Changes for version 3.1.11</a></h2>
+<ol class="enumerated">
+<li><p>Fixed issue #37, via pull request #38, with thanks to
+       Jos DeCoster. Information was stored into the v::delproc
+       and v::clientdata arrays using a different key than when
+       retrieving the same information, thus failing the latter.</p></li>
+<li><p>New convenience command <b class="cmd">critcl::include</b> for easy
+       inclusion of headers and other C files.</p></li>
+<li><p>New command <b class="cmd">critcl::make</b> to generate a local header of
+       other C files for use by other parts of a package through
+       inclusion.</p></li>
+<li><p>New utility package <b class="package"><a href="critcl_literals.html">critcl::literals</a></b> for quick and
+       easy setup of and access to pools of fixed Tcl_Obj* strings.
+       Built on top of <b class="package"><a href="critcl_iassoc.html">critcl::iassoc</a></b>.</p></li>
+<li><p>New utility package <b class="package"><a href="critcl_bitmap.html">critcl::bitmap</a></b> for quick and easy
+       setup and use of mappings between C bitsets and Tcl lists whose
+       string elements represent that set.
+       Built on top of <b class="package"><a href="critcl_iassoc.html">critcl::iassoc</a></b>.</p></li>
+</ol>
+</div>
+<div id="section23" class="section"><h2><a name="section23">Authors</a></h2>
 <p>Jean Claude Wippler, Steve Landers, Andreas Kupries</p>
 </div>
-<div id="section23" class="section"><h2><a name="section23">Bugs, Ideas, Feedback</a></h2>
+<div id="section24" class="section"><h2><a name="section24">Bugs, Ideas, Feedback</a></h2>
 <p>This document, and the package it describes, will undoubtedly contain
 bugs and other problems.
 Please report them at <a href="https://github.com/andreas-kupries/critcl/issues">https://github.com/andreas-kupries/critcl/issues</a>.
