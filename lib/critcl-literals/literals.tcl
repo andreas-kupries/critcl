@@ -4,7 +4,7 @@
 # n/a
 
 # CriTcl Utility Package for Shared Tcl_Obj* literals of a package.
-# Based i-assocs.
+# Based on i-assocs.
 
 package provide critcl::literals 1
 
