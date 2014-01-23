@@ -16,6 +16,7 @@ set packages {
     {critcl-class    class.tcl}
     {critcl-iassoc   iassoc.tcl}
     {critcl-literals literals.tcl}
+    {critcl-enum     enum.tcl}
     {critcl-bitmap   bitmap.tcl}
     {app-critcl      ../critcl/critcl.tcl critcl-app}
     util84
