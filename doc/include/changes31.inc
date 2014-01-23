@@ -1,3 +1,16 @@
+[include changes3112.inc]
+[include changes3111.inc]
+[include changes3110.inc]
+[include changes319.inc]
+[include changes318.inc]
+[include changes317.inc]
+[include changes316.inc]
+[include changes315.inc]
+[include changes314.inc]
+[include changes313.inc]
+[include changes312.inc]
+[include changes311.inc]
+
 [section {Changes for version 3.1}]
 [list_begin enumerated]
 
@@ -85,15 +98,3 @@ details of the provided commands.
 
 [comment {- - -- --- ----- -------- ------------- ---------------------}]
 [list_end]
-
-[include changes311.inc]
-[include changes312.inc]
-[include changes313.inc]
-[include changes314.inc]
-[include changes315.inc]
-[include changes316.inc]
-[include changes317.inc]
-[include changes318.inc]
-[include changes319.inc]
-[include changes3110.inc]
-[include changes3111.inc]

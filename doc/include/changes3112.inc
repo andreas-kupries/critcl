@@ -1,0 +1,28 @@
+[section {Changes for version 3.1.12 - Not Released}]
+[list_begin enumerated]
+
+[enum] Extended the utility package [package critcl::literals] to
+       declare a cproc result-type for a pool.
+
+[para] Further fixed the generated header to handle multiple inclusion.
+
+[para] Bumped version to 1.1.
+
+[enum] Fixed issue with utility package [package critcl::bitmap].
+
+[para] Fixed the generated header to handle multiple inclusion.
+
+[para] Bumped version to 1.0.1.
+
+[enum] Created new utility package [package critcl::enum] for the
+       quick and easy setup and use of mappings between C values
+       and Tcl strings.
+
+       Built on top of [package critcl::literals].
+
+[enum] Added examples demonstrating the use of the utility packages
+	[package critcl::literals],
+	[package critcl::bitmap], and
+	[package critcl::enum]
+
+[list_end]

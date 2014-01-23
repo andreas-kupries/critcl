@@ -1,3 +1,11 @@
+[include changes307.inc]
+[include changes306.inc]
+[include changes305.inc]
+[include changes304.inc]
+[include changes303.inc]
+[include changes302.inc]
+[include changes301.inc]
+
 [section {Changes for version 3}]
 [list_begin enumerated]
 
@@ -81,11 +89,3 @@ for/about the package.
 [package critcl] package documentation for details.
 
 [list_end]
-
-[include changes301.inc]
-[include changes302.inc]
-[include changes303.inc]
-[include changes304.inc]
-[include changes305.inc]
-[include changes306.inc]
-[include changes307.inc]
