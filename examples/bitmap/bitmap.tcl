@@ -11,9 +11,6 @@ package require Tcl            8.4
 package require critcl         3.1.11
 package require critcl::bitmap 1
 
-puts [package ifneeded critcl::bitmap [package present critcl::bitmap]]
-critcl::debug memory
-
 # # ## ### ##### ######## ############# #####################
 ## Administrivia
 

@@ -9,7 +9,7 @@
 
 package require Tcl              8.4
 package require critcl           3.1.11
-package require critcl::literals 1
+package require critcl::literals 1.1 ;# result-type
 
 # # ## ### ##### ######## ############# #####################
 ## Administrivia
