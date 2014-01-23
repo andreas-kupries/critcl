@@ -198,6 +198,7 @@ proc critcl::bitmap::def {name dict {exclusions {}}} {
     }] int int
 
     critcl::resulttype $name \n[critcl::at::here!][string map $map {
+	/* @NAME@_decode result is 0-refcount */
 	Tcl_SetObjResult (interp, @NAME@_decode (interp, rv));
 	return TCL_OK;
     }] int
