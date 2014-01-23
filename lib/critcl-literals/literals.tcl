@@ -6,7 +6,7 @@
 # CriTcl Utility Package for Shared Tcl_Obj* literals of a package.
 # Based on i-assocs.
 
-package provide critcl::literals 1
+package provide critcl::literals 1.1
 
 # # ## ### ##### ######## ############# #####################
 ## Requirements.
@@ -81,6 +81,15 @@ proc critcl::literals::def {name dict} {
 	    return @NAME@_iassoc (interp)->literal [literal];
 	}
     }]
+
+    # IV. Define a convenient result-type definition wrapping the
+    #     decoder for use by cprocs.
+
+    critcl::resulttype $name \n[critcl::at::here!][string map $map {
+	/* @NAME@ result is effectively 0-refcount */
+	Tcl_SetObjResult (interp, @NAME@ (interp, rv));
+	return TCL_OK;
+    }] int
 }
 
 # # ## ### ##### ######## ############# #####################

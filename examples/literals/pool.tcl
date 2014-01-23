@@ -38,7 +38,14 @@ critcl::literals::def demo {
 }
 
 critcl::cproc str {Tcl_Interp* ip int code} object {
-    return demo (ip, code);
+    Tcl_Obj* res = demo (ip, code);
+    Tcl_IncrRefCount (res);
+    return res;
+}
+
+# Conversion hidden in the result-type
+critcl::cproc xstr {Tcl_Interp* ip int code} demo {
+    return code;
 }
 
 # str 0
