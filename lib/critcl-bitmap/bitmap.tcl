@@ -6,7 +6,7 @@
 # CriTcl Utility Package for bitmap en- and decoder.
 # Based on i-assoc.
 
-package provide critcl::bitmap 1
+package provide critcl::bitmap 1.0.1
 
 # # ## ### ##### ######## ############# #####################
 ## Requirements.
@@ -90,6 +90,9 @@ proc critcl::bitmap::def {name dict {exclusions {}}} {
     #    Declaration of the en- and decoder functions.
 
     critcl::include [critcl::make ${name}.h \n[critcl::at::here!][string map $map {
+	#ifndef @NAME@_HEADER
+	#define @NAME@_HEADER
+
 	/* Encode a flag list into the corresponding bitset */
 	extern int
 	@NAME@_encode (Tcl_Interp* interp,
@@ -100,6 +103,8 @@ proc critcl::bitmap::def {name dict {exclusions {}}} {
 	extern Tcl_Obj*
 	@NAME@_decode (Tcl_Interp* interp,
 		       int         mask);
+
+	#endif
     }]]
 
     # II: Generate the interp association holding the various

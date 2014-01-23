@@ -48,6 +48,9 @@ proc critcl::literals::def {name dict} {
     #    accessor function.
 
     critcl::include [critcl::make ${name}.h \n[critcl::at::here!][string map $map {
+	#ifndef @NAME@_HEADER
+	#define @NAME@_HEADER
+
 	/* Symbolic names for the literals */
 	typedef enum @NAME@_names {
 	    @CODES@
@@ -58,6 +61,8 @@ proc critcl::literals::def {name dict} {
 	extern Tcl_Obj*
 	@NAME@ (Tcl_Interp*  interp,
 		@NAME@_names literal);
+
+	#endif
     }]]
     ## future, maybe ? access macros, one per code ?
 
