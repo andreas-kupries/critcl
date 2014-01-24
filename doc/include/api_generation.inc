@@ -5,11 +5,11 @@ previous section they are not the same.
 Even so, like diversions this feature is for higher-level packages
 generating their own C code.
 
-[para] Two examples of utility packages using this facility comes with
-critcl itself.
+[para] Three examples of utility packages using this facility comes
+with critcl itself.
 
-See the implementations of package [package critcl::literals] and
-[package critcl::bitmap].
+See the implementations of packages [package critcl::literals],
+[package critcl::bitmap], and [package critcl::enum].
 
 [para] When splitting a package implementation into pieces it is often
 sensible to have a number of pure C companion files containing

@@ -1,12 +1,13 @@
 [comment {-*- tcl -*- doctools manpage}]
-[manpage_begin critcl::literals n 1]
+[vset literal_version 1.1]
+[manpage_begin critcl::literals n [vset literal_version]]
 [include include/module2.inc]
 [keywords singleton {Tcl Interp Association}]
 [keywords {string pool} {literal pool}]
 [titledesc {CriTcl Utilities: Constant string pools}]
 [require Tcl 8.4]
 [require critcl [opt 3.1.11]]
-[require critcl::literals [opt 1]]
+[require critcl::literals [opt [vset literal_version]]]
 [description]
 [para]
 [include include/welcome.inc]
@@ -48,9 +49,9 @@ C-level symbolic names to the string themselves.
 
 [para] The new function has two parameters, a [const Tcl_Interp*]
 pointer refering to the interpreter holding the string pool, and a
-code of type "[arg name]_names" (seebelow), the symbolic name of the
+code of type "[arg name]_names" (see below), the symbolic name of the
 literal to return. Tcl result of the function is a [const Tcl_Obj*]
-pointer to the request string constant.
+pointer to the requested string constant.
 
 [para] The underlying string pool is automatically initialized on
 first access, and finalized on interpreter destruction.
@@ -80,6 +81,13 @@ necessary.
 [para] The generated file is stored in a place where it will not
 interfere with the overall system outside of the package, yet also be
 available for easy inclusion by package files ([cmd csources]).
+
+[def [arg name]]
+[emph {New in version 1.1}]:
+
+At the level of critcl itself the command registers a new result-type
+for [cmd critcl::cproc], which takes an integer result from the function
+and converts it to the equivalent string in the pool for the script.
 
 [list_end]
 [list_end]
@@ -111,6 +119,7 @@ critcl::literals::def tcl_inotify_strings {
 # Type:         tcl_inotify_strings_names
 # Accessor:     Tcl_Obj* tcl_inotify_strings (Tcl_Interp*               interp,
 #                                             tcl_inotify_strings_names literal);
+# ResultType:   tcl_inotify_strings
 }]
 
 [comment {===================================================================}]
