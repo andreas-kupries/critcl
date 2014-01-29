@@ -1,6 +1,10 @@
 [section {Changes for version 3.1.12 - Not Released}]
 [list_begin enumerated]
 
+[enum] Fixed issue 40. Keep the order of libraries, and allow
+       duplicates. Both are things which are occasionally required for
+       proper linking.
+
 [enum] Extended the utility package [package critcl::literals] to
        declare a cproc result-type for a pool.
 

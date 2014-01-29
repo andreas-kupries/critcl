@@ -819,7 +819,7 @@ proc ::critcl::app::BuildBracket {} {
     eval $lib
 
     set                 lib critcl::clibraries
-    critcl::lappendlist lib [lsort -unique $v::clibraries]
+    critcl::lappendlist lib $v::clibraries
     eval $lib
 
     eval [linsert [lsort -unique $v::ldflags] 0 critcl::ldflags]
