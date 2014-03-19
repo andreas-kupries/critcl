@@ -1,6 +1,7 @@
 #!/bin/sh
 # -*- tcl -*- \
 exec tclsh "$0" ${1+"$@"}
+unset ::errorInfo
 set me [file normalize [info script]]
 proc main {} {
     global argv

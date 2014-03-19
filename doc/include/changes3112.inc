@@ -1,6 +1,10 @@
 [section {Changes for version 3.1.12 - Not Released}]
 [list_begin enumerated]
 
+[enum] Fixed issue 42. Clear ::errorInfo immediately after startup to
+       prevent leakage of irrelevant (caught) errors into our script
+       and confusing the usage code.
+
 [enum] Fixed issue 40. Keep the order of libraries, and allow
        duplicates. Both are things which are occasionally required for
        proper linking.
