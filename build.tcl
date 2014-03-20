@@ -2,7 +2,7 @@
 # -*- tcl -*- \
 exec tclsh "$0" ${1+"$@"}
 package require Tcl 8.4
-catch { unset ::errorInfo }
+unset -nocomplain ::errorInfo
 set me [file normalize [info script]]
 proc main {} {
     global argv
