@@ -114,29 +114,30 @@
 <li class="section"><a href="#section1">Description</a></li>
 <li class="section"><a href="#section2">Application Options</a></li>
 <li class="section"><a href="#section3">Package Structure</a></li>
-<li class="section"><a href="#section4">Changes for version 2.1</a></li>
-<li class="section"><a href="#section5">Changes for version 3</a></li>
-<li class="section"><a href="#section6">Changes for version 3.0.1</a></li>
-<li class="section"><a href="#section7">Changes for version 3.0.2</a></li>
-<li class="section"><a href="#section8">Changes for version 3.0.3</a></li>
-<li class="section"><a href="#section9">Changes for version 3.0.4</a></li>
-<li class="section"><a href="#section10">Changes for version 3.0.5</a></li>
-<li class="section"><a href="#section11">Changes for version 3.0.6</a></li>
-<li class="section"><a href="#section12">Changes for version 3.0.7</a></li>
-<li class="section"><a href="#section13">Changes for version 3.1</a></li>
-<li class="section"><a href="#section14">Changes for version 3.1.1</a></li>
-<li class="section"><a href="#section15">Changes for version 3.1.2</a></li>
-<li class="section"><a href="#section16">Changes for version 3.1.3</a></li>
-<li class="section"><a href="#section17">Changes for version 3.1.4</a></li>
-<li class="section"><a href="#section18">Changes for version 3.1.5</a></li>
-<li class="section"><a href="#section19">Changes for version 3.1.6</a></li>
-<li class="section"><a href="#section20">Changes for version 3.1.7</a></li>
-<li class="section"><a href="#section21">Changes for version 3.1.8</a></li>
-<li class="section"><a href="#section22">Changes for version 3.1.9</a></li>
-<li class="section"><a href="#section23">Changes for version 3.1.10</a></li>
-<li class="section"><a href="#section24">Changes for version 3.1.11</a></li>
-<li class="section"><a href="#section25">Authors</a></li>
-<li class="section"><a href="#section26">Bugs, Ideas, Feedback</a></li>
+<li class="section"><a href="#section4">Changes for version 3.1.12 - Not Released</a></li>
+<li class="section"><a href="#section5">Changes for version 3.1.11</a></li>
+<li class="section"><a href="#section6">Changes for version 3.1.10</a></li>
+<li class="section"><a href="#section7">Changes for version 3.1.9</a></li>
+<li class="section"><a href="#section8">Changes for version 3.1.8</a></li>
+<li class="section"><a href="#section9">Changes for version 3.1.7</a></li>
+<li class="section"><a href="#section10">Changes for version 3.1.6</a></li>
+<li class="section"><a href="#section11">Changes for version 3.1.5</a></li>
+<li class="section"><a href="#section12">Changes for version 3.1.4</a></li>
+<li class="section"><a href="#section13">Changes for version 3.1.3</a></li>
+<li class="section"><a href="#section14">Changes for version 3.1.2</a></li>
+<li class="section"><a href="#section15">Changes for version 3.1.1</a></li>
+<li class="section"><a href="#section16">Changes for version 3.1</a></li>
+<li class="section"><a href="#section17">Changes for version 3.0.7</a></li>
+<li class="section"><a href="#section18">Changes for version 3.0.6</a></li>
+<li class="section"><a href="#section19">Changes for version 3.0.5</a></li>
+<li class="section"><a href="#section20">Changes for version 3.0.4</a></li>
+<li class="section"><a href="#section21">Changes for version 3.0.3</a></li>
+<li class="section"><a href="#section22">Changes for version 3.0.2</a></li>
+<li class="section"><a href="#section23">Changes for version 3.0.1</a></li>
+<li class="section"><a href="#section24">Changes for version 3</a></li>
+<li class="section"><a href="#section25">Changes for version 2.1</a></li>
+<li class="section"><a href="#section26">Authors</a></li>
+<li class="section"><a href="#section27">Bugs, Ideas, Feedback</a></li>
 <li class="section"><a href="#keywords">Keywords</a></li>
 <li class="section"><a href="#category">Category</a></li>
 <li class="section"><a href="#copyright">Copyright</a></li>
@@ -471,8 +472,438 @@ targets. The result of such a merge would look like:</p>
 +- &lt;platformN&gt;
    +- &lt;shared libraryN&gt;
 </pre>
+<p>The latest changes are found at the top.</p>
 </div>
-<div id="section4" class="section"><h2><a name="section4">Changes for version 2.1</a></h2>
+<div id="section4" class="section"><h2><a name="section4">Changes for version 3.1.12 - Not Released</a></h2>
+<ol class="enumerated">
+<li><p>Fixed issue 42. Clear ::errorInfo immediately after startup to
+       prevent leakage of irrelevant (caught) errors into our script
+       and confusing the usage code.</p></li>
+<li><p>Fixed issue 40. Keep the order of libraries, and allow
+       duplicates. Both are things which are occasionally required for
+       proper linking.</p></li>
+<li><p>Extended the utility package <b class="package"><a href="critcl_literals.html">critcl::literals</a></b> to
+       declare a cproc result-type for a pool.</p>
+<p>Further fixed the generated header to handle multiple inclusion.</p>
+<p>Bumped version to 1.1.</p></li>
+<li><p>Fixed issue with utility package <b class="package"><a href="critcl_bitmap.html">critcl::bitmap</a></b>.</p>
+<p>Fixed the generated header to handle multiple inclusion.</p>
+<p>Bumped version to 1.0.1.</p></li>
+<li><p>Created new utility package <b class="package"><a href="critcl_enum.html">critcl::enum</a></b> for the
+       quick and easy setup and use of mappings between C values
+       and Tcl strings.
+       Built on top of <b class="package"><a href="critcl_literals.html">critcl::literals</a></b>.</p></li>
+<li><p>Added examples demonstrating the use of the utility packages
+	<b class="package"><a href="critcl_literals.html">critcl::literals</a></b>,
+	<b class="package"><a href="critcl_bitmap.html">critcl::bitmap</a></b>, and
+	<b class="package"><a href="critcl_enum.html">critcl::enum</a></b></p></li>
+</ol>
+</div>
+<div id="section5" class="section"><h2><a name="section5">Changes for version 3.1.11</a></h2>
+<ol class="enumerated">
+<li><p>Fixed issue #37, via pull request #38, with thanks to
+       Jos DeCoster. Information was stored into the v::delproc
+       and v::clientdata arrays using a different key than when
+       retrieving the same information, thus failing the latter.</p></li>
+<li><p>New convenience command <b class="cmd">critcl::include</b> for easy
+       inclusion of headers and other C files.</p></li>
+<li><p>New command <b class="cmd">critcl::make</b> to generate a local header of
+       other C files for use by other parts of a package through
+       inclusion.</p></li>
+<li><p>New utility package <b class="package"><a href="critcl_literals.html">critcl::literals</a></b> for quick and
+       easy setup of and access to pools of fixed Tcl_Obj* strings.
+       Built on top of <b class="package"><a href="critcl_iassoc.html">critcl::iassoc</a></b>.</p></li>
+<li><p>New utility package <b class="package"><a href="critcl_bitmap.html">critcl::bitmap</a></b> for quick and easy
+       setup and use of mappings between C bitsets and Tcl lists whose
+       string elements represent that set.
+       Built on top of <b class="package"><a href="critcl_iassoc.html">critcl::iassoc</a></b>.</p></li>
+</ol>
+</div>
+<div id="section6" class="section"><h2><a name="section6">Changes for version 3.1.10</a></h2>
+<ol class="enumerated">
+<li><p>Fixed code version numbering forgotten with 3.1.9.</p></li>
+<li><p>Fixed issue #35. In package mode (-pkg) the object cache
+	directory is unique to the process, thus we do not need
+	content-hashing to generate unique file names. A simple
+	counter is sufficient and much faster.</p>
+<p>Note that mode &quot;compile &amp; run&quot; is not as blessed and still
+	uses content-hasing with md5 to ensure unique file names
+	in its per-user object cache.</p></li>
+<li><p>Fixed issue where the <b class="cmd">ccommand</b> forgot to use its body as
+	input for the UUID generation. Thus ignoring changes to it in
+	mode compile &amp; run, and not rebuilding a library for changed
+	sources. Bug and fix reported by Peter Spjuth.</p></li>
+</ol>
+</div>
+<div id="section7" class="section"><h2><a name="section7">Changes for version 3.1.9</a></h2>
+<ol class="enumerated">
+<li><p>Fixed issue #27. Added missing platform definitions for
+	various alternate linux and OS X targets.</p></li>
+<li><p>Fixed issue #28. Added missing -mXX flags for linking at the
+	linux-{32,64}-* targets.</p></li>
+<li><p>Fixed issue #29. Replaced the use of raw &quot;cheaders&quot;
+	information in the processing of &quot;cdefines&quot; with the proper
+	include directives derived from it.</p></li>
+<li><p>Fixed the issue behind rejected pull request #30 by Andrew
+	Shadura. Dynamically extract the stubs variable declarations
+	from the Tcl header files and generate matching variable
+	definitions for use in the package code. The generated code
+	will now be always consistent with the headers, even when
+	critcl's own copy of them is replaced by system headers.</p></li>
+<li><p>Fixed issue #31. Accepted patch by Andrew Shadura, with
+	changes (comments), for easier integration of critcl with
+	OS package systems, replacing critcl's copies of Tcl headers
+	with their own.</p></li>
+<li><p>Fixed issue #32. Merged pull request by Andrew Shadura.
+	Various typos in documentation and comments.</p></li>
+<li><p>Fixed issue #34. Handle files starting with a dot better.</p></li>
+</ol>
+</div>
+<div id="section8" class="section"><h2><a name="section8">Changes for version 3.1.8</a></h2>
+<ol class="enumerated">
+<li><p>Fixed issue with package indices generated for Tcl 8.4.
+	Join the list of commands with semi-colon, not newline.</p></li>
+<li><p>Fixed issue #26 which brought up use-cases I had forgotten to
+	consider while fixing bug #21 (see critcl 3.1.6).</p></li>
+</ol>
+</div>
+<div id="section9" class="section"><h2><a name="section9">Changes for version 3.1.7</a></h2>
+<ol class="enumerated">
+<li><p>Fixed issue #24. Extract and unconditionally display compiler
+	warnings found in the build log. Prevents users from missing
+	warnings which, while not causing the build to fail, may
+	still indicate problems.</p></li>
+<li><p>New feature. Output hook. All non-messaging user output is now
+	routed through the command <b class="cmd">critcl::print</b>, and users are
+	allowed to override it when using the critcl application-as-package.</p></li>
+<li><p>New feature, by Ashok P. Nadkarni. Platform configurations can
+	inherit values from configurations defined before them.</p></li>
+</ol>
+</div>
+<div id="section10" class="section"><h2><a name="section10">Changes for version 3.1.6</a></h2>
+<ol class="enumerated">
+<li><p>Fixed issue #21. While the multi-definition of the stub-table
+       pointer variables was ok with for all the C linkers seen so far
+       C++ linkers did not like this at all. Reworked the code to
+       ensure that this set of variables is generated only once, in
+       the wrapper around all the pieces to assemble.</p></li>
+<li><p>Fixed issue #22, the handling of the command identifier
+       arguments of <b class="cmd">critcl::ccommand</b>, <b class="cmd">critcl::cproc</b>, and
+       <b class="cmd">critcl::cdata</b>. We now properly allow any Tcl identifier
+       and generate proper internal C identifiers from them.</p>
+<p>As part of this the signature of command <b class="cmd">critcl::name2c</b>
+       changed. The command now delivers a list of four values instead
+       of three. The new value was added at the end.</p>
+<p>Further adapted the implementation of package
+       <b class="package"><a href="critcl_class.html">critcl::class</a></b>, a user of <b class="cmd">critcl::name2c</b>.
+       This package is now at version 1.0.6 and requires critcl 3.1.6</p>
+<p>Lastly fixed the mis-handling of option <b class="option">-cname</b> in
+       <b class="cmd">critcl::ccommand</b>, and <b class="cmd">critcl::cproc</b>.</p></li>
+<li><p>Fixed issue #23.</p></li>
+</ol>
+</div>
+<div id="section11" class="section"><h2><a name="section11">Changes for version 3.1.5</a></h2>
+<ol class="enumerated">
+<li><p>Fixed issue #19. Made the regular expression extracting the
+       MSVC version number more general to make it work on german
+       language systems. This may have to be revisited in the future,
+       for other Windows locales.</p></li>
+<li><p>Fixed issue #20. Made option -tea work on windows, at least in
+       a unix emulation environment like msys/mingw.</p></li>
+</ol>
+</div>
+<div id="section12" class="section"><h2><a name="section12">Changes for version 3.1.4</a></h2>
+<ol class="enumerated">
+<li><p>Bugfix in package <b class="package"><a href="critcl_class.html">critcl::class</a></b>. Generate a dummy
+       field in the class structure if the class has no class
+       variables. Without this change the structure would be empty,
+       and a number of compilers are not able to handle such a type.</p></li>
+<li><p>Fixed a typo which broke the win64 configuration.</p></li>
+<li><p>Fixed issue #16, a typo in the documentation of command
+       <b class="cmd"><a href="critcl_class.html">critcl::class</a></b>.</p></li>
+</ol>
+</div>
+<div id="section13" class="section"><h2><a name="section13">Changes for version 3.1.3</a></h2>
+<ol class="enumerated">
+<li><p>Enhancement. In detail:</p></li>
+<li><p>Added new argument type &quot;pstring&quot;, for &quot;Pascal String&quot;, a
+       counted string, i.e. a combination of string pointer and string
+       length.</p></li>
+<li><p>Added new methods <b class="cmd">critcl::argtypesupport</b> and
+       <b class="cmd">::critcl::argsupport</b> to define and use additional
+       supporting code for an argument type, here used by &quot;pstring&quot;
+       above to define the necessary structure.</p></li>
+<li><p>Semi-bugfixes in the packages <b class="package"><a href="critcl_class.html">critcl::class</a></b> and
+       <b class="package"><a href="critcl_iassoc.html">critcl::iassoc</a></b>. Pragmas for the AS meta data scanner
+       to ensure that the template files are made part of the package.
+       Versions bumped to 1.0.4 and 1.0.1 respectively.</p></li>
+</ol>
+</div>
+<div id="section14" class="section"><h2><a name="section14">Changes for version 3.1.2</a></h2>
+<ol class="enumerated">
+<li><p>Enhancement. In detail:</p></li>
+<li><p>Extended <b class="cmd">critcl::cproc</b> to be able to handle optional
+       arguments, in a limited way. This is automatically available to
+       <b class="package"><a href="critcl_class.html">critcl::class</a></b> cproc-based methods as well.</p></li>
+<li><p>Bugfix in <b class="cmd">lassign</b> emulation for Tcl 8.4.  Properly set
+       unused variables to the empty string.  Bumped version of
+       emulation package <b class="package">lassign84</b> to 1.0.1.</p></li>
+</ol>
+</div>
+<div id="section15" class="section"><h2><a name="section15">Changes for version 3.1.1</a></h2>
+<ol class="enumerated">
+<li><p>Bugfixes all around. In detail:</p></li>
+<li><p>Fixed the generation of wrong#args errors for
+<b class="cmd">critcl::cproc</b> and derived code (<b class="package"><a href="critcl_class.html">critcl::class</a></b>
+cproc-based methods). Use NULL if there are no arguments, and
+take the offset into account.</p></li>
+<li><p>Fixed the handling of package names by
+<b class="package"><a href="critcl_class.html">critcl::class</a></b>. Forgot that they may contain namespace
+separators. Bumped to version 1.0.1.</p></li>
+<li><p>Extended a <b class="package"><a href="critcl_class.html">critcl::class</a></b> generated error message in
+instance creation for clarity. Bumped to version 1.0.2.</p></li>
+</ol>
+</div>
+<div id="section16" class="section"><h2><a name="section16">Changes for version 3.1</a></h2>
+<ol class="enumerated">
+<li><p>Added a new higher-level package <b class="package"><a href="critcl_iassoc.html">critcl::iassoc</a></b>.</p>
+<p>This package simplifies the creation of code associating data
+with an interpreter via Tcl's <b class="function">Tcl_(Get|Set)AssocData()</b> APIs. The
+user can concentrate on his data while all the necessary boilerplate
+C code to support this is generated by the package.</p>
+<p>This package uses several of the new features which were added
+to the core <b class="package"><a href="critcl_pkg.html">critcl</a></b> package, see below.</p></li>
+<li><p>Added the higher-level package <b class="package"><a href="critcl_class.html">critcl::class</a></b>.</p>
+<p>This package simplifies the creation of C level objects with
+class and instance commands. The user can write a class definition
+with class- and instance-variables and -methods similar to a TclOO
+class, with all the necessary boilerplate C code to support this
+generated by the package.</p>
+<p>This package uses several of the new features which were added
+to the core <b class="package"><a href="critcl_pkg.html">critcl</a></b> package, see below.</p></li>
+<li><p>Extended the API for handling TEApot metadata. Added the
+command <b class="cmd">critcl::meta?</b> to query the stored information. Main use
+currently envisioned is retrieval of the current package's name by
+utility commands, for use in constructed names. This particular
+information is always available due to the static scan of the package
+file on execution of the first critcl command.</p>
+<p>The new packages <b class="package"><a href="critcl_iassoc.html">critcl::iassoc</a></b> and
+<b class="package"><a href="critcl_class.html">critcl::class</a></b> (see above) are users of this command.</p></li>
+<li><p>Extended the API with a command, <b class="cmd">critcl::name2c</b>, exposing
+the process of converting a Tcl name into base name, namespace, and C
+namespace. This enables higher-level code generators to generate the same
+type of C identifiers as <b class="package"><a href="critcl_pkg.html">critcl</a></b> itself.</p>
+<p>The new package <b class="package"><a href="critcl_class.html">critcl::class</a></b> (see above) is a user
+of this command.</p></li>
+<li><p>Extended the API with a command, <b class="cmd">critcl::source</b>,
+executing critcl commands found in a separate file in the context of
+the current file. This enables easier management of larger bodies of
+code as it allows the user to split such up into easier to digest
+smaller chunks without causing the generation of multiple packages.</p></li>
+<li><p>Related to the previous item, extended the API with commands to
+divert collection of generated C code into memory. This makes it
+easier to use the commands for embedded C code in higher-level code
+generators.</p>
+<p>See the section <b class="sectref">Advanced: Diversions</b> for details of
+the provided commands.</p>
+<p>The new package <b class="package"><a href="critcl_class.html">critcl::class</a></b> (see above) is a user
+of these facilities.</p></li>
+<li><p>Extended the API with commands helping developers with the
+generation of proper C <i class="term">#line</i> directives. This allows
+higher-level code generators to generate and insert their own
+directives, ensuring that compile errors in their code are properly
+attributed.</p>
+<p>See the section <b class="sectref">Advanced: Location management</b> for
+details of the provided commands.</p>
+<p>The new packages <b class="package"><a href="critcl_iassoc.html">critcl::iassoc</a></b> and
+<b class="package"><a href="critcl_class.html">critcl::class</a></b> (see above) are users of these facilities.</p></li>
+<li><p>Extended the API with commands giving users the ability to
+define custom argument and result types for <b class="cmd">::critcl::cproc</b>.</p>
+<p>See the section <b class="sectref">Advanced: Extending cproc</b> for
+details of the provided commands.</p></li>
+</ol>
+</div>
+<div id="section17" class="section"><h2><a name="section17">Changes for version 3.0.7</a></h2>
+<ol class="enumerated">
+<li><p>Fixed the code generated by <b class="cmd">critcl::c++command</b>.
+        The emitted code handed a non-static string table to
+	<b class="function">Tcl_GetIndexFromObj</b>, in violation of the contract, which
+	requires the table to have a fixed address. This was a memory
+	smash waiting to happen. Thanks to Brian Griffin for alrerting
+	us to the general problem.</p></li>
+</ol>
+</div>
+<div id="section18" class="section"><h2><a name="section18">Changes for version 3.0.6</a></h2>
+<ol class="enumerated">
+<li><p>Fixed github issue 10. The critcl application now delivers a
+	proper exit code (1) on build failure, instead of always
+	indicating success (status 0).</p></li>
+<li><p>Fixed github issue 13. Handling of bufferoverflowU.lib for
+	release builds was inconsistent with handling for debug
+	builds. It is now identically handled (conditional) by
+	both cases.</p></li>
+<li><p>Documentation cleanup, mainly in the installation guide, and
+	the README.md shown by github</p></li>
+</ol>
+</div>
+<div id="section19" class="section"><h2><a name="section19">Changes for version 3.0.5</a></h2>
+<ol class="enumerated">
+<li><p>Fixed bug in the new code for #line pragmas triggered when
+	specifying C code without leading whitespace.</p></li>
+<li><p>Extended the documentation to have manpages for the license,
+	source retrieval, installer, and developer's guides.</p></li>
+</ol>
+</div>
+<div id="section20" class="section"><h2><a name="section20">Changes for version 3.0.4</a></h2>
+<ol class="enumerated">
+<li><p>Fixed generation of the package's initname when the incoming
+	code is read from stdin and has no proper path.</p></li>
+<li><p>Fixed github issue 11. Now using /LIBPATH instead of -L
+	on Windows (libinclude configuration setting).</p></li>
+<li><p>Extended critcl to handle -l:path format of -l options.
+	GNU ld 2.22+ handles this by searching for the path as
+	is. Good when specifying static libraries, as plain -l looks
+	for shared libraries in preference over static. critcl handles
+	it now, as older GNU ld's do not understand it, nor the
+	various vendor-specific linkers.</p></li>
+<li><p>Fixed github issue #12. Critcl now determines the version of
+	MSVC in use and uses it to switch between various link debug
+	options. Simplified the handling of bufferoverflowU.lib also,
+	making use of the same mechanism and collapsing the two
+	configurations sections we had back into one.</p></li>
+<li><p>Reworked the insertion of #line pragmas into the generated C
+	code to avoid limitations on the line number argument imposed
+	by various compilers, and be more accurate.</p></li>
+<li><p>Modified argument processing. Option -libdir now also
+	implies -L for its argument.</p></li>
+<li><p>Extended handling of option -show (<b class="cmd">critcl::showconfig</b>)
+	to list the path of the configuration file the data is coming
+	from. Good for debugging configuration processing.</p></li>
+<li><p>Extended the build script with targets to regenerate the
+	embedded documentation, and diagrams, and to generate a
+	release.</p></li>
+</ol>
+</div>
+<div id="section21" class="section"><h2><a name="section21">Changes for version 3.0.3</a></h2>
+<ol class="enumerated">
+<li><p>Fixed github issues 5 and 8, for the example build.tcl
+scripts. Working around a missing variable ::errorInfo. It should
+always be present, however there seem to be revisions of Tcl around
+which violate this assumption.</p></li>
+</ol>
+</div>
+<div id="section22" class="section"><h2><a name="section22">Changes for version 3.0.2</a></h2>
+<ol class="enumerated">
+<li><p>Fixed issue in compile-and-run mode where commands put into the
+auto_index are not found by Tcl's [unknown] command.</p></li>
+<li><p>Fixed an array key mismatch breaking usage of client data and
+delete function for procedure. Reported by Jos DeCoster, with patch.</p></li>
+<li><p>Implemented a command line option <b class="option">-L</b>, an equivalent of
+option <b class="option">-I</b>, just for library search paths.</p></li>
+<li><p>Fixed github issues 5 and 8. Working around a missing variable
+::errorInfo. It should always be present, however there seem to be
+revisions of Tcl around which violate this assumption.</p></li>
+</ol>
+</div>
+<div id="section23" class="section"><h2><a name="section23">Changes for version 3.0.1</a></h2>
+<ol class="enumerated">
+<li><p>Bugfixes all around. In detail:</p></li>
+<li><p>Fixed recording of Tcl version requirements. Keep package name
+and version together, unbreaking generated meta data and generated
+package load command.</p></li>
+<li><p>Fixed the build scripts: When installing, or wrapping for TEA,
+generate any missing directories</p></li>
+<li><p>Modified the build scripts to properly exit the application
+when the window of their GUI is closed through the (X) button.</p></li>
+<li><p>Removed an 8.5-ism (open wb) which had slipped into the main
+build script.</p></li>
+<li><p>Modified the example build scripts to separate the output for
+the different examples (and packages) by adding empty lines.</p></li>
+<li><p>stack::c example bugfix: Include API declarations for use in
+the companion files.</p></li>
+<li><p>Extended the documentation: Noted the need for a working
+installation of a C compiler.</p></li>
+<li><p>Extended the Windows target definitions and code to handle the
+manifest files used by modern MS development environments. Note that
+this code handles both possibilities, environment using manifests, and
+(old(er)) environments without.</p></li>
+<li><p>Extended the Windows 64bit target definitions and code to
+auto-detect the need for the helper library &quot;bufferoverflowU.lib&quot; and
+reconfigure the compile and link commands appropriately. We assume
+that the library must be linked when present. This should be no harm
+if the library is present, yet not needed. Just superfluous. We search
+for the library in the paths specified by the environment variable
+LIB.</p></li>
+</ol>
+</div>
+<div id="section24" class="section"><h2><a name="section24">Changes for version 3</a></h2>
+<ol class="enumerated">
+<li><p>The command <b class="cmd">critcl::platform</b> was deprecated in version
+2.1, superceded by <b class="cmd">critcl::targetplatform</b>, yet kept for
+compatibility. Now it has been removed.</p></li>
+<li><p>The command <b class="cmd">critcl::compiled</b> was kept with in version 2.1
+with semantics in contradiction to its, for compatibility. This
+contradiction has been removed, changing the visible semantics of the
+command to be in line with its name.</p></li>
+<li><p>The change to version 3 became necessary because of the two
+incompatible visible changes above.</p></li>
+<li><p>Extended the application package with code handling a new
+option <b class="option">-tea</b>. Specifying this option invokes a special mode
+where critcl generates a TEA package, i.e. wraps the input into a
+directory hierarchy and support files which provide it TEA-lookalike
+buildsystem.</p>
+<p>This new option, and <b class="option">-pkg</b>, exclude each other. If
+both are specified the last used option takes precedence.</p>
+<p>The generated package directory hierarchy is mostly
+self-contained, but not fully. It requires not only a working
+installation of Tcl, but also working installations of the packages
+<b class="package">md5</b> and <b class="package">cmdline</b>. Both of these are provided by the
+<b class="package">Tcllib</b> bundle. Not required, but recommended to have
+installed are any of the packages which can accelerate md5's
+operation, i.e. <b class="package">cryptkit</b>, <b class="package">tcllibc</b>, or
+<b class="package">Trf</b>.</p></li>
+<li><p>Extended the critcl package with a new command
+<b class="cmd">critcl::scan</b> taking the path to a &quot;<b class="file">.critcl</b>&quot; file,
+statically scanning it, and returning license, version, a list of its
+companion files, list of imported APIs, and list of
+developer-specified custom configuration options. This data is the
+foundation for the TEA wrapping described above.</p>
+<p>Note that this is a <em>static</em> scan. While the other build
+modes can (must) execute the &quot;<b class="file">.critcl</b>&quot; file and make
+platform-specific decisions regarding the assembled C code, companion
+files, etc. the TEA wrap mode is not in a position to make
+platform-specific decisions. It has to wrap everything which might
+conceivably be needed when actually building. Hence the static scan.
+This has however its own set of problems, namely the inability to
+figure out any dynamic construction of companion file paths, at least
+on its own. Thus:</p></li>
+<li><p>Extended the API used by critcl-based packages with the command
+<b class="cmd">critcl::owns</b>. While this command is ignored by the regular build
+modes the static scanner described above takes its arguments as the
+names of companion files which have to be wrapped into the TEA package
+and could not be figured by the scanner otherwise, like because of
+dynamic paths to <b class="cmd">critcl::tsources</b>, <b class="cmd">critcl::csources</b>,
+getting sourced directly, or simply being adjunct datafiles.</p></li>
+<li><p>Extended the API used by critcl-based packages with the command
+<b class="cmd">critcl::api</b> for the management of stubs tables, be it their use,
+and/or declaration and export.</p>
+<p>Please see section <em>Stubs Table Management</em> of the
+<b class="package"><a href="critcl_pkg.html">critcl</a></b> package documentation for details.</p></li>
+<li><p>Extended the API used by critcl-based packages with the command
+<b class="cmd">critcl::userconfig</b> for the management of developer-specified
+custom configuration options, be it their use and/or declaration.</p>
+<p>Please see section <em>Custom Build Configuration</em> of the
+<b class="package"><a href="critcl_pkg.html">critcl</a></b> package documentation for details.</p></li>
+<li><p>Extended the API used by critcl-based packages with the
+commands <b class="cmd">critcl::description</b>, <b class="cmd">critcl::summary</b>,
+<b class="cmd">critcl::subject</b>, <b class="cmd">critcl::meta</b>, and
+<b class="cmd">critcl::buildrequirement</b> for the declaration of TEApot meta data
+for/about the package.</p>
+<p>Please see section <em>Package Meta Data</em> of the
+<b class="package"><a href="critcl_pkg.html">critcl</a></b> package documentation for details.</p></li>
+</ol>
+</div>
+<div id="section25" class="section"><h2><a name="section25">Changes for version 2.1</a></h2>
 <ol class="enumerated">
 <li><p>Fixed bug where <b class="cmd">critcl::tsources</b> interpreted relative
 paths as relative to the current working directory instead of
@@ -569,414 +1000,10 @@ still using proper path names and init function.</p></li>
 <li><p>Dropped remnants of support for Tcl 8.3 and before.</p></li>
 </ol>
 </div>
-<div id="section5" class="section"><h2><a name="section5">Changes for version 3</a></h2>
-<ol class="enumerated">
-<li><p>The command <b class="cmd">critcl::platform</b> was deprecated in version
-2.1, superceded by <b class="cmd">critcl::targetplatform</b>, yet kept for
-compatibility. Now it has been removed.</p></li>
-<li><p>The command <b class="cmd">critcl::compiled</b> was kept with in version 2.1
-with semantics in contradiction to its, for compatibility. This
-contradiction has been removed, changing the visible semantics of the
-command to be in line with its name.</p></li>
-<li><p>The change to version 3 became necessary because of the two
-incompatible visible changes above.</p></li>
-<li><p>Extended the application package with code handling a new
-option <b class="option">-tea</b>. Specifying this option invokes a special mode
-where critcl generates a TEA package, i.e. wraps the input into a
-directory hierarchy and support files which provide it TEA-lookalike
-buildsystem.</p>
-<p>This new option, and <b class="option">-pkg</b>, exclude each other. If
-both are specified the last used option takes precedence.</p>
-<p>The generated package directory hierarchy is mostly
-self-contained, but not fully. It requires not only a working
-installation of Tcl, but also working installations of the packages
-<b class="package">md5</b> and <b class="package">cmdline</b>. Both of these are provided by the
-<b class="package">Tcllib</b> bundle. Not required, but recommended to have
-installed are any of the packages which can accelerate md5's
-operation, i.e. <b class="package">cryptkit</b>, <b class="package">tcllibc</b>, or
-<b class="package">Trf</b>.</p></li>
-<li><p>Extended the critcl package with a new command
-<b class="cmd">critcl::scan</b> taking the path to a &quot;<b class="file">.critcl</b>&quot; file,
-statically scanning it, and returning license, version, a list of its
-companion files, list of imported APIs, and list of
-developer-specified custom configuration options. This data is the
-foundation for the TEA wrapping described above.</p>
-<p>Note that this is a <em>static</em> scan. While the other build
-modes can (must) execute the &quot;<b class="file">.critcl</b>&quot; file and make
-platform-specific decisions regarding the assembled C code, companion
-files, etc. the TEA wrap mode is not in a position to make
-platform-specific decisions. It has to wrap everything which might
-conceivably be needed when actually building. Hence the static scan.
-This has however its own set of problems, namely the inability to
-figure out any dynamic construction of companion file paths, at least
-on its own. Thus:</p></li>
-<li><p>Extended the API used by critcl-based packages with the command
-<b class="cmd">critcl::owns</b>. While this command is ignored by the regular build
-modes the static scanner described above takes its arguments as the
-names of companion files which have to be wrapped into the TEA package
-and could not be figured by the scanner otherwise, like because of
-dynamic paths to <b class="cmd">critcl::tsources</b>, <b class="cmd">critcl::csources</b>,
-getting sourced directly, or simply being adjunct datafiles.</p></li>
-<li><p>Extended the API used by critcl-based packages with the command
-<b class="cmd">critcl::api</b> for the management of stubs tables, be it their use,
-and/or declaration and export.</p>
-<p>Please see section <em>Stubs Table Management</em> of the
-<b class="package"><a href="critcl_pkg.html">critcl</a></b> package documentation for details.</p></li>
-<li><p>Extended the API used by critcl-based packages with the command
-<b class="cmd">critcl::userconfig</b> for the management of developer-specified
-custom configuration options, be it their use and/or declaration.</p>
-<p>Please see section <em>Custom Build Configuration</em> of the
-<b class="package"><a href="critcl_pkg.html">critcl</a></b> package documentation for details.</p></li>
-<li><p>Extended the API used by critcl-based packages with the
-commands <b class="cmd">critcl::description</b>, <b class="cmd">critcl::summary</b>,
-<b class="cmd">critcl::subject</b>, <b class="cmd">critcl::meta</b>, and
-<b class="cmd">critcl::buildrequirement</b> for the declaration of TEApot meta data
-for/about the package.</p>
-<p>Please see section <em>Package Meta Data</em> of the
-<b class="package"><a href="critcl_pkg.html">critcl</a></b> package documentation for details.</p></li>
-</ol>
-</div>
-<div id="section6" class="section"><h2><a name="section6">Changes for version 3.0.1</a></h2>
-<ol class="enumerated">
-<li><p>Bugfixes all around. In detail:</p></li>
-<li><p>Fixed recording of Tcl version requirements. Keep package name
-and version together, unbreaking generated meta data and generated
-package load command.</p></li>
-<li><p>Fixed the build scripts: When installing, or wrapping for TEA,
-generate any missing directories</p></li>
-<li><p>Modified the build scripts to properly exit the application
-when the window of their GUI is closed through the (X) button.</p></li>
-<li><p>Removed an 8.5-ism (open wb) which had slipped into the main
-build script.</p></li>
-<li><p>Modified the example build scripts to separate the output for
-the different examples (and packages) by adding empty lines.</p></li>
-<li><p>stack::c example bugfix: Include API declarations for use in
-the companion files.</p></li>
-<li><p>Extended the documentation: Noted the need for a working
-installation of a C compiler.</p></li>
-<li><p>Extended the Windows target definitions and code to handle the
-manifest files used by modern MS development environments. Note that
-this code handles both possibilities, environment using manifests, and
-(old(er)) environments without.</p></li>
-<li><p>Extended the Windows 64bit target definitions and code to
-auto-detect the need for the helper library &quot;bufferoverflowU.lib&quot; and
-reconfigure the compile and link commands appropriately. We assume
-that the library must be linked when present. This should be no harm
-if the library is present, yet not needed. Just superfluous. We search
-for the library in the paths specified by the environment variable
-LIB.</p></li>
-</ol>
-</div>
-<div id="section7" class="section"><h2><a name="section7">Changes for version 3.0.2</a></h2>
-<ol class="enumerated">
-<li><p>Fixed issue in compile-and-run mode where commands put into the
-auto_index are not found by Tcl's [unknown] command.</p></li>
-<li><p>Fixed an array key mismatch breaking usage of client data and
-delete function for procedure. Reported by Jos DeCoster, with patch.</p></li>
-<li><p>Implemented a command line option <b class="option">-L</b>, an equivalent of
-option <b class="option">-I</b>, just for library search paths.</p></li>
-<li><p>Fixed github issues 5 and 8. Working around a missing variable
-::errorInfo. It should always be present, however there seem to be
-revisions of Tcl around which violate this assumption.</p></li>
-</ol>
-</div>
-<div id="section8" class="section"><h2><a name="section8">Changes for version 3.0.3</a></h2>
-<ol class="enumerated">
-<li><p>Fixed github issues 5 and 8, for the example build.tcl
-scripts. Working around a missing variable ::errorInfo. It should
-always be present, however there seem to be revisions of Tcl around
-which violate this assumption.</p></li>
-</ol>
-</div>
-<div id="section9" class="section"><h2><a name="section9">Changes for version 3.0.4</a></h2>
-<ol class="enumerated">
-<li><p>Fixed generation of the package's initname when the incoming
-	code is read from stdin and has no proper path.</p></li>
-<li><p>Fixed github issue 11. Now using /LIBPATH instead of -L
-	on Windows (libinclude configuration setting).</p></li>
-<li><p>Extended critcl to handle -l:path format of -l options.
-	GNU ld 2.22+ handles this by searching for the path as
-	is. Good when specifying static libraries, as plain -l looks
-	for shared libraries in preference over static. critcl handles
-	it now, as older GNU ld's do not understand it, nor the
-	various vendor-specific linkers.</p></li>
-<li><p>Fixed github issue #12. Critcl now determines the version of
-	MSVC in use and uses it to switch between various link debug
-	options. Simplified the handling of bufferoverflowU.lib also,
-	making use of the same mechanism and collapsing the two
-	configurations sections we had back into one.</p></li>
-<li><p>Reworked the insertion of #line pragmas into the generated C
-	code to avoid limitations on the line number argument imposed
-	by various compilers, and be more accurate.</p></li>
-<li><p>Modified argument processing. Option -libdir now also
-	implies -L for its argument.</p></li>
-<li><p>Extended handling of option -show (<b class="cmd">critcl::showconfig</b>)
-	to list the path of the configuration file the data is coming
-	from. Good for debugging configuration processing.</p></li>
-<li><p>Extended the build script with targets to regenerate the
-	embedded documentation, and diagrams, and to generate a
-	release.</p></li>
-</ol>
-</div>
-<div id="section10" class="section"><h2><a name="section10">Changes for version 3.0.5</a></h2>
-<ol class="enumerated">
-<li><p>Fixed bug in the new code for #line pragmas triggered when
-	specifying C code without leading whitespace.</p></li>
-<li><p>Extended the documentation to have manpages for the license,
-	source retrieval, installer, and developer's guides.</p></li>
-</ol>
-</div>
-<div id="section11" class="section"><h2><a name="section11">Changes for version 3.0.6</a></h2>
-<ol class="enumerated">
-<li><p>Fixed github issue 10. The critcl application now delivers a
-	proper exit code (1) on build failure, instead of always
-	indicating success (status 0).</p></li>
-<li><p>Fixed github issue 13. Handling of bufferoverflowU.lib for
-	release builds was inconsistent with handling for debug
-	builds. It is now identically handled (conditional) by
-	both cases.</p></li>
-<li><p>Documentation cleanup, mainly in the installation guide, and
-	the README.md shown by github</p></li>
-</ol>
-</div>
-<div id="section12" class="section"><h2><a name="section12">Changes for version 3.0.7</a></h2>
-<ol class="enumerated">
-<li><p>Fixed the code generated by <b class="cmd">critcl::c++command</b>.
-        The emitted code handed a non-static string table to
-	<b class="function">Tcl_GetIndexFromObj</b>, in violation of the contract, which
-	requires the table to have a fixed address. This was a memory
-	smash waiting to happen. Thanks to Brian Griffin for alrerting
-	us to the general problem.</p></li>
-</ol>
-</div>
-<div id="section13" class="section"><h2><a name="section13">Changes for version 3.1</a></h2>
-<ol class="enumerated">
-<li><p>Added a new higher-level package <b class="package"><a href="critcl_iassoc.html">critcl::iassoc</a></b>.</p>
-<p>This package simplifies the creation of code associating data
-with an interpreter via Tcl's <b class="function">Tcl_(Get|Set)AssocData()</b> APIs. The
-user can concentrate on his data while all the necessary boilerplate
-C code to support this is generated by the package.</p>
-<p>This package uses several of the new features which were added
-to the core <b class="package"><a href="critcl_pkg.html">critcl</a></b> package, see below.</p></li>
-<li><p>Added the higher-level package <b class="package"><a href="critcl_class.html">critcl::class</a></b>.</p>
-<p>This package simplifies the creation of C level objects with
-class and instance commands. The user can write a class definition
-with class- and instance-variables and -methods similar to a TclOO
-class, with all the necessary boilerplate C code to support this
-generated by the package.</p>
-<p>This package uses several of the new features which were added
-to the core <b class="package"><a href="critcl_pkg.html">critcl</a></b> package, see below.</p></li>
-<li><p>Extended the API for handling TEApot metadata. Added the
-command <b class="cmd">critcl::meta?</b> to query the stored information. Main use
-currently envisioned is retrieval of the current package's name by
-utility commands, for use in constructed names. This particular
-information is always available due to the static scan of the package
-file on execution of the first critcl command.</p>
-<p>The new packages <b class="package"><a href="critcl_iassoc.html">critcl::iassoc</a></b> and
-<b class="package"><a href="critcl_class.html">critcl::class</a></b> (see above) are users of this command.</p></li>
-<li><p>Extended the API with a command, <b class="cmd">critcl::name2c</b>, exposing
-the process of converting a Tcl name into base name, namespace, and C
-namespace. This enables higher-level code generators to generate the same
-type of C identifiers as <b class="package"><a href="critcl_pkg.html">critcl</a></b> itself.</p>
-<p>The new package <b class="package"><a href="critcl_class.html">critcl::class</a></b> (see above) is a user
-of this command.</p></li>
-<li><p>Extended the API with a command, <b class="cmd">critcl::source</b>,
-executing critcl commands found in a separate file in the context of
-the current file. This enables easier management of larger bodies of
-code as it allows the user to split such up into easier to digest
-smaller chunks without causing the generation of multiple packages.</p></li>
-<li><p>Related to the previous item, extended the API with commands to
-divert collection of generated C code into memory. This makes it
-easier to use the commands for embedded C code in higher-level code
-generators.</p>
-<p>See the section <b class="sectref">Advanced: Diversions</b> for details of
-the provided commands.</p>
-<p>The new package <b class="package"><a href="critcl_class.html">critcl::class</a></b> (see above) is a user
-of these facilities.</p></li>
-<li><p>Extended the API with commands helping developers with the
-generation of proper C <i class="term">#line</i> directives. This allows
-higher-level code generators to generate and insert their own
-directives, ensuring that compile errors in their code are properly
-attributed.</p>
-<p>See the section <b class="sectref">Advanced: Location management</b> for
-details of the provided commands.</p>
-<p>The new packages <b class="package"><a href="critcl_iassoc.html">critcl::iassoc</a></b> and
-<b class="package"><a href="critcl_class.html">critcl::class</a></b> (see above) are users of these facilities.</p></li>
-<li><p>Extended the API with commands giving users the ability to
-define custom argument and result types for <b class="cmd">::critcl::cproc</b>.</p>
-<p>See the section <b class="sectref">Advanced: Extending cproc</b> for
-details of the provided commands.</p></li>
-</ol>
-</div>
-<div id="section14" class="section"><h2><a name="section14">Changes for version 3.1.1</a></h2>
-<ol class="enumerated">
-<li><p>Bugfixes all around. In detail:</p></li>
-<li><p>Fixed the generation of wrong#args errors for
-<b class="cmd">critcl::cproc</b> and derived code (<b class="package"><a href="critcl_class.html">critcl::class</a></b>
-cproc-based methods). Use NULL if there are no arguments, and
-take the offset into account.</p></li>
-<li><p>Fixed the handling of package names by
-<b class="package"><a href="critcl_class.html">critcl::class</a></b>. Forgot that they may contain namespace
-separators. Bumped to version 1.0.1.</p></li>
-<li><p>Extended a <b class="package"><a href="critcl_class.html">critcl::class</a></b> generated error message in
-instance creation for clarity. Bumped to version 1.0.2.</p></li>
-</ol>
-</div>
-<div id="section15" class="section"><h2><a name="section15">Changes for version 3.1.2</a></h2>
-<ol class="enumerated">
-<li><p>Enhancement. In detail:</p></li>
-<li><p>Extended <b class="cmd">critcl::cproc</b> to be able to handle optional
-       arguments, in a limited way. This is automatically available to
-       <b class="package"><a href="critcl_class.html">critcl::class</a></b> cproc-based methods as well.</p></li>
-<li><p>Bugfix in <b class="cmd">lassign</b> emulation for Tcl 8.4.  Properly set
-       unused variables to the empty string.  Bumped version of
-       emulation package <b class="package">lassign84</b> to 1.0.1.</p></li>
-</ol>
-</div>
-<div id="section16" class="section"><h2><a name="section16">Changes for version 3.1.3</a></h2>
-<ol class="enumerated">
-<li><p>Enhancement. In detail:</p></li>
-<li><p>Added new argument type &quot;pstring&quot;, for &quot;Pascal String&quot;, a
-       counted string, i.e. a combination of string pointer and string
-       length.</p></li>
-<li><p>Added new methods <b class="cmd">critcl::argtypesupport</b> and
-       <b class="cmd">::critcl::argsupport</b> to define and use additional
-       supporting code for an argument type, here used by &quot;pstring&quot;
-       above to define the necessary structure.</p></li>
-<li><p>Semi-bugfixes in the packages <b class="package"><a href="critcl_class.html">critcl::class</a></b> and
-       <b class="package"><a href="critcl_iassoc.html">critcl::iassoc</a></b>. Pragmas for the AS meta data scanner
-       to ensure that the template files are made part of the package.
-       Versions bumped to 1.0.4 and 1.0.1 respectively.</p></li>
-</ol>
-</div>
-<div id="section17" class="section"><h2><a name="section17">Changes for version 3.1.4</a></h2>
-<ol class="enumerated">
-<li><p>Bugfix in package <b class="package"><a href="critcl_class.html">critcl::class</a></b>. Generate a dummy
-       field in the class structure if the class has no class
-       variables. Without this change the structure would be empty,
-       and a number of compilers are not able to handle such a type.</p></li>
-<li><p>Fixed a typo which broke the win64 configuration.</p></li>
-<li><p>Fixed issue #16, a typo in the documentation of command
-       <b class="cmd"><a href="critcl_class.html">critcl::class</a></b>.</p></li>
-</ol>
-</div>
-<div id="section18" class="section"><h2><a name="section18">Changes for version 3.1.5</a></h2>
-<ol class="enumerated">
-<li><p>Fixed issue #19. Made the regular expression extracting the
-       MSVC version number more general to make it work on german
-       language systems. This may have to be revisited in the future,
-       for other Windows locales.</p></li>
-<li><p>Fixed issue #20. Made option -tea work on windows, at least in
-       a unix emulation environment like msys/mingw.</p></li>
-</ol>
-</div>
-<div id="section19" class="section"><h2><a name="section19">Changes for version 3.1.6</a></h2>
-<ol class="enumerated">
-<li><p>Fixed issue #21. While the multi-definition of the stub-table
-       pointer variables was ok with for all the C linkers seen so far
-       C++ linkers did not like this at all. Reworked the code to
-       ensure that this set of variables is generated only once, in
-       the wrapper around all the pieces to assemble.</p></li>
-<li><p>Fixed issue #22, the handling of the command identifier
-       arguments of <b class="cmd">critcl::ccommand</b>, <b class="cmd">critcl::cproc</b>, and
-       <b class="cmd">critcl::cdata</b>. We now properly allow any Tcl identifier
-       and generate proper internal C identifiers from them.</p>
-<p>As part of this the signature of command <b class="cmd">critcl::name2c</b>
-       changed. The command now delivers a list of four values instead
-       of three. The new value was added at the end.</p>
-<p>Further adapted the implementation of package
-       <b class="package"><a href="critcl_class.html">critcl::class</a></b>, a user of <b class="cmd">critcl::name2c</b>.
-       This package is now at version 1.0.6 and requires critcl 3.1.6</p>
-<p>Lastly fixed the mis-handling of option <b class="option">-cname</b> in
-       <b class="cmd">critcl::ccommand</b>, and <b class="cmd">critcl::cproc</b>.</p></li>
-<li><p>Fixed issue #23.</p></li>
-</ol>
-</div>
-<div id="section20" class="section"><h2><a name="section20">Changes for version 3.1.7</a></h2>
-<ol class="enumerated">
-<li><p>Fixed issue #24. Extract and unconditionally display compiler
-	warnings found in the build log. Prevents users from missing
-	warnings which, while not causing the build to fail, may
-	still indicate problems.</p></li>
-<li><p>New feature. Output hook. All non-messaging user output is now
-	routed through the command <b class="cmd">critcl::print</b>, and users are
-	allowed to override it when using the critcl application-as-package.</p></li>
-<li><p>New feature, by Ashok P. Nadkarni. Platform configurations can
-	inherit values from configurations defined before them.</p></li>
-</ol>
-</div>
-<div id="section21" class="section"><h2><a name="section21">Changes for version 3.1.8</a></h2>
-<ol class="enumerated">
-<li><p>Fixed issue with package indices generated for Tcl 8.4.
-	Join the list of commands with semi-colon, not newline.</p></li>
-<li><p>Fixed issue #26 which brought up use-cases I had forgotten to
-	consider while fixing bug #21 (see critcl 3.1.6).</p></li>
-</ol>
-</div>
-<div id="section22" class="section"><h2><a name="section22">Changes for version 3.1.9</a></h2>
-<ol class="enumerated">
-<li><p>Fixed issue #27. Added missing platform definitions for
-	various alternate linux and OS X targets.</p></li>
-<li><p>Fixed issue #28. Added missing -mXX flags for linking at the
-	linux-{32,64}-* targets.</p></li>
-<li><p>Fixed issue #29. Replaced the use of raw &quot;cheaders&quot;
-	information in the processing of &quot;cdefines&quot; with the proper
-	include directives derived from it.</p></li>
-<li><p>Fixed the issue behind rejected pull request #30 by Andrew
-	Shadura. Dynamically extract the stubs variable declarations
-	from the Tcl header files and generate matching variable
-	definitions for use in the package code. The generated code
-	will now be always consistent with the headers, even when
-	critcl's own copy of them is replaced by system headers.</p></li>
-<li><p>Fixed issue #31. Accepted patch by Andrew Shadura, with
-	changes (comments), for easier integration of critcl with
-	OS package systems, replacing critcl's copies of Tcl headers
-	with their own.</p></li>
-<li><p>Fixed issue #32. Merged pull request by Andrew Shadura.
-	Various typos in documentation and comments.</p></li>
-<li><p>Fixed issue #34. Handle files starting with a dot better.</p></li>
-</ol>
-</div>
-<div id="section23" class="section"><h2><a name="section23">Changes for version 3.1.10</a></h2>
-<ol class="enumerated">
-<li><p>Fixed code version numbering forgotten with 3.1.9.</p></li>
-<li><p>Fixed issue #35. In package mode (-pkg) the object cache
-	directory is unique to the process, thus we do not need
-	content-hashing to generate unique file names. A simple
-	counter is sufficient and much faster.</p>
-<p>Note that mode &quot;compile &amp; run&quot; is not as blessed and still
-	uses content-hasing with md5 to ensure unique file names
-	in its per-user object cache.</p></li>
-<li><p>Fixed issue where the <b class="cmd">ccommand</b> forgot to use its body as
-	input for the UUID generation. Thus ignoring changes to it in
-	mode compile &amp; run, and not rebuilding a library for changed
-	sources. Bug and fix reported by Peter Spjuth.</p></li>
-</ol>
-</div>
-<div id="section24" class="section"><h2><a name="section24">Changes for version 3.1.11</a></h2>
-<ol class="enumerated">
-<li><p>Fixed issue #37, via pull request #38, with thanks to
-       Jos DeCoster. Information was stored into the v::delproc
-       and v::clientdata arrays using a different key than when
-       retrieving the same information, thus failing the latter.</p></li>
-<li><p>New convenience command <b class="cmd">critcl::include</b> for easy
-       inclusion of headers and other C files.</p></li>
-<li><p>New command <b class="cmd">critcl::make</b> to generate a local header of
-       other C files for use by other parts of a package through
-       inclusion.</p></li>
-<li><p>New utility package <b class="package"><a href="critcl_literals.html">critcl::literals</a></b> for quick and
-       easy setup of and access to pools of fixed Tcl_Obj* strings.
-       Built on top of <b class="package"><a href="critcl_iassoc.html">critcl::iassoc</a></b>.</p></li>
-<li><p>New utility package <b class="package"><a href="critcl_bitmap.html">critcl::bitmap</a></b> for quick and easy
-       setup and use of mappings between C bitsets and Tcl lists whose
-       string elements represent that set.
-       Built on top of <b class="package"><a href="critcl_iassoc.html">critcl::iassoc</a></b>.</p></li>
-</ol>
-</div>
-<div id="section25" class="section"><h2><a name="section25">Authors</a></h2>
+<div id="section26" class="section"><h2><a name="section26">Authors</a></h2>
 <p>Jean Claude Wippler, Steve Landers, Andreas Kupries</p>
 </div>
-<div id="section26" class="section"><h2><a name="section26">Bugs, Ideas, Feedback</a></h2>
+<div id="section27" class="section"><h2><a name="section27">Bugs, Ideas, Feedback</a></h2>
 <p>This document, and the package it describes, will undoubtedly contain
 bugs and other problems.
 Please report them at <a href="https://github.com/andreas-kupries/critcl/issues">https://github.com/andreas-kupries/critcl/issues</a>.

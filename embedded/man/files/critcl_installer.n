@@ -4,74 +4,81 @@
 '\" Copyright (c) Steve Landers
 '\" Copyright (c) 2011-2013 Andreas Kupries
 '\"
-'\" The definitions below are for supplemental macros used in Tcl/Tk
-'\" manual entries.
-'\"
-'\" .AP type name in/out ?indent?
-'\"	Start paragraph describing an argument to a library procedure.
-'\"	type is type of argument (int, etc.), in/out is either "in", "out",
-'\"	or "in/out" to describe whether procedure reads or modifies arg,
-'\"	and indent is equivalent to second arg of .IP (shouldn't ever be
-'\"	needed;  use .AS below instead)
-'\"
-'\" .AS ?type? ?name?
-'\"	Give maximum sizes of arguments for setting tab stops.  Type and
-'\"	name are examples of largest possible arguments that will be passed
-'\"	to .AP later.  If args are omitted, default tab stops are used.
-'\"
-'\" .BS
-'\"	Start box enclosure.  From here until next .BE, everything will be
-'\"	enclosed in one large box.
-'\"
-'\" .BE
-'\"	End of box enclosure.
-'\"
-'\" .CS
-'\"	Begin code excerpt.
-'\"
-'\" .CE
-'\"	End code excerpt.
-'\"
-'\" .VS ?version? ?br?
-'\"	Begin vertical sidebar, for use in marking newly-changed parts
-'\"	of man pages.  The first argument is ignored and used for recording
-'\"	the version when the .VS was added, so that the sidebars can be
-'\"	found and removed when they reach a certain age.  If another argument
-'\"	is present, then a line break is forced before starting the sidebar.
-'\"
-'\" .VE
-'\"	End of vertical sidebar.
-'\"
-'\" .DS
-'\"	Begin an indented unfilled display.
-'\"
-'\" .DE
-'\"	End of indented unfilled display.
-'\"
-'\" .SO
-'\"	Start of list of standard options for a Tk widget.  The
-'\"	options follow on successive lines, in four columns separated
-'\"	by tabs.
-'\"
-'\" .SE
-'\"	End of list of standard options for a Tk widget.
-'\"
-'\" .OP cmdName dbName dbClass
-'\"	Start of description of a specific option.  cmdName gives the
-'\"	option's name as specified in the class command, dbName gives
-'\"	the option's name in the option database, and dbClass gives
-'\"	the option's class in the option database.
-'\"
-'\" .UL arg1 arg2
-'\"	Print arg1 underlined, then print arg2 normally.
-'\"
-'\" RCS: @(#) $Id: man.macros,v 1.1 2009/01/30 04:56:47 andreas_kupries Exp $
-'\"
-'\"	# Set up traps and other miscellaneous stuff for Tcl/Tk man pages.
+.TH "critcl_install_guide" n 3\&.1\&.11 doc "C Runtime In Tcl (CriTcl)"
+.\" The -*- nroff -*- definitions below are for supplemental macros used
+.\" in Tcl/Tk manual entries.
+.\"
+.\" .AP type name in/out ?indent?
+.\"	Start paragraph describing an argument to a library procedure.
+.\"	type is type of argument (int, etc.), in/out is either "in", "out",
+.\"	or "in/out" to describe whether procedure reads or modifies arg,
+.\"	and indent is equivalent to second arg of .IP (shouldn't ever be
+.\"	needed;  use .AS below instead)
+.\"
+.\" .AS ?type? ?name?
+.\"	Give maximum sizes of arguments for setting tab stops.  Type and
+.\"	name are examples of largest possible arguments that will be passed
+.\"	to .AP later.  If args are omitted, default tab stops are used.
+.\"
+.\" .BS
+.\"	Start box enclosure.  From here until next .BE, everything will be
+.\"	enclosed in one large box.
+.\"
+.\" .BE
+.\"	End of box enclosure.
+.\"
+.\" .CS
+.\"	Begin code excerpt.
+.\"
+.\" .CE
+.\"	End code excerpt.
+.\"
+.\" .VS ?version? ?br?
+.\"	Begin vertical sidebar, for use in marking newly-changed parts
+.\"	of man pages.  The first argument is ignored and used for recording
+.\"	the version when the .VS was added, so that the sidebars can be
+.\"	found and removed when they reach a certain age.  If another argument
+.\"	is present, then a line break is forced before starting the sidebar.
+.\"
+.\" .VE
+.\"	End of vertical sidebar.
+.\"
+.\" .DS
+.\"	Begin an indented unfilled display.
+.\"
+.\" .DE
+.\"	End of indented unfilled display.
+.\"
+.\" .SO ?manpage?
+.\"	Start of list of standard options for a Tk widget. The manpage
+.\"	argument defines where to look up the standard options; if
+.\"	omitted, defaults to "options". The options follow on successive
+.\"	lines, in three columns separated by tabs.
+.\"
+.\" .SE
+.\"	End of list of standard options for a Tk widget.
+.\"
+.\" .OP cmdName dbName dbClass
+.\"	Start of description of a specific option.  cmdName gives the
+.\"	option's name as specified in the class command, dbName gives
+.\"	the option's name in the option database, and dbClass gives
+.\"	the option's class in the option database.
+.\"
+.\" .UL arg1 arg2
+.\"	Print arg1 underlined, then print arg2 normally.
+.\"
+.\" .QW arg1 ?arg2?
+.\"	Print arg1 in quotes, then arg2 normally (for trailing punctuation).
+.\"
+.\" .PQ arg1 ?arg2?
+.\"	Print an open parenthesis, arg1 in quotes, then arg2 normally
+.\"	(for trailing punctuation) and then a closing parenthesis.
+.\"
+.\"	# Set up traps and other miscellaneous stuff for Tcl/Tk man pages.
 .if t .wh -1.3i ^B
 .nr ^l \n(.l
 .ad b
-'\"	# Start an argument description
+.\"	# Start an argument description
 .de AP
 .ie !"\\$4"" .TP \\$4
 .el \{\
@@ -80,7 +87,7 @@
 .\}
 .ta \\n()Au \\n()Bu
 .ie !"\\$3"" \{\
-\&\\$1	\\fI\\$2\\fP	(\\$3)
+\&\\$1 \\fI\\$2\\fP (\\$3)
 .\".b
 .\}
 .el \{\
@@ -93,7 +100,7 @@
 .\}
 .\}
 ..
-'\"	# define tabbing values for .AP
+.\"	# define tabbing values for .AP
 .de AS
 .nr )A 10n
 .if !"\\$1"" .nr )A \\w'\\$1'u+3n
@@ -103,9 +110,9 @@
 .nr )C \\n()Bu+\\w'(in/out)'u+2n
 ..
 .AS Tcl_Interp Tcl_CreateInterp in/out
-'\"	# BS - start boxed text
-'\"	# ^y = starting y location
-'\"	# ^b = 1
+.\"	# BS - start boxed text
+.\"	# ^y = starting y location
+.\"	# ^b = 1
 .de BS
 .br
 .mk ^y
@@ -115,7 +122,7 @@
 .if n \l'\\n(.lu\(ul'
 .if n .fi
 ..
-'\"	# BE - end boxed text (draw box now)
+.\"	# BE - end boxed text (draw box now)
 .de BE
 .nf
 .ti 0
@@ -135,16 +142,16 @@
 .br
 .nr ^b 0
 ..
-'\"	# VS - start vertical sidebar
-'\"	# ^Y = starting y location
-'\"	# ^v = 1 (for troff;  for nroff this doesn't matter)
+.\"	# VS - start vertical sidebar
+.\"	# ^Y = starting y location
+.\"	# ^v = 1 (for troff;  for nroff this doesn't matter)
 .de VS
 .if !"\\$2"" .br
 .mk ^Y
 .ie n 'mc \s12\(br\s0
 .el .nr ^v 1u
 ..
-'\"	# VE - end of vertical sidebar
+.\"	# VE - end of vertical sidebar
 .de VE
 .ie n 'mc
 .el \{\
@@ -159,9 +166,9 @@
 .\}
 .nr ^v 0
 ..
-'\"	# Special macro to handle page bottom:  finish off current
-'\"	# box/sidebar if in box/sidebar mode, then invoked standard
-'\"	# page bottom macro.
+.\"	# Special macro to handle page bottom:  finish off current
+.\"	# box/sidebar if in box/sidebar mode, then invoked standard
+.\"	# page bottom macro.
 .de ^B
 .ev 2
 'ti 0
@@ -188,34 +195,36 @@
 .mk ^Y
 .\}
 ..
-'\"	# DS - begin display
+.\"	# DS - begin display
 .de DS
 .RS
 .nf
 .sp
 ..
-'\"	# DE - end display
+.\"	# DE - end display
 .de DE
 .fi
 .RE
 .sp
 ..
-'\"	# SO - start of list of standard options
+.\"	# SO - start of list of standard options
 .de SO
+'ie '\\$1'' .ds So \\fBoptions\\fR
+'el .ds So \\fB\\$1\\fR
 .SH "STANDARD OPTIONS"
 .LP
 .nf
-.ta 4c 8c 12c
+.ta 5.5c 11c
 .ft B
 ..
-'\"	# SE - end of list of standard options
+.\"	# SE - end of list of standard options
 .de SE
 .fi
 .ft R
 .LP
-See the \\fBoptions\\fR manual entry for details on the standard options.
+See the \\*(So manual entry for details on the standard options.
 ..
-'\"	# OP - start of full description for a single option
+.\"	# OP - start of full description for a single option
 .de OP
 .LP
 .nf
@@ -226,21 +235,43 @@ Database Class:	\\fB\\$3\\fR
 .fi
 .IP
 ..
-'\"	# CS - begin code excerpt
+.\"	# CS - begin code excerpt
 .de CS
 .RS
 .nf
 .ta .25i .5i .75i 1i
 ..
-'\"	# CE - end code excerpt
+.\"	# CE - end code excerpt
 .de CE
 .fi
 .RE
 ..
+.\"	# UL - underline word
 .de UL
 \\$1\l'|0\(ul'\\$2
 ..
-.TH "critcl_install_guide" n 3\&.1\&.11 doc "C Runtime In Tcl (CriTcl)"
+.\"	# QW - apply quotation marks to word
+.de QW
+.ie '\\*(lq'"' ``\\$1''\\$2
+.\"" fix emacs highlighting
+.el \\*(lq\\$1\\*(rq\\$2
+..
+.\"	# PQ - apply parens and quotation marks to word
+.de PQ
+.ie '\\*(lq'"' (``\\$1''\\$2)\\$3
+.\"" fix emacs highlighting
+.el (\\*(lq\\$1\\*(rq\\$2)\\$3
+..
+.\"	# QR - quoted range
+.de QR
+.ie '\\*(lq'"' ``\\$1''\\-``\\$2''\\$3
+.\"" fix emacs highlighting
+.el \\*(lq\\$1\\*(rq\\-\\*(lq\\$2\\*(rq\\$3
+..
+.\"	# MT - "empty" string
+.de MT
+.QW ""
+..
 .BS
 .SH NAME
 critcl_install_guide \- Critcl - The Installer's Guide
@@ -393,17 +424,22 @@ ensured for the ActiveTcl distribution\&. Others may have to run
 to make this happen\&.
 .PP
 Now, for those wishing to install the packages from source,
-the CVS repository for the two bundles can be found at
-\fIhttps://sourceforge\&.net/projects/tcllib\fR\&.
+the fossil repository for the two bundles can be found at
+\fIhttps://core\&.tcl\&.tk/tcllib\fR and \fIhttps://core\&.tcl\&.tk/tklib\fR\&.
 .PP
-Releases of Tcllib can be found in the associated Files
-section, or CVS can be used to check out the sub-project tcllib\&.
+Releases of Tcllib and Tklib can be found there as well, or
+\fBfossil\fR can be used to check out specific revisions\&.
 .PP
-Tcllib comes with its own installation instructions\&. These will
-not be repeated here\&. If there are problems with its directions please
-file a bug against the Tcllib project at the above url, and not
-Critcl\&.
-.SH "BUILD & INSTALLATION"
+Tcl- and Tklib come with their own installation instructions\&.
+These will not be repeated here\&. If there are problems with their
+directions please file a bug against the Tcllib project at the above
+url, and not CriTcl\&.
+.SH "BUILD & INSTALLATION INSTRUCTIONS"
+.SS "BUILD & INSTALLATION (UNIX)"
+This section describes the actions required to install CriTcl on Unix
+systems (Linux, BSD, and related, including OS X)\&.
+If you have to install CriTcl on a Windows machine see section
+\fBBuild & Installation (Windows)\fR instead\&.
 To install Critcl simply run
 .CS
 
@@ -419,16 +455,19 @@ This builds all packages and then places them in a directory where the
 .PP
 It further creates a "\fIcritcl\fR" application script and places it
 into the directory \fBtclsh\fR resides in, making it a sibling of that
-executable\&. The critcl application is written to use that executable
-as well, and not search for it in the \fBPATH\fR\&.
+executable\&.
+Note that the installed critcl application is modified to use the
+chosen tclsh instead of searching for one on the \fBPATH\fR\&.
 .PP
 On Windows you can invoke the file "\fIbuild\&.tcl\fR" with a
 double-click\&.  This will pop up a small graphical interface for
 entering the destination and performing the installation\&. This
 handling of a double-click is restricted to Windows only however\&.
 .PP
-On unix the same GUI is acessible by invoking "\fIbuild\&.tcl\fR" without
-any arguments\&.
+The build system provides a small GUI for those not comfortable with
+the command line\&.
+This GUI is accessible by invoking "\fIbuild\&.tcl\fR" without any
+arguments\&.
 .PP
 To get help about the methods of "\fIbuild\&.tcl\fR", and their complete
 syntax, invoke  "\fIbuild\&.tcl\fR" with argument \fBhelp\fR, i\&.e\&., like
@@ -438,7 +477,58 @@ syntax, invoke  "\fIbuild\&.tcl\fR" with argument \fBhelp\fR, i\&.e\&., like
     /path/to/tclsh /path/to/critcl/build\&.tcl help
 
 .CE
-.SH "FIRST USE, TESTING THE INSTALLATION"
+.SS "BUILD & INSTALLATION (WINDOWS)"
+This section describes the actions required to install CriTcl on
+Windows(tm) systems\&.
+If you have to install CriTcl on a Unix machine (Linux, BSD, and
+related, including OS X) see section
+\fBBuild & Installation (Unix)\fR instead\&.
+To install Critcl simply run
+.CS
+
+
+    /path/to/tclsh /path/to/critcl/build\&.tcl install
+
+.CE
+where "\fI/path/to/tclsh\fR" is the tclsh of your Tcl installation, and
+"\fI/path/to/critcl\fR" the location of the Critcl sources on your system\&.
+.PP
+This builds all packages and then places them in a directory where the
+\fBtclsh\fR will find them\&.
+.PP
+It further creates a "\fIcritcl\fR" application script and places it
+into the directory \fBtclsh\fR resides in, making it a sibling of that
+executable\&.
+.PP
+\fIAttention!\fR Note that while the installed critcl
+application is modified to use the chosen tclsh instead of searching
+for one on the \fBPATH\fR this is useless for Windows, which
+associates executables with files through their extension\&.
+.PP
+\fIAttention!\fR The current installer does not put an
+extension on the \fBcritcl\fR application, forcing users to either
+explicitly choose the \fBtclsh\fR to run the application, or
+manually rename the installed file to "\fIcritcl\&.tcl\fR", if an
+association for "\fI\&.tcl\fR" is available, to either \fBtclsh\fR, or
+\fBwish\fR\&.
+.PP
+On Windows you can invoke the file "\fIbuild\&.tcl\fR" with a
+double-click\&.  This will pop up a small graphical interface for
+entering the destination and performing the installation\&. This
+handling of a double-click is restricted to Windows only however\&.
+.PP
+This GUI is also accessible by invoking "\fIbuild\&.tcl\fR" without any
+arguments\&.
+.PP
+To get help about the methods of "\fIbuild\&.tcl\fR", and their complete
+syntax, invoke  "\fIbuild\&.tcl\fR" with argument \fBhelp\fR, i\&.e\&., like
+.CS
+
+
+    /path/to/tclsh /path/to/critcl/build\&.tcl help
+
+.CE
+.SS "FIRST USE, TESTING THE INSTALLATION"
 With critcl installed it is now the time to try at least one of the
 examples distributed with it\&. This will also test if the installation
 was successful\&.
@@ -448,30 +538,32 @@ high-level stack example packages\&. I am intentionally bypassing the
 "\fIbuild\&.tcl\fR" file the example is coming with, to show the use of
 \fBcritcl\fR itself\&.
 .PP
+Some more explanations before running the example:
+.IP \(bu
+Here "\fIpath/to/critcl\fR" is the path to the installed
+critcl application, not the critcl source directory\&.
+.sp
+Also, on Windows(tm) this part of the example must be
+replaced with
 .CS
 
-
-
-    > cd examples/stack
-    > /path/to/critcl -keep -cache B -pkg cstack\&.tcl
-    > /path/to/critcl -keep -cache B -pkg stackc\&.tcl
-    > tclsh
-    % lappend auto_path [pwd]/lib
-    % package require stackc
-    % join [info loaded] \\n
-    % stackc S
-    % S push FOO
-    % S size
-    % S destroy
-    % exit
-    >
-
+ /path/to/tclsh /path/to/critcl
 .CE
-.PP
-Some explanations:
+.IP
+as the installed application has no extension and
+thus Windows will not know how to execute the script\&.
+.sp
+Only if the installed application was manually renamed to
+"\fIcritcl\&.tcl\fR" and the machine has an association for
+"\fI\&.tcl\fR" to either \fBtclsh\fR or \fBwish\fR then
+the "\fI/path/to/tclsh\fR" can be left out\&.
 .IP \(bu
 The example shows only the commands entered on the shell (and
 tclsh) command line\&. Their responses are left out\&.
+.sp
+If any command throws an error, i\&.e\&. has a problem, then all
+following commands will run into some other error as well,
+as a consequence of the first problem\&.
 .IP \(bu
 Use of option \fB-keep\fR causes critcl to leave the
 generated \&.c files behind, for edification\&. Normally this
@@ -485,6 +577,27 @@ Both \fBcstack\fR and \fBstackc\fR have to use the
 \fIsame\fR \fB-cache\fR so that \fBstackc\fR will
 find the stub table headers exported by \fBcstack\fR\&.
 .PP
+.PP
+.CS
+
+
+
+    > cd examples/stack
+    > /path/to/critcl -keep -cache B -pkg cstack\&.tcl
+    > /path/to/critcl -keep -cache B -pkg stackc\&.tcl
+
+    > tclsh
+    % lappend auto_path [pwd]/lib
+    % package require stackc
+    % join [info loaded] \\n
+    % stackc S
+    % S push FOO
+    % S size
+    % S destroy
+    % exit
+    >
+
+.CE
 .SH AUTHORS
 Jean Claude Wippler, Steve Landers, Andreas Kupries
 .SH "BUGS, IDEAS, FEEDBACK"
