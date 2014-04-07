@@ -34,6 +34,7 @@ Before Critcl can be build and used a number of requisites must be installed. Th
        For details see [sectref Tcl].
 [enum] Various packages from the Tcllib bundle for [syscmd Tcl].
        For details see [sectref Tcllib].
+[enum] A working C compiler and development environment.
 [list_end]
 
 This list assumes that the machine where Critcl is to be installed is
@@ -44,6 +45,7 @@ dependencies they talk about are indeed installed.
 
 [include include/rq_tcl.inc]
 [include include/rq_tcllib.inc]
+[include include/rq_cc.inc]
 
 [comment {===================================================================}]
 [section {Build & Installation Instructions}]
