@@ -8,6 +8,15 @@ enable users of [package critcl] to extend the set of argument and
 result types understood by [cmd critcl::cproc]. In other words, to
 define their own custom types.
 
+[comment {
+[para] [emph ATTENTION] Starting with Critcl version XXX these
+commands are just backward compatibility shims delegating to the
+equivalent commands in the core utility package
+[package critcl::typeconv].
+
+Users of these commands are asked to update their code.
+}]
+
 [list_begin definitions]
 
 [comment {- - -- --- ----- -------- ------------- ---------------------}]

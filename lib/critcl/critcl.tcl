@@ -100,6 +100,10 @@ if {[package vsatisfies [package present Tcl] 8.5]} {
 }
 
 # # ## ### ##### ######## ############# #####################
+
+package require critcl::typeconv ;# cproc datatype conversion
+
+# # ## ### ##### ######## ############# #####################
 ## 
 
 proc ::critcl::buildrequirement {script} {
@@ -397,7 +401,7 @@ proc ::critcl::argcsignature {adefs} {
 	if {[llength $a] == 2} {
 	    set a [lindex $a 0]
 	}
-	lappend cargs  "[ArgumentCTypeB $t] $a"
+	lappend cargs  "[typeconv::arg-get-arg-type $t] $a"
     }
 
     return $cargs
@@ -417,7 +421,7 @@ proc ::critcl::argvardecls {adefs} {
 	if {[llength $a] == 2} {
 	    set a [lindex $a 0]
 	}
-	lappend result "[ArgumentCType $t] _$a;"
+	lappend result "[typeconv::arg-get-var-type $t] _$a;"
     }
 
     return $result
@@ -438,7 +442,7 @@ proc ::critcl::argsupport {adefs} {
     foreach {t a} $adefs {
 	if {[lsearch -exact $has $t] >= 0} continue
 	lappend has $t
-	lappend result "[ArgumentSupport $t]"
+	lappend result [typeconv::arg-get-support $t]
     }
 
     return $result
@@ -469,7 +473,7 @@ proc ::critcl::argconversion {adefs {n 1}} {
 	    lassign $a a default
 
 	    set map [list @@ "ov\[idx_\]" @A _$a]
-	    set code [string map $map [ArgumentConversion $t]]
+	    set code [string map $map [typeconv::arg-get-conv $t]]
 
 	    set code "${prefix}  if (oc > $min) \{\n$code\n    idx_++;\n  \} else \{\n    _$a = $default;\n  \}"
 	    incr min
@@ -486,7 +490,7 @@ proc ::critcl::argconversion {adefs {n 1}} {
 
 	    set map [list @@ "ov\[idx_\]" @A _$a]
 	    lappend result "  /* ($t $a) - - -- --- ----- -------- */"
-	    lappend result [string map $map [ArgumentConversion $t]]
+	    lappend result [string map $map [typeconv::arg-get-conv $t]]
 	    lappend result "  idx_++;"
 	    lappend result {}
 
@@ -494,7 +498,7 @@ proc ::critcl::argconversion {adefs {n 1}} {
 	    # Fixed argument, before any optionals.
 	    set map [list @@ "ov\[$n\]" @A _$a]
 	    lappend result "  /* ($t $a) - - -- --- ----- -------- */"
-	    lappend result [string map $map [ArgumentConversion $t]]
+	    lappend result [string map $map [typeconv::arg-get-conv $t]]
 	    lappend result {}
 	    incr n
 	    set prefix "    idx_ = $n;\n"
@@ -504,86 +508,19 @@ proc ::critcl::argconversion {adefs {n 1}} {
     return $result
 }
 
-proc ::critcl::argtype {name conversion {ctype {}} {ctypeb {}}} {
-    variable v::actype
-    variable v::actypeb
-    variable v::aconv
-
-    # ctype  Type of variable holding the argument.
-    # ctypeb Type of formal C function argument.
-
-    if {[info exists aconv($name)]} {
-	return -code error "Illegal duplicate definition of '$name'."
-    }
-
-    # Handle aliases by copying the original definition.
-    if {$conversion eq "="} {
-	if {![info exists aconv($ctype)]} {
-	    return -code error "Unable to alias unknown type '$ctype'."
-	}
-	set conversion $aconv($ctype) 
-	set ctypeb     $actypeb($ctype)
-	set ctype      $actype($ctype)
-    } else {
-	lassign [HeaderLines $conversion] leadoffset conversion
-	set conversion "\t\{\n[at::caller! $leadoffset]\t[string trim $conversion] \}"
-    }
-    if {$ctype eq {}} {
-	set ctype $name
-    }
-    if {$ctypeb eq {}} {
-	set ctypeb $name
-    }
-    set aconv($name)  $conversion
-    set actype($name) $ctype
-    set actypeb($name) $ctypeb
-    return
+# shim for backward compatibility.
+proc ::critcl::argtype {args} {
+    uplevel 1 [linsert $args 0 critcl::typeconv::arg-def]
 }
 
-proc ::critcl::argtypesupport {name code} {
-    variable v::aconv
-    variable v::acsup
-    if {![info exists aconv($name)]} {
-	return -code error "No definition for '$name'."
-    }
-    if {[info exists acsup($name)]} {
-	return -code error "Illegal duplicate support of '$name'."
-    }
-
-    lappend lines "#ifndef CRITCL_$name"
-    lappend lines "#define CRITCL_$name"
-    lappend lines $code
-    lappend lines "#endif"
-
-    set acsup($name) [join $lines \n]\n
-    return
+# shim for backward compatibility.
+proc ::critcl::argtypesupport {args} {
+    uplevel 1 [linsert $args 0 critcl::typeconv::arg-set-support]
 }
 
-proc ::critcl::resulttype {name conversion {ctype {}}} {
-    variable v::rctype
-    variable v::rconv
-
-    if {[info exists rconv($name)]} {
-	return -code error "Illegal duplicate definition of '$name'."
-    }
-
-    # Handle aliases by copying the original definition.
-    if {$conversion eq "="} {
-	if {![info exists rconv($ctype)]} {
-	    return -code error "Unable to alias unknown type '$ctype'."
-	}
-	set conversion $rconv($ctype) 
-	set ctype      $rctype($ctype)
-    } else {
-	lassign [HeaderLines $conversion] leadoffset conversion
-	set conversion [at::caller! $leadoffset]\t[string trimright $conversion]
-    }
-    if {$ctype eq {}} {
-	set ctype $name
-    }
-    set rconv($name)  $conversion
-    set rctype($name) $ctype
-    return
+# shim for backward compatibility.
+proc ::critcl::resulttype {args} {
+    uplevel 1 [linsert $args 0 critcl::typeconv::result-def]
 }
 
 proc ::critcl::cproc {name adefs rtype {body "#"} args} {
@@ -646,7 +583,7 @@ proc ::critcl::cproc {name adefs rtype {body "#"} args} {
     # here, a reference to the shim we can use.
 
     if {$body ne "#"} {
-	Emit   "static [ResultCType $rtype] "
+	Emit   "static [typeconv::result-get-type $rtype] "
 	Emitln "${cname}([join $cargs {, }])"
 	Emit   \{\n
 	lassign [HeaderLines $body] leadoffset body
@@ -3150,7 +3087,9 @@ proc ::critcl::EmitShimVariables {adefs rtype} {
     if {$opt} { Emitln "  int idx_;" }
 
     # Result variable, source for the C -> Tcl conversion.
-    if {$rtype ne "void"} { Emit "  [ResultCType $rtype] rv;" }
+    if {$rtype ne "void"} {
+	Emit "  [typeconv::result-get-type $rtype] rv;"
+    }
     return
 }
 
@@ -3228,44 +3167,10 @@ proc ::critcl::EmitShimFooter {rtype} {
     # Convert the returned low-level result from C to Tcl, if required.
     # Return a standard status, if required.
 
-    set code [ResultConversion $rtype]
+    set code [typeconv::result-get-code $type $rtype]
     if {$code ne {}} { Emitln $code }
     Emitln \}
     return
-}
-
-proc ::critcl::ArgumentSupport {type} {
-    if {[info exists v::acsup($type)]} { return $v::acsup($type) }
-    return {}
-}
-
-proc ::critcl::ArgumentCType {type} {
-    if {[info exists v::actype($type)]} { return $v::actype($type) }
-    return -code error "Unknown argument type $type"
-}
-
-proc ::critcl::ArgumentCTypeB {type} {
-    if {[info exists v::actypeb($type)]} { return $v::actypeb($type) }
-    return -code error "Unknown argument type $type"
-}
-
-proc ::critcl::ArgumentConversion {type} {
-    if {[info exists v::aconv($type)]} { return $v::aconv($type) }
-    return -code error "Unknown argument type $type"
-}
-
-proc ::critcl::ResultCType {type} {
-    if {[info exists v::rctype($type)]} {
-	return $v::rctype($type)
-    }
-    return -code error "Unknown result type $type"
-}
-
-proc ::critcl::ResultConversion {type} {
-    if {[info exists v::rconv($type)]} {
-	return $v::rconv($type)
-    }
-    return -code error "Unknown result type $type"
 }
 
 # # ## ### ##### ######## ############# #####################
@@ -4694,155 +4599,6 @@ proc ::critcl::Initialize {} {
     # target platform.
     readconfig [file join $mydir Config]
 
-    # Declare the standard argument types for cproc.
-
-    argtype int {
-	if (Tcl_GetIntFromObj(interp, @@, &@A) != TCL_OK) return TCL_ERROR;
-    }
-    argtype boolean {
-	if (Tcl_GetBooleanFromObj(interp, @@, &@A) != TCL_OK) return TCL_ERROR;
-    } int int
-    argtype bool = boolean
-
-    argtype long {
-	if (Tcl_GetLongFromObj(interp, @@, &@A) != TCL_OK) return TCL_ERROR;
-    }
-
-    argtype double {
-	if (Tcl_GetDoubleFromObj(interp, @@, &@A) != TCL_OK) return TCL_ERROR;
-    }
-    argtype float {
-	double t;
-	if (Tcl_GetDoubleFromObj(interp, @@, &t) != TCL_OK) return TCL_ERROR;
-	@A = (float) t;
-    }
-
-    argtype char* {
-	@A = Tcl_GetString(@@);
-    }
-
-    argtype pstring {
-	@A.s = Tcl_GetStringFromObj(@@, &(@A.len));
-	@A.o = @@;
-    } critcl_pstring critcl_pstring
-
-    argtypesupport pstring {
-	typedef struct critcl_pstring {
-	    Tcl_Obj* o;
-	    char*    s;
-	    int      len;
-	} critcl_pstring;
-    }
-
-    argtype list {
-	if (Tcl_ListObjGetElements (interp, @@, &(@A.c), &(@A.v)) != TCL_OK) return TCL_ERROR;
-	@A.o = @@;
-    } critcl_list critcl_list
-
-    argtypesupport list {
-	typedef struct critcl_list {
-	    Tcl_Obj*  o;
-	    Tcl_Obj** v;
-	    int       c;
-	} critcl_list;
-    }
-
-    argtype Tcl_Obj* {
-	@A = @@;
-    }
-    argtype object = Tcl_Obj*
-
-    ## The next set of argument types looks to be very broken. We are
-    ## keeping them for now, but declare them as DEPRECATED. Their
-    ## documentation will be removed in version 3.2, and their
-    ## implementation in 3.3 as well, fully exterminating them
-
-    argtype int* {
-	/* Raw pointer in binary Tcl value */
-	@A = (int*) Tcl_GetByteArrayFromObj(@@, NULL);
-	Tcl_InvalidateStringRep(@@);
-    }
-    argtype float* {
-	/* Raw pointer in binary Tcl value */
-	@A = (float*) Tcl_GetByteArrayFromObj(@@, NULL);
-    }
-    argtype double* {
-	/* Raw pointer in binary Tcl value */
-	@A = (double*) Tcl_GetByteArrayFromObj(@@, NULL);
-    }
-    argtype bytearray {
-	/* Raw binary string. Length information is _NOT_ propagated */
-	@A = (char*) Tcl_GetByteArrayFromObj(@@, NULL);
-	Tcl_InvalidateStringRep(@@);
-    } char* char*
-    argtype rawchar = bytearray
-    argtype rawchar* = bytearray
-
-    # Declare the standard result types for cproc.
-    # System still has special case code for:
-    # - void (no rv result variable).
-
-    resulttype void {
-	return TCL_OK;
-    }
-
-    resulttype ok {
-	return rv;
-    } int
-
-    resulttype int {
-	Tcl_SetObjResult(interp, Tcl_NewIntObj(rv));
-	return TCL_OK;
-    }
-    resulttype boolean = int
-    resulttype bool    = int
-
-    resulttype long {
-	Tcl_SetObjResult(interp, Tcl_NewLongObj(rv));
-	return TCL_OK;
-    }
-
-    resulttype double {
-	Tcl_SetObjResult(interp, Tcl_NewDoubleObj(rv));
-	return TCL_OK;
-    }
-    resulttype float {
-	Tcl_SetObjResult(interp, Tcl_NewDoubleObj(rv));
-	return TCL_OK;
-    }
-
-    # Static and volatile strings. Duplicate.
-    resulttype char* {
-	Tcl_SetObjResult(interp, Tcl_NewStringObj(rv,-1));
-	return TCL_OK;
-    }
-    resulttype {const char*} {
-	Tcl_SetObjResult(interp, Tcl_NewStringObj(rv,-1));
-	return TCL_OK;
-    }
-    resulttype vstring = char*
-
-    # Dynamic strings, allocated via Tcl_Alloc.
-    #
-    # We are avoiding the Tcl_Obj* API here, as its use requires an
-    # additional duplicate of the string, churning memory and
-    # requiring more copying.
-    #   Tcl_SetObjResult(interp, Tcl_NewStringObj(rv,-1));
-    #   Tcl_Free (rv);
-    resulttype string {
-	Tcl_SetResult (interp, rv, TCL_DYNAMIC);
-	return TCL_OK;
-    } char*
-    resulttype dstring = string
-
-    resulttype Tcl_Obj* {
-	if (rv == NULL) { return TCL_ERROR; }
-	Tcl_SetObjResult(interp, rv);
-	Tcl_DecrRefCount(rv);
-	return TCL_OK;
-    }
-    resulttype object = Tcl_Obj*
-
     rename ::critcl::Initialize {}
     return
 }
@@ -4954,39 +4710,6 @@ namespace eval ::critcl {
 	# knowntargets  - See the *config commands, list of all platforms we can compile for.
 
 	# I suspect that this came later
-
-	# Conversion maps, Tcl types for procedure arguments and
-	# results to C types and code fragments for the conversion
-	# between the realms. Used by the helper commands
-	# "ArgumentCType", "ArgumentConversion", and
-	# "ResultConversion". These commands also supply the default
-	# values for unknown types.
-
-	variable  actype
-	array set actype {}
-
-	variable  actypeb
-	array set actypeb {}
-
-	# In the code fragments below we have the following environment (placeholders, variables):
-	# ip - C variable, Tcl_Interp* of the interpreter providing the arguments.
-	# @@ - Tcl_Obj* valued expression returning the Tcl argument value.
-	# @A - Name of the C-level argument variable.
-	#
-	variable  aconv
-	array set aconv {}
-
-	# Mapping from cproc result to C result type of the function.
-	# This is also the C type of the helper variable holding the result.
-	# NOTE: 'void' is special, as it has no result, nor result variable.
-	variable  rctype
-	array set rctype {}
-
-	# In the code fragments for result conversion:
-	# 'rv' == variable capturing the return value of the C function.
-	# 'ip' == variable containing pointer to the interp to set the result into.
-	variable  rconv
-	array set rconv {}
 
 	variable storageclass {
 /*

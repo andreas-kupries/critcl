@@ -1,0 +1,226 @@
+[comment {-*- tcl -*- doctools manpage}]
+[manpage_begin critcl::util n 1]
+[include include/module2.inc]
+[titledesc {CriTcl Type Management}]
+[require Tcl 8.4]
+[require critcl [opt 3]]
+[require critcl::typeconv [opt 1]]
+[description]
+[para]
+[include include/welcome.inc]
+[para]
+
+This document is the reference manpage for the [package critcl::typeconv]
+package. This utility package provides the commands used by the core to
+manage the conversion between Tcl and C types required for the command
+[cmd critcl::cproc] and equivalents.
+
+Its intended audience are mainly developers wishing to write generator
+packages on top of the Critcl core and needing the same sort of type
+management as the core itself. It is also for developer writing Tcl
+packages with embedded C code and having a need to define custom
+conversions which go beyond the standard types supplied here.
+
+[para]
+
+This package resides in the Core Package Layer of CriTcl.
+[para][image arch_core][para]
+
+[comment {===================================================================}]
+
+[section API]
+
+[list_begin definitions]
+
+[comment {- - -- --- ----- -------- ------------- ---------------------}]
+[call [cmd ::critcl::typeconv::arg-def] [arg name] [arg body] [opt [arg ctype]] [opt [arg ctypefun]]]
+
+This command defines the argument type [arg name], and associates it
+with the C code doing the conversion ([arg body]) from Tcl to C
+
+The C type of the variable to hold the conversion result is
+[arg ctype] and the type of the function argument itself is
+[arg ctypefun].  Both types default to [arg name] if they are not
+specified (or the empty string).
+
+[para] If [arg name] is declared already an error will be thrown.
+
+[para] The [arg body]'s responsibility is the conversion of a
+command's Tcl_Obj* argument into a C value for the underlying
+function and its storage in a helper variable.
+
+[para] The C code of [arg body] is guaranteed to be called inside of a
+separate C code block (thus allowing the use of local variables) which
+has access to the following environment:
+
+[list_begin definitions]
+[def [var interp]] A Tcl_Interp* typed C variable referencing the
+                   interpreter the code is running in.
+[def [const @@]] A placeholder for the Tcl_Obj*-valued C expression
+     	    	 providing the value of the argument to convert.
+
+[def [const @A]] A placeholder for the name of the C variable to store the
+     	    	 converted argument into.
+[list_end]
+
+As examples here are the definitions of two standard argument types:
+
+[example {
+    arg-def int {
+	if (Tcl_GetIntFromObj(interp, @@, &@A) != TCL_OK) return TCL_ERROR;
+    }
+
+    arg-def float {
+	double t;
+	if (Tcl_GetDoubleFromObj(interp, @@, &t) != TCL_OK) return TCL_ERROR;
+	@A = (float) t;
+    }
+}]
+
+[comment {- - -- --- ----- -------- ------------- ---------------------}]
+[call [cmd ::critcl::typeconv::arg-def] [arg name] [method =] [arg origname]]
+
+This form of the [cmd arg-def] command declares [arg name] as an alias
+of argument type [arg origname], which has to be defined already. If
+this is not the case an error is thrown.
+
+[comment ---------------------------------------------------------------------]
+[call [cmd ::critcl::typeconv::arg-set-support] [arg name] [arg code]]
+
+This command defines a C code fragment for the already defined
+argument type [arg name] which will be inserted before all functions
+using that type. Its purpose is the definition of any supporting C
+types needed by the argument type.
+
+If the type is used by many functions the system ensures that only the
+first of the multiple insertions of the code fragment is active, and
+the others disabled.
+
+[para As example here is the definition of the standard argument type
+[const list], which requires a supporting structure definition.
+
+[example {
+    arg-def list {
+	if (Tcl_ListObjGetElements (interp, @@, &(@A.c), &(@A.v)) != TCL_OK) {
+	    return TCL_ERROR;
+        }
+	@A.o = @@;
+    } critcl_list critcl_list
+
+    arg-set-support list {
+	typedef struct critcl_list {
+	    Tcl_Obj*  o;
+	    Tcl_Obj** v;
+	    int       c;
+	} critcl_list;
+    }
+}]
+
+[comment {- - -- --- ----- -------- ------------- ---------------------}]
+[call [cmd ::critcl::typeconv::arg-get-var-type] [arg name]]
+
+This accessor command returns the C type of a C variable holding values
+for the symbolic Critcl argument type [arg name].
+
+[para] An error will be thrown if [arg name] is not known.
+
+[comment {- - -- --- ----- -------- ------------- ---------------------}]
+[call [cmd ::critcl::typeconv::arg-get-arg-type] [arg name]]
+
+This accessor command returns the C type of a formal C function
+argument for values for the symbolic Critcl argument type [arg name].
+
+[para] An error will be thrown if [arg name] is not known.
+
+[comment {- - -- --- ----- -------- ------------- ---------------------}]
+[call [cmd ::critcl::typeconv::arg-get-conv] [arg name]]
+
+This accessor command returns the C code fragment responsible for
+converting from a [var Tcl_Obj*] to the C type, for the symbolic
+Critcl argument type [arg name].
+
+[para] An error will be thrown if [arg name] is not known.
+
+[comment {- - -- --- ----- -------- ------------- ---------------------}]
+[call [cmd ::critcl::typeconv::arg-get-support] [arg name]]
+
+This accessor command returns the C code fragment supporting the
+conversion code, for the symbolic Critcl argument type [arg name].
+
+[para] An error will be thrown if [arg name] is not known.
+
+[comment {- - -- --- ----- -------- ------------- ---------------------}]
+[call [cmd ::critcl::typeconv::result-def] [arg name] [arg body] [opt [arg ctype]]]
+
+This command defines the result type [arg name], and associates it
+with the C code doing the conversion ([arg body]) from C to Tcl.
+
+The C return type of the associated function, also the C type of the
+result variable, is [arg ctype]. This type defaults to [arg name] if
+it is not specified.
+
+[para] If [arg name] is declared already an error will be thrown.
+
+[emph Attention!] The standard result type [const void] is special as
+it has no accompanying result variable. This cannot be expressed
+by the this extension command.
+
+[para] The [arg body]'s responsibility is the conversion of the
+functions result into a Tcl result and a Tcl status. The first has to
+be set into the interpreter we are in, and the second has to be
+returned.
+
+[para] The C code of [arg body] is guaranteed to be called last in the
+wrapper around the actual implementation of the [cmd cproc] in
+question and has access to the following environment:
+
+[list_begin definitions]
+[def [var interp]] A Tcl_Interp* typed C variable referencing the
+                   interpreter the result has to be stored into.
+[def [var rv]] The C variable holding the result to convert, of type
+               [arg ctype].
+[list_end]
+
+As examples here are the definitions of two standard result types:
+
+[example {
+    result-def int {
+	Tcl_SetObjResult(interp, Tcl_NewIntObj(rv));
+	return TCL_OK;
+    }
+
+    result-def ok {
+	/* interp result must be set by cproc body */
+	return rv;
+    } int
+}]
+
+[comment {- - -- --- ----- -------- ------------- ---------------------}]
+[call [cmd ::critcl::typeconv::result-def] [arg name] [method =] [arg origname]]
+
+This form of the [cmd result-def] command declares [arg name] as an
+alias of result type [arg origname], which has to be defined
+already. If this is not the case an error is thrown.
+
+[comment {- - -- --- ----- -------- ------------- ---------------------}]
+[call [cmd ::critcl::typeconv::result-get-type] [arg name]]
+
+This accessor command returns the C type of a C variable holding values
+for the symbolic Critcl result type [arg name].
+
+[para] An error will be thrown if [arg name] is not known.
+
+[comment {- - -- --- ----- -------- ------------- ---------------------}]
+[call [cmd ::critcl::typeconv::result-get-code] [arg name]]
+
+This accessor command returns the C code fragment responsible for
+converting from the C type to [var Tcl_Obj*], for the symbolic Critcl
+result type [arg name].
+
+[para] An error will be thrown if [arg name] is not known.
+
+[list_end]
+
+[comment {===================================================================}]
+[include include/feedback2.inc]
+[manpage_end]
