@@ -102,6 +102,7 @@ if {[package vsatisfies [package present Tcl] 8.5]} {
 # # ## ### ##### ######## ############# #####################
 
 package require critcl::typeconv ;# cproc datatype conversion
+package require critcl::who      ;# management of current file.
 
 # # ## ### ##### ######## ############# #####################
 ## 
@@ -174,7 +175,7 @@ proc ::critcl::Lines {text} {
 }
 
 proc ::critcl::ccode {text} {
-    set file [SkipIgnored [This]]
+    set file [SkipIgnored [who::is]]
     AbortWhenCalledAfterBuild
     set digest [UUID.extend $file .ccode $text]
 
@@ -191,7 +192,7 @@ proc ::critcl::ccode {text} {
 }
 
 proc ::critcl::ccommand {name anames args} {
-    SkipIgnored [set file [This]]
+    SkipIgnored [set file [who::is]]
     AbortWhenCalledAfterBuild
 
     # Basic key for the clientdata and delproc arrays.
@@ -270,7 +271,7 @@ proc ::critcl::ccommand {name anames args} {
 }
 
 proc ::critcl::cdata {name data} {
-    SkipIgnored [This]
+    SkipIgnored [who::is]
     AbortWhenCalledAfterBuild
     binary scan $data c* bytes ;# split as bytes, not (unicode) chars
 
@@ -297,7 +298,7 @@ proc ::critcl::cdata {name data} {
 }
 
 proc ::critcl::cdefines {defines {namespace "::"}} {
-    set file [SkipIgnored [This]]
+    set file [SkipIgnored [who::is]]
     AbortWhenCalledAfterBuild
     set digest [UUID.extend $file .cdefines [list $defines $namespace]]
 
@@ -524,7 +525,7 @@ proc ::critcl::resulttype {args} {
 }
 
 proc ::critcl::cproc {name adefs rtype {body "#"} args} {
-    SkipIgnored [set file [This]]
+    SkipIgnored [set file [who::is]]
     AbortWhenCalledAfterBuild
 
     set acname 0
@@ -610,7 +611,7 @@ proc ::critcl::cproc {name adefs rtype {body "#"} args} {
 }
 
 proc ::critcl::cinit {text edecls} {
-    set file [SkipIgnored [set file [This]]]
+    set file [SkipIgnored [set file [who::is]]]
     AbortWhenCalledAfterBuild
 
     set digesta [UUID.extend $file .cinit.f $text]
@@ -739,33 +740,25 @@ proc ::critcl::collect {script {slot {}}} {
 proc ::critcl::collect_begin {{slot {}}} {
     # Divert the collection of code fragments to slot
     # (output control). Stack on any previous diversion.
-    variable v::this
-    # See critcl::This for where this information is injected into the
-    # code generation system.
 
     if {$slot eq {}} {
-	set slot MEMORY[expr { [info exists this]
-			       ? [llength $this]
-			       : 0 }]
+	set slot MEMORY[who::depth]
     }
     # Prefix prevents collision of slot names and file paths.
-    lappend this critcl://$slot
+    who::push critcl://$slot
     return
 }
 
 proc ::critcl::collect_end {} {
     # Stop last diversion, and return the collected information as
     # single string of C code.
-    variable v::this
-    # See critcl::This for where this information is injected into the
-    # code generation system.
 
     # Ensure that a diversion is actually open.
-    if {![info exists this] || ![llength $this]} {
+    if {![who::depth]} {
 	return -code error "collect_end mismatch, no diversions active"
     }
 
-    set slot [Dpop]
+    set slot [who::pop]
     set block {}
 
     foreach digest [dict get $v::code($slot) config fragments] {
@@ -779,20 +772,6 @@ proc ::critcl::collect_end {} {
     unset v::code($slot)
 
     return $block
-}
-
-
-proc ::critcl::Dpop {} {
-    variable v::this
-
-    # Get current slot, and pop from the diversion stack.
-    # Remove stack when it becomes empty.
-    set slot [lindex $this end]
-    set v::this [lrange $this 0 end-1]
-    if {![llength $this]} {
-	unset this
-    }
-    return $slot
 }
 
 proc ::critcl::include {path} {
@@ -817,27 +796,26 @@ proc ::critcl::make {path contents} {
 
 proc ::critcl::source {path} {
     # Source a critcl file in the context of the current file,
-    # i.e. [This]. Enables the factorization of a large critcl
+    # i.e. [who::is]. Enables the factorization of a large critcl
     # file into smaller, easier to read pieces.
-    SkipIgnored [set file [This]]
+    SkipIgnored [set file [who::is]]
     AbortWhenCalledAfterBuild
 
     msg -nonewline " (importing $path)"
 
     set undivert 0
-    variable v::this
-    if {![info exists this] || ![llength $this]} {
+    if {![who::depth]} {
 	# critcl::source is recording the critcl commands in the
 	# context of the toplevel file which started the chain the
 	# critcl::source. So why are we twiddling with the diversion
 	# state?
 	#
 	# The condition above tells us that we are in the first
-	# non-diverted critcl::source called by the context. [This]
+	# non-diverted critcl::source called by the context. [who::is]
 	# returns that context. Due to our use of regular 'source' (*)
-	# during its execution [This] would return the sourced file as
+	# during its execution [who::is] would return the sourced file as
 	# context. Wrong. Our fix for this is to perform, essentially,
-	# an anti-diversion. Saving [This] as diversion, forces it to
+	# an anti-diversion. Saving [who::is] as diversion, forces it to
 	# return the proper value during the whole sourcing.
 	#
 	# And if the critcl::source is run in an already diverted
@@ -850,7 +828,7 @@ proc ::critcl::source {path} {
 	# (Ad *) And we use 'source' as only this ensures proper
 	# collection of [info frame] location information.
 
-	lappend this [This]
+	who::push [who::is]
 	set undivert 1
     }
 
@@ -862,7 +840,7 @@ proc ::critcl::source {path} {
 	unset -nocomplain v::source
     }
 
-    if {$undivert} Dpop
+    if {$undivert} who::pop
     return
 }
 
@@ -872,31 +850,31 @@ proc ::critcl::source {path} {
 proc ::critcl::owns {args} {}
 
 proc ::critcl::cheaders {args} {
-    SkipIgnored [This]
+    SkipIgnored [who::is]
     AbortWhenCalledAfterBuild
     return [SetParam cheaders $args]
 }
 
 proc ::critcl::csources {args} {
-    SkipIgnored [This]
+    SkipIgnored [who::is]
     AbortWhenCalledAfterBuild
     return [SetParam csources $args 1 1]
 }
 
 proc ::critcl::clibraries {args} {
-    SkipIgnored [This]
+    SkipIgnored [who::is]
     AbortWhenCalledAfterBuild
     return [SetParam clibraries $args]
 }
 
 proc ::critcl::cobjects {args} {
-    SkipIgnored [This]
+    SkipIgnored [who::is]
     AbortWhenCalledAfterBuild
     return [SetParam cobjects $args]
 }
 
 proc ::critcl::tsources {args} {
-    set file [SkipIgnored [This]]
+    set file [SkipIgnored [who::is]]
     AbortWhenCalledAfterBuild
     # This, 'license', 'meta?' and 'meta' are the only places where we
     # are not extending the UUID. Because the companion Tcl sources
@@ -916,7 +894,7 @@ proc ::critcl::tsources {args} {
 }
 
 proc ::critcl::cflags {args} {
-    set file [SkipIgnored [This]]
+    set file [SkipIgnored [who::is]]
     AbortWhenCalledAfterBuild
     if {![llength $args]} return
 
@@ -930,7 +908,7 @@ proc ::critcl::cflags {args} {
 }
 
 proc ::critcl::ldflags {args} {
-    set file [SkipIgnored [This]]
+    set file [SkipIgnored [who::is]]
     AbortWhenCalledAfterBuild
     if {![llength $args]} return
 
@@ -947,7 +925,7 @@ proc ::critcl::ldflags {args} {
 }
 
 proc ::critcl::framework {args} {
-    SkipIgnored [This]
+    SkipIgnored [who::is]
     AbortWhenCalledAfterBuild
 
     # Check if we are building for OSX and ignore the command if we
@@ -968,7 +946,7 @@ proc ::critcl::framework {args} {
 }
 
 proc ::critcl::tcl {version} {
-    set file [SkipIgnored [This]]
+    set file [SkipIgnored [who::is]]
     AbortWhenCalledAfterBuild
 
     UUID.extend $file .mintcl $version
@@ -983,7 +961,7 @@ proc ::critcl::tcl {version} {
 }
 
 proc ::critcl::tk {} {
-    set file [SkipIgnored [This]]
+    set file [SkipIgnored [who::is]]
     AbortWhenCalledAfterBuild
 
     UUID.extend $file .tk 1
@@ -1000,7 +978,7 @@ proc ::critcl::tk {} {
 # Register a shared library for pre-loading - this will eventually be
 # redundant when TIP #239 is widely available
 proc ::critcl::preload {args} {
-    set file [SkipIgnored [This]]
+    set file [SkipIgnored [who::is]]
     AbortWhenCalledAfterBuild
     if {![llength $args]} return
 
@@ -1014,7 +992,7 @@ proc ::critcl::preload {args} {
 }
 
 proc ::critcl::license {who args} {
-    set file [SkipIgnored [This]]
+    set file [SkipIgnored [who::is]]
     AbortWhenCalledAfterBuild
 
     set who [string trim $who]
@@ -1061,7 +1039,7 @@ proc ::critcl::LicenseText {words} {
 ## Implementation -- API: meta data (teapot)
 
 proc ::critcl::description {text} {
-    set file [SkipIgnored [This]]
+    set file [SkipIgnored [who::is]]
     AbortWhenCalledAfterBuild
     InitializeFile $file
 
@@ -1070,7 +1048,7 @@ proc ::critcl::description {text} {
 }
 
 proc ::critcl::summary {text} {
-    set file [SkipIgnored [This]]
+    set file [SkipIgnored [who::is]]
     AbortWhenCalledAfterBuild
     InitializeFile $file
 
@@ -1079,7 +1057,7 @@ proc ::critcl::summary {text} {
 }
 
 proc ::critcl::subject {args} {
-    set file [SkipIgnored [This]]
+    set file [SkipIgnored [who::is]]
     AbortWhenCalledAfterBuild
     InitializeFile $file
 
@@ -1088,7 +1066,7 @@ proc ::critcl::subject {args} {
 }
 
 proc ::critcl::meta {key args} {
-    set file [SkipIgnored [This]]
+    set file [SkipIgnored [who::is]]
     AbortWhenCalledAfterBuild
 
     # This, 'meta?', 'license', and 'tsources' are the only places
@@ -1105,7 +1083,7 @@ proc ::critcl::meta {key args} {
 }
 
 proc ::critcl::meta? {key} {
-    set file [SkipIgnored [This]]
+    set file [SkipIgnored [who::is]]
     AbortWhenCalledAfterBuild
 
     # This, 'meta', 'license', and 'tsources' are the only places
@@ -1183,7 +1161,7 @@ proc ::critcl::GetMeta {file} {
 ## Implementation -- API: user configuration options.
 
 proc ::critcl::userconfig {cmd args} {
-    set file [SkipIgnored [This]]
+    set file [SkipIgnored [who::is]]
     AbortWhenCalledAfterBuild
     InitializeFile $file
 
@@ -1288,7 +1266,7 @@ proc ::critcl::UcDefault {otype} {
 ## Implementation -- API: API (stubs) management
 
 proc ::critcl::api {cmd args} {
-    set file [SkipIgnored [This]]
+    set file [SkipIgnored [who::is]]
     AbortWhenCalledAfterBuild
 
     if {![llength [info commands ::critcl::API$cmd]]} {
@@ -1397,7 +1375,7 @@ proc ::critcl::APIfunction {file rtype name arguments} {
 }
 
 proc ::critcl::API_locate {name} {
-    foreach dir [SystemIncludePaths [This]] {
+    foreach dir [SystemIncludePaths [who::is]] {
 	if {[API_at $dir $name]} { return $dir }
     }
     return {}
@@ -1595,7 +1573,7 @@ proc ::critcl::API_setup_export {file} {
 ## Implementation -- API: Introspection
 
 proc ::critcl::check {args} {
-    set file [SkipIgnored [This] 0]
+    set file [SkipIgnored [who::is] 0]
     AbortWhenCalledAfterBuild
 
     switch -exact -- [llength $args] {
@@ -1635,7 +1613,7 @@ proc ::critcl::check {args} {
 }
 
 proc ::critcl::checklink {args} {
-    set file [SkipIgnored [This] 0]
+    set file [SkipIgnored [who::is] 0]
     AbortWhenCalledAfterBuild
 
     switch -exact -- [llength $args] {
@@ -1701,13 +1679,13 @@ proc ::critcl::checklink {args} {
 }
 
 proc ::critcl::compiled {} {
-    SkipIgnored [This] 1
+    SkipIgnored [who::is] 1
     AbortWhenCalledAfterBuild
     return 0
 }
 
 proc ::critcl::compiling {} {
-    SkipIgnored [This] 0
+    SkipIgnored [who::is] 0
     AbortWhenCalledAfterBuild
     # Check that we can indeed run a compiler
     # Should only need to do this if we have to compile the code?
@@ -1720,21 +1698,21 @@ proc ::critcl::compiling {} {
 }
 
 proc ::critcl::done {} {
-    set file [SkipIgnored [This] 1]
+    set file [SkipIgnored [who::is] 1]
     return [expr {[info exists  v::code($file)] &&
 		  [dict exists $v::code($file) result closed]}]
 }
 
 proc ::critcl::failed {} {
-    SkipIgnored [This] 0
+    SkipIgnored [who::is] 0
     if {$v::buildforpackage} { return 0 }
-    return [cbuild [This] 0]
+    return [cbuild [who::is] 0]
 }
 
 proc ::critcl::load {} {
-    SkipIgnored [This] 1
+    SkipIgnored [who::is] 1
     if {$v::buildforpackage} { return 1 }
-    return [expr {![cbuild [This]]}]
+    return [expr {![cbuild [who::is]]}]
 }
 
 # # ## ### ##### ######## ############# #####################
@@ -2317,7 +2295,7 @@ proc ::critcl::cbuild {file {load 1}} {
     set v::buildforpackage 0
 
     if {$file eq ""} {
-	set file [This]
+	set file [who::is]
     }
 
     # NOTE: The 4 pieces of data just below has to be copied into the
@@ -2396,7 +2374,7 @@ proc ::critcl::cbuild {file {load 1}} {
 }
 
 proc ::critcl::cresults {{file {}}} {
-    if {$file eq ""} { set file [This] }
+    if {$file eq ""} { set file [who::is] }
     return [dict get $v::code($file) result]
 }
 
@@ -3186,7 +3164,7 @@ proc ::critcl::GetParam {file type {default {}}} {
 }
 
 proc ::critcl::SetParam {type values {expand 1} {uuid 0}} {
-    set file [This]
+    set file [who::is]
     if {![llength $values]} return
 
     UUID.extend $file .$type $values
@@ -3281,7 +3259,7 @@ proc ::critcl::name2c {name} {
     # is inlined into the internal command "BeginCommand".
 
     # Locate caller, as the data is saved per .tcl file.
-    set file [This]
+    set file [who::is]
 
     if {![string match ::* $name]} {
 	# Locate caller's namespace. Two up, skipping the
@@ -3322,7 +3300,7 @@ proc ::critcl::name2c {name} {
 
 proc ::critcl::BeginCommand {visibility name args} {
     # Locate caller, as the data is saved per .tcl file.
-    set file [This]
+    set file [who::is]
 
     # Inlined name2c
     if {![string match ::* $name]} {
@@ -3379,7 +3357,7 @@ proc ::critcl::BeginCommand {visibility name args} {
 }
 
 proc ::critcl::EndCommand {} {
-    set file [This]
+    set file [who::is]
 
     set v::code($v::curr) $v::block
 
@@ -4139,7 +4117,7 @@ proc ::critcl::AbortWhenCalledAfterBuild {} {
 	    set cloc " ([array get loc])"
 	}
     } ;#else { set cloc " ($msg)" }
-    error "[lindex [info level -1] 0]$cloc: Illegal attempt to define C code in [This] after it was built."
+    error "[lindex [info level -1] 0]$cloc: Illegal attempt to define C code in [who::is] after it was built."
 }
 
 # XXX Refactor to avoid duplication of the memoization code.
@@ -4491,18 +4469,8 @@ proc ::critcl::IsGCC {path} {
     return 1
 }
 
-proc ::critcl::This {} {
-    variable v::this
-    # For management of v::this see critcl::{source,collect*}
-    # If present, an output redirection is active.
-    if {[info exists this] && [llength $this]} {
-	return [lindex $this end]
-    }
-    return [file normalize [info script]]
-}
-
 proc ::critcl::Here {} {
-    return [file dirname [This]]
+    return [file dirname [who::is]]
 }
 
 proc ::critcl::TclDecls {file} {

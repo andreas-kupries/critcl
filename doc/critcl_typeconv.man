@@ -1,5 +1,5 @@
 [comment {-*- tcl -*- doctools manpage}]
-[manpage_begin critcl::util n 1]
+[manpage_begin critcl::typeconv n 1]
 [include include/module2.inc]
 [titledesc {CriTcl Type Management}]
 [require Tcl 8.4]

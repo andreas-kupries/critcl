@@ -1,0 +1,61 @@
+[comment {-*- tcl -*- doctools manpage}]
+[manpage_begin critcl::who n 1]
+[include include/module2.inc]
+[titledesc {CriTcl Current File}]
+[require Tcl 8.4]
+[require critcl [opt 3]]
+[require critcl::who [opt 1]]
+[description]
+[para]
+[include include/welcome.inc]
+[para]
+
+This document is the reference manpage for the [package critcl::who]
+package. This internal utility package provides the commands used by
+the core to manage the [term {current file}] where processed
+definition accumulate.
+
+Its intended audience are mainly developers and maintainers of critcl
+itself. Regular users have no need for the commands of this package.
+
+[para]
+
+This package resides in the Core Package Layer of CriTcl.
+[para][image arch_core][para]
+
+[comment {===================================================================}]
+
+[section API]
+
+[list_begin definitions]
+
+[comment {- - -- --- ----- -------- ------------- ---------------------}]
+[call [cmd ::critcl::who::is]]
+
+This command returns the path of the current file.
+
+[comment {- - -- --- ----- -------- ------------- ---------------------}]
+[call [cmd ::critcl::who::push] [arg name]]
+
+This command pushes [arg name] on the stack of overrides, making it
+the current file.
+
+The command returns the empty string as its result.
+
+[comment ---------------------------------------------------------------------]
+[call [cmd ::critcl::who::pop]]
+
+This command removes the latst pushed override from the stack.
+
+The command returns the empty string as its result.
+
+[comment {- - -- --- ----- -------- ------------- ---------------------}]
+[call [cmd ::critcl::who::depth]]
+
+This command returns the number of overrides currently pushed on the stack.
+
+[list_end]
+
+[comment {===================================================================}]
+[include include/feedback2.inc]
+[manpage_end]
