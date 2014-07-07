@@ -101,8 +101,18 @@ if {[package vsatisfies [package present Tcl] 8.5]} {
 
 # # ## ### ##### ######## ############# #####################
 
-package require critcl::typeconv ;# cproc datatype conversion
-package require critcl::who      ;# management of current file.
+package require critcl::typeconv ;# Handling cproc data types.
+package require critcl::who      ;# Management of current file.
+package require critcl::at       ;# Management of #line pragmas.
+# API exported through critcl core
+# ::critcl::at::
+#   caller  - stash caller location, possibly modified (level change, line offset)
+#   caller! - format & return caller location, clears stash
+#   here    - stash current location
+#   here!   - return format & return  current location, clears stash
+#   incr*   - modify stashed location (only line number, not file).
+#   get     - format, return, and clear stash
+#   get*    - format & return stash
 
 # # ## ### ##### ######## ############# #####################
 ## 
@@ -156,32 +166,14 @@ proc ::critcl::TeapotRequire {dspec} {
 # # ## ### ##### ######## ############# #####################
 ## Implementation -- API: Embed C Code
 
-proc ::critcl::HeaderLines {text} {
-    if {![regexp {^[\t\n ]+} $text header]} {
-	return [list 0 $text]
-    }
-    set lines [regexp -all {\n} $header]
-    # => The C code begins $lines lines after location of the c**
-    #    command. This goes as offset into the generated #line pragma,
-    #    because now (see next line) we throw away this leading
-    #    whitespace.
-    set text [string trim $text]
-    return [list $lines $text]
-}
-
-proc ::critcl::Lines {text} {
-    set n [regexp -all {\n} $text]
-    return $n
-}
-
 proc ::critcl::ccode {text} {
     set file [SkipIgnored [who::is]]
     AbortWhenCalledAfterBuild
     set digest [UUID.extend $file .ccode $text]
 
     set block {}
-    lassign [HeaderLines $text] leadoffset text
-    append block [at::CPragma $leadoffset -2 $file] $text \n
+    lassign [at::header $text] leadoffset text
+    append block [at::cpragma $leadoffset -2 $file] $text \n
 
     dict update v::code($file) config c {
 	dict lappend c fragments $digest
@@ -255,9 +247,9 @@ proc ::critcl::ccommand {name anames args} {
 
 	Emitln "static int $wname$ca"
 	Emit   \{\n
-	lassign [HeaderLines $body] leadoffset body
-	if {$v::options(lines)} {
-	    Emit [at::CPragma $leadoffset -2 $file]
+	lassign [at::header $body] leadoffset body
+	if {[at::enabled]} {
+	    Emit [at::cpragma $leadoffset -2 $file]
 	}
 	Emit   $body
 	Emitln \n\}
@@ -587,9 +579,9 @@ proc ::critcl::cproc {name adefs rtype {body "#"} args} {
 	Emit   "static [typeconv::result-get-type $rtype] "
 	Emitln "${cname}([join $cargs {, }])"
 	Emit   \{\n
-	lassign [HeaderLines $body] leadoffset body
-	if {$v::options(lines)} {
-	    Emit [at::CPragma $leadoffset -2 $file]
+	lassign [at::header $body] leadoffset body
+	if {[at::enabled]} {
+	    Emit [at::cpragma $leadoffset -2 $file]
 	}
 	Emit   $body
 	Emitln \n\}
@@ -618,18 +610,18 @@ proc ::critcl::cinit {text edecls} {
     set digestb [UUID.extend $file .cinit.e $edecls]
 
     set initc {}
-    set skip [Lines $text]
-    lassign [HeaderLines $text] leadoffset text
-    if {$v::options(lines)} {
-	append initc [at::CPragma $leadoffset -2 $file]
+    set skip [at::lines $text]
+    lassign [at::header $text] leadoffset text
+    if {[at::enabled]} {
+	append initc [at::cpragma $leadoffset -2 $file]
     }
     append initc $text \n
 
     set edec {}
-    lassign [HeaderLines $edecls] leadoffset edecls
-    if {$v::options(lines)} {
+    lassign [at::header $edecls] leadoffset edecls
+    if {[at::enabled]} {
 	incr leadoffset $skip
-	append edec [at::CPragma $leadoffset -2 $file]
+	append edec [at::cpragma $leadoffset -2 $file]
     }
     append edec $edecls \n
 
@@ -637,94 +629,6 @@ proc ::critcl::cinit {text edecls} {
 	dict append  c initc  $initc \n
 	dict append  c edecls $edec  \n
     }
-    return
-}
-
-# # ## ### ##### ######## ############# #####################
-## Public API to code origin handling.
-
-namespace eval ::critcl::at {
-    namespace export caller caller! here here! get get* incr incrt =
-    catch { namespace ensemble create }
-}
-
-# caller  - stash caller location, possibly modified (level change, line offset)
-# caller! - format & return caller location, clears stash
-# here    - stash current location
-# here!   - return format & return  current location, clears stash
-# incr*   - modify stashed location (only line number, not file).
-# get     - format, return, and clear stash
-# get*    - format & return stash
-
-proc ::critcl::at::caller {{off 0} {level 0}} {
-    ::incr level -3
-    Where $off $level [::critcl::This]
-    return
-}
-
-proc ::critcl::at::caller! {{off 0} {level 0}} {
-    ::incr level -3
-    Where $off $level [::critcl::This]
-    return [get]
-}
-
-proc ::critcl::at::here {} {
-    Where 0 -2 [::critcl::This]
-    return
-}
-
-proc ::critcl::at::here! {} {
-    Where 0 -2 [::critcl::This]
-    return [get]
-}
-
-proc ::critcl::at::get {} {
-    variable where
-    if {!$::critcl::v::options(lines)} {
-	return {}
-    }
-    if {![info exists where]} {
-	return -code error "No location defined"
-    }
-    set result [Format $where]
-    unset where
-    return $result
-}
-
-proc ::critcl::at::get* {} {
-    variable where
-    if {![info exists where]} {
-	return -code error "No location defined"
-    }
-    return [Format $where]
-}
-
-proc ::critcl::at::= {file line} {
-    variable where
-    set where [list $file $line]
-    return
-}
-
-proc ::critcl::at::incr {args} {
-    variable where
-    lassign $where file line
-    foreach offset $args {
-	::incr line $offset
-    }
-    set where [list $file $line]
-    return
-}
-
-proc ::critcl::at::incrt {args} {
-    variable where
-    if {$where eq {}} {
-	return -code error "No location to change"
-    }
-    lassign $where file line
-    foreach text $args {
-	::incr line [::critcl::Lines $text]
-    }
-    set where [list $file $line]
     return
 }
 
@@ -833,11 +737,9 @@ proc ::critcl::source {path} {
     }
 
     foreach f [Expand $file $path] {
-	set v::source $f
-	# The source file information is used by critcl::at::Where
-	#uplevel 1 [Cat $f]
+	at::script $f
 	uplevel #0 [list ::source $f]
-	unset -nocomplain v::source
+	at::script {}
     }
 
     if {$undivert} who::pop
@@ -1423,7 +1325,7 @@ proc ::critcl::API_setup_import {file} {
 	set upname  [string toupper  $cname]
 	set capname [stubs::gen::cap $cname]
 
-	set import [critcl::at::here!][subst -nocommands {
+	set import [at::here!][subst -nocommands {
 	    /* Import API: $iname */
 	    #define USE_${upname}_STUBS 1
 	    #include <$cname/${cname}Decls.h>
@@ -1762,9 +1664,19 @@ proc ::critcl::config {option args} {
 	error "option must be one of: [lsort [array names v::options]]"
     }
     if {![llength $args]} {
+	if {$option eq "lines"} {
+	    return [at::enabled]
+	}
 	return $v::options($option)
     }
-    set v::options($option) [lindex $args 0]
+
+    set newvalue [lindex $args 0]
+    if {$option eq "lines"} {
+	at::enable $newvalue
+    } else {
+	set v::options($option) $newvalue
+    }
+    return $newvalue
 }
 
 proc ::critcl::debug {args} {
@@ -3380,104 +3292,6 @@ proc ::critcl::Emitln {{s ""}} {
 
 # # ## ### ##### ######## ############# #####################
 ## At internal processing
-
-proc ::critcl::at::Where {leadoffset level file} {
-    variable where
-
-    set line 1
-
-    # If the interpreter running critcl has TIP 280 support use it to
-    # place more exact line number information into the generated C
-    # file.
-
-    #puts "XXX-WHERE-($leadoffset $level $file)"
-    #set ::errorInfo {}
-    if {[catch {
-	#SHOWFRAMES $level 0
-	array set loc [info frame $level]
-	#puts XXX-TYPE-$loc(type)
-    }]} {
-	#puts XXX-NO-DATA-$::errorInfo
-	set where {}
-	return
-    }
-
-    if {$loc(type) eq "source"} {
-	#parray loc
-	set  file  $loc(file)
-	set  fline $loc(line)
-
-	# Adjust for removed leading whitespace.
-	::incr fline $leadoffset
-
-	# Keep the limitations of native compilers in mind and stay
-	# inside their bounds.
-
-	if {$fline > $line} {
-	    set line $fline
-	}
-
-	set where [list [file tail $file] $line]
-	return
-    }
-
-    if {($loc(type) eq "eval") &&
-       [info exists loc(proc)] &&
-       ($loc(proc) eq "::critcl::source")
-    } {
-	# A relative location in critcl::source is absolute in the
-	# sourced file.  I.e. we can provide proper line information.
-
-	set  fline $loc(line)
-	# Adjust for removed leading whitespace.
-	::incr fline $leadoffset
-
-	# Keep the limitations of native compilers in mind and stay
-	# inside their bounds.
-
-	if {$fline > $line} {
-	    set line $fline
-	}
-
-	variable ::critcl::v::source
-	set where [list [file tail $source] $line]
-	return
-    }
-
-    #puts XXX-NO-DATA-$loc(type)
-    set where {}
-    return
-}
-
-proc ::critcl::at::CPragma {leadoffset level file} {
-    # internal variant of 'caller!'
-    ::incr level -1
-    Where $leadoffset $level $file
-    return [get]
-}
-
-proc ::critcl::at::Format {loc} {
-   if {![llength $loc]} {
-	return ""
-    }
-    lassign $loc file line
-    #::critcl::msg "#line $line \"$file\"\n"
-    return        "#line $line \"$file\"\n"
-}
-
-proc ::critcl::at::SHOWFRAMES {level {all 1}} {
-    set n [info frame]
-    set i 0
-    set id 1
-    while {$n} {
-	::critcl::msg "[expr {$level == $id ? "**" : "  "}] frame [format %3d $id]: [info frame $i]"
-	::incr i -1
-	::incr id -1
-	::incr n -1
-	if {($level > $id) && !$all} break
-    }
-    return
-}
  
 # # ## ### ##### ######## ############# #####################
 
@@ -4662,10 +4476,8 @@ namespace eval ::critcl {
 				  #   the user for mode 'generate
 				  #   package'.
 	set options(language) "" ;# - String. XXX
-	set options(lines)    1  ;# - Boolean. If set the generator will
-				  #   emit #line-directives to help locating
-				  #   C code in the .tcl in case of compile
-				  #   warnings and errors.
+	set options(lines)    -  ;# - See at::enabled. Fake here, for error message.
+	                          #   critcl::config properly redirects
 
 	# XXX clientdata() per-command (See ccommand). per-file+ccommand better?
 	# XXX delproc()    per-command (See ccommand). s.a

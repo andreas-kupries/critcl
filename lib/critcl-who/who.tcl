@@ -22,7 +22,10 @@
 package require Tcl 8.4            ;# Minimal supported Tcl runtime.
 
 package provide  critcl::who 1
-namespace eval ::critcl::who {}
+namespace eval ::critcl::who {
+    namespace export is push pop depth
+    catch { namespace ensemble create }
+}
 
 # # ## ### ##### ######## ############# #####################
 ## API commands.

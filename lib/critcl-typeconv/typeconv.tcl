@@ -64,8 +64,8 @@ proc ::critcl::typeconv::arg-def {name conversion {ctypevar {}} {ctypearg {}}} {
 	set csupport   $asupport($ctypevar)
     } else {
 	# XXX Use of new critcl::at package.
-	lassign [HeaderLines $conversion] leadoffset conversion
-	set conversion "\t\{\n[at::caller! $leadoffset]\t[string trim $conversion] \}"
+	lassign [header $conversion] leadoffset conversion
+	set conversion "\t\{\n[caller! $leadoffset]\t[string trim $conversion] \}"
 
 	if {$ctypevar eq {}} {
 	    set ctypevar $name
@@ -125,8 +125,8 @@ proc ::critcl::typeconv::result-def {name conversion {ctype {}}} {
 	set ctype      $rtype($ctype)
     } else {
 	# XXX use critcl::at
-	lassign [HeaderLines $conversion] leadoffset conversion
-	set conversion [at::caller! $leadoffset]\t[string trimright $conversion]
+	lassign [header $conversion] leadoffset conversion
+	set conversion [caller! $leadoffset]\t[string trimright $conversion]
 
 	if {$ctype eq {}} {
 	    set ctype $name
@@ -178,8 +178,9 @@ proc ::critcl::typeconv::result-get-code {type} {
 ## Internal state
 
 namespace eval ::critcl::typeconv {
-    # Make #line management commands available.
-    namespace import ::critcl::at::*
+    # Make relevant #line management commands available.
+    namespace import ::critcl::at::header
+    namespace import ::critcl::at::caller!
 
     # Two databases, for argument- and result-types.
 
