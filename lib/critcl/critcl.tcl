@@ -114,6 +114,21 @@ package require critcl::at       ;# Management of #line pragmas.
 #   get     - format, return, and clear stash
 #   get*    - format & return stash
 
+# Define a few shims for public critcl APIs which are now served by
+# the utility packages.
+
+interp alias {} ::critcl::clean_cache    {} ::critcl::cache::clear
+interp alias {} ::critcl::argtype        {} ::critcl::typeconv::arg-def
+interp alias {} ::critcl::argtypesupport {} ::critcl::typeconv::arg-set-support
+interp alias {} ::critcl::resulttype     {} ::critcl::typeconv::result-def
+
+proc ::critcl::cache {{dir {}}} {
+    if {[llength [info level 0]] == 2} {
+	cache::def $dir
+    }
+    return [cache::get]
+}
+
 # # ## ### ##### ######## ############# #####################
 ## 
 
@@ -499,21 +514,6 @@ proc ::critcl::argconversion {adefs {n 1}} {
     }
 
     return $result
-}
-
-# shim for backward compatibility.
-proc ::critcl::argtype {args} {
-    uplevel 1 [linsert $args 0 critcl::typeconv::arg-def]
-}
-
-# shim for backward compatibility.
-proc ::critcl::argtypesupport {args} {
-    uplevel 1 [linsert $args 0 critcl::typeconv::arg-set-support]
-}
-
-# shim for backward compatibility.
-proc ::critcl::resulttype {args} {
-    uplevel 1 [linsert $args 0 critcl::typeconv::result-def]
 }
 
 proc ::critcl::cproc {name adefs rtype {body "#"} args} {
@@ -1386,7 +1386,6 @@ proc ::critcl::API_setup_export {file} {
 
     if {[dict exists $v::code($file) config api_ehdrs]} {
 	append sdecls "\n"
-	file mkdir $v::cache/$cname
 	foreach hdr [dict get $v::code($file) config api_ehdrs] {
 	    append sdecls "\#include \"[file tail $hdr]\"\n"
 	}
@@ -1394,10 +1393,10 @@ proc ::critcl::API_setup_export {file} {
 
     if {[dict exists $v::code($file) config api_hdrs]} {
 	append sdecls "\n"
-	file mkdir $v::cache/$cname
 	foreach hdr [dict get $v::code($file) config api_hdrs] {
-	    Copy $hdr $v::cache/$cname
-	    append sdecls "\#include \"[file tail $hdr]\"\n"
+	    set hfile [file tail $hdr]
+	    cache::copy2 $hdr $cname/$hfile
+	    append sdecls "\#include \"$hfile\"\n"
 	}
     }
 
@@ -1457,12 +1456,12 @@ proc ::critcl::API_setup_export {file} {
     # in mode "compile & run", or by the higher-level code doing a
     # "generate package")
 
-    WriteCache $cname/${cname}Decls.h   $sdecls
-    WriteCache $cname/${cname}StubLib.h $slib
-    WriteCache $cname/${cname}.decls    $thedecls
+    cache::write $cname/${cname}Decls.h   $sdecls
+    cache::write $cname/${cname}StubLib.h $slib
+    cache::write $cname/${cname}.decls    $thedecls
 
     dict update v::code($file) result r {
-	dict lappend r apiheader [file join $v::cache $cname]
+	dict lappend r apiheader [cache::get $cname]
     }
 
     cinit $sinitrun $sinitstatic
@@ -1491,7 +1490,7 @@ proc ::critcl::check {args} {
 	}
     }
 
-    set src [WriteCache check_[pid].c $code]
+    set src [cache::write check_[pid].c $code]
     set obj [file rootname $src][getconfigvalue object]
 
     # See also the internal helper 'Compile'. Thre code here is in
@@ -1531,7 +1530,7 @@ proc ::critcl::checklink {args} {
 	}
     }
 
-    set src [WriteCache check_[pid].c $code]
+    set src [cache::write check_[pid].c $code]
     set obj [file rootname $src][getconfigvalue object]
 
     # See also the internal helper 'Compile'. Thre code here is in
@@ -1551,11 +1550,11 @@ proc ::critcl::checklink {args} {
 
     if {!$ok} {
 	LogClose
-	clean_cache check_[pid].*
+	cache::clear check_[pid].*
 	return 0
     }
 
-    set out [file join $v::cache a_[pid].out]
+    set out [cache::get check_[pid].out]
     set cmdline [getconfigvalue link]
 
     if {$option::debug_symbols} {
@@ -1576,7 +1575,7 @@ proc ::critcl::checklink {args} {
     set ok [ExecWithLogging $cmdline OK ERR]
 
     LogClose
-    clean_cache check_[pid].* a_[pid].*
+    cache::clear check_[pid].*
     return $ok
 }
 
@@ -1694,26 +1693,6 @@ proc ::critcl::debug {args} {
 	    default {
 		error "unknown critcl::debug option - $arg"
 	    }
-	}
-    }
-    return
-}
-
-# # ## ### ##### ######## ############# #####################
-## Implementation -- API: Result Cache
-
-proc ::critcl::cache {{dir ""}} {
-    if {[llength [info level 0]] == 2} {
-	set v::cache [file normalize $dir]
-    }
-    return $v::cache
-}
-
-proc ::critcl::clean_cache {args} {
-    if {![llength $args]} { lappend args * }
-    foreach pattern $args {
-	foreach file [glob -nocomplain -directory $v::cache $pattern] {
-	    file delete -force $file
 	}
     }
     return
@@ -2056,7 +2035,7 @@ proc ::critcl::setconfig {targetconfig} {
 	set c::sharedlibext [info sharedlibextension]
     }
 
-    cache [file join ~ .critcl $v::targetplatform]
+    cache::def [file join ~ .critcl $v::targetplatform]
 
     #  set any Tcl variables
     foreach idx [array names v::toolchain $v::targetplatform,*] {
@@ -2958,7 +2937,6 @@ proc ::critcl::scan::critcl::userconfig {cmd args} {
 ## Implementation -- Internals - cproc conversion helpers.
 
 proc ::critcl::EmitShimHeader {wname} {
-
     # Function head
     set ca "(ClientData cd, Tcl_Interp *interp, int oc, Tcl_Obj *CONST ov\[])"
     Emitln
@@ -3411,10 +3389,8 @@ proc ::critcl::TclIncludes {file} {
 
     if {[file system $path] ne "native"} {
 	# The critcl package is wrapped. Copy the relevant headers out
-	# to disk and change the include path appropriately.
-
-	Copy $path $v::cache
-	set path [file join $v::cache $hdrs]
+	# to disk (cache) and change the include path appropriately.
+	set path [cache::copy2 $path]
     }
 
     return [list $c::include$path]
@@ -3446,8 +3422,8 @@ proc ::critcl::SystemIncludePaths {file} {
 	lappend paths $dir
     }
 
-    # Result cache.
-    lappend paths $v::cache
+    # Result cache may be source of header files too.
+    lappend paths [cache::get]
 
     # critcl::cheaders
     foreach flag [GetParam $file cheaders] {
@@ -3560,7 +3536,7 @@ proc ::critcl::MakePreloadLibrary {file} {
     # compile and link the preload support, if necessary, i.e. not yet
     # done.
 
-    set shlib [file join $v::cache preload[getconfigvalue sharedlibext]]
+    set shlib [cache::get preload[getconfigvalue sharedlibext]]
     if {[file exists $shlib]} return
 
     # Operate like TclIncludes. Use the template file directly, if
@@ -3569,14 +3545,12 @@ proc ::critcl::MakePreloadLibrary {file} {
 
     set src [Template preload.c]
     if {[file system $src] ne "native"} {
-	file mkdir $v::cache
-	file copy -force $src $v::cache
-	set src [file join $v::cache preload.c]
+	set src [cache::copy2 $src]
     }
 
     # Build the object for the helper package, 'preload' ...
 
-    set obj [file join $v::cache preload.o]
+    set obj [cache::get preload.o]
     Compile $file $src $src $obj
 
     # ... and link it.
@@ -3665,12 +3639,31 @@ proc ::critcl::ManifestCommand {em shlib} {
 proc ::critcl::CompanionObject {src} {
     set tail    [file tail $src]
     set srcbase [file rootname $tail]
-
-    if {$v::cache ne [file dirname $src]} {
+    if {[file dirname $src] ne [cache::get]} {
+	# The .c file does not reside in the cache directory.  Change
+	# the source base so that the generated object file, which
+	# will be put into the cache, does not collide with the object
+	# files of other .c files with the same name.  This is done by
+	# adding the last segment of the directory the file is in to
+	# the base. While this can still lead to collisions the
+	# probability should be low(er).
 	set srcbase [file tail [file dirname $src]]_$srcbase
     }
 
-    return [file join $v::cache ${srcbase}[getconfigvalue object]]
+    return [cache::get ${srcbase}[getconfigvalue object]]
+
+    # Examples, with a .c file found in- and out-side of the cache.
+    ##
+    # (1) src     = $cache/foo.c
+    #     tail    = foo.c
+    #     srcbase = foo
+    #     object  = $cache/foo.o
+    ##
+    # (2) src      = /some/other/foo.c
+    #     tail     = foo.c
+    #     srcbase  = foo
+    #     srcbase' = other_foo
+    #     object   = $cache/other_foo.o
 }
 
 proc ::critcl::CompileResult {object} {
@@ -3702,7 +3695,7 @@ proc ::critcl::GetObjects {file} {
 	return $objects
     }
 
-    set rsp [WriteCache link.fil \"[join $objects \"\n\"]\"]
+    set rsp [cache::write link.fil \"[join $objects \"\n\"]\"]
     return [list @$rsp]
 }
 
@@ -3777,10 +3770,12 @@ proc ::critcl::BuildDefines {fd file} {
     # Pull the collected ccode blocks together into a transient file
     # we then search in.
 
-    set def [WriteCache define_[pid].c {}]
+    set def   define_[pid].c
+    set dcode {}
     foreach digest [dict get $v::code($file) config defs] {
-	Append $def [dict get $v::code($file) config block $digest]
+	append dcode [dict get $v::code($file) config block $digest]
     }
+    set defpath [cache::write $def $dcode]
 
     # For the command lines to be constructed we need all the include
     # information the regular files will get during their compilation.
@@ -3795,7 +3790,7 @@ proc ::critcl::BuildDefines {fd file} {
     # First step - get list of matching defines
     set         cmd [getconfigvalue preproc_define]
     lappendlist cmd $hdrs
-    lappend     cmd $def
+    lappend     cmd $defpath
 
     set pipe [open "| $cmd" r]
     while {[gets $pipe line] >= 0} {
@@ -3828,7 +3823,7 @@ proc ::critcl::BuildDefines {fd file} {
 
     set         cmd [getconfigvalue preproc_enum]
     lappendlist cmd $hdrs
-    lappend     cmd $def
+    lappend     cmd $defpath
 
     set pipe [open "| $cmd" r]
     set code [read $pipe]
@@ -3878,8 +3873,9 @@ proc ::critcl::BuildDefines {fd file} {
     }
 
     # Cleanup after ourselves, removing the helper file.
-
-    if {!$v::options(keepsrc)} { file delete $def }
+    if {!$v::options(keepsrc)} {
+	cache::clear $def
+    }
     return
 }
 
@@ -4030,9 +4026,7 @@ proc ::critcl::PkgInit {file} {
 ## Implementation -- Internals - Access to the log file
 
 proc ::critcl::LogOpen {file} {
-    file mkdir $v::cache
-
-    set   v::logfile [file join $v::cache [pid].log]
+    set   v::logfile [cache::get [pid].log]
     set   v::log     [open $v::logfile w]
     puts $v::log "\n[clock format [clock seconds]] - $file"
     return
@@ -4060,7 +4054,7 @@ proc ::critcl::LogClose {} {
 
     close $v::log
     set msgs [Cat $v::logfile]
-    AppendCache $v::prefix.log $msgs
+    cache::append $v::prefix.log $msgs
 
     file delete -force $v::logfile
     unset v::log v::logfile
@@ -4101,7 +4095,7 @@ proc ::critcl::BaseOf {f} {
     }
 
     set base [file normalize \
-		  [file join $v::cache ${v::prefix}_[UUID $f]]]
+		  [cache::get ${v::prefix}_[UUID $f]]]
 
     dict set v::code($f) result base $base
     return $base
@@ -4139,31 +4133,6 @@ proc ::critcl::Cat {path} {
     set data [read $fd]
     close $fd
     return $data
-}
-
-proc ::critcl::WriteCache {name content} {
-    set dst [file join $v::cache $name]
-    file mkdir [file dirname $dst] ;# just in case
-    return [Write [file normalize $dst] $content]
-}
-
-proc ::critcl::Write {path content} {
-    set    chan [open $path w]
-    puts  $chan $content
-    close $chan
-    return $path
-}
-
-proc ::critcl::AppendCache {name content} {
-    file mkdir $v::cache ;# just in case
-    return [Append [file normalize [file join $v::cache $name]] $content]
-}
-
-proc ::critcl::Append {path content} {
-    set    chan [open $path a]
-    puts  $chan $content
-    close $chan
-    return $path
 }
 
 # # ## ### ##### ######## ############# #####################
@@ -4401,9 +4370,6 @@ namespace eval ::critcl {
 
     # keep all variables in a sub-namespace for easy access
     namespace eval v {
-	variable cache           ;# Path. Cache directory. Platform-dependent
-				  # (target platform).
-
 	# ----------------------------------------------------------------
 
 	# (XX) To understand the set of variables below and their
