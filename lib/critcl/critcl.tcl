@@ -2558,6 +2558,10 @@ proc ::critcl::GetParam {file type {default {}}} {
 }
 
 proc ::critcl::SetParam {type values {expand 1} {uuid 0}} {
+    # XXX review call sites to note which combinations of expand and
+    # XXX uuid are in actual use.
+    # XXX Note: uuid is only effective under expand.
+
     set file [who::is]
     if {![llength $values]} return
 
