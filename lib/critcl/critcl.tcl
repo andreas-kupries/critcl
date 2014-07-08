@@ -101,6 +101,7 @@ if {[package vsatisfies [package present Tcl] 8.5]} {
 
 # # ## ### ##### ######## ############# #####################
 
+package require critcl::common   ;# General utility commands.
 package require critcl::typeconv ;# Handling cproc data types.
 package require critcl::who      ;# Management of current file.
 package require critcl::scan     ;# Static Tcl code scanner.
@@ -296,7 +297,7 @@ proc ::critcl::cdata {name data} {
 
     set count [llength $bytes]
 
-    set body [subst [Cat [Template cdata.c]]]
+    set body [subst [common::cat [Template cdata.c]]]
     #               ^=> count, inittext
 
     # NOTE: The uplevel is needed because otherwise 'ccommand' will
@@ -905,7 +906,7 @@ proc ::critcl::license {who args} {
 	set license ""
     }
 
-    set elicense [LicenseText $args]
+    set elicense [common::license-text $args]
 
     append license $elicense
 
@@ -914,28 +915,9 @@ proc ::critcl::license {who args} {
     # bearing on the binary at all.
     InitializeFile $file
 
-    ImetaSet $file license [Text2Words   $elicense]
-    ImetaSet $file author  [Text2Authors $who]
+    ImetaSet $file license [common::text2words   $elicense]
+    ImetaSet $file author  [common::text2authors $who]
     return
-}
-
-proc ::critcl::LicenseText {words} {
-    if {[llength $words]} {
-	# Use the supplied license details as our suffix.
-	return [join $words]
-    } else {
-	# No details were supplied, fall back to the critcl license as
-	# template for the generated package. This is found in a
-	# sibling of this file.
-
-	# We strip the first 2 lines from the file, this gets rid of
-	# the author information for critcl itself, allowing us to
-	# replace it by the user-supplied author.
-
-	variable mydir
-	set f [file join $mydir license.terms]
-	return [join [lrange [split [Cat $f] \n] 2 end] \n]
-    }
 }
 
 # # ## ### ##### ######## ############# #####################
@@ -946,7 +928,7 @@ proc ::critcl::description {text} {
     AbortWhenCalledAfterBuild
     InitializeFile $file
 
-    ImetaSet $file description [Text2Words $text]
+    ImetaSet $file description [common::text2words $text]
     return
 }
 
@@ -955,7 +937,7 @@ proc ::critcl::summary {text} {
     AbortWhenCalledAfterBuild
     InitializeFile $file
 
-    ImetaSet $file summary [Text2Words $text]
+    ImetaSet $file summary [common::text2words $text]
     return
 }
 
@@ -1019,20 +1001,6 @@ proc ::critcl::ImetaAdd {file key words} {
     }
     #puts |||$key|+|[dict get $v::code($file) config package $key]|
     return
-}
-
-proc ::critcl::Text2Words {text} {
-    regsub -all {[ \t\n]+} $text { } text
-    return [split [string trim $text]]
-}
-
-proc ::critcl::Text2Authors {text} {
-    regsub -all {[ \t\n]+} $text { } text
-    set authors {}
-    foreach a [split [string trim $text] ,] {
-	lappend authors [string trim $a]
-    }
-    return $authors
 }
 
 proc ::critcl::GetMeta {file} {
@@ -1914,7 +1882,7 @@ proc ::critcl::showconfig {{fd ""}} {
 
 proc ::critcl::showallconfig {{ofd ""}} {
     variable configfile
-    set txt [Cat $configfile]
+    set txt [common::cat $configfile]
     if {$ofd ne ""} {
 	puts $ofd $txt
     } else {
@@ -2580,7 +2548,7 @@ proc ::critcl::SetParam {type values {expand 1} {uuid 0}} {
 		    if {$uuid} {
 			foreach f [Expand $file $v] {
 			    lappend tmp $f
-			    UUID.extend $file .$type.$f [Cat $f]
+			    UUID.extend $file .$type.$f [common::cat $f]
 			}
 		    } else {
 			lappendlist tmp [Expand $file $v]
@@ -2858,7 +2826,7 @@ proc ::critcl::CollectEmbeddedSources {file destination libfile ininame placestu
     }
 
     # Boilerplate header.
-    puts $fd [subst [Cat [Template header.c]]]
+    puts $fd [subst [common::cat [Template header.c]]]
     #         ^=> file, libfile, api
 
     # Make Tk available, if requested
@@ -2884,11 +2852,11 @@ proc ::critcl::CollectEmbeddedSources {file destination libfile ininame placestu
 	# itself, build in mode "compile & run".
 	set stubs     [TclDecls     $file]
 	set platstubs [TclPlatDecls $file]
-	puts -nonewline $fd [subst [Cat [Template stubs.c]]]
+	puts -nonewline $fd [subst [common::cat [Template stubs.c]]]
 	#                    ^=> mintcl, stubs, platstubs
     } else {
 	# Declarations only, for linking, in the sub-packages.
-	puts -nonewline $fd [subst [Cat [Template stubs_e.c]]]
+	puts -nonewline $fd [subst [common::cat [Template stubs_e.c]]]
 	#                    ^=> mintcl
     }
 
@@ -2900,13 +2868,13 @@ proc ::critcl::CollectEmbeddedSources {file destination libfile ininame placestu
     # FOO_Init() function, leaving it incomplete.
 
     set ext [GetParam $file edecls]
-    puts $fd [subst [Cat [Template pkginit.c]]]
+    puts $fd [subst [common::cat [Template pkginit.c]]]
     #         ^=> ext, ininame
 
     # From here on we are completing FOO_Init().
     # Tk setup first, if requested. (Tcl is already done).
     if {[UsingTk $file]} {
-	puts $fd [Cat [Template pkginittk.c]]
+	puts $fd [common::cat [Template pkginittk.c]]
     }
 
     # User specified initialization code.
@@ -2934,7 +2902,7 @@ proc ::critcl::CollectEmbeddedSources {file destination libfile ininame placestu
     }
 
     # Complete the trailer and be done.
-    puts  $fd [Cat [Template pkginitend.c]]
+    puts  $fd [common::cat [Template pkginitend.c]]
     close $fd
     return
 }
@@ -3330,7 +3298,7 @@ proc ::critcl::ResolveColonSpec {lpath name} {
 }
 
 proc ::critcl::SetupTkStubs {fd} {
-    puts -nonewline $fd [Cat [Template tkstubs.c]]
+    puts -nonewline $fd [common::cat [Template tkstubs.c]]
     return
 }
 
@@ -3628,7 +3596,7 @@ proc ::critcl::LogClose {} {
     # global critcl log, and cleanup.
 
     close $v::log
-    set msgs [Cat $v::logfile]
+    set msgs [common::cat $v::logfile]
     cache::append $v::prefix.log $msgs
 
     file delete -force $v::logfile
@@ -3686,16 +3654,6 @@ proc ::critcl::Separator {} {
 proc ::critcl::Template {file} {
     variable v::hdrdir
     return [file join $hdrdir $file]
-}
-
-proc ::critcl::Cat {path} {
-    # Easier to write our own copy than requiring fileutil and then
-    # using fileutil::cat.
-
-    set fd [open $path r]
-    set data [read $fd]
-    close $fd
-    return $data
 }
 
 # # ## ### ##### ######## ############# #####################
@@ -3837,7 +3795,7 @@ proc ::critcl::TclDef {file hdr var} {
 
     #puts H|$hdr
     if {[catch {
-	set hdrcontent [split [Cat $hdr] \n]
+	set hdrcontent [split [common::cat $hdr] \n]
     } msg]} {
 	error "Header not readable: $hdr ($msg)"
     }

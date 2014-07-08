@@ -23,11 +23,15 @@
 # # ## ### ##### ######## ############# #####################
 ## Requirements.
 
-package require Tcl 8.4  ;# Minimal supported Tcl runtime.
-package require fileutil ;# path helper commands.
+package require Tcl 8.4        ;# Minimal supported Tcl runtime.
+package require fileutil       ;# general path helper commands.
+package require critcl::common ;# general critcl utilities.
 
 package provide  critcl::cache 1
 namespace eval ::critcl::cache {
+    namespace import ::critcl::common::write  ; rename write  fwrite
+    namespace import ::critcl::common::append ; rename append fappend
+
     namespace export def get write append copy2 clear
     catch { namespace ensemble create }
 }
@@ -60,29 +64,18 @@ proc ::critcl::cache::get {{child {}}} {
 
 proc ::critcl::cache::write {file contents} {
     variable path
-
     # TODO: Validate that $file is a path in the cache directory.
-    set dst [file join $path $file]
-    file mkdir [file dirname $dst]
-
-    set    chan [open $dst w]
-    puts  $chan $content
-    close $chan
-
+    set     dst [file join $path $file]
+    fwrite $dst $contents
     return $dst
 }
 
 proc ::critcl::cache::append {file contents} {
     variable path
-
     # TODO: Validate that $file is a path in the cache directory.
-    set dst [file join $path $file]
-    file mkdir [file dirname $dst]
-
-    set    chan [open $dst a]
-    puts  $chan $content
-    close $chan
-    return $dst
+    set      dst [file join $path $file]
+    fappend $dst $contents
+    return  $dst
 }
 
 proc ::critcl::cache::copy2 {src {dst {}}} {

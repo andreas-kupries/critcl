@@ -16,11 +16,12 @@
 ## Requirements.
 
 package require Tcl 8.4          ;# Minimal supported Tcl runtime.
+package require critcl::common   ;# General shared utility commands.
 
 package provide  critcl::scan 1
 namespace eval ::critcl::scan {}
 
-# Core API commands used here
+# Core API commands used here (back references).
 # - ::critcl::msg
 # - ::critcl::print
 
@@ -28,7 +29,7 @@ namespace eval ::critcl::scan {}
 ## API commands.
 
 proc ::critcl::scan {file} {
-    set lines [split [scan::Cat $file] \n]
+    set lines [split [scan::cat $file] \n]
 
     scan::Init {
 	org         {}
@@ -68,13 +69,12 @@ proc ::critcl::scan {file} {
     print "\tVersion:      $version"
 
     # TODO : Report requirements.
-    # XXX core backreference (print)
 
     set n [llength [dict get $capture files]]
     ::critcl::print -nonewline "\tInput:        $file"
     if {$n} {
 	::critcl::print -nonewline " + $n Companion"
-	if {$n > 1} { print -nonewline s }
+	if {$n > 1} { ::critcl::print -nonewline s }
     }
     ::critcl::print ""
 
@@ -111,7 +111,7 @@ proc ::critcl::scan {file} {
 }
 
 proc ::critcl::scan-dependencies {key file {mode plain}} {
-    set lines [split [scan::Cat $file] \n]
+    set lines [split [scan::cat $file] \n]
 
     if {$mode eq "capture"} {
 	scan::Push
@@ -179,6 +179,8 @@ namespace eval ::critcl::scan {
 
     # Stack of saved captures to handle nested invokation.
     variable saved
+
+    namespace import ::critcl::common::*
 }
 
 # # ## ### ##### ######## ############# #####################
@@ -319,23 +321,15 @@ proc ::critcl::scan::critcl::Expand {pattern} {
     return $files
 }
 
-proc ::critcl::scan::Cat {path} {
-    # Easier to write our own copy than requiring fileutil and then
-    # using fileutil::cat.
-
-    set fd [open $path r]
-    set data [read $fd]
-    close $fd
-    return $data
-}
-
 # # ## ### ##### ######## ############# #####################
 ## Internal support commands
 #
 # The scanner-specific replacements of core critcl commands, and some
 # Tcl builtin commands.
 
-namespace eval ::critcl::scan::critcl {}
+namespace eval ::critcl::scan::critcl {
+    namespace import ::critcl::common::*
+}
 
 proc ::critcl::scan::critcl::buildrequirement {script} {
     # Recursive scan of the script, same configuration, except
@@ -376,17 +370,15 @@ proc ::critcl::scan::critcl::tk {} {
 
 proc ::critcl::scan::critcl::description {text} {
     variable ::critcl::scan::capture
-    dict set capture meta-system description \
-	[::critcl::Text2Words $text]
-    # XXX back reference into critcl core
+    dict set capture meta-system \
+	description [text2words $text]
     return
 }
 
 proc ::critcl::scan::critcl::summary {text} {
     variable ::critcl::scan::capture
-    dict set capture meta-system summary \
-	[::critcl::Text2Words $text]
-    # XXX back reference into critcl core
+    dict set capture meta-system \
+	summary [text2words $text]
     return
 }
 
@@ -418,7 +410,7 @@ proc ::critcl::scan::critcl::source {path} {
 
     # XXX in-scanner cross-level references.
     foreach f [Files $path] {
-	set lines [split [::critcl::scan::Cat $f] \n]
+	set lines [split [cat $f] \n]
 	::critcl::scan::Core $lines $config
     }
     return
@@ -439,19 +431,16 @@ proc ::critcl::scan::critcl::license {who args} {
     variable ::critcl::scan::capture
     dict set capture org $who
 
-    print "\tOrganization: $who"
+    ::critcl::print "\tOrganization: $who"
 
     # Meta data.
-    set elicense [::critcl::LicenseText $args]
-    # XXX back reference into critcl core
+    set elicense [license-text $args]
 
-    dict set capture meta-system license \
-	[::critcl::Text2Words $elicense]
-    # XXX back reference into critcl core
+    dict set capture meta-system \
+	license [text2words $elicense]
 
-    dict set capture meta-system author \
-	[::critcl::Text2Authors $who]
-    # XXX back reference into critcl core
+    dict set capture meta-system \
+	author [text2authors $who]
     return
 }
 
@@ -491,7 +480,8 @@ proc ::critcl::scan::package {cmd args} {
 	if {[lindex $args 0] eq "critcl"} return
 
 	dict update capture meta-system m {
-	    dict lappend m $rkey [::critcl::TeapotRequire $args]
+	    dict lappend m $rkey \
+		[::critcl::TeapotRequire $args]
 	    # XXX back reference into critcl core
 	}
 	return
@@ -512,7 +502,7 @@ proc ::critcl::scan::critcl::api {cmd args} {
 	    # Syntax: critcl::api import <name> <version>
 	    lassign $args name _
 	    dict lappend capture imported $name
-	    print "\tImported:     $name"
+	    ::critcl::print "\tImported:     $name"
 	}
 	default {}
     }
@@ -532,7 +522,7 @@ proc ::critcl::scan::critcl::userconfig {cmd args} {
 		# XXX back reference into critcl core
 	    }
 	    dict lappend capture config [list $oname $odesc $otype $odefault]
-	    print "\tUser Config:  $oname ([join $otype { }] -> $odefault) $odesc"
+	    ::critcl::print "\tUser Config:  $oname ([join $otype { }] -> $odefault) $odesc"
 	}
 	set - query -
 	default {}
