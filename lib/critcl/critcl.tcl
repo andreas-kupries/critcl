@@ -1477,6 +1477,10 @@ proc ::critcl::check {args} {
     set file [SkipIgnored [who::is] 0]
     AbortWhenCalledAfterBuild
 
+    # Syntax:
+    # (1) check <code>
+    # (2) check <label> <code>
+
     switch -exact -- [llength $args] {
 	1 {
 	    set label Checking
@@ -1490,26 +1494,7 @@ proc ::critcl::check {args} {
 	}
     }
 
-    set src [cache::write check_[pid].c $code]
-    set obj [file rootname $src][getconfigvalue object]
-
-    # See also the internal helper 'Compile'. Thre code here is in
-    # essence a simplified form of that.
-
-    set         cmdline [getconfigvalue compile]
-    lappendlist cmdline [GetParam $file cflags]
-    lappendlist cmdline [SystemIncludes $file]
-    lappendlist cmdline [CompileResult $obj]
-    lappend     cmdline $src
-
-    LogOpen $file
-    Log* "${label}... "
-    StatusReset
-    set ok [ExecWithLogging $cmdline OK FAILED]
-    StatusReset
-
-    LogClose
-    clean_cache check_[pid].*
+    set ok [CompileDirect $file $label $code]
     return $ok
 }
 
@@ -1517,6 +1502,10 @@ proc ::critcl::checklink {args} {
     set file [SkipIgnored [who::is] 0]
     AbortWhenCalledAfterBuild
 
+    # Syntax:
+    # (1) check <code>
+    # (2) check <label> <code>
+
     switch -exact -- [llength $args] {
 	1 {
 	    set label Checking
@@ -1530,52 +1519,7 @@ proc ::critcl::checklink {args} {
 	}
     }
 
-    set src [cache::write check_[pid].c $code]
-    set obj [file rootname $src][getconfigvalue object]
-
-    # See also the internal helper 'Compile'. Thre code here is in
-    # essence a simplified form of that.
-
-    set         cmdline [getconfigvalue compile]
-    lappendlist cmdline [GetParam $file cflags]
-    lappendlist cmdline [SystemIncludes $file]
-    lappendlist cmdline [CompileResult $obj]
-    lappend     cmdline $src
-
-    LogOpen $file
-    Log* "${label} (build)... "
-    StatusReset
-    set ok [ExecWithLogging $cmdline OK FAILED]
-    StatusReset
-
-    if {!$ok} {
-	LogClose
-	cache::clear check_[pid].*
-	return 0
-    }
-
-    set out [cache::get check_[pid].out]
-    set cmdline [getconfigvalue link]
-
-    if {$option::debug_symbols} {
-	lappendlist cmdline [getconfigvalue link_debug]
-    } else {
-	lappendlist cmdline [getconfigvalue strip]
-	lappendlist cmdline [getconfigvalue link_release]
-    }
-
-    lappendlist cmdline [LinkResult $out]
-    lappendlist cmdline $obj
-    lappendlist cmdline [SystemLibraries]
-    lappendlist cmdline [FixLibraries [GetParam $file clibraries]]
-    lappendlist cmdline [GetParam $file ldflags]
-
-    Log* "${label} (link)... "
-    StatusReset
-    set ok [ExecWithLogging $cmdline OK ERR]
-
-    LogClose
-    cache::clear check_[pid].*
+    set ok [CompileLinkDirect $file $label $code]
     return $ok
 }
 
@@ -1590,11 +1534,8 @@ proc ::critcl::compiling {} {
     AbortWhenCalledAfterBuild
     # Check that we can indeed run a compiler
     # Should only need to do this if we have to compile the code?
-    if {[auto_execok [lindex [getconfigvalue compile] 0]] eq ""} {
-	set v::compiling 0
-    } else {
-	set v::compiling 1
-    }
+
+    set v::compiling [HasCompiler]
     return $v::compiling
 }
 
@@ -3269,9 +3210,76 @@ proc ::critcl::Emitln {{s ""}} {
 }
 
 # # ## ### ##### ######## ############# #####################
-## At internal processing
- 
+## Backend, Checking that we have a compiler
+
+proc ::critcl::HasCompiler {} {
+    return [llength [auto_execok [lindex [getconfigvalue compile] 0]]]
+}
+
 # # ## ### ##### ######## ############# #####################
+## Backend, Direct compiling, linking of test C sources.
+
+proc ::critcl::CompileDirect {file label code {mode temp}} {
+    set src [cache::write check_[pid].c $code]
+    set obj [file rootname $src][getconfigvalue object]
+
+    # See also the internal helper command 'Compile'. The code here is
+    # in essence a simplified form of that.
+
+    set         cmdline [getconfigvalue compile]
+    lappendlist cmdline [GetParam $file cflags]
+    lappendlist cmdline [SystemIncludes $file]
+    lappendlist cmdline [CompileResult $obj]
+    lappend     cmdline $src
+
+    LogOpen $file
+    Log* "${label}... "
+    StatusReset
+    set ok [ExecWithLogging $cmdline OK FAILED]
+    StatusReset
+
+    if {!$ok || ($mode eq "temp")} {
+	LogClose
+	cache::clear check_[pid].*
+    }
+    return $ok
+}
+
+proc ::critcl::CompileLinkDirect {file label code} {
+    set ok [CompileDirect $file "$label (build)" $code keep]
+    if {!$ok} {
+	return 0
+    }
+
+    set out [cache::get check_[pid].out]
+    set obj [file rootname $out][getconfigvalue object]
+
+    set cmdline [getconfigvalue link]
+
+    if {$option::debug_symbols} {
+	lappendlist cmdline [getconfigvalue link_debug]
+    } else {
+	lappendlist cmdline [getconfigvalue strip]
+	lappendlist cmdline [getconfigvalue link_release]
+    }
+
+    lappendlist cmdline [LinkResult $out]
+    lappendlist cmdline $obj
+    lappendlist cmdline [SystemLibraries]
+    lappendlist cmdline [FixLibraries [GetParam $file clibraries]]
+    lappendlist cmdline [GetParam $file ldflags]
+
+    Log* "${label} (link)... "
+    StatusReset
+    set ok [ExecWithLogging $cmdline OK ERR]
+
+    LogClose
+    cache::clear check_[pid].*
+    return $ok
+}
+
+# # ## ### ##### ######## ############# #####################
+## Backend Processing, Collected Sources
 
 proc ::critcl::CollectEmbeddedSources {file destination libfile ininame placestubs} {
     set fd [open $destination w]
