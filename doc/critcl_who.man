@@ -40,14 +40,14 @@ This command returns the path of the current file.
 This command pushes [arg name] on the stack of overrides, making it
 the current file.
 
-The command returns the empty string as its result.
+The result of the command is the empty string.
 
 [comment ---------------------------------------------------------------------]
 [call [cmd ::critcl::who::pop]]
 
 This command removes the latst pushed override from the stack.
 
-The command returns the empty string as its result.
+The result of the command is the empty string.
 
 [comment {- - -- --- ----- -------- ------------- ---------------------}]
 [call [cmd ::critcl::who::depth]]

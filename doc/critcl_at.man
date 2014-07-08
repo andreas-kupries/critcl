@@ -1,0 +1,169 @@
+[comment {-*- tcl -*- doctools manpage}]
+[manpage_begin critcl::at n 1]
+[include include/module2.inc]
+[titledesc {CriTcl \#line Management}]
+[require Tcl 8.4]
+[require critcl [opt 3]]
+[require critcl::at [opt 1]]
+[description]
+[para]
+[include include/welcome.inc]
+[para]
+
+This document is the reference manpage for the [package critcl::at]
+package. This internal utility package provides the commands used by
+the core to manage the line number information inserted into generated
+C code.
+
+Its intended audience are mainly developers and maintainers of critcl
+itself. Regular users have no need for the commands of this package.
+
+[para]
+
+This package resides in the Core Package Layer of CriTcl.
+[para][image arch_core][para]
+
+[comment {===================================================================}]
+
+[section API]
+
+[list_begin definitions]
+
+[comment {- - -- --- ----- -------- ------------- ---------------------}]
+[call [cmd ::critcl::at::cpragma] [arg leadoffset] arg level] [arg file]]
+
+This command is a variant of [cmd caller!].
+
+[comment {- - -- --- ----- -------- ------------- ---------------------}]
+[call [cmd ::critcl::at::enable] [opt [arg flag]]]
+
+This command allows callers to enable and disable the generation line
+number information.
+
+If the [arg flag] is not specified it defaults to [const true].
+
+The result of the command is the set [arg flag].
+
+[comment {- - -- --- ----- -------- ------------- ---------------------}]
+[call [cmd ::critcl::at::enabled]]
+
+This command queries the activation state of the module.
+
+The result of the command is a boolean value, [const true]
+when the generation of line numbers is enabled, and
+[const false] otherwise.
+
+[comment {- - -- --- ----- -------- ------------- ---------------------}]
+[call [cmd ::critcl::at::script] [arg path]]
+
+This command allows the caller to override the file part of the location
+information to use [arg path]. Setting the empty string removes the override.
+
+This is used when including a [file .critcl] file I in another [file .critcl]
+file F to generate correct location information pointing to I while the
+logical file still points to F for the collection of the included definitions.
+
+The result of the command is the empty string.
+
+[comment {- - -- --- ----- -------- ------------- ---------------------}]
+[call [cmd ::critcl::at::lines] [arg text]]
+
+This command counts the number of lines in the [arg text] and returns
+that number.
+
+[comment {- - -- --- ----- -------- ------------- ---------------------}]
+[call [cmd ::critcl::at::header] [arg text]]
+
+This number counts the number of leading empty lines in the [arg text]
+and returns a 2-element list containing this number and the [arg text]
+stripped of the leading empty lines, in this order.
+
+[comment ---------------------------------------------------------------------]
+[call [cmd ::critcl::at::caller]]
+
+This command stores the location of the caller of the current
+procedure as a tuple of file name and linenumber. Any previously
+stored location is overwritten.
+
+The result of the command is the empty string.
+
+[call [cmd ::critcl::at::caller] [arg offset]]
+
+As above, the stored line number is modified by the specified
+offset. In essence an implicit call of [cmd critcl::at::incr].
+
+[call [cmd ::critcl::at::caller] [arg offset] [arg level]]
+
+As above, but the level the location information is taken from is
+modified as well. Level [const 0] is the caller, [const -1] its
+caller, etc.
+
+[comment ---------------------------------------------------------------------]
+[call [cmd ::critcl::at::here]]
+
+This command stores the current location in the current procedure as a
+tuple of file name and linenumber. Any previously stored location is
+overwritten.
+
+The result of the command is the empty string.
+
+[para] In terms of [cmd ::critcl::at::caller]] this is equivalent to
+[example {
+	critcl::at::caller 0 1
+}]
+
+[comment ---------------------------------------------------------------------]
+[call [cmd ::critcl::at::get*]]
+
+This command takes the stored location and returns a formatted
+[term #line] directive ready for embedding into some C code. The
+stored location is left untouched.
+
+Note that the directive contains its own closing newline.
+
+[para] For proper nesting and use it is recommended that such
+directives are always added to the beginning of a code fragment. This
+way, should deeper layers add their own directives these will come
+before ours and thus be inactive. End result is that the outermost
+layer generating a directive will 'win', i.e. have its directive
+used. As it should be.
+
+[call [cmd ::critcl::at::get]]
+
+This command is like the above, except that it also clears the stored
+location.
+
+[comment ---------------------------------------------------------------------]
+[call [cmd ::critcl::at::=] [arg file] [arg line]]
+
+This command allows the caller to set the stored location to anything
+they want, outside of critcl's control.
+
+The result of the command is the empty string.
+
+[comment ---------------------------------------------------------------------]
+[call [cmd ::critcl::at::incr] [arg n]...]
+[call [cmd ::critcl::at::incrt] [arg str]...]
+
+These commands allow the user to modify the line number of the stored
+location, changing it incrementally. The increment is specified as
+either a series of integer numbers ([cmd incr]), or a series of
+strings to consider ([cmd incrt]). In case of the latter the delta is
+the number of lines endings found in the strings.
+
+[comment ---------------------------------------------------------------------]
+[call [cmd ::critcl::at::caller!]]
+[call [cmd ::critcl::at::caller!] [arg offset]]
+[call [cmd ::critcl::at::caller!] [arg offset] [arg level]]
+[call [cmd ::critcl::at::here!]]
+
+These are convenience commands combining [cmd caller] and [cmd here]
+with [cmd get]. I.e. they store the location and immediately return it
+formatted as proper [term #line] directive. Also note that after their
+use the stored location is cleared.
+
+[list_end]
+
+[comment {===================================================================}]
+[include include/feedback2.inc]
+[manpage_end]

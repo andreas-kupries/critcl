@@ -96,7 +96,7 @@ If the type is used by many functions the system ensures that only the
 first of the multiple insertions of the code fragment is active, and
 the others disabled.
 
-[para As example here is the definition of the standard argument type
+[para] As example here is the definition of the standard argument type
 [const list], which requires a supporting structure definition.
 
 [example {

@@ -1,0 +1,88 @@
+[comment {-*- tcl -*- doctools manpage}]
+[manpage_begin critcl::cache n 1]
+[include include/module2.inc]
+[titledesc {CriTcl Result Cache Management}]
+[require Tcl 8.4]
+[require critcl [opt 3]]
+[require critcl::cache [opt 1]]
+[description]
+[para]
+[include include/welcome.inc]
+[para]
+
+This document is the reference manpage for the [package critcl::cache]
+package. This internal utility package provides the commands used by
+the core to manage the [term {result cache}] directory.
+
+Its intended audience are mainly developers and maintainers of critcl
+itself. Regular users have no need for the commands of this package.
+
+[para]
+
+This package resides in the Core Package Layer of CriTcl.
+[para][image arch_core][para]
+
+[comment {===================================================================}]
+
+[section API]
+
+[list_begin definitions]
+
+[comment {- - -- --- ----- -------- ------------- ---------------------}]
+[call [cmd ::critcl::cache::append] [arg file] [arg content]]
+
+This command appends the [arg content] to the [arg file] in the
+result cache.
+
+The result of the command is the full path of the modified file.
+
+[comment {- - -- --- ----- -------- ------------- ---------------------}]
+[call [cmd ::critcl::cache::clear] [opt [arg pattern]...]]
+
+This command removes all files matching any of the patterns from the
+result cache.
+
+If no pattern is specified it defaults to [const *], i.e. removing all
+files found in the cache.
+
+The result of the command is the empty string.
+
+[comment {- - -- --- ----- -------- ------------- ---------------------}]
+[call [cmd ::critcl::cache::copy2] [arg src] [opt [arg dst]]]
+
+This command copies the [arg src] path into the result cache as [arg dst].
+
+If [arg dst] is not specified it defaults to the last part of the [arg src]
+path.
+
+The result of the command is the full path of [arg dst].
+
+[comment {- - -- --- ----- -------- ------------- ---------------------}]
+[call [cmd ::critcl::cache::def] [arg path]]
+
+This command sets the location of the result cache to [arg path].
+
+The result of the command is the empty string.
+
+[comment {- - -- --- ----- -------- ------------- ---------------------}]
+[call [cmd ::critcl::cache::get] [opt [arg path]]]
+
+This command returns the location of the result cache, if called without
+a [arg path] specified.
+
+With [arg path] specified its full path within the result cache is returned.
+Note that the [arg path] does not have to exist.
+
+[comment ---------------------------------------------------------------------]
+[call [cmd ::critcl::cache::write]]
+
+This command stores the [arg content] in the [arg file] in the
+result cache, replacign any previous content, if any.
+
+The result of the command is the full path of the modified file.
+
+[list_end]
+
+[comment {===================================================================}]
+[include include/feedback2.inc]
+[manpage_end]

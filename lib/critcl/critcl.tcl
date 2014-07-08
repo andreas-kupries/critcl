@@ -4113,18 +4113,6 @@ proc ::critcl::Template {file} {
     return [file join $hdrdir $file]
 }
 
-proc ::critcl::Copy {src dst} {
-    foreach p [glob -nocomplain $src] {
-	if {[file isdirectory $p]} {
-	    set stem [file tail $p]
-	    file mkdir $dst/$stem
-	    Copy $p/* $dst/$stem
-	} else {
-	    file copy -force $p $dst
-	}
-    }
-}
-
 proc ::critcl::Cat {path} {
     # Easier to write our own copy than requiring fileutil and then
     # using fileutil::cat.

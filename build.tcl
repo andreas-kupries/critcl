@@ -14,12 +14,16 @@ proc main {} {
 }
 set packages {
     {critcl          critcl.tcl}
-    {critcl-util     util.tcl}
+    {critcl-at       at.tcl}
+    {critcl-bitmap   bitmap.tcl}
+    {critcl-cache    cache.tcl}
     {critcl-class    class.tcl}
+    {critcl-enum     enum.tcl}
     {critcl-iassoc   iassoc.tcl}
     {critcl-literals literals.tcl}
-    {critcl-enum     enum.tcl}
-    {critcl-bitmap   bitmap.tcl}
+    {critcl-typeconv typeconv.tcl}
+    {critcl-util     util.tcl}
+    {critcl-who      who.tcl}
     {app-critcl      ../critcl/critcl.tcl critcl-app}
     util84
     stubs
