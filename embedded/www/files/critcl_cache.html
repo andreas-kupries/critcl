@@ -1,6 +1,6 @@
 
 <html><head>
-<title>critcl::util - C Runtime In Tcl (CriTcl)</title>
+<title>critcl::cache - C Runtime In Tcl (CriTcl)</title>
 <style type="text/css"><!--
     HTML {
 	background: 	#FFFFFF;
@@ -92,20 +92,20 @@
     }
 --></style>
 </head>
-<! -- Generated from file 'critcl_util.man' by tcllib/doctools with format 'html'
+<! -- Generated from file 'critcl_cache.man' by tcllib/doctools with format 'html'
    -->
 <! -- Copyright &copy; 2011-2012 Andreas Kupries
    -->
-<! -- CVS: $Id$ critcl::util.n
+<! -- CVS: $Id$ critcl::cache.n
    -->
 <body><div class="doctools">
 <hr> [
    <a href="../toc.html">Table Of Contents</a>
 | <a href="../index.html">Keyword Index</a>
  ] <hr>
-<h1 class="title">critcl::util(n) 1 doc &quot;C Runtime In Tcl (CriTcl)&quot;</h1>
+<h1 class="title">critcl::cache(n) 1 doc &quot;C Runtime In Tcl (CriTcl)&quot;</h1>
 <div id="name" class="section"><h2><a name="name">Name</a></h2>
-<p>critcl::util - CriTcl Utilities</p>
+<p>critcl::cache - CriTcl Result Cache Management</p>
 </div>
 <div id="toc" class="section"><h2><a name="toc">Table Of Contents</a></h2>
 <ul class="toc">
@@ -124,11 +124,16 @@
 <div class="synopsis">
 <ul class="requirements">
 <li>package require <b class="pkgname">Tcl 8.4</b></li>
-<li>package require <b class="pkgname">critcl <span class="opt">?2.1?</span></b></li>
-<li>package require <b class="pkgname">critcl::util <span class="opt">?1?</span></b></li>
+<li>package require <b class="pkgname">critcl <span class="opt">?3?</span></b></li>
+<li>package require <b class="pkgname">critcl::cache <span class="opt">?1?</span></b></li>
 </ul>
 <ul class="syntax">
-<li><a href="#1"><b class="cmd">::critcl::util::checkfun</b> <i class="arg">name</i> <span class="opt">?<i class="arg">label</i>?</span></a></li>
+<li><a href="#1"><b class="cmd">::critcl::cache::append</b> <i class="arg">file</i> <i class="arg">content</i></a></li>
+<li><a href="#2"><b class="cmd">::critcl::cache::clear</b> <span class="opt">?<i class="arg">pattern</i>...?</span></a></li>
+<li><a href="#3"><b class="cmd">::critcl::cache::copy2</b> <i class="arg">src</i> <span class="opt">?<i class="arg">dst</i>?</span></a></li>
+<li><a href="#4"><b class="cmd">::critcl::cache::def</b> <i class="arg">path</i></a></li>
+<li><a href="#5"><b class="cmd">::critcl::cache::get</b> <span class="opt">?<i class="arg">path</i>?</span></a></li>
+<li><a href="#6"><b class="cmd">::critcl::cache::write</b></a></li>
 </ul>
 </div>
 </div>
@@ -137,20 +142,43 @@
 system to build C extension packages for Tcl on the fly, from C code
 embedded within Tcl scripts, for all who wish to make their code go
 faster.</p>
-<p>This document is the reference manpage for the <b class="package">critcl::util</b>
-package. This package provides convenience commands for advanced
-functionality built on top of the core.
-Its intended audience are mainly developers wishing to write Tcl
-packages with embedded C code.</p>
+<p>This document is the reference manpage for the <b class="package">critcl::cache</b>
+package. This internal utility package provides the commands used by
+the core to manage the <i class="term">result cache</i> directory.
+Its intended audience are mainly developers and maintainers of critcl
+itself. Regular users have no need for the commands of this package.</p>
 <p>This package resides in the Core Package Layer of CriTcl.</p>
 <p><img alt="arch_core" src="../image/arch_core.png"></p>
 </div>
 <div id="section2" class="section"><h2><a name="section2">API</a></h2>
 <dl class="definitions">
-<dt><a name="1"><b class="cmd">::critcl::util::checkfun</b> <i class="arg">name</i> <span class="opt">?<i class="arg">label</i>?</span></a></dt>
-<dd><p>This command checks the build-time environment for the existence of
-the C function <i class="arg">name</i>.
-It returns <b class="const">true</b> on success, and <b class="const">false</b> otherwise.</p></dd>
+<dt><a name="1"><b class="cmd">::critcl::cache::append</b> <i class="arg">file</i> <i class="arg">content</i></a></dt>
+<dd><p>This command appends the <i class="arg">content</i> to the <i class="arg">file</i> in the
+result cache.
+The result of the command is the full path of the modified file.</p></dd>
+<dt><a name="2"><b class="cmd">::critcl::cache::clear</b> <span class="opt">?<i class="arg">pattern</i>...?</span></a></dt>
+<dd><p>This command removes all files matching any of the patterns from the
+result cache.
+If no pattern is specified it defaults to <b class="const">*</b>, i.e. removing all
+files found in the cache.
+The result of the command is the empty string.</p></dd>
+<dt><a name="3"><b class="cmd">::critcl::cache::copy2</b> <i class="arg">src</i> <span class="opt">?<i class="arg">dst</i>?</span></a></dt>
+<dd><p>This command copies the <i class="arg">src</i> path into the result cache as <i class="arg">dst</i>.
+If <i class="arg">dst</i> is not specified it defaults to the last part of the <i class="arg">src</i>
+path.
+The result of the command is the full path of <i class="arg">dst</i>.</p></dd>
+<dt><a name="4"><b class="cmd">::critcl::cache::def</b> <i class="arg">path</i></a></dt>
+<dd><p>This command sets the location of the result cache to <i class="arg">path</i>.
+The result of the command is the empty string.</p></dd>
+<dt><a name="5"><b class="cmd">::critcl::cache::get</b> <span class="opt">?<i class="arg">path</i>?</span></a></dt>
+<dd><p>This command returns the location of the result cache, if called without
+a <i class="arg">path</i> specified.
+With <i class="arg">path</i> specified its full path within the result cache is returned.
+Note that the <i class="arg">path</i> does not have to exist.</p></dd>
+<dt><a name="6"><b class="cmd">::critcl::cache::write</b></a></dt>
+<dd><p>This command stores the <i class="arg">content</i> in the <i class="arg">file</i> in the
+result cache, replacign any previous content, if any.
+The result of the command is the full path of the modified file.</p></dd>
 </dl>
 </div>
 <div id="section3" class="section"><h2><a name="section3">Authors</a></h2>

@@ -1,6 +1,6 @@
 
 <html><head>
-<title>critcl_sources - C Runtime In Tcl (CriTcl)</title>
+<title>critcl::who - C Runtime In Tcl (CriTcl)</title>
 <style type="text/css"><!--
     HTML {
 	background: 	#FFFFFF;
@@ -92,88 +92,87 @@
     }
 --></style>
 </head>
-<! -- Generated from file 'critcl_sources.man' by tcllib/doctools with format 'html'
+<! -- Generated from file 'critcl_who.man' by tcllib/doctools with format 'html'
    -->
-<! -- Copyright &copy; Jean-Claude Wippler   -- Copyright &copy; Steve Landers   -- Copyright &copy; 2011-2013 Andreas Kupries
+<! -- Copyright &copy; 2011-2012 Andreas Kupries
    -->
-<! -- CVS: $Id$ critcl_sources.n
+<! -- CVS: $Id$ critcl::who.n
    -->
 <body><div class="doctools">
 <hr> [
    <a href="../toc.html">Table Of Contents</a>
 | <a href="../index.html">Keyword Index</a>
  ] <hr>
-<h1 class="title">critcl_sources(n) 3.1.11 doc &quot;C Runtime In Tcl (CriTcl)&quot;</h1>
+<h1 class="title">critcl::who(n) 1 doc &quot;C Runtime In Tcl (CriTcl)&quot;</h1>
 <div id="name" class="section"><h2><a name="name">Name</a></h2>
-<p>critcl_sources - Critcl - How To Get The Sources</p>
+<p>critcl::who - CriTcl Current File</p>
 </div>
 <div id="toc" class="section"><h2><a name="toc">Table Of Contents</a></h2>
 <ul class="toc">
 <li class="section"><a href="#toc">Table Of Contents</a></li>
+<li class="section"><a href="#synopsis">Synopsis</a></li>
 <li class="section"><a href="#section1">Description</a></li>
-<li class="section"><a href="#section2">Source Location</a></li>
-<li class="section"><a href="#section3">Retrieval</a></li>
-<li class="section"><a href="#section4">Source Code Management</a></li>
-<li class="section"><a href="#section5">Authors</a></li>
-<li class="section"><a href="#section6">Bugs, Ideas, Feedback</a></li>
+<li class="section"><a href="#section2">API</a></li>
+<li class="section"><a href="#section3">Authors</a></li>
+<li class="section"><a href="#section4">Bugs, Ideas, Feedback</a></li>
 <li class="section"><a href="#keywords">Keywords</a></li>
 <li class="section"><a href="#category">Category</a></li>
 <li class="section"><a href="#copyright">Copyright</a></li>
 </ul>
+</div>
+<div id="synopsis" class="section"><h2><a name="synopsis">Synopsis</a></h2>
+<div class="synopsis">
+<ul class="requirements">
+<li>package require <b class="pkgname">Tcl 8.4</b></li>
+<li>package require <b class="pkgname">critcl <span class="opt">?3?</span></b></li>
+<li>package require <b class="pkgname">critcl::who <span class="opt">?1?</span></b></li>
+</ul>
+<ul class="syntax">
+<li><a href="#1"><b class="cmd">::critcl::who::is</b></a></li>
+<li><a href="#2"><b class="cmd">::critcl::who::push</b> <i class="arg">name</i></a></li>
+<li><a href="#3"><b class="cmd">::critcl::who::pop</b></a></li>
+<li><a href="#4"><b class="cmd">::critcl::who::depth</b></a></li>
+</ul>
+</div>
 </div>
 <div id="section1" class="section"><h2><a name="section1">Description</a></h2>
 <p>Welcome to the <i class="term">C Runtime In Tcl</i>, <i class="term"><a href="critcl_pkg.html">CriTcl</a></i> for short, a
 system to build C extension packages for Tcl on the fly, from C code
 embedded within Tcl scripts, for all who wish to make their code go
 faster.</p>
-<p>The audience of this document is anyone wishing to either have
-just a look at Critcl's source code, or build the packages, or to
-extend and modify them.</p>
-<p>For builders and developers we additionally provide</p>
-<ol class="enumerated">
-<li><p><i class="term"><a href="license.html">Critcl - License</a></i>.</p></li>
-<li><p><i class="term"><a href="critcl_installer.html">Critcl - The Installer's Guide</a></i>.</p></li>
-<li><p><i class="term"><a href="critcl_devguide.html">Critcl - The Developer's Guide</a></i>.</p></li>
-</ol>
-<p>respectively.</p>
+<p>This document is the reference manpage for the <b class="package">critcl::who</b>
+package. This internal utility package provides the commands used by
+the core to manage the <i class="term">current file</i> where processed
+definition accumulate.
+Its intended audience are mainly developers and maintainers of critcl
+itself. Regular users have no need for the commands of this package.</p>
+<p>This package resides in the Core Package Layer of CriTcl.</p>
+<p><img alt="arch_core" src="../image/arch_core.png"></p>
 </div>
-<div id="section2" class="section"><h2><a name="section2">Source Location</a></h2>
-<p>The official repository for Critcl can be found at
-<a href="http://andreas-kupries.github.com/critcl">http://andreas-kupries.github.com/critcl</a></p>
+<div id="section2" class="section"><h2><a name="section2">API</a></h2>
+<dl class="definitions">
+<dt><a name="1"><b class="cmd">::critcl::who::is</b></a></dt>
+<dd><p>This command returns the path of the current file.</p></dd>
+<dt><a name="2"><b class="cmd">::critcl::who::push</b> <i class="arg">name</i></a></dt>
+<dd><p>This command pushes <i class="arg">name</i> on the stack of overrides, making it
+the current file.
+The result of the command is the empty string.</p></dd>
+<dt><a name="3"><b class="cmd">::critcl::who::pop</b></a></dt>
+<dd><p>This command removes the latst pushed override from the stack.
+The result of the command is the empty string.</p></dd>
+<dt><a name="4"><b class="cmd">::critcl::who::depth</b></a></dt>
+<dd><p>This command returns the number of overrides currently pushed on the stack.</p></dd>
+</dl>
 </div>
-<div id="section3" class="section"><h2><a name="section3">Retrieval</a></h2>
-<p>Assuming that you simply wish to look at the sources, or build a
-specific revision, the easiest way of retrieving it is to:</p>
-<ol class="enumerated">
-<li><p>Go to this site.</p></li>
-<li><p>Follow the 'Fork me on Github' link (top-right corner) to the project sources.</p></li>
-<li><p>Choose the revision under the Commits panel you wish to have and</p></li>
-<li><p>follow its 'Browse code' link to its detailed information page.</p></li>
-<li><p>On that page, choose either the &quot;ZIP&quot; link to get a copy of this revision as a Zip archive.</p></li>
-</ol>
+<div id="section3" class="section"><h2><a name="section3">Authors</a></h2>
+<p>Andreas Kupries</p>
 </div>
-<div id="section4" class="section"><h2><a name="section4">Source Code Management</a></h2>
-<p>For the curious (or a developer-to-be), the sources are managed by the
-<a href="http://www.git-scm.com">Git SCM</a>.
-Binaries for popular platforms can be found directly at its
-<a href="http://www.fossil-scm.org/downloads">download page</a>.</p>
-<p>With that tool available the full history can be retrieved via:</p>
-<pre class="example">
-    git clone http://github.com/andreas-kupries/critcl
-    cd critcl
-</pre>
-<p>to get a checkout of the head of the trunk and move into it for browsing, editing, etc.</p>
-</div>
-<div id="section5" class="section"><h2><a name="section5">Authors</a></h2>
-<p>Jean Claude Wippler, Steve Landers, Andreas Kupries</p>
-</div>
-<div id="section6" class="section"><h2><a name="section6">Bugs, Ideas, Feedback</a></h2>
+<div id="section4" class="section"><h2><a name="section4">Bugs, Ideas, Feedback</a></h2>
 <p>This document, and the package it describes, will undoubtedly contain
 bugs and other problems.
-Please report them at <a href="https://github.com/andreas-kupries/critcl/issues">https://github.com/andreas-kupries/critcl/issues</a>.
-Ideas for enhancements you may have for either package, application,
-and/or the documentation are also very welcome and should be reported
-at <a href="https://github.com/andreas-kupries/critcl/issues">https://github.com/andreas-kupries/critcl/issues</a> as well.</p>
+Please report such at <a href="https://github.com/andreas-kupries/critcl">https://github.com/andreas-kupries/critcl</a>.
+Please also report any ideas for enhancements you may have for either
+package and/or documentation.</p>
 </div>
 <div id="keywords" class="section"><h2><a name="keywords">Keywords</a></h2>
 <p><a href="../index.html#key8">C code</a>, <a href="../index.html#key3">Embedded C Code</a>, <a href="../index.html#key6">code generator</a>, <a href="../index.html#key0">compile &amp; run</a>, <a href="../index.html#key10">compiler</a>, <a href="../index.html#key1">dynamic code generation</a>, <a href="../index.html#key2">dynamic compilation</a>, <a href="../index.html#key9">generate package</a>, <a href="../index.html#key4">linker</a>, <a href="../index.html#key5">on demand compilation</a>, <a href="../index.html#key7">on-the-fly compilation</a></p>
@@ -182,8 +181,6 @@ at <a href="https://github.com/andreas-kupries/critcl/issues">https://github.com
 <p>Glueing/Embedded C code</p>
 </div>
 <div id="copyright" class="section"><h2><a name="copyright">Copyright</a></h2>
-<p>Copyright &copy; Jean-Claude Wippler<br>
-Copyright &copy; Steve Landers<br>
-Copyright &copy; 2011-2013 Andreas Kupries</p>
+<p>Copyright &copy; 2011-2012 Andreas Kupries</p>
 </div>
 </div></body></html>
