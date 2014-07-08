@@ -18,10 +18,11 @@
 package require Tcl 8.4          ;# Minimal supported Tcl runtime.
 
 package provide  critcl::scan 1
-namespace eval ::critcl::scan {
-    namespace export
-    catch { namespace ensemble create }
-}
+namespace eval ::critcl::scan {}
+
+# Core API commands used here
+# - ::critcl::msg
+# - ::critcl::print
 
 # # ## ### ##### ######## ############# #####################
 ## API commands.
@@ -29,10 +30,7 @@ namespace eval ::critcl::scan {
 proc ::critcl::scan {file} {
     set lines [split [scan::Cat $file] \n]
 
-    # XXX move into local state
-    set scan::rkey    require
-    set scan::base    [file dirname [file normalize $file]]
-    set scan::capture {
+    scan::Init {
 	org         {}
 	version     {}
 	files       {}
@@ -41,7 +39,7 @@ proc ::critcl::scan {file} {
 	meta-user   {}
 	meta-system {}
 	tsources    {}
-    }
+    } $file
 
     scan::Core $lines {
 	critcl::api			sub
@@ -65,65 +63,65 @@ proc ::critcl::scan {file} {
 	package				warn
     }
 
-    set version [dict get $scan::capture version]
+    variable scan::capture
+    set version [dict get $capture version]
     print "\tVersion:      $version"
 
     # TODO : Report requirements.
+    # XXX core backreference (print)
 
-    set n [llength [dict get $scan::capture files]]
-    print -nonewline "\tInput:        $file"
+    set n [llength [dict get $capture files]]
+    ::critcl::print -nonewline "\tInput:        $file"
     if {$n} {
-	print -nonewline " + $n Companion"
+	::critcl::print -nonewline " + $n Companion"
 	if {$n > 1} { print -nonewline s }
     }
-    print ""
+    ::critcl::print ""
 
     # Merge the system and user meta data, with system overriding the
     # user. See 'GetMeta' for same operation when actually builing the
     # package. Plus scan any Tcl companions for more requirements.
 
     set     md {}
-    lappend md [dict get $scan::capture meta-user]
-    lappend md [dict get $scan::capture meta-system]
+    lappend md [dict get $capture meta-user]
+    lappend md [dict get $capture meta-system]
 
-    foreach ts [dict get $scan::capture tsources] {
-	lappend md [dict get [scan-dependencies $file \
-				  [file join [file dirname $file] $ts] \
-				  capture] meta-system]
+    foreach ts [dict get $capture tsources] {
+	# XXX could we use scan::base here ?
+	set ts        [file join [file dirname $file] $ts]
+	set tscapture [scan-dependencies $file $ts capture]
+	lappend md [dict get $tscapture meta-system]
     }
 
-    dict unset scan::capture meta-user
-    dict unset scan::capture meta-system
-    dict unset scan::capture tsources
+    dict unset capture meta-user
+    dict unset capture meta-system
+    dict unset capture tsources
 
-    dict set scan::capture meta \
+    dict set capture meta \
 	[eval [linsert $md 0 dict merge]]
     # meta = dict merge {*}$md
 
-    if {[dict exists $scan::capture meta require]} {
-	foreach r [dict get $scan::capture meta require] {
-	    print "\tRequired:     $r"
+    if {[dict exists $capture meta require]} {
+	foreach r [dict get $capture meta require] {
+	    ::critcl::print "\tRequired:     $r"
 	}
     }
 
-    return $scan::capture
+    return $capture
 }
 
-proc ::critcl::scan-dependencies {dfile file {mode plain}} {
+proc ::critcl::scan-dependencies {key file {mode plain}} {
     set lines [split [scan::Cat $file] \n]
 
-    # XXX local state
-    catch {
-	set saved $scan::capture
+    if {$mode eq "capture"} {
+	scan::Push
     }
 
-    set scan::rkey    require
-    set scan::base    [file dirname [file normalize $file]]
-    set scan::capture {
+    scan::Init {
 	name        {}
 	version     {}
 	meta-system {}
-    }
+    } $file
 
     scan::Core $lines {
 	critcl::buildrequirement	warn
@@ -131,25 +129,24 @@ proc ::critcl::scan-dependencies {dfile file {mode plain}} {
     }
 
     if {$mode eq "capture"} {
-	set result $scan::capture
-	set scan::capture $saved
-	return $result
+	return [scan::Pop]
     }
 
-    dict with scan::capture {
+    variable scan::capture
+    dict with capture {
 	if {$mode eq "provide"} {
 	    # XXX back reference into critcl core
 	    ::critcl::msg -nonewline " (provide $name $version)"
-	    ::critcl::ImetaSet $dfile name     $name
-	    ::critcl::ImetaSet $dfile version  $version
+	    ::critcl::ImetaSet $key name     $name
+	    ::critcl::ImetaSet $key version  $version
 	}
 
-	dict for {k vlist} [dict get $scan::capture meta-system] {
+	dict for {k vlist} [dict get $capture meta-system] {
 	    if {$k eq "name"}    continue
 	    if {$k eq "version"} continue
 
 	    # XXX back reference into critcl core
-	    ::critcl::ImetaAdd $dfile $k $vlist
+	    ::critcl::ImetaAdd $key $k $vlist
 
 	    if {$k ne "require"} continue
 	    ::critcl::msg -nonewline " ($k [join $vlist {}])"
@@ -164,12 +161,59 @@ proc ::critcl::scan-dependencies {dfile file {mode plain}} {
     return
 }
 
+# # ## ### ##### ######## ############# #####################
+## Internal state
+
+namespace eval ::critcl::scan {
+
+    # Scanner configuration
+    # - Key for collected package requirements
+    # - Base directory holding the scanned file.
+    # - Map of commands to recognize and process.
+    variable rkey
+    variable base
+    variable config
+
+    # Scanner state, i.e. captured information.
+    variable capture
+
+    # Stack of saved captures to handle nested invokation.
+    variable saved
+}
+
+# # ## ### ##### ######## ############# #####################
+## Internal support commands
+
+proc critcl::scan::Init {cap file {key require}} {
+    variable rkey    $key
+    variable base    [file dirname [file normalize $file]]
+    variable capture $cap
+    return
+}
+
+proc critcl::scan::Push {} {
+    variable capture
+    variable saved
+    lappend saved $capture
+    unset capture
+    return
+}
+
+proc critcl::scan::Pop {} {
+    variable capture
+    variable saved
+    set result $capture
+    set capture [lindex $saved end]
+    set saved   [lrange $saved 0 end-1]
+    return $result
+}
+
 proc critcl::scan::Core {lines theconfig} {
     # config = dictionary
     # - <cmdname> => mode (ok, warn, sub)
     # Unlisted commands are ignored.
 
-    variable scan::config $theconfig
+    variable config $theconfig
 
     set collect 0
     set buf {}
@@ -228,18 +272,69 @@ proc critcl::scan::Core {lines theconfig} {
     }
 }
 
-# # ## ### ##### ######## ############# #####################
-## Internal state
+proc ::critcl::scan::critcl::Files {args} {
+    variable ::critcl::scan::capture
+    set res {}
+    foreach v $args {
+	if {[string match "-*" $v]} continue
+	foreach f [Expand $v] {
+	    dict lappend capture files $f
+	    lappend res $f
+	}
+    }
+    return $res
+}
 
-namespace eval ::critcl::scan {
+proc ::critcl::scan::critcl::Expand {pattern} {
+    variable ::critcl::scan::base
+
+    # ATTENTION: We cannot use "glob -directory" here.
+    ##
+    # The PATTERN may already be an absolute path, in which case the
+    # join will return the unmodified PATTERN to glob on, whereas with
+    # -directory the final pattern will be BASE/PATTERN which will not
+    # find anything, even if PATTERN actually exists.
+
+    set prefix [file split $base]
+
+    set files {}
+    foreach vfile [glob [file join $base $pattern]] {
+	set xfile [file normalize $vfile]
+	if {![file exists $xfile]} {
+	    error "$vfile: not found"
+	}
+
+	# Constrain to be inside of the base directory.
+	# Snarfed from fileutil::stripPath
+
+	set npath [file split $xfile]
+
+	if {![string match -nocase "${prefix} *" $npath]} {
+	    error "$vfile: Not inside of $base"
+	}
+
+	set xfile [eval [linsert [lrange $npath [llength $prefix] end] 0 file join ]]
+	lappend files $xfile
+    }
+    return $files
+}
+
+proc ::critcl::scan::Cat {path} {
+    # Easier to write our own copy than requiring fileutil and then
+    # using fileutil::cat.
+
+    set fd [open $path r]
+    set data [read $fd]
+    close $fd
+    return $data
 }
 
 # # ## ### ##### ######## ############# #####################
 ## Internal support commands
-# Mainly scanner-specific replacements of core critcl commands, and
-# some Tcl builtin commands.
+#
+# The scanner-specific replacements of core critcl commands, and some
+# Tcl builtin commands.
 
-# Handle the extracted commands
 namespace eval ::critcl::scan::critcl {}
 
 proc ::critcl::scan::critcl::buildrequirement {script} {
@@ -250,10 +345,12 @@ proc ::critcl::scan::critcl::buildrequirement {script} {
     variable ::critcl::scan::config
     variable ::critcl::scan::rkey
 
+    set lines [split $script \n]
+
     set saved $rkey
     set rkey build::require
 
-    ::critcl::scan::Core [split $script \n] $config
+    ::critcl::scan::Core $lines $config
 
     set rkey $saved
     return
@@ -314,7 +411,7 @@ proc ::critcl::scan::critcl::meta {key args} {
 }
 
 # Capture files
-proc ::critcl::scan::critcl::source   {path} {
+proc ::critcl::scan::critcl::source {path} {
     # Recursively scan the imported file.
     # Keep the current context.
     variable ::critcl::scan::config
@@ -350,6 +447,8 @@ proc ::critcl::scan::critcl::license {who args} {
 
     dict set capture meta-system license \
 	[::critcl::Text2Words $elicense]
+    # XXX back reference into critcl core
+
     dict set capture meta-system author \
 	[::critcl::Text2Authors $who]
     # XXX back reference into critcl core
@@ -358,10 +457,12 @@ proc ::critcl::scan::critcl::license {who args} {
 
 # Capture version of the provided package.
 proc ::critcl::scan::package {cmd args} {
+    variable capture
+    variable rkey
+
     if {$cmd eq "provide"} {
 	# Syntax: package provide <name> <version>
 
-	variable capture
 	lassign $args name version
 	dict set capture name    $name
 	dict set capture version $version
@@ -378,7 +479,9 @@ proc ::critcl::scan::package {cmd args} {
 	dict set capture meta-system generated::date \
 	    [list [clock format [clock seconds] -format {%Y-%m-%d}]]
 	return
-    } elseif {$cmd eq "require"} {
+    }
+
+    if {$cmd eq "require"} {
 	# Syntax: package require <name> ?-exact? <version>
 	#       : package require <name> <version-range>...
 
@@ -387,8 +490,6 @@ proc ::critcl::scan::package {cmd args} {
 	# Ignore the critcl core
 	if {[lindex $args 0] eq "critcl"} return
 
-	variable capture
-	variable rkey
 	dict update capture meta-system m {
 	    dict lappend m $rkey [::critcl::TeapotRequire $args]
 	    # XXX back reference into critcl core
@@ -441,62 +542,6 @@ proc ::critcl::scan::critcl::userconfig {cmd args} {
 
 # # ## ### ##### ######## ############# #####################
 ## Full internal helper commands.
-
-proc ::critcl::scan::critcl::Files {args} {
-    variable ::critcl::scan::capture
-    set res {}
-    foreach v $args {
-	if {[string match "-*" $v]} continue
-	foreach f [Expand $v] {
-	    dict lappend capture files $f
-	    lappend res $f
-	}
-    }
-    return $res
-}
-
-proc ::critcl::scan::critcl::Expand {pattern} {
-    variable ::critcl::scan::base
-
-    # Note: We cannot use -directory here. The PATTERN may already be
-    # an absolute path, in which case the join will return the
-    # unmodified PATTERN to glob on, whereas with -directory the final
-    # pattern will be BASE/PATTERN which won't find anything, even if
-    # PATTERN actually exists.
-
-    set prefix [file split $base]
-
-    set files {}
-    foreach vfile [glob [file join $base $pattern]] {
-	set xfile [file normalize $vfile]
-	if {![file exists $xfile]} {
-	    error "$vfile: not found"
-	}
-
-	# Constrain to be inside of the base directory.
-	# Snarfed from fileutil::stripPath
-
-	set npath [file split $xfile]
-
-	if {![string match -nocase "${prefix} *" $npath]} {
-	    error "$vfile: Not inside of $base"
-	}
-
-	set xfile [eval [linsert [lrange $npath [llength $prefix] end] 0 file join ]]
-	lappend files $xfile
-    }
-    return $files
-}
-
-proc ::critcl::scan::Cat {path} {
-    # Easier to write our own copy than requiring fileutil and then
-    # using fileutil::cat.
-
-    set fd [open $path r]
-    set data [read $fd]
-    close $fd
-    return $data
-}
 
 # # ## ### ##### ######## ############# #####################
 ## Initialization
