@@ -27,56 +27,8 @@ package require dict84
 
 catch { interp debug {} -frame 1 }
 
-# md5 could be a cmd or a pkg, or be in a separate namespace
-if {[catch { md5 "" }]} {
-    # Do *not* use "package require md5c" since critcl is not loaded
-    # yet, but do look for a compiled one, in case object code already
-    # exists.
-
-    if {![catch { md5c "" }]} {
-	interp alias {} md5 {} md5c
-    } elseif {[catch {package require Trf 2.0}] || [catch {::md5 -- test}]} {
-	# Else try to load the Tcl version in tcllib
-	catch { package require md5 }
-	if {![catch { md5::md5 "" }]} {
-	    interp alias {} md5 {} md5::md5
-	} else {
-	    # Last resort: package require or source Don Libes'
-	    # md5pure script
-
-	    if {[catch { package require md5pure }]} {
-		if {[file exists md5pure.tcl]} {
-		    source md5pure.tcl
-		    interp alias {} md5 {} md5pure::md5
-		} else {
-		    # XXX: Note the assumption here, that the md5
-		    # XXX: package is found relative to critcl itself,
-		    # XXX: in the critcl starkit.
-
-		    source [file join [file dirname [info script]] ../md5/md5.tcl]
-		    interp alias {} md5 {} md5::md5
-		}
-	    } else {
-		interp alias {} md5 {} md5pure::md5
-	    }
-	}
-    }
-}
 
 namespace eval ::critcl {}
-
-# ouch, some md5 implementations return hex, others binary
-if {[string length [md5 ""]] == 32} {
-    proc ::critcl::md5_hex {s} {
-	if {$v::uuidcounter} { return [format %032d [incr v::uuidcounter]] }
-	return [md5 $s]
-    }
-} else {
-    proc ::critcl::md5_hex {s} {
-	if {$v::uuidcounter} { return [format %032d [incr v::uuidcounter]] }
-	binary scan [md5 $s] H* md; return $md
-    }
-}
 
 # # ## ### ##### ######## ############# #####################
 
@@ -102,6 +54,7 @@ if {[package vsatisfies [package present Tcl] 8.5]} {
 # # ## ### ##### ######## ############# #####################
 
 package require critcl::common   ;# General utility commands.
+package require critcl::uuid     ;# UUID generation.
 package require critcl::typeconv ;# Handling cproc data types.
 package require critcl::who      ;# Management of current file.
 package require critcl::scan     ;# Static Tcl code scanner.
@@ -186,7 +139,7 @@ proc ::critcl::TeapotRequire {dspec} {
 proc ::critcl::ccode {text} {
     set file [SkipIgnored [who::is]]
     AbortWhenCalledAfterBuild
-    set digest [UUID.extend $file .ccode $text]
+    set digest [uuid::add $file .ccode $text]
 
     set block {}
     lassign [at::header $text] leadoffset text
@@ -205,7 +158,7 @@ proc ::critcl::ccommand {name anames args} {
     AbortWhenCalledAfterBuild
 
     # Basic key for the clientdata and delproc arrays.
-    set cname $name[UUID.serial $file]
+    set cname $name[uuid::serial $file]
 
     if {[llength $args]} {
 	set body [lindex $args 0]
@@ -309,7 +262,7 @@ proc ::critcl::cdata {name data} {
 proc ::critcl::cdefines {defines {namespace "::"}} {
     set file [SkipIgnored [who::is]]
     AbortWhenCalledAfterBuild
-    set digest [UUID.extend $file .cdefines [list $defines $namespace]]
+    set digest [uuid::add $file .cdefines [list $defines $namespace]]
 
     dict update v::code($file) config c {
 	foreach def $defines {
@@ -608,8 +561,8 @@ proc ::critcl::cinit {text edecls} {
     set file [SkipIgnored [set file [who::is]]]
     AbortWhenCalledAfterBuild
 
-    set digesta [UUID.extend $file .cinit.f $text]
-    set digestb [UUID.extend $file .cinit.e $edecls]
+    set digesta [uuid::add $file .cinit.f $text]
+    set digestb [uuid::add $file .cinit.e $edecls]
 
     set initc {}
     set skip [at::lines $text]
@@ -802,7 +755,7 @@ proc ::critcl::cflags {args} {
     AbortWhenCalledAfterBuild
     if {![llength $args]} return
 
-    UUID.extend $file .cflags $args
+    uuid::add $file .cflags $args
     dict update v::code($file) config c {
 	foreach flag $args {
 	    dict lappend c cflags $flag
@@ -816,7 +769,7 @@ proc ::critcl::ldflags {args} {
     AbortWhenCalledAfterBuild
     if {![llength $args]} return
 
-    UUID.extend $file .ldflags $args
+    uuid::add $file .ldflags $args
     dict update v::code($file) config c {
 	foreach flag $args {
 	    # Drop any -Wl prefix which will be added back a moment
@@ -853,7 +806,7 @@ proc ::critcl::tcl {version} {
     set file [SkipIgnored [who::is]]
     AbortWhenCalledAfterBuild
 
-    UUID.extend $file .mintcl $version
+    uuid::add $file .mintcl $version
     dict set v::code($file) config mintcl $version
 
     # This is also a dependency to record in the meta data. A 'package
@@ -868,7 +821,7 @@ proc ::critcl::tk {} {
     set file [SkipIgnored [who::is]]
     AbortWhenCalledAfterBuild
 
-    UUID.extend $file .tk 1
+    uuid::add $file .tk 1
     dict set v::code($file) config tk 1
 
     # This is also a dependency to record in the meta data. A 'package
@@ -886,7 +839,7 @@ proc ::critcl::preload {args} {
     AbortWhenCalledAfterBuild
     if {![llength $args]} return
 
-    UUID.extend $file .preload $args
+    uuid::add $file .preload $args
     dict update v::code($file) config c {
 	foreach lib $args {
 	    dict lappend c preload $lib
@@ -1061,7 +1014,7 @@ proc ::critcl::UCdefine {file oname odesc otype {odefault {}}} {
     # everything.
     UcValidate $oname $otype $odefault
 
-    UUID.extend $file .uc-def [list $oname $otype $odefault]
+    uuid::add $file .uc-def [list $oname $otype $odefault]
 
     dict set v::code($file) config userflag $oname type    $otype
     dict set v::code($file) config userflag $oname default $odefault
@@ -1149,7 +1102,7 @@ proc ::critcl::api {cmd args} {
 }
 
 proc ::critcl::APIscspec {file scspec} {
-    UUID.extend $file .api-scspec $scspec
+    uuid::add $file .api-scspec $scspec
     dict set v::code($file) config api_scspec $scspec
     return
 }
@@ -1183,7 +1136,7 @@ proc ::critcl::APIimport {file name version} {
     }
 
     set def [list $name $version]
-    UUID.extend $file .api-import $def
+    uuid::add $file .api-import $def
     dict update v::code($file) config c {
 	dict lappend c api_use $def
     }
@@ -1204,17 +1157,17 @@ proc ::critcl::APIimport {file name version} {
 proc ::critcl::APIexport {file name} {
     msg -nonewline " (stubs export $name)"
 
-    UUID.extend $file .api-self $name
+    uuid::add $file .api-self $name
     return [dict set v::code($file) config api_self $name]
 }
 
 proc ::critcl::APIheader {file args} {
-    UUID.extend $file .api-headers $args
+    uuid::add $file .api-headers $args
     return [SetParam api_hdrs $args]
 }
 
 proc ::critcl::APIextheader {file args} {
-    UUID.extend $file .api-eheaders $args
+    uuid::add $file .api-eheaders $args
     return [SetParam api_ehdrs $args 0]
 }
 
@@ -1238,7 +1191,7 @@ proc ::critcl::APIfunction {file rtype name arguments} {
     }
     set decl [stubs::reader::ParseDecl "$rtype $name ([join $ax ,])"]
 
-    UUID.extend $file .api-fun $decl
+    uuid::add $file .api-fun $decl
     dict update v::code($file) config c {
 	dict lappend c api_fun $decl
     }
@@ -2170,6 +2123,7 @@ proc ::critcl::cbuild {file {load 1}} {
     # Release the data which was collected for the just-built file, as
     # it is not needed any longer.
     dict unset v::code($file) config
+    uuid::clear $file
 
     return [StatusSave $file]
 }
@@ -2533,7 +2487,7 @@ proc ::critcl::SetParam {type values {expand 1} {uuid 0}} {
     set file [who::is]
     if {![llength $values]} return
 
-    UUID.extend $file .$type $values
+    uuid::add $file .$type $values
 
     if {[llength $values]} {
 	# Process the list of flags, treat non-option arguments as
@@ -2548,7 +2502,7 @@ proc ::critcl::SetParam {type values {expand 1} {uuid 0}} {
 		    if {$uuid} {
 			foreach f [Expand $file $v] {
 			    lappend tmp $f
-			    UUID.extend $file .$type.$f [common::cat $f]
+			    uuid::add $file .$type.$f [common::cat $f]
 			}
 		    } else {
 			lappendlist tmp [Expand $file $v]
@@ -2659,7 +2613,7 @@ proc ::critcl::name2c {name} {
     regsub -all -- {[^a-zA-Z0-9_]} $cns _ cns
     regsub -all -- {_+} $cns _ cns
 
-    set cname $cname[UUID.serial $file]
+    set cname $cname[uuid::serial $file]
 
     return [list $ns $cns $name $cname]
 }
@@ -2701,7 +2655,7 @@ proc ::critcl::BeginCommand {visibility name args} {
     regsub -all -- {[^a-zA-Z0-9_]} $cns _ cns
     regsub -all -- {_+} $cns _ cns
 
-    set cname $cname[UUID.serial $file]
+    set cname $cname[uuid::serial $file]
 
     # Set the defered build-on-demand used by mode 'comile & run' up.
     # Note: Removing the leading :: because it trips Tcl's unknown
@@ -2709,7 +2663,7 @@ proc ::critcl::BeginCommand {visibility name args} {
     # script without leading ::.
     set ::auto_index([string trimleft $ns$name :]) [list [namespace current]::cbuild $file]
 
-    set v::curr [UUID.extend $file .function "$ns $name $args"]
+    set v::curr [uuid::add $file .function "$ns $name $args"]
 
     dict update v::code($file) config c {
 	dict lappend c functions $cns$cname
@@ -3607,29 +3561,6 @@ proc ::critcl::LogClose {} {
 # # ## ### ##### ######## ############# #####################
 ## Implementation -- Internals - UUID management, change detection
 
-proc ::critcl::UUID.extend {file key value} {
-    set digest [md5_hex /$value]
-    InitializeFile $file
-    dict update v::code($file) config c {
-	dict lappend c uuid $key $digest
-    }
-    return $digest
-}
-
-proc ::critcl::UUID.serial {file} {
-    InitializeFile $file
-    if {[catch {
-	set len [llength [dict get $v::code($file) config uuid]]
-    }]} {
-	set len 0
-    }
-    return $len
-}
-
-proc ::critcl::UUID {f} {
-    return [md5_hex "$f [GetParam $f uuid]"]
-}
-
 proc ::critcl::BaseOf {f} {
     # Return cached information, if present.
     if {[info exists  v::code($f)] &&
@@ -3637,8 +3568,7 @@ proc ::critcl::BaseOf {f} {
 	return [dict get $v::code($f) result base]
     }
 
-    set base [file normalize \
-		  [cache::get ${v::prefix}_[UUID $f]]]
+    set base [file normalize [cache::get ${v::prefix}_[uuid::get $f]]]
 
     dict set v::code($f) result base $base
     return $base
