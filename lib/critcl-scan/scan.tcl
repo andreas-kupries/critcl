@@ -17,6 +17,8 @@
 
 package require Tcl 8.4          ;# Minimal supported Tcl runtime.
 package require critcl::common   ;# General shared utility commands.
+package require dict84           ;# Forward-compatible dict command.
+package require lassign84        ;# Forward-compatible lassign command.
 
 package provide  critcl::scan 1
 namespace eval ::critcl::scan {}

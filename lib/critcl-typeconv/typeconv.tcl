@@ -19,6 +19,7 @@
 ## Requirements.
 
 package require Tcl 8.4            ;# Minimal supported Tcl runtime.
+package require lassign84          ;# Forward-compatible lassign command.
 package require critcl::at         ;# Management of #line pragmas in C code.
 
 package provide  critcl::typeconv 1

@@ -17,6 +17,7 @@
 ## Requirements.
 
 package require Tcl 8.4          ;# Minimal supported Tcl runtime.
+package require lassign84        ;# Forward-compatible lassign command.
 package require critcl::who      ;# Management of current file.
 
 package provide  critcl::at 1
