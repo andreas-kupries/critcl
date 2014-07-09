@@ -1,4 +1,4 @@
-[section {Changes for version 3.1.12 - Not Released}]
+[section {Changes for version 3.1.12}]
 [list_begin enumerated]
 
 [enum] Fixed issue 42. Clear ::errorInfo immediately after startup to

@@ -4,7 +4,7 @@
 '\" Copyright (c) Steve Landers
 '\" Copyright (c) 2011-2013 Andreas Kupries
 '\"
-.TH "critcl_app" n 3\&.1\&.11 doc "C Runtime In Tcl (CriTcl)"
+.TH "critcl_app" n 3\&.1\&.12 doc "C Runtime In Tcl (CriTcl)"
 .\" The -*- nroff -*- definitions below are for supplemental macros used
 .\" in Tcl/Tk manual entries.
 .\"
@@ -720,7 +720,7 @@ targets\&. The result of such a merge would look like:
 .CE
 .PP
 The latest changes are found at the top\&.
-.SH "CHANGES FOR VERSION 3\&.1\&.12 - NOT RELEASED"
+.SH "CHANGES FOR VERSION 3\&.1\&.12"
 .IP [1]
 Fixed issue 42\&. Clear ::errorInfo immediately after startup to
 prevent leakage of irrelevant (caught) errors into our script
