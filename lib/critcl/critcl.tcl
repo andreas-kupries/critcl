@@ -2825,7 +2825,7 @@ proc ::critcl::ScanDependencies {dfile file {mode plain}} {
     return
 }
 
-proc critcl::ScanCore {lines theconfig} {
+proc ::critcl::ScanCore {lines theconfig} {
     # config = dictionary
     # - <cmdname> => mode (ok, warn, sub)
     # Unlisted commands are ignored.

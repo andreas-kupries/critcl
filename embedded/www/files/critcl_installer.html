@@ -115,13 +115,14 @@
 <ul>
 <li class="subsection"><a href="#subsection1">Tcl</a></li>
 <li class="subsection"><a href="#subsection2">Tcllib</a></li>
+<li class="subsection"><a href="#subsection3">C compiler</a></li>
 </ul>
 </li>
 <li class="section"><a href="#section3">Build &amp; Installation Instructions</a>
 <ul>
-<li class="subsection"><a href="#subsection3">Build &amp; Installation (Unix)</a></li>
-<li class="subsection"><a href="#subsection4">Build &amp; Installation (Windows)</a></li>
-<li class="subsection"><a href="#subsection5">First Use, Testing the Installation</a></li>
+<li class="subsection"><a href="#subsection4">Build &amp; Installation (Unix)</a></li>
+<li class="subsection"><a href="#subsection5">Build &amp; Installation (Windows)</a></li>
+<li class="subsection"><a href="#subsection6">First Use, Testing the Installation</a></li>
 </ul>
 </li>
 <li class="section"><a href="#section4">Authors</a></li>
@@ -155,6 +156,7 @@ available in a directory of your choice.</p>
        For details see <span class="sectref"><a href="#subsection1">Tcl</a></span>.</p></li>
 <li><p>Various packages from the Tcllib bundle for <b class="syscmd">Tcl</b>.
        For details see <span class="sectref"><a href="#subsection2">Tcllib</a></span>.</p></li>
+<li><p>A working C compiler and development environment.</p></li>
 </ol>
 <p>This list assumes that the machine where Critcl is to be installed is
 essentially clean. Of course, if parts of the dependencies listed
@@ -250,13 +252,37 @@ These will not be repeated here. If there are problems with their
 directions please file a bug against the Tcllib project at the above
 url, and not CriTcl.</p>
 </div>
+<div id="subsection3" class="subsection"><h3><a name="subsection3">C compiler</a></h3>
+<p>To actually build packages based on critcl we need a working C
+compiler.</p>
+<p>How to install such and all the associated header files,
+libraries, etc. is heavily platform- and system-dependent, and thus
+outside of the scope of this document.
+Note that I am willing to extend this section with links of interest
+to tutorials, howtos and references for the various platforms.</p>
+<p>The important pieces of information are this:</p>
+<ol class="enumerated">
+<li><p>The path to the C compiler binary must be found in the
+	environment variable <b class="variable">PATH</b>, for critcl to find it.</p></li>
+<li><p>On Windows(tm) the environment variable <b class="variable">LIB</b> must be
+	present and contain the paths of the directories holding
+	Microsoft's libraries. The standard critcl configuration
+	for this platform searches these paths to fine-tune its
+	settings based on available libraries and compiler version.</p></li>
+</ol>
+<p>Links of interest:</p>
+<dl class="definitions">
+<dt><a href="http://www.tldp.org/HOWTO/HOWTO-INDEX/programming.html">http://www.tldp.org/HOWTO/HOWTO-INDEX/programming.html</a></dt>
+<dd></dd>
+</dl>
+</div>
 </div>
 <div id="section3" class="section"><h2><a name="section3">Build &amp; Installation Instructions</a></h2>
-<div id="subsection3" class="subsection"><h3><a name="subsection3">Build &amp; Installation (Unix)</a></h3>
+<div id="subsection4" class="subsection"><h3><a name="subsection4">Build &amp; Installation (Unix)</a></h3>
 <p>This section describes the actions required to install CriTcl on Unix
 systems (Linux, BSD, and related, including OS X).
 If you have to install CriTcl on a Windows machine see section
-<span class="sectref"><a href="#subsection4">Build &amp; Installation (Windows)</a></span> instead.
+<span class="sectref"><a href="#subsection5">Build &amp; Installation (Windows)</a></span> instead.
 To install Critcl simply run</p>
 <pre class="example">
     /path/to/tclsh /path/to/critcl/build.tcl install
@@ -284,12 +310,12 @@ syntax, invoke  &quot;<b class="file">build.tcl</b>&quot; with argument <b class
     /path/to/tclsh /path/to/critcl/build.tcl help
 </pre>
 </div>
-<div id="subsection4" class="subsection"><h3><a name="subsection4">Build &amp; Installation (Windows)</a></h3>
+<div id="subsection5" class="subsection"><h3><a name="subsection5">Build &amp; Installation (Windows)</a></h3>
 <p>This section describes the actions required to install CriTcl on
 Windows(tm) systems.
 If you have to install CriTcl on a Unix machine (Linux, BSD, and
 related, including OS X) see section
-<span class="sectref"><a href="#subsection3">Build &amp; Installation (Unix)</a></span> instead.
+<span class="sectref"><a href="#subsection4">Build &amp; Installation (Unix)</a></span> instead.
 To install Critcl simply run</p>
 <pre class="example">
     /path/to/tclsh /path/to/critcl/build.tcl install
@@ -323,7 +349,7 @@ syntax, invoke  &quot;<b class="file">build.tcl</b>&quot; with argument <b class
     /path/to/tclsh /path/to/critcl/build.tcl help
 </pre>
 </div>
-<div id="subsection5" class="subsection"><h3><a name="subsection5">First Use, Testing the Installation</a></h3>
+<div id="subsection6" class="subsection"><h3><a name="subsection6">First Use, Testing the Installation</a></h3>
 <p>With critcl installed it is now the time to try at least one of the
 examples distributed with it. This will also test if the installation
 was successful.</p>
