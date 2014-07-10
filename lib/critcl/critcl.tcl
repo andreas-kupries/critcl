@@ -53,13 +53,14 @@ if {[package vsatisfies [package present Tcl] 8.5]} {
 
 # # ## ### ##### ######## ############# #####################
 
-package require critcl::common   ;# General utility commands.
-package require critcl::data     ;# Access to templates and other supporting files.
-package require critcl::uuid     ;# UUID generation.
-package require critcl::typeconv ;# Handling cproc data types.
-package require critcl::who      ;# Management of current file.
-package require critcl::scan     ;# Static Tcl code scanner.
-package require critcl::at       ;# Management of #line pragmas.
+package require critcl::common    ;# General utility commands.
+package require critcl::data      ;# Access to templates and other supporting files.
+package require critcl::uuid      ;# UUID generation.
+package require critcl::usrconfig ;# Management of user options.
+package require critcl::typeconv  ;# Handling cproc data types.
+package require critcl::who       ;# Management of current file.
+package require critcl::scan      ;# Static Tcl code scanner.
+package require critcl::at        ;# Management of #line pragmas.
 # API exported through critcl core
 # ::critcl::at::
 #   caller  - stash caller location, possibly modified (level change, line offset)
@@ -990,101 +991,12 @@ proc ::critcl::userconfig {cmd args} {
     AbortWhenCalledAfterBuild
     InitializeFile $file
 
-    if {![llength [info commands ::critcl::UC$cmd]]} {
+    if {![llength [info commands ::critcl::usrconfig::c_$cmd]]} {
 	return -code error "Unknown method \"$cmd\""
     }
 
     # Dispatch
-    return [eval [linsert $args 0 ::critcl::UC$cmd $file]]
-}
-
-proc ::critcl::UCdefine {file oname odesc otype {odefault {}}} {
-    # When declared without a default determine one of our own. Bool
-    # flag default to true, whereas enum flags, which is the rest,
-    # default to their first value.
-
-    # The actual definition ignores the config description. This
-    # argument is only used by the static code scanner supporting
-    # TEA. See ::critcl::scan::userconfig.
-
-    if {[llength [info level 0]] < 6} {
-	set odefault [UcDefault $otype]
-    }
-
-    # Validate the default against the type too, before saving
-    # everything.
-    UcValidate $oname $otype $odefault
-
-    uuid::add $file .uc-def [list $oname $otype $odefault]
-
-    dict set v::code($file) config userflag $oname type    $otype
-    dict set v::code($file) config userflag $oname default $odefault
-    return
-}
-
-proc ::critcl::UCset {file oname value} {
-    # NOTE: We can set any user flag we choose, even if not declared
-    # yet. Validation of the value happens on query, at which time the
-    # flag must be declared.
-
-    dict set v::code($file) config userflag $oname value $value
-    return
-}
-
-proc ::critcl::UCquery {file oname} {
-    # Prefer cached data. This is known as declared, defaults merged,
-    # validated.
-    if {[dict exists $v::code($file) config userflag $oname =]} {
-	return [dict get $v::code($file) config userflag $oname =]
-    }
-
-    # Reject use of undeclared user flags.
-    if {![dict exists $v::code($file) config userflag $oname type]} {
-	error "Unknown user flag \"$oname\""
-    }
-
-    # Check if a value was supplied by the calling app. If not, fall
-    # back to the declared default.
-
-    if {[dict exists $v::code($file) config userflag $oname value]} {
-	set value [dict get $v::code($file) config userflag $oname value]
-    } else {
-	set value [dict get $v::code($file) config userflag $oname default]
-    }
-
-    # Validate value against the flag's type.
-    set otype [dict get $v::code($file) config userflag $oname type]
-    UcValidate $oname $otype $value
-
-    # Fill cache
-    dict set v::code($file) config userflag $oname = $value
-    return $value
-}
-
-proc ::critcl::UcValidate {oname otype value} {
-    switch -exact -- $otype {
-	bool {
-	    if {![string is bool -strict $value]} {
-		error "Expected boolean for user flag \"$oname\", got \"$value\""
-	    }
-	}
-	default {
-	    if {[lsearch -exact $otype $value] < 0} {
-		error "Expected one of [linsert [join $otype {, }] end-1 or] for user flag \"$oname\", got \"$value\""
-	    }
-	}
-    }
-}
-
-proc ::critcl::UcDefault {otype} {
-    switch -exact -- $otype {
-	bool {
-	    return 1
-	}
-	default {
-	    return [lindex $otype 0]
-	}
-    }
+    return [eval [linsert $args 0 ::critcl::userconfig::c_$cmd $file]]
 }
 
 # # ## ### ##### ######## ############# #####################
@@ -2124,7 +2036,8 @@ proc ::critcl::cbuild {file {load 1}} {
     # Release the data which was collected for the just-built file, as
     # it is not needed any longer.
     dict unset v::code($file) config
-    uuid::clear $file
+    uuid::clear      $file
+    usrconfig::clear $file
 
     return [StatusSave $file]
 }

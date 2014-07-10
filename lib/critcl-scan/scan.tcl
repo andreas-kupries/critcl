@@ -15,10 +15,11 @@
 # # ## ### ##### ######## ############# #####################
 ## Requirements.
 
-package require Tcl 8.4          ;# Minimal supported Tcl runtime.
-package require critcl::common   ;# General shared utility commands.
-package require dict84           ;# Forward-compatible dict command.
-package require lassign84        ;# Forward-compatible lassign command.
+package require Tcl 8.4           ;# Minimal supported Tcl runtime.
+package require critcl::common    ;# General shared utility commands.
+package require critcl::usrconfig ;# Management of user options.
+package require dict84            ;# Forward-compatible dict command.
+package require lassign84         ;# Forward-compatible lassign command.
 
 package provide  critcl::scan 1
 namespace eval ::critcl::scan {}
@@ -183,6 +184,7 @@ namespace eval ::critcl::scan {
     variable saved
 
     namespace import ::critcl::common::*
+    namespace import ::critcl::usrconfig::default ; rename default uc-default
 }
 
 # # ## ### ##### ######## ############# #####################
@@ -520,8 +522,7 @@ proc ::critcl::scan::critcl::userconfig {cmd args} {
 	    lassign $args oname odesc otype odefault
 	    set odesc [string trim $odesc]
 	    if {[llength $args] < 4} {
-		set odefault [::critcl::UcDefault $otype]
-		# XXX back reference into critcl core
+		set odefault [uc-default $otype]
 	    }
 	    dict lappend capture config [list $oname $odesc $otype $odefault]
 	    ::critcl::print "\tUser Config:  $oname ([join $otype { }] -> $odefault) $odesc"

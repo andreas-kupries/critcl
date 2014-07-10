@@ -4,12 +4,9 @@
 
 # Support package for the core Critcl package.
 
-# Contains the management of the "current" critcl file, i.e. the file
-# which is currently processed and accumulating definitions. The
-# exposed API allows the core to tinker with the information, enabling
-# - redirection of definition to a virtual file.
-# - inclusion of files and associating their definition with the includer.
-# - ...
+# Contains the management for template files, Tcl header files, etc.
+# including the data files themselves. The package is the container
+# for these files.
 
 # Originally a part of the critcl package.
 # Factored out to
