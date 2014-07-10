@@ -19,13 +19,17 @@
 # # ## ### ##### ######## ############# #####################
 ## Requirements.
 
-package require Tcl 8.4            ;# Minimal supported Tcl runtime.
+package require Tcl 8.4        ;# Minimal supported Tcl runtime.
+package require critcl::data 1 ;# Access to data files (license).
 
 package provide  critcl::common 1
 namespace eval ::critcl::common {
     namespace export cat write append \
 	text2words text2authors license-text
     catch { namespace ensemble create }
+
+    namespace import ::critcl::data::file
+    rename file datafile
 }
 
 # # ## ### ##### ######## ############# #####################
@@ -75,19 +79,16 @@ proc ::critcl::common::license-text {words} {
 	# Use the supplied license details as our suffix.
 	return [join $words]
     } else {
-	# No details were supplied, fall back to the critcl license as
-	# template for the generated package. This is found in a
-	# sibling of this file.
+	# As no details were supplied we fall back to the critcl
+	# license as template for the license of the generated
+	# package. Note how we strip the first 2 lines from the
+	# file. This removes the author information for critcl itself,
+	# allowing us to replace it by the user-supplied author.
 
-	# XXX back reference into core ... (slice cdata|template package).
-
-	# We strip the first 2 lines from the file, this gets rid of
-	# the author information for critcl itself, allowing us to
-	# replace it by the user-supplied author.
-
-	variable mydir
-	set f [file join $mydir license.terms]
-	return [join [lrange [split [cat $f] \n] 2 end] \n]
+	return [join [lrange [split [cat [datafile license.terms]] \
+				  \n] \
+			  2 end] \
+		    \n]
     }
 }
 

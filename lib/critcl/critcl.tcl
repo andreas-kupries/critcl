@@ -54,6 +54,7 @@ if {[package vsatisfies [package present Tcl] 8.5]} {
 # # ## ### ##### ######## ############# #####################
 
 package require critcl::common   ;# General utility commands.
+package require critcl::data     ;# Access to templates and other supporting files.
 package require critcl::uuid     ;# UUID generation.
 package require critcl::typeconv ;# Handling cproc data types.
 package require critcl::who      ;# Management of current file.
@@ -250,7 +251,7 @@ proc ::critcl::cdata {name data} {
 
     set count [llength $bytes]
 
-    set body [subst [common::cat [Template cdata.c]]]
+    set body [subst [common::cat [data::cfile cdata.c]]]
     #               ^=> count, inittext
 
     # NOTE: The uplevel is needed because otherwise 'ccommand' will
@@ -2780,7 +2781,7 @@ proc ::critcl::CollectEmbeddedSources {file destination libfile ininame placestu
     }
 
     # Boilerplate header.
-    puts $fd [subst [common::cat [Template header.c]]]
+    puts $fd [subst [common::cat [data::cfile header.c]]]
     #         ^=> file, libfile, api
 
     # Make Tk available, if requested
@@ -2804,13 +2805,13 @@ proc ::critcl::CollectEmbeddedSources {file destination libfile ininame placestu
 	# Put full stubs definitions into the code, which can be
 	# either the bracket generated for a -pkg, or the package
 	# itself, build in mode "compile & run".
-	set stubs     [TclDecls     $file]
-	set platstubs [TclPlatDecls $file]
-	puts -nonewline $fd [subst [common::cat [Template stubs.c]]]
+	set stubs     [data::tcl-decls      $mintcl]
+	set platstubs [data::tcl-plat-decls $mintcl]
+	puts -nonewline $fd [subst [common::cat [data::cfile stubs.c]]]
 	#                    ^=> mintcl, stubs, platstubs
     } else {
 	# Declarations only, for linking, in the sub-packages.
-	puts -nonewline $fd [subst [common::cat [Template stubs_e.c]]]
+	puts -nonewline $fd [subst [common::cat [data::cfile stubs_e.c]]]
 	#                    ^=> mintcl
     }
 
@@ -2822,13 +2823,13 @@ proc ::critcl::CollectEmbeddedSources {file destination libfile ininame placestu
     # FOO_Init() function, leaving it incomplete.
 
     set ext [GetParam $file edecls]
-    puts $fd [subst [common::cat [Template pkginit.c]]]
+    puts $fd [subst [common::cat [data::cfile pkginit.c]]]
     #         ^=> ext, ininame
 
     # From here on we are completing FOO_Init().
     # Tk setup first, if requested. (Tcl is already done).
     if {[UsingTk $file]} {
-	puts $fd [common::cat [Template pkginittk.c]]
+	puts $fd [common::cat [data::cfile pkginittk.c]]
     }
 
     # User specified initialization code.
@@ -2856,14 +2857,14 @@ proc ::critcl::CollectEmbeddedSources {file destination libfile ininame placestu
     }
 
     # Complete the trailer and be done.
-    puts  $fd [common::cat [Template pkginitend.c]]
+    puts  $fd [common::cat [data::cfile pkginitend.c]]
     close $fd
     return
 }
 
 proc ::critcl::MinTclVersion {file} {
     set required [GetParam $file mintcl 8.4]
-    foreach version $v::hdrsavailable {
+    foreach version [data::available-tcl] {
 	if {[package vsatisfies $version $required]} {
 	    return $version
 	}
@@ -2875,15 +2876,13 @@ proc ::critcl::UsingTk {file} {
     return [GetParam $file tk 0]
 }
 
-proc ::critcl::TclIncludes {file} {
+proc ::critcl::TclIncludes {tclversion} {
     # Provide access to the Tcl/Tk headers using a -I flag pointing
     # into the critcl package directory hierarchy. No copying of files
     # required. This also handles the case of the X11 headers on
     # windows, for free.
 
-    set hdrs tcl[MinTclVersion $file]
-    set path [file join $v::hdrdir $hdrs]
-
+    set path [data::hdr tcl$tclversion]
     if {[file system $path] ne "native"} {
 	# The critcl package is wrapped. Copy the relevant headers out
 	# to disk (cache) and change the include path appropriately.
@@ -2891,13 +2890,6 @@ proc ::critcl::TclIncludes {file} {
     }
 
     return [list $c::include$path]
-}
-
-proc ::critcl::TclHeader {file {header {}}} {
-    # Provide access to the Tcl/Tk headers in the critcl package
-    # directory hierarchy. No copying of files required.
-    set hdrs tcl[MinTclVersion $file]
-    return [file join $v::hdrdir $hdrs $header]
 }
 
 proc ::critcl::SystemIncludes {file} {
@@ -2988,7 +2980,7 @@ proc ::critcl::Compile {tclfile origin cfile obj} {
 	# See also -x none below.
 	lappend cmdline -x $v::options(language)
     }
-    lappendlist cmdline [TclIncludes $tclfile]
+    lappendlist cmdline [TclIncludes [MinTclVersion $tclfile]]
     lappendlist cmdline [SystemIncludes $tclfile]
 
     if {[dict exists $v::code($tclfile) result apidefines]} {
@@ -3040,7 +3032,7 @@ proc ::critcl::MakePreloadLibrary {file} {
     # possible, or, if we reside in a virtual filesystem, copy it to
     # disk.
 
-    set src [Template preload.c]
+    set src [data::cfile preload.c]
     if {[file system $src] ne "native"} {
 	set src [cache::copy2 $src]
     }
@@ -3252,7 +3244,7 @@ proc ::critcl::ResolveColonSpec {lpath name} {
 }
 
 proc ::critcl::SetupTkStubs {fd} {
-    puts -nonewline $fd [common::cat [Template tkstubs.c]]
+    puts -nonewline $fd [common::cat [data::cfile tkstubs.c]]
     return
 }
 
@@ -3581,11 +3573,6 @@ proc ::critcl::Separator {} {
     return "/* [string repeat - 70] */"
 }
 
-proc ::critcl::Template {file} {
-    variable v::hdrdir
-    return [file join $hdrdir $file]
-}
-
 # # ## ### ##### ######## ############# #####################
 ## Implementation -- Internals - Status Operations, and execution
 ## of external commands.
@@ -3703,84 +3690,15 @@ proc ::critcl::IsGCC {path} {
     return 1
 }
 
-proc ::critcl::Here {} {
-    return [file dirname [who::is]]
-}
-
-proc ::critcl::TclDecls {file} {
-    return [TclDef $file tclDecls.h tclStubsPtr]
-}
-
-proc ::critcl::TclPlatDecls {file} {
-    return [TclDef $file tclPlatDecls.h tclPlatStubsPtr]
-}
-
-proc ::critcl::TclDef {file hdr var} {
-    #puts F|$file
-    set hdr [TclHeader $file $hdr]
-
-    if {![file exists   $hdr]} { error "Header file not found: $hdr" }
-    if {![file isfile   $hdr]} { error "Header not a file: $hdr" }
-    if {![file readable $hdr]} { error "Header not readable: $hdr (no permission)" }
-
-    #puts H|$hdr
-    if {[catch {
-	set hdrcontent [split [common::cat $hdr] \n]
-    } msg]} {
-	error "Header not readable: $hdr ($msg)"
-    }
-
-    # Note, Danger: The code below is able to use declarations which
-    # are commented out in various ways (#if 0, /* ... */, and //
-    # ...), because it is performing a simple line-oriented search
-    # without context, and not matching against comment syntax either.
-
-    set ext [Grep *extern* $hdrcontent]
-    if {![llength $ext]} {
-	error "No extern declarations found in $hdr"
-    }
-
-    set vardecl [Grep *${var}* $ext]
-    if {![llength $vardecl]} {
-	error "No declarations for $var found in $hdr"
-    }
-
-    set def [string map {extern {}} [lindex $vardecl 0]]
-    msg " ($var => $def)"
-    return $def
-}
-
-proc ::critcl::Grep {pattern lines} {
-    set r {}
-    foreach line $lines {
-	if {![string match $pattern $line]} continue
-	lappend r $line
-    }
-    return $r
-}
-
 # # ## ### ##### ######## ############# #####################
 ## Initialization
 
 proc ::critcl::Initialize {} {
-    variable mydir [Here] ; # Path of the critcl package directory.
+    variable mydir [file dirname [file normalize [info script]]]
+    # Path of the critcl package directory.
 
     variable run              [interp create]
     variable v::buildplatform [BuildPlatform]
-    variable v::hdrdir	      [file join $mydir critcl_c]
-    variable v::hdrsavailable
-
-    # Scan the directory holding the C fragments and our copies of the
-    # Tcl header and determine for which versions of Tcl we actually
-    # have headers. This allows distributions to modify the directory,
-    # i.e. drop our copies and refer to the system headers instead, as
-    # much as are installed, and critcl adapts. The tcl versions are
-    # recorded in ascending order, making upcoming searches easier,
-    # the first satisfying version is also always the smallest.
-
-    foreach d [lsort -dict [glob -types {d r} -directory $hdrdir -tails tcl*]] {
-	lappend hdrsavailable [regsub {^tcl} $d {}]
-    }
 
     # The prefix is based on the package's version. This allows
     # multiple versions of the package to use the same cache without
@@ -3860,12 +3778,6 @@ namespace eval ::critcl {
 	# ----------------------------------------------------------------
 
 	variable version ""      ;# String. Min version number on platform
-	variable hdrdir          ;# Path. Directory containing the helper
-				  # files of the package. A sub-
-				  # directory of 'mydir', see above.
-	variable hdrsavailable   ;# List. Of Tcl versions for which we have
-	                          # Tcl header files available. For details
-	                          # see procedure 'Initialize' above.
 	variable prefix          ;# String. The string to start all file names
 				  # generated by the package with. See
 				  # 'Initialize' for our choice and
