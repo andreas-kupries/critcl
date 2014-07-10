@@ -1,0 +1,82 @@
+//	Package	 Notes		Dependencies
+//	=======	 =====		============
+//	at	 #line mgmt	<-- who lassign84
+//	cache	 result cache	<-- common
+//	common	 general utils	<-- data
+//	data	 data file stor	<--
+//	dict84	 Fwd-compat	<--
+//	lassign84 Fwd-compat	<--
+//	scan	 static scanner	<-- common dict84 lassign84 usrconfig	core(meta) core(msg) core(TeapotRequire)
+//	typeconv cproc types	<-- at lassign84
+//	uuid	 code digest	<-- dict84
+//	who	 current file	<--
+//	usrconfig usr options	<-- uuid
+//	=======	 =====		============
+//	
+//	TODO
+//		log
+//		api	(stubs mgmt)
+//		ccode	(collection)
+//		meta
+//		cc_config	(backend cc configs, external cc)
+
+strict digraph {
+	//	Frontend
+	core		[shape="diamond"];
+
+	//	Backend (External CC)
+	cc		[shape="hexagon"];
+
+	//	Stateless functionality.
+	common		[];
+	dict84		[];
+	lassign84	[];
+	//	Only transient state during operation.
+	scan		[];
+
+	//	File container
+	data		[shape="triangle"];
+
+	//	System state (in-memory databases)
+	at		[shape="box"];
+	cache		[shape="box"];
+	typeconv	[shape="box"];
+	uuid		[shape="box"];
+	who		[shape="box"];
+	usrconfig	[shape="box"];
+	meta		[shape="box"];
+	api		[shape="box"];
+	ccode		[shape="box"];
+	log		[shape="box"];
+	cc_config	[shape="box"];
+
+	at		->	typeconv;
+	common		->	cache;
+	common		->	scan;
+	data		->	common;
+	dict84		->	scan;
+	dict84		->	uuid;
+	lassign84	->	at;
+	lassign84	->	scan;
+	lassign84	->	typeconv;
+	usrconfig	->	scan;
+	uuid		->	usrconfig;
+	who		->	at;
+
+	cc_config	->	cc;
+	log		->	cc;
+
+	api		->	core;
+	at		->	core;
+	cache		->	core;
+	cc		->	core;
+	ccode		->	core;
+	common		->	core;
+	data		->	core;
+	meta		->	core;
+	scan		->	core;
+	typeconv	->	core;
+	usrconfig	->	core;
+	uuid		->	core;
+	who		->	core;
+}

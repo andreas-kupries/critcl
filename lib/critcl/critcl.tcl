@@ -54,6 +54,7 @@ if {[package vsatisfies [package present Tcl] 8.5]} {
 # # ## ### ##### ######## ############# #####################
 
 package require critcl::common    ;# General utility commands.
+package require critcl::cache     ;# Result cache access.
 package require critcl::data      ;# Access to templates and other supporting files.
 package require critcl::uuid      ;# UUID generation.
 package require critcl::usrconfig ;# Management of user options.
