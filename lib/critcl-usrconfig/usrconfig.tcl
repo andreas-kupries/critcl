@@ -16,6 +16,7 @@
 ## Requirements.
 
 package require Tcl 8.4            ;# Minimal supported Tcl runtime.
+package require dict84             ;# Forward-compatible dict command.
 package require critcl::uuid       ;# Digesting, change detection.
 
 package provide  critcl::usrconfig 1
