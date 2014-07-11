@@ -6,11 +6,12 @@
 //	data	 data file stor	<--
 //	dict84	 Fwd-compat	<--
 //	lassign84 Fwd-compat	<--
-//	scan	 static scanner	<-- common dict84 lassign84 usrconfig	core(meta) core(msg) core(TeapotRequire)
+//	scan	 static scanner	<-- common dict84 lassign84 usrconfig meta /core(msg) core(TeapotRequire)
 //	typeconv cproc types	<-- at lassign84
 //	uuid	 code digest	<-- dict84
 //	who	 current file	<--
-//	usrconfig usr options	<-- uuid
+//	usrconfig usr options	<-- uuid dict84
+//	meta	 teapot meta	<-- dict84
 //	=======	 =====		============
 //	
 //	TODO
@@ -50,11 +51,16 @@ strict digraph {
 	log		[shape="box"];
 	cc_config	[shape="box"];
 
+	//	Dependencies
+
 	at		->	typeconv;
 	common		->	cache;
+	common		->	meta;
 	common		->	scan;
 	data		->	common;
+	dict84		->	meta;
 	dict84		->	scan;
+	dict84		->	usrconfig;
 	dict84		->	uuid;
 	lassign84	->	at;
 	lassign84	->	scan;
@@ -62,6 +68,7 @@ strict digraph {
 	usrconfig	->	scan;
 	uuid		->	usrconfig;
 	who		->	at;
+	meta		->	scan;
 
 	cc_config	->	cc;
 	log		->	cc;

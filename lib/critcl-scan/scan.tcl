@@ -18,6 +18,7 @@
 package require Tcl 8.4           ;# Minimal supported Tcl runtime.
 package require critcl::common    ;# General shared utility commands.
 package require critcl::usrconfig ;# Management of user options.
+package require critcl::meta      ;# Management of teapot meta data.
 package require dict84            ;# Forward-compatible dict command.
 package require lassign84         ;# Forward-compatible lassign command.
 
@@ -138,18 +139,16 @@ proc ::critcl::scan-dependencies {key file {mode plain}} {
     variable scan::capture
     dict with capture {
 	if {$mode eq "provide"} {
-	    # XXX back reference into critcl core
 	    ::critcl::msg -nonewline " (provide $name $version)"
-	    ::critcl::ImetaSet $key name     $name
-	    ::critcl::ImetaSet $key version  $version
+	    meta-assign $key name     $name
+	    meta-assign $key version  $version
 	}
 
 	dict for {k vlist} [dict get $capture meta-system] {
 	    if {$k eq "name"}    continue
 	    if {$k eq "version"} continue
 
-	    # XXX back reference into critcl core
-	    ::critcl::ImetaAdd $key $k $vlist
+	    meta-extend $key $k $vlist
 
 	    if {$k ne "require"} continue
 	    ::critcl::msg -nonewline " ($k [join $vlist {}])"
@@ -185,6 +184,8 @@ namespace eval ::critcl::scan {
 
     namespace import ::critcl::common::*
     namespace import ::critcl::usrconfig::default ; rename default uc-default
+    namespace import ::critcl::meta::assign ;       rename assign  meta-assign
+    namespace import ::critcl::meta::extend ;       rename assign  meta-extend
 }
 
 # # ## ### ##### ######## ############# #####################
@@ -470,7 +471,7 @@ proc ::critcl::scan::package {cmd args} {
 		 [list critcl [::package present critcl]] \
 		 $::tcl_platform(user)]
 	dict set capture meta-system generated::date \
-	    [list [clock format [clock seconds] -format {%Y-%m-%d}]]
+	    [list [today]]
 	return
     }
 

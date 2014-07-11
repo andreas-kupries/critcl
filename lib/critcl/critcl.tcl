@@ -57,6 +57,7 @@ package require critcl::common    ;# General utility commands.
 package require critcl::cache     ;# Result cache access.
 package require critcl::data      ;# Access to templates and other supporting files.
 package require critcl::uuid      ;# UUID generation.
+package require critcl::meta      ;# Management of teapot meta data
 package require critcl::usrconfig ;# Management of user options.
 package require critcl::typeconv  ;# Handling cproc data types.
 package require critcl::who       ;# Management of current file.
@@ -816,7 +817,7 @@ proc ::critcl::tcl {version} {
     # require' is not needed. This can be inside of the generated and
     # loaded C code.
 
-    ImetaAdd $file require [list [list Tcl $version]]
+    meta::require $file [list Tcl $version]
     return
 }
 
@@ -831,7 +832,7 @@ proc ::critcl::tk {} {
     # require' is not needed. This can be inside of the generated and
     # loaded C code.
 
-    ImetaAdd $file require Tk
+    meta::require $file Tk
     return
 }
 
@@ -855,24 +856,12 @@ proc ::critcl::license {who args} {
     set file [SkipIgnored [who::is]]
     AbortWhenCalledAfterBuild
 
-    set who [string trim $who]
-    if {$who ne ""} {
-	set license "This software is copyrighted by $who.\n"
-    } else {
-	set license ""
-    }
-
-    set elicense [common::license-text $args]
-
-    append license $elicense
-
     # This, 'tsources', 'meta?', and 'meta' are the only places where
     # we are not extending the UUID. Because the license text has no
     # bearing on the binary at all.
     InitializeFile $file
 
-    ImetaSet $file license [common::text2words   $elicense]
-    ImetaSet $file author  [common::text2authors $who]
+    eval [linsert $args 0 meta::license $file $who]
     return
 }
 
@@ -884,7 +873,7 @@ proc ::critcl::description {text} {
     AbortWhenCalledAfterBuild
     InitializeFile $file
 
-    ImetaSet $file description [common::text2words $text]
+    meta::description $file $text
     return
 }
 
@@ -893,7 +882,7 @@ proc ::critcl::summary {text} {
     AbortWhenCalledAfterBuild
     InitializeFile $file
 
-    ImetaSet $file summary [common::text2words $text]
+    meta::summary $file $text
     return
 }
 
@@ -902,86 +891,31 @@ proc ::critcl::subject {args} {
     AbortWhenCalledAfterBuild
     InitializeFile $file
 
-    ImetaAdd $file subject $args
+    eval [linsert $args 0 meta::subject $file]
     return
 }
 
 proc ::critcl::meta {key args} {
     set file [SkipIgnored [who::is]]
     AbortWhenCalledAfterBuild
-
     # This, 'meta?', 'license', and 'tsources' are the only places
     # where we are not extending the UUID. Because the meta data has
     # no bearing on the binary at all.
     InitializeFile $file
 
-    dict update v::code($file) config c {
-	dict update c meta m {
-	    foreach v $args { dict lappend m $key $v }
-	}
-    }
+    eval [linsert $args 0 meta::general $file $key]
     return
 }
 
 proc ::critcl::meta? {key} {
     set file [SkipIgnored [who::is]]
     AbortWhenCalledAfterBuild
-
     # This, 'meta', 'license', and 'tsources' are the only places
     # where we are not extending the UUID. Because the meta data has
     # no bearing on the binary at all.
     InitializeFile $file
 
-    if {[dict exists $v::code($file) config package $key]} {
-	return [dict get $v::code($file) config package $key]
-    }
-    if {[dict exists $v::code($file) config meta $key]} {
-	return [dict get $v::code($file) config meta $key]
-    }
-    return -code error "Unknown meta data key \"$key\""
-}
-
-proc ::critcl::ImetaSet {file key words} {
-    dict set v::code($file) config package $key $words
-    #puts |||$key|%|[dict get $v::code($file) config package $key]|
-    return
-}
-
-proc ::critcl::ImetaAdd {file key words} {
-    dict update v::code($file) config c {
-	dict update c package p {
-	    foreach word $words {
-		dict lappend p $key $word
-	    }
-	}
-    }
-    #puts |||$key|+|[dict get $v::code($file) config package $key]|
-    return
-}
-
-proc ::critcl::GetMeta {file} {
-    if {![dict exists $v::code($file) config meta]} {
-	set result {}
-    } else {
-	set result [dict get $v::code($file) config meta]
-    }
-
-    # Merge the package information (= system meta data) with the
-    # user's meta data. The system information overrides anything the
-    # user may have declared for the reserved keys (name, version,
-    # platform, as::author, as::build::date, license, description,
-    # summary, require). Note that for the internal bracketing code
-    # the system information may not exist, hence the catch. Might be
-    # better to indicate the bracket somehow and make it properly
-    # conditional.
-
-    #puts %$file
-
-    catch {
-	set result [dict merge $result [dict get $v::code($file) config package]]
-    }
-
-    return $result
+    return [meta::get $file $key]
 }
 
 # # ## ### ##### ######## ############# #####################
@@ -1035,7 +969,7 @@ proc ::critcl::APIimport {file name version} {
 	package require $name $version
     }
 
-    ImetaAdd $file require [list [list $name $version]]
+    meta::require $file [list $name $version]
 
     # Now we check that the relevant headers of the imported package
     # can be found in the specified search paths.
@@ -1193,8 +1127,8 @@ proc ::critcl::API_setup_export {file} {
 	# API name was declared explicitly
 	set ename [dict get $v::code($file) config api_self]
     } else {
-	# API name is implicitly defined, is package name.
-	set ename [dict get $v::code($file) config package name]
+	# API name is implicitly defined, as the package name.
+	set ename [meta::gets $file name]
     }
 
     set prefix ""
@@ -1282,8 +1216,8 @@ proc ::critcl::API_setup_export {file} {
     set    sinitstatic "  $comment\n  "
     append sinitstatic [stubs::gen::init::gen $T]
 
-    set pn [dict get $v::code($file) config package name]
-    set pv [dict get $v::code($file) config package version]
+    set pn [meta::gets $file name]
+    set pv [meta::gets $file version]
 
     set    sinitrun $comment\n
     append sinitrun "Tcl_PkgProvideEx (ip, \"$pn\", \"$pv\", (ClientData) &${cname}Stubs);"
@@ -2012,7 +1946,7 @@ proc ::critcl::cbuild {file {load 1}} {
 	dict set v::code($file) result preload    [GetParam $file preload]
 	dict set v::code($file) result license    [GetParam $file license <<Undefined>>]
 	dict set v::code($file) result log        {}
-	dict set v::code($file) result meta       [GetMeta $file]
+	dict set v::code($file) result meta       [meta::getall $file]
 
 	# Link and load steps.
         if {$load || !$buildforpackage} {
@@ -2463,15 +2397,11 @@ proc ::critcl::InitializeFile {file} {
     if {![info exists v::code($file)]} {
 	set      v::code($file) {}
 
-	# Initialize the meta data sections (user (meta) and system
-	# (package)).
+	# Initialize the system meta data.
+	# User meta data auto-initializes on write.
 
-	dict set v::code($file) config meta    {}
-
-	dict set v::code($file) config package platform \
-	    [TeapotPlatform]
-	dict set v::code($file) config package build::date \
-	    [list [clock format [clock seconds] -format {%Y-%m-%d}]]
+	meta::assign $file platform    [list [TeapotPlatform]]
+	meta::assign $file build::date [list [common::today]]
 
 	# May not exist, bracket code.
 	if {![file exists $file]} return
@@ -3400,8 +3330,7 @@ proc ::critcl::DetermineInitName {file prefix} {
     dict set v::code($file) result initname $ininame
 
     catch {
-	dict set v::code($file) result pkgname \
-	    [dict get $v::code($file) config package name]
+	dict set v::code($file) result pkgname [meta::gets $file name]
     }
 
     return $ininame
