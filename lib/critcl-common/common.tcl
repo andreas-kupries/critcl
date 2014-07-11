@@ -25,7 +25,8 @@ package require critcl::data 1 ;# Access to data files (license).
 package provide  critcl::common 1
 namespace eval ::critcl::common {
     namespace export cat write append \
-	text2words text2authors license-text
+	text2words text2authors license-text \
+	today
     catch { namespace ensemble create }
 
     namespace import ::critcl::data::file
@@ -90,6 +91,10 @@ proc ::critcl::common::license-text {words} {
 			  2 end] \
 		    \n]
     }
+}
+
+proc ::critcl::common::today {} {
+    return [clock format [clock seconds] -format {%Y-%m-%d}]
 }
 
 # # ## ### ##### ######## ############# #####################
