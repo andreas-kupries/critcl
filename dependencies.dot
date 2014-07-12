@@ -12,6 +12,7 @@
 //	who	 current file	<--
 //	usrconfig usr options	<-- uuid dict84
 //	meta	 teapot meta	<-- dict84
+//	tags	 indicator mgmt	<--
 //	=======	 =====		============
 //	
 //	TODO
@@ -39,17 +40,18 @@ strict digraph {
 	data		[shape="triangle"];
 
 	//	System state (in-memory databases)
+	api		[shape="box"];
 	at		[shape="box"];
 	cache		[shape="box"];
-	typeconv	[shape="box"];
-	uuid		[shape="box"];
-	who		[shape="box"];
-	usrconfig	[shape="box"];
-	meta		[shape="box"];
-	api		[shape="box"];
+	cc_config	[shape="box"];
 	ccode		[shape="box"];
 	log		[shape="box"];
-	cc_config	[shape="box"];
+	meta		[shape="box"];
+	tags		[shape="box"];
+	typeconv	[shape="box"];
+	usrconfig	[shape="box"];
+	uuid		[shape="box"];
+	who		[shape="box"];
 
 	//	Dependencies
 
@@ -62,6 +64,7 @@ strict digraph {
 	dict84		->	scan;
 	dict84		->	usrconfig;
 	dict84		->	uuid;
+	dict84		->	tags;
 	lassign84	->	at;
 	lassign84	->	scan;
 	lassign84	->	typeconv;
@@ -82,6 +85,7 @@ strict digraph {
 	data		->	core;
 	meta		->	core;
 	scan		->	core;
+	tags		->	core;
 	typeconv	->	core;
 	usrconfig	->	core;
 	uuid		->	core;

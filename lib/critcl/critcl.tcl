@@ -53,15 +53,6 @@ if {[package vsatisfies [package present Tcl] 8.5]} {
 
 # # ## ### ##### ######## ############# #####################
 
-package require critcl::common    ;# General utility commands.
-package require critcl::cache     ;# Result cache access.
-package require critcl::data      ;# Access to templates and other supporting files.
-package require critcl::uuid      ;# UUID generation.
-package require critcl::meta      ;# Management of teapot meta data
-package require critcl::usrconfig ;# Management of user options.
-package require critcl::typeconv  ;# Handling cproc data types.
-package require critcl::who       ;# Management of current file.
-package require critcl::scan      ;# Static Tcl code scanner.
 package require critcl::at        ;# Management of #line pragmas.
 # API exported through critcl core
 # ::critcl::at::
@@ -72,14 +63,26 @@ package require critcl::at        ;# Management of #line pragmas.
 #   incr*   - modify stashed location (only line number, not file).
 #   get     - format, return, and clear stash
 #   get*    - format & return stash
+package require critcl::cache     ;# Result cache access.
+package require critcl::common    ;# General utility commands.
+package require critcl::data      ;# Access to templates and other supporting files.
+package require critcl::meta      ;# Management of teapot meta data
+package require critcl::scan      ;# Static Tcl code scanner.
+package require critcl::tags      ;# Management of indicator flags.
+package require critcl::typeconv  ;# Handling cproc data types.
+package require critcl::usrconfig ;# Management of user options.
+package require critcl::uuid      ;# UUID generation.
+package require critcl::who       ;# Management of current file.
 
-# Define a few shims for public critcl APIs which are now served by
-# the utility packages.
+# # ## ### ##### ######## ############# #####################
+## Define a few shims for public critcl APIs which are now served by
+## the utility packages.
 
 interp alias {} ::critcl::clean_cache    {} ::critcl::cache::clear
 interp alias {} ::critcl::argtype        {} ::critcl::typeconv::arg-def
 interp alias {} ::critcl::argtypesupport {} ::critcl::typeconv::arg-set-support
 interp alias {} ::critcl::resulttype     {} ::critcl::typeconv::result-def
+interp alias {} ::critcl::fastuuid       {} ::critcl::uuid::fast
 
 proc ::critcl::cache {{dir {}}} {
     if {[llength [info level 0]] == 2} {
@@ -1350,19 +1353,28 @@ proc ::critcl::print {args} {
 }
 
 # # ## ### ##### ######## ############# #####################
-## Runtime support to handle the possibility of a prebuilt package using
-## the .tcl file with embedded C as its own companon defining regular
-## Tcl code for the package as well. If the critcl package is loaded
-## already this will cause it to ignore the C definitions, with best
-## guesses for failed, done, load, check, compiled, and compiling.
+## Runtime support for a special situation.
+
+## A .critcl file is allowed to use itself as a Tcl companion file
+## (See "tsources"). This means that the .critcl is plainly "source"d
+## when the package is loaded after building (whether in "Load" (for
+## compile&run), or by the ifneeded script when the package is
+## prebuilt). At that time we are not allowed to process the critcl
+## commands again. We must ignore them. For some commands we have
+## generate best-effort guesses as to their return values ("failed",
+## "done", "load", "check(link)", "compiled", and "compiling").
+#
+## The two commands below handle this, one to set the ignore indicator
+## for a file, the other test for it. This latter is used by all the
+## relevant API commands.
 
 proc ::critcl::Ignore {f} {
-    set v::ignore([file normalize $f]) .
+    tags::set [file normalize $f] ignore
     return
 }
 
 proc ::critcl::SkipIgnored {f {result {}}} {
-    if {[info exists v::ignore($f)]} { return -code return $result }
+    if {[tags::has $f ignore]} { return -code return $result }
     return $f
 }
 
@@ -3238,9 +3250,13 @@ proc ::critcl::Load {f} {
     #package require Tcl $minv
     ::load $shlib $init
 
-    # See the critcl application for equivalent code placing the
-    # companion tcl sources into the generated package. Here, for
-    # 'compile & run' we now source the companion files directly.
+    # With the binary part loaded it is now time to load the Tcl
+    # companion files. Note the use of "Ignore" to prevent issues if a
+    # .critcl file specified itself as a Tcl companion, i.e. disabling
+    # the processing of critcl directives. The "critcl" application
+    # will place equivalent code into the "ifneeded" script of the
+    # packages it generates.
+
     foreach t $tsrc {
 	Ignore $t
 	source $t
