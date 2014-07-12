@@ -1307,9 +1307,7 @@ proc ::critcl::compiling {} {
     AbortWhenCalledAfterBuild
     # Check that we can indeed run a compiler
     # Should only need to do this if we have to compile the code?
-
-    set v::compiling [HasCompiler]
-    return $v::compiling
+    return [HasCompiler]
 }
 
 proc ::critcl::done {} {
@@ -3795,11 +3793,6 @@ namespace eval ::critcl {
 	variable curr	         ;# Hash of the last BeginCommand.
 	variable block           ;# C code assembled by Emit* calls
 				  # between Begin- and EndCommand.
-
-	# _____________________________________________________________________
-
-	variable compiling 0     ;# Boolean. Indicates that a C compiler
-				  # (gcc, native, cl) is available.
 
 	# _____________________________________________________________________
 	# config variables
