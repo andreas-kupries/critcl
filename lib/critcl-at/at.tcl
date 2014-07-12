@@ -201,6 +201,8 @@ namespace eval ::critcl::at {
 ## Internal support commands
 
 proc ::critcl::at::Where {leadoffset level file} {
+    # XXX argument 'file' is not used, superfluous!
+    # XXX test this, may allow removal of the dependency
     variable where
     variable source
 
