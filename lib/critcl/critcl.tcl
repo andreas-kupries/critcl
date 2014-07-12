@@ -1888,11 +1888,6 @@ proc ::critcl::buildforpackage {{buildforpackage 1}} {
     return
 }
 
-proc ::critcl::fastuuid {} {
-    set v::uuidcounter 1 ;# Activates it.
-    return
-}
-
 proc ::critcl::cbuild {file {load 1}} {
     if {[info exists v::code($file,failed)] && !$load} {
 	set v::buildforpackage 0
@@ -3788,9 +3783,6 @@ namespace eval ::critcl {
 				  # "Log*" and "ExecWithLogging".
 	variable failed  0       ;# Build status. Used by "Status*"
 	variable err     ""	 ;# and "Exec*". Build error text.
-
-	variable uuidcounter 0   ;# Counter for uuid generation in package mode.
-	                         ;# md5 is bypassed when used.
 
 	variable buildforpackage 0 ;# Boolean flag controlling
 				    # cbuild's behaviour. Named after
