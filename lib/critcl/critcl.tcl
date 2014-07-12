@@ -1885,9 +1885,10 @@ proc ::critcl::buildforpackage {{buildforpackage 1}} {
 }
 
 proc ::critcl::cbuild {file {load 1}} {
-    if {[info exists v::code($file,failed)] && !$load} {
+    # Fast path for known result.
+    if {[tags::has $file cbuild] && !$load} {
 	set v::buildforpackage 0
-	return $v::code($file,failed)
+	return [tags::has $file failed]
     }
 
     StatusReset
@@ -1977,7 +1978,11 @@ proc ::critcl::cbuild {file {load 1}} {
     uuid::clear      $file
     usrconfig::clear $file
 
-    return [StatusSave $file]
+    # Save final status
+    tags::set $file cbuild
+    if {$v::failed} { tags::set $file failed }
+    StatusReset
+    return [tags::has $file failed]
 }
 
 proc ::critcl::cresults {{file {}}} {
@@ -3435,14 +3440,6 @@ proc ::critcl::StatusReset {} {
 proc ::critcl::StatusAbort? {} {
     if {$v::failed} { return -code return }
     return
-}
-
-proc ::critcl::StatusSave {file} {
-    # XXX FUTURE Use '$(file) result failed' later
-    set result $v::failed
-    set v::code($file,failed) $v::failed
-    set v::failed 0
-    return $result
 }
 
 proc ::critcl::CheckForWarnings {text} {
