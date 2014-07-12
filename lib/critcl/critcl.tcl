@@ -1313,9 +1313,7 @@ proc ::critcl::compiling {} {
 }
 
 proc ::critcl::done {} {
-    set file [SkipIgnored [who::is] 1]
-    return [expr {[info exists  v::code($file)] &&
-		  [dict exists $v::code($file) result closed]}]
+    return [tags::has [SkipIgnored [who::is] 1] done]
 }
 
 proc ::critcl::failed {} {
@@ -1928,7 +1926,7 @@ proc ::critcl::cbuild {file {load 1}} {
 	CollectEmbeddedSources $file $base.c $object $initname $placestubs
 
 	# Set the marker for critcl::done and its user, AbortWhenCalledAfterBuild.
-	dict set v::code($file) result closed mark
+	tags::set $file done
 
 	# Compile main file
         lappend objects [Compile $file $file $base.c $object]
