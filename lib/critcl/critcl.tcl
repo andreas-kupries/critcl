@@ -32,27 +32,6 @@ namespace eval ::critcl {}
 
 # # ## ### ##### ######## ############# #####################
 
-if {[package vsatisfies [package present Tcl] 8.5]} {
-    # 8.5+
-    proc ::critcl::lappendlist {lvar list} {
-	if {![llength $list]} return
-	upvar $lvar dest
-	lappend dest {*}$list
-	return
-    }
-} else {
-    # 8.4
-    proc ::critcl::lappendlist {lvar list} {
-	if {![llength $list]} return
-	upvar $lvar dest
-	set dest [eval [linsert $list 0 linsert $dest end]]
-	#set dest [concat $dest $list]
-	return
-    }
-}
-
-# # ## ### ##### ######## ############# #####################
-
 package require critcl::at        ;# Management of #line pragmas.
 # API exported through critcl core
 # ::critcl::at::
@@ -83,6 +62,7 @@ interp alias {} ::critcl::argtype        {} ::critcl::typeconv::arg-def
 interp alias {} ::critcl::argtypesupport {} ::critcl::typeconv::arg-set-support
 interp alias {} ::critcl::resulttype     {} ::critcl::typeconv::result-def
 interp alias {} ::critcl::fastuuid       {} ::critcl::uuid::fast
+interp alias {} ::critcl::lappendlist    {} ::critcl::common::lappendlist
 
 proc ::critcl::cache {{dir {}}} {
     if {[llength [info level 0]] == 2} {

@@ -97,6 +97,25 @@ proc ::critcl::common::today {} {
     return [clock format [clock seconds] -format {%Y-%m-%d}]
 }
 
+if {[package vsatisfies [package present Tcl] 8.5]} {
+    # 8.5+
+    proc ::critcl::common::lappendlist {lvar list} {
+	if {![llength $list]} return
+	upvar $lvar dest
+	lappend dest {*}$list
+	return
+    }
+} else {
+    # 8.4
+    proc ::critcl::common::lappendlist {lvar list} {
+	if {![llength $list]} return
+	upvar $lvar dest
+	set dest [eval [linsert $list 0 linsert $dest end]]
+	#set dest [concat $dest $list]
+	return
+    }
+}
+
 # # ## ### ##### ######## ############# #####################
 ## Internal state
 
