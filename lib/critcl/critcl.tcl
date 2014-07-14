@@ -1065,19 +1065,20 @@ proc ::critcl::API_at {dir name} {
     return 1
 }
 
-proc ::critcl::API_setup {file} {
+proc ::critcl::API_setup {rv file} {
+    upvar 1 $rv result
+
     package require stubs::gen
 
     lassign [API_setup_import $file] iprefix idefines
-    dict set v::code($file) result apidefines $idefines
+    dict set result apidefines $idefines
 
     append prefix $iprefix
-    append prefix [API_setup_export $file]
+    append prefix [API_setup_export result $file]
 
     # Save prefix to result dictionary for pickup by Compile.
     if {$prefix eq ""} return
-
-    dict set v::code($file) result apiprefix  $prefix\n
+    dict set result apiprefix  $prefix\n
     return
 }
 
@@ -1121,7 +1122,9 @@ proc ::critcl::API_setup_import {file} {
     return [list $prefix $defines]
 }
 
-proc ::critcl::API_setup_export {file} {
+proc ::critcl::API_setup_export {rv file} {
+    upvar 1 $rv result
+
     if {![dict exists $v::code($file) config api_hdrs] &&
 	![dict exists $v::code($file) config api_ehdrs] &&
 	![dict exists $v::code($file) config api_fun]} return
@@ -1233,9 +1236,7 @@ proc ::critcl::API_setup_export {file} {
     cache::write $cname/${cname}StubLib.h $slib
     cache::write $cname/${cname}.decls    $thedecls
 
-    dict update v::code($file) result r {
-	dict lappend r apiheader [cache::get $cname]
-    }
+    dict lappend result apiheader [cache::get $cname]
 
     cinit $sinitrun $sinitstatic
     cflags -DBUILD_$cname
@@ -1891,109 +1892,159 @@ proc ::critcl::cbuild {file {load 1}} {
 	return [tags::get $file failed]
     }
 
-    StatusReset
-
-    # Determine if we should place stubs code into the generated file.
-    set placestubs [expr {!$v::buildforpackage}]
+    if {$file eq ""} {
+	set file [who::is]
+    }
 
     # Determine the requested mode and reset for next call.
     set buildforpackage $v::buildforpackage
     set v::buildforpackage 0
 
-    if {$file eq ""} {
-	set file [who::is]
-    }
+    ## before this line - frontend operation
+    # # ## ### ##### ######## #############
+    ## after this line - backend execution
+    ## arguments from frontend
+    ## - file
+    ## - buildforpackage
+    ## - load
+
+    StatusReset
+
+    # Determine if we should place stubs code into the generated file.
+    set placestubs [expr {!$buildforpackage}]
 
     # NOTE: The 4 pieces of data just below has to be copied into the
     # result even if the build and link-steps are suppressed. Because
     # the load-step must have this information.
 
-    set shlib    [DetermineShlibName $file]
+    set base     [BaseOf             $file]
+    set shlib    [DetermineShlibName $base]
     set initname [DetermineInitName  $file [expr {$buildforpackage ? "ns" : ""}]]
+    set tsources [GetParam $file tsources]
+    set mintcl   [MinTclVersion $file]
 
-    dict set v::code($file) result tsources   [GetParam $file tsources]
-    dict set v::code($file) result mintcl     [MinTclVersion $file]
+    # The result dictionary is local information.
+
+    dict set result base       $base
+    dict set result shlib      $shlib
+    dict set result initname   $initname
+    dict set result tsources   $tsources
+    dict set result mintcl     $mintcl
+
+    catch {
+	dict set result pkgname [meta::gets $file name]
+    }
 
     if {$v::options(force) || ![file exists $shlib]} {
 	LogOpen $file
-	set base   [BaseOf              $file]
-	set object [DetermineObjectName $file]
+	set object [DetermineObjectName $base $file]
 
-	API_setup $file
+	dict set result object $object
+
+	# XXX This may run cinit and cflags to provide stubs api
+	# XXX header information. I.e. it influences the collected C.
+	# XXX As such it should possibly move to the head, keeping it
+	# XXX as part of the frontend. Except it already saves data
+	# XXX backend is using for itself.
+	##
+	# XXX FIXME TODO API_setup disentangle these intermingled functions and
+	# XXX FIXME TODO API_setup responsibilities.
+
+	API_setup result $file
+
+	if {[dict exists $result apiprefix]} {
+	    set api [dict get $result apiprefix]
+	} else {
+	    set api ""
+	}
 
 	# Generate the main C file
-	CollectEmbeddedSources $file $base.c $object $initname $placestubs
+	CollectEmbeddedSources $file $api $base.c $object $initname $placestubs
 
 	# Set the marker for critcl::done and its user, AbortWhenCalledAfterBuild.
 	tags::set $file done
 
 	# Compile main file
-        lappend objects [Compile $file $file $base.c $object]
+        lappend objects [Compile result $file $file $base.c $object]
 
 	# Compile the companion C sources as well, if there are any.
         foreach src [GetParam $file csources] {
-	    lappend objects [Compile $file $src $src \
-				 [CompanionObject $src]]
+	    lappend objects [Compile result $file $src $src [CompanionObject $src]]
 	}
 
-	# NOTE: The data below has to be copied into the result even
-	# if the link-step is suppressed. Because the application
-	# (mode 'generate package') must have this information to be
-	# able to perform the final link.
+	# NOTE: The information below has to be copied into the result
+	# even if the link-step is suppressed. Because the application
+	# (mode 'generate package') must know all this to be able to
+	# perform the final link.
 
 	lappendlist objects [GetParam $file cobjects]
 
-	dict set v::code($file) result clibraries [GetParam $file clibraries]
-	dict set v::code($file) result ldflags    [GetParam $file ldflags]
-	dict set v::code($file) result objects    $objects
-	dict set v::code($file) result tk         [UsingTk  $file]
-	dict set v::code($file) result preload    [GetParam $file preload]
-	dict set v::code($file) result license    [GetParam $file license <<Undefined>>]
-	dict set v::code($file) result log        {}
-	dict set v::code($file) result meta       [meta::getall $file]
+	set ldflags [GetParam $file ldflags]
+	set preload [GetParam $file preload]
+
+	dict set result clibraries [GetParam $file clibraries]
+	dict set result ldflags    $ldflags
+	dict set result objects    $objects
+	dict set result tk         [UsingTk  $file]
+	dict set result preload    $preload
+	dict set result license    [GetParam $file license <<Undefined>>]
+	dict set result log        {}
+	dict set result meta       [meta::getall $file]
 
 	# Link and load steps.
         if {$load || !$buildforpackage} {
-	    Link $file
+	    Link result $file $shlib $preload $ldflags
 	}
 
 	set msgs [LogClose]
 
-	dict set v::code($file) result warnings [CheckForWarnings $msgs]
+	dict set result warnings [CheckForWarnings $msgs]
     }
 
     if {$v::failed} {
 	if {!$buildforpackage} {
 	    print stderr "$msgs\ncritcl build failed ($file)"
 	} else {
-	    dict set v::code($file) result log $msgs
+	    dict set result log $msgs
 	}
     } elseif {$load && !$buildforpackage} {
-	Load $file
+	Load $shlib $initname $tsources
     }
+
+    # Store collected results for pickup through "cresults".
+    tags::set $file result $result
+
+    # Save final status
+    tags::set $file failed $v::failed
+    StatusReset
+
+    ## before this line - backend execution
+    # # ## ### ##### ######## #############
+    ## after this line - frontend operation
 
     # Release the data which was collected for the just-built file, as
     # it is not needed any longer.
     dict unset v::code($file) config
     uuid::clear      $file
     usrconfig::clear $file
+    # api::clear $file FIXME TODO
+    # replacement for v::code($file) FIXME TODO
 
-    # Save final status
-    tags::set $file failed $v::failed
-    StatusReset
     return [tags::get $file failed]
 }
 
 proc ::critcl::cresults {{file {}}} {
     if {$file eq ""} { set file [who::is] }
-    return [dict get $v::code($file) result]
+    return [tags::get $file result]
 }
 
 proc ::critcl::cnothingtodo {f} {
     # No critcl definitions at all ?
-    if {![info exists  v::code($f)]} { return 1 }
-
     # We have results already, so where had been something to do.
+
+    if {![tags::has $f def]} { return 1 }
+
+    if {![info exists  v::code($f)]} { return 1 }
     if {[dict exists $v::code($f) result]} { return 0 }
 
     # No C code collected for compilation ?
@@ -2342,6 +2393,7 @@ proc ::critcl::SetParam {type values {expand 1} {uuid 0}} {
 
     set file [who::is]
     if {![llength $values]} return
+    InitializeFile $file
 
     uuid::add $file .$type $values
 
@@ -2401,8 +2453,18 @@ proc ::critcl::Expand {file pattern} {
 }
 
 proc ::critcl::InitializeFile {file} {
+    # XXX FIXME TODO remove 'v::code($file)' entirely
     if {![info exists v::code($file)]} {
-	set      v::code($file) {}
+	set v::code($file) {}
+    }
+
+    # XXX FIXME TODO remove 'v::code($file) config' entirely
+    if {![dict exists $v::code($file) config]} {
+	dict set v::code($file) config {}
+    }
+
+    if {![tags::has $file def]} {
+	tags::set $file def
 
 	# Initialize the system meta data.
 	# User meta data auto-initializes on write.
@@ -2415,10 +2477,6 @@ proc ::critcl::InitializeFile {file} {
 
 	scan-dependencies $file $file provide
 	return
-    }
-
-    if {![dict exists $v::code($file) config]} {
-	dict set v::code($file) config {}
     }
     return
 }
@@ -2622,14 +2680,10 @@ proc ::critcl::CompileLinkDirect {file label code} {
 # # ## ### ##### ######## ############# #####################
 ## Backend Processing, Collected Sources
 
-proc ::critcl::CollectEmbeddedSources {file destination libfile ininame placestubs} {
-    set fd [open $destination w]
+proc ::critcl::CollectEmbeddedSources {file api destination libfile ininame placestubs} {
+    # Start assembly.
 
-    if {[dict exists $v::code($file) result apiprefix]} {
-	set api [dict get $v::code($file) result apiprefix]
-    } else {
-	set api ""
-    }
+    set fd [open $destination w]
 
     # Boilerplate header.
     puts $fd [subst [common::cat [data::cfile header.c]]]
@@ -2647,7 +2701,6 @@ proc ::critcl::CollectEmbeddedSources {file destination libfile ininame placestu
     }
 
     # Boilerplate trailer.
-
     # Stubs setup, Tcl, and, if requested, Tk as well.
     puts $fd [Separator]
     set mintcl [MinTclVersion $file]
@@ -2806,7 +2859,9 @@ proc ::critcl::SystemLibraryPaths {} {
     return $paths
 }
 
-proc ::critcl::Compile {tclfile origin cfile obj} {
+proc ::critcl::Compile {rv tclfile origin cfile obj} {
+    upvar 1 $rv result
+
     StatusAbort?
 
     # tclfile = The .tcl file under whose auspices the C is compiled.
@@ -2834,8 +2889,8 @@ proc ::critcl::Compile {tclfile origin cfile obj} {
     lappendlist cmdline [TclIncludes [MinTclVersion $tclfile]]
     lappendlist cmdline [SystemIncludes $tclfile]
 
-    if {[dict exists $v::code($tclfile) result apidefines]} {
-	lappendlist cmdline [dict get $v::code($tclfile) result apidefines]
+    if {[dict exists $result apidefines]} {
+	lappendlist cmdline [dict get $result apidefines]
     }
 
     lappendlist cmdline [CompileResult $obj]
@@ -2870,7 +2925,9 @@ proc ::critcl::Compile {tclfile origin cfile obj} {
     return $obj
 }
 
-proc ::critcl::MakePreloadLibrary {file} {
+proc ::critcl::MakePreloadLibrary {rv file} {
+    upvar 1 $rv result
+
     StatusAbort?
 
     # compile and link the preload support, if necessary, i.e. not yet
@@ -2891,7 +2948,7 @@ proc ::critcl::MakePreloadLibrary {file} {
     # Build the object for the helper package, 'preload' ...
 
     set obj [cache::get preload.o]
-    Compile $file $src $src $obj
+    Compile result $file $src $src $obj
 
     # ... and link it.
     # Custom linker command. XXX Can we bent Link to the task?
@@ -2909,11 +2966,10 @@ proc ::critcl::MakePreloadLibrary {file} {
     return
 }
 
-proc ::critcl::Link {file} {
-    StatusAbort?
+proc ::critcl::Link {rv file shlib preload ldflags} {
+    upvar 1 $rv result
 
-    set shlib   [dict get $v::code($file) result shlib]
-    set preload [dict get $v::code($file) result preload]
+    StatusAbort?
 
     # Assemble the link command.
     set cmdline [getconfigvalue link]
@@ -2930,10 +2986,10 @@ proc ::critcl::Link {file} {
     }
 
     lappendlist cmdline [LinkResult $shlib]
-    lappendlist cmdline [GetObjects $file]
+    lappendlist cmdline [GetObjects $result]
     lappendlist cmdline [SystemLibraries]
-    lappendlist cmdline [GetLibraries $file]
-    lappendlist cmdline [dict get $v::code($file) result ldflags]
+    lappendlist cmdline [GetLibraries $result]
+    lappendlist cmdline $ldflags
     # lappend cmdline bufferoverflowU.lib ;# msvc >=1400 && <1500 for amd64
 
     # Run the linker
@@ -2965,7 +3021,7 @@ proc ::critcl::Link {file} {
 
     # At last, build the preload support library, if necessary.
     if {[llength $preload]} {
-	MakePreloadLibrary $file
+	MakePreloadLibrary result $file
     }
     return
 }
@@ -3024,12 +3080,12 @@ proc ::critcl::LinkResult {shlib} {
     return $ldout
 }
 
-proc ::critcl::GetObjects {file} {
+proc ::critcl::GetObjects {result} {
     # On windows using the native MSVC compiler put the companion
     # object files into a link file to read, instead of separately on
     # the command line.
 
-    set objects [dict get $v::code($file) result objects]
+    set objects [dict get $result objects]
 
     if {![string match "win32-*-cl" $v::buildplatform]} {
 	return $objects
@@ -3039,11 +3095,10 @@ proc ::critcl::GetObjects {file} {
     return [list @$rsp]
 }
 
-proc ::critcl::GetLibraries {file} {
+proc ::critcl::GetLibraries {result} {
     # On windows using the native MSVC compiler, transform all -lFOO
     # references into FOO.lib.
-
-    return [FixLibraries [dict get $v::code($file) result clibraries]]
+    return [FixLibraries [dict get $result clibraries]]
 }
 
 proc ::critcl::FixLibraries {libraries} {
@@ -3234,12 +3289,7 @@ proc ::critcl::TakeDefine {file identifier nsvar} {
     return 0
 }
 
-proc ::critcl::Load {f} {
-    set shlib [dict get $v::code($f) result shlib]
-    set init  [dict get $v::code($f) result initname]
-    set tsrc  [dict get $v::code($f) result tsources]
-    set minv  [dict get $v::code($f) result mintcl]
-
+proc ::critcl::Load {shlib init tsrc} {
     # Using the renamed builtin. While this is a dependency it was
     # recorded already. See 'critcl::tcl', and 'critcl::tk'.
     #package require Tcl $minv
@@ -3274,29 +3324,13 @@ proc ::critcl::AbortWhenCalledAfterBuild {} {
     error "[lindex [info level -1] 0]$cloc: Illegal attempt to define C code in [who::is] after it was built."
 }
 
-# XXX Refactor to avoid duplication of the memoization code.
-proc ::critcl::DetermineShlibName {file} {
-    # Return cached information, if present.
-    if {[info exists  v::code($file)] &&
-	[dict exists $v::code($file) result shlib]} {
-	return [dict get $v::code($file) result shlib]
-    }
-
+proc ::critcl::DetermineShlibName {base} {
     # The name of the shared library we hope to produce (or use)
-    set shlib [BaseOf $file][getconfigvalue sharedlibext]
-
-    dict set v::code($file) result shlib $shlib
-    return $shlib
+    return ${base}[getconfigvalue sharedlibext]
 }
 
-proc ::critcl::DetermineObjectName {file} {
-    # Return cached information, if present.
-    if {[info exists  v::code($file)] &&
-	[dict exists $v::code($file) result object]} {
-	return [dict get $v::code($file) result object]
-    }
-
-    set object [BaseOf $file]
+proc ::critcl::DetermineObjectName {base file} {
+    set object $base
 
     # The generated object file will be saved for permanent use if the
     # outdir option is set (in which case rebuilds will no longer be
@@ -3322,7 +3356,6 @@ proc ::critcl::DetermineObjectName {file} {
 	standalone { append object [getconfigvalue object] }
     }
 
-    dict set v::code($file) result object $object
     return $object
 }
 
@@ -3336,12 +3369,6 @@ proc ::critcl::DetermineInitName {file prefix} {
 
     if {$prefix ne ""} {
         set ininame "${prefix}_$ininame"
-    }
-
-    dict set v::code($file) result initname $ininame
-
-    catch {
-	dict set v::code($file) result pkgname [meta::gets $file name]
     }
 
     return $ininame
@@ -3408,16 +3435,8 @@ proc ::critcl::LogClose {} {
 ## Implementation -- Internals - UUID management, change detection
 
 proc ::critcl::BaseOf {f} {
-    # Return cached information, if present.
-    if {[info exists  v::code($f)] &&
-	[dict exists $v::code($f) result base]} {
-	return [dict get $v::code($f) result base]
-    }
-
-    set base [file normalize [cache::get ${v::prefix}_[uuid::get $f]]]
-
-    dict set v::code($f) result base $base
-    return $base
+    # Basename for all generated files (.c, .o, .so)
+    return [file normalize [cache::get ${v::prefix}_[uuid::get $f]]]
 }
 
 # # ## ### ##### ######## ############# #####################
