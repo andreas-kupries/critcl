@@ -13,6 +13,7 @@
 //	usrconfig usr options	<-- uuid dict84
 //	meta	 teapot meta	<-- dict84
 //	tags	 indicator mgmt	<--
+//	ccconfig CC config	<-- common cache
 //	=======	 =====		============
 //	
 //	TODO
@@ -20,7 +21,6 @@
 //		api	(stubs mgmt)
 //		ccode	(collection)
 //		meta
-//		cc_config	(backend cc configs, external cc)
 
 strict digraph {
 	//	Frontend
@@ -43,7 +43,7 @@ strict digraph {
 	api		[shape="box"];
 	at		[shape="box"];
 	cache		[shape="box"];
-	cc_config	[shape="box"];
+	ccconfig	[shape="box"];
 	ccode		[shape="box"];
 	log		[shape="box"];
 	meta		[shape="box"];
@@ -56,24 +56,26 @@ strict digraph {
 	//	Dependencies
 
 	at		->	typeconv;
+	cache		->	ccconfig;
 	common		->	cache;
+	common		->	ccconfig;
 	common		->	meta;
 	common		->	scan;
 	data		->	common;
 	dict84		->	meta;
 	dict84		->	scan;
+	dict84		->	tags;
 	dict84		->	usrconfig;
 	dict84		->	uuid;
-	dict84		->	tags;
 	lassign84	->	at;
 	lassign84	->	scan;
 	lassign84	->	typeconv;
+	meta		->	scan;
 	usrconfig	->	scan;
 	uuid		->	usrconfig;
 	who		->	at;
-	meta		->	scan;
 
-	cc_config	->	cc;
+	ccconfig	->	cc;
 	log		->	cc;
 
 	api		->	core;
