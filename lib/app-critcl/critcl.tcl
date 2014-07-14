@@ -648,23 +648,16 @@ proc ::critcl::app::ProcessInput {} {
 	    continue
 	}
 
-	# Execute the input file and collect all the crit(i)c(a)l :)
-	# information. Depending on the use of 'critcl::failed' this
-	# may or may not have generated the internal object file.
-
-	if {$v::mode eq "pkg"} {
-	    critcl::buildforpackage
-	}
+	set save [info script]
+	info script $fn
 
 	if {[llength $v::debug]} {
 	    # As the debug settings are stored per file we now take
 	    # the information from the application's commandline and
 	    # force things here, faking the proper path information.
-
-	    set save [info script]
-	    info script $fn
-	    eval [linsert $v::debug 0 critcl::debug]
-	    info script $save
+	    foreach v $v::debug {
+		critcl::debug $v
+	    }
 	}
 
 	#puts ||$v::uc||
@@ -675,14 +668,28 @@ proc ::critcl::app::ProcessInput {} {
 	    # Full checking of the data happens only if the setting is
 	    # actually used by the file.
 
-	    set save [info script]
-	    info script $fn
-
 	    foreach {k v} $v::uc {
 		#puts UC($k)=|$v|
 		critcl::userconfig set $k $v
 	    }
-	    info script $save
+	}
+
+	info script $save
+
+	# Execute the input file and collect all the crit(i)c(a)l :)
+	# information. This may or may not have generated the internal
+	# object file, depending on if the input file called
+	# 'critcl::failed' by itself or not.
+	##
+	# We use 'buildforpackage' to put the implicit call of
+	# 'cbuild' into the right mode.
+	##
+	# XXX FIXME change api - disable critcl::load|failed instead, and
+	# force an explicit call of cbuild below, properly configured for
+	# cache or pkg.
+
+	if {$v::mode eq "pkg"} {
+	    critcl::buildforpackage
 	}
 
 	# Ensure that critcl's namespace introspection is done
@@ -1315,8 +1322,13 @@ proc ::critcl::app::DummyCritclPackage {} {
 	    failed    { set result 0 }
 	    load      { set result 1 }
 	    Ignore    { append txt [DummyCritclCommand $name {
+		set who [file normalize [lindex $args 0]]
 		namespace eval ::critcl::v {}
-		set ::critcl::v::ignore([file normalize [lindex $args 0]]) .
+		set ::critcl::v::ignore($who) .
+		catch {
+		    package require critcl::tags
+		    tags::set $who ignore
+		}
 	    }]
 		continue
 	    }
