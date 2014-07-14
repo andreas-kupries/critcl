@@ -31,7 +31,7 @@ namespace eval ::critcl::tags {
 ## - Remove tag from a file.
 ## - Check if a tg is attached to a file.
 
-proc ::critcl::tags::set {ref tag} {
+proc ::critcl::tags::set {ref tag {value {}}} {
     variable config
     dict set config $ref $tag ""
     return
@@ -46,6 +46,11 @@ proc ::critcl::tags::unset {ref tag} {
 proc ::critcl::tags::has {ref tag} {
     variable config
     return [dict exists $config $ref $tag]
+}
+
+proc ::critcl::tags::get {ref tag} {
+    variable config
+    return [dict get $config $ref $tag]
 }
 
 # NOTE: No "clear" API. The tag database will contain information

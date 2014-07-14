@@ -1886,9 +1886,9 @@ proc ::critcl::buildforpackage {{buildforpackage 1}} {
 
 proc ::critcl::cbuild {file {load 1}} {
     # Fast path for known result.
-    if {[tags::has $file cbuild] && !$load} {
+    if {[tags::has $file failed] && !$load} {
 	set v::buildforpackage 0
-	return [tags::has $file failed]
+	return [tags::get $file failed]
     }
 
     StatusReset
@@ -1979,10 +1979,9 @@ proc ::critcl::cbuild {file {load 1}} {
     usrconfig::clear $file
 
     # Save final status
-    tags::set $file cbuild
-    if {$v::failed} { tags::set $file failed }
+    tags::set $file failed $v::failed
     StatusReset
-    return [tags::has $file failed]
+    return [tags::get $file failed]
 }
 
 proc ::critcl::cresults {{file {}}} {
