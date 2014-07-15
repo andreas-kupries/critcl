@@ -59,7 +59,7 @@ proc ::critcl::ccconfig::do-log {failvar rv log cmdline} {
 	interp eval $cip [linsert $cmdline 0 exec]
     } result]
 
-    interp transfer $cip $vlog {}
+    interp transfer $cip $log {}
 
     return [expr {!$failed}]
 }
