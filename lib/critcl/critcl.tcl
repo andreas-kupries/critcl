@@ -47,7 +47,8 @@ package require critcl::ccconfig  ;# CC configuration database for standard back
 package require critcl::common    ;# General utility commands.
 package require critcl::data      ;# Access to templates and other supporting files.
 package require critcl::log       ;# Log files within the result cache.
-package require critcl::meta      ;# Management of teapot meta data
+package require critcl::gopt      ;# Management of global options.
+package require critcl::meta      ;# Management of teapot meta data.
 package require critcl::scan      ;# Static Tcl code scanner.
 package require critcl::tags      ;# Management of indicator flags.
 package require critcl::typeconv  ;# Handling cproc data types.
@@ -221,7 +222,7 @@ proc ::critcl::ccommand {name anames args} {
 	Emitln "static int $wname$ca"
 	Emit   \{\n
 	lassign [at::header $body] leadoffset body
-	if {[at::enabled]} {
+	if {[gopt::get lines]} {
 	    Emit [at::cpragma $leadoffset -2 $file]
 	}
 	Emit   $body
@@ -538,7 +539,7 @@ proc ::critcl::cproc {name adefs rtype {body "#"} args} {
 	Emitln "${cname}([join $cargs {, }])"
 	Emit   \{\n
 	lassign [at::header $body] leadoffset body
-	if {[at::enabled]} {
+	if {[gopt::get lines]} {
 	    Emit [at::cpragma $leadoffset -2 $file]
 	}
 	Emit   $body
@@ -570,14 +571,14 @@ proc ::critcl::cinit {text edecls} {
     set initc {}
     set skip [at::lines $text]
     lassign [at::header $text] leadoffset text
-    if {[at::enabled]} {
+    if {[gopt::get lines]} {
 	append initc [at::cpragma $leadoffset -2 $file]
     }
     append initc $text \n
 
     set edec {}
     lassign [at::header $edecls] leadoffset edecls
-    if {[at::enabled]} {
+    if {[gopt::get lines]} {
 	incr leadoffset $skip
 	append edec [at::cpragma $leadoffset -2 $file]
     }
@@ -1374,27 +1375,17 @@ proc ::critcl::SkipIgnored {f {result {}}} {
 # # ## ### ##### ######## ############# #####################
 ## Implementation -- API: Build Management
 
-proc ::critcl::config {option args} {
-    if {![info exists v::options($option)] || [llength $args] > 1} {
-	error "option must be one of: [lsort [array names v::options]]"
+proc ::critcl::config {option {newvalue {}}} {
+    if {[llength [info level 0]] < 3} {
+	return [gopt::get $option]
     }
-    if {![llength $args]} {
-	if {$option eq "lines"} {
-	    return [at::enabled]
-	}
-	return $v::options($option)
-    }
-
-    set newvalue [lindex $args 0]
-    if {$option eq "lines"} {
-	at::enable $newvalue
-    } else {
-	set v::options($option) $newvalue
-    }
-    return $newvalue
+    return [gopt::set $option $newvalue]
 }
 
 proc ::critcl::debug {args} {
+    # XXX FIXME - Use tag to hold the information ?
+    # XXX FIXME - Or use the general ccode container to come?
+
     # Replace 'all' everywhere, and squash duplicates, whether from
     # this, or user-specified.
     set args [string map {all {memory symbols}} $args]
@@ -1402,8 +1393,11 @@ proc ::critcl::debug {args} {
 
     foreach arg $args {
 	switch -- $arg {
-	    memory  { foreach x [getconfigvalue debug_memory]  { cflags $x } }
-	    symbols { foreach x [getconfigvalue debug_symbols] { cflags $x }
+	    memory  {
+		foreach x [getconfigvalue debug_memory]  { cflags $x }
+	    }
+	    symbols {
+		foreach x [getconfigvalue debug_symbols] { cflags $x }
 		set option::debug_symbols 1
 	    }
 	    default {
@@ -1511,7 +1505,7 @@ proc ::critcl::cbuild {file {load 1}} {
 	dict set result pkgname [meta::gets $file name]
     }
 
-    if {$v::options(force) || ![file exists $shlib]} {
+    if {[gopt::get force] || ![file exists $shlib]} {
 	log::begin $v::prefix $file
 
 	set object [DetermineObjectName $base $file]
@@ -2384,7 +2378,7 @@ proc ::critcl::SystemIncludePaths {file} {
     set has {}
 
     # critcl -I options.
-    foreach dir $v::options(I) {
+    foreach dir [gopt::get I] {
 	if {[dict exists $has $dir]} continue
 	dict set has $dir yes
 	lappend paths $dir
@@ -2425,7 +2419,7 @@ proc ::critcl::SystemLibraryPaths {} {
     set has {}
 
     # critcl -L options.
-    foreach dir $v::options(L) {
+    foreach dir [gopt::get L] {
 	if {[dict exists $has $dir]} continue
 	dict set has $dir yes
 	lappend paths $dir
@@ -2452,14 +2446,14 @@ proc ::critcl::Compile {rv tclfile origin cfile obj} {
     set         cmdline [getconfigvalue compile]
     lappendlist cmdline [GetParam $tclfile cflags]
     lappendlist cmdline [getconfigvalue threadflags]
-    if {$v::options(combine) ne "standalone"} {
+    if {[gopt::get combine] ne "standalone"} {
 	lappendlist cmdline [getconfigvalue tclstubs]
     }
-    if {$v::options(language) ne "" && [file tail $tclfile] ne "critcl.tcl"} {
+    if {[gopt::get language] ne "" && [file tail $tclfile] ne "critcl.tcl"} {
 	# XXX Is this gcc specific ?
 	# XXX Should this not be configurable via some c::* setting ?
 	# See also -x none below.
-	lappend cmdline -x $v::options(language)
+	lappend cmdline -x [gopt::get language]
     }
     lappendlist cmdline [TclIncludes [MinTclVersion $tclfile]]
     lappendlist cmdline [SystemIncludes $tclfile]
@@ -2471,7 +2465,7 @@ proc ::critcl::Compile {rv tclfile origin cfile obj} {
     lappendlist cmdline [CompileResult $obj]
     lappend     cmdline $cfile
 
-    if {$v::options(language) ne ""} {
+    if {[gopt::get language] ne ""} {
 	# Allow the compiler to determine the type of file otherwise
 	# it will try to compile the libs
 	# XXX Is this gcc specific ?
@@ -2480,7 +2474,7 @@ proc ::critcl::Compile {rv tclfile origin cfile obj} {
     }
 
     # Add the Tk stubs to the command line, if requested and not suppressed
-    if {[UsingTk $tclfile] && ($v::options(combine) ne "standalone")} {
+    if {[UsingTk $tclfile] && ([gopt::get combine] ne "standalone")} {
 	lappendlist cmdline [getconfigvalue tkstubs]
     }
 
@@ -2492,7 +2486,7 @@ proc ::critcl::Compile {rv tclfile origin cfile obj} {
     if {[ExecWithLogging $cmdline \
 	     {$obj: [file size $obj] bytes} \
 	     {ERROR while compiling code in $origin:}]} {
-	if {!$v::options(keepsrc) && $cfile ne $origin} {
+	if {![gopt::get keepsrc] && $cfile ne $origin} {
 	    file delete $cfile
 	}
     }
@@ -2843,7 +2837,7 @@ proc ::critcl::BuildDefines {fd file} {
     }
 
     # Cleanup after ourselves, removing the helper file.
-    if {!$v::options(keepsrc)} {
+    if {![gopt::get keepsrc]} {
 	cache::clear $def
     }
     return
@@ -2910,8 +2904,10 @@ proc ::critcl::DetermineObjectName {base file} {
     # The generated object file will be saved for permanent use if the
     # outdir option is set (in which case rebuilds will no longer be
     # automatic).
-    if {$v::options(outdir) ne ""} {
-	set odir [file join [file dirname $file] $v::options(outdir)]
+
+    set odir [gopt::get outdir]
+    if {$odir ne ""} {
+	set odir [file join [file dirname $file] $odir]
 	set oroot  [file rootname [file tail $file]]
 	set object [file normalize [file join $odir $oroot]]
 	file mkdir $odir
@@ -2924,7 +2920,7 @@ proc ::critcl::DetermineObjectName {base file} {
 
     # Choose a distinct suffix so switching between them causes a
     # rebuild.
-    switch -- $v::options(combine) {
+    switch -- [gopt::get combine] {
 	""         -
 	dynamic    { append object _pic[getconfigvalue object] }
 	static     { append object _stub[getconfigvalue object] }
@@ -3051,32 +3047,6 @@ namespace eval ::critcl {
 	                 # of binaries whose sources did not change.
 	set prefix "v[package require critcl]"
 	regsub -all {\.} $prefix {} prefix
-
-	variable options         ;# An array containing options
-				  # controlling the code generator.
-				  # For more details see below.
-	set options(outdir)   "" ;# - Path. If set the place where the generated
-				  #   shared library is saved for permanent use.
-	set options(keepsrc)  0  ;# - Boolean. If set all generated .c files are
-				  #   kept after compilation. Helps with debugging
-				  #   the critcl package.
-	set options(combine)  "" ;# - XXX standalone/dynamic/static
-				  #   XXX Meaning of combine?
-	set options(force)    0  ;# - Boolean. If set (re)compilation is
-				  #   forced, regardless of the state of
-				  #   the cache.
-	set options(I)        "" ;# - List. Additional include
-				  #   directories, globally specified by
-				  #   the user for mode 'generate
-				  #   package', for all components put
-				  #   into the package's library.
-	set options(L)        "" ;# - List. Additional library search
-				  #   directories, globally specified by
-				  #   the user for mode 'generate
-				  #   package'.
-	set options(language) "" ;# - String. XXX
-	set options(lines)    -  ;# - See at::enabled. Fake here, for error message.
-	                          #   critcl::config properly redirects
 
 	# XXX clientdata() per-command (See ccommand). per-file+ccommand better?
 	# XXX delproc()    per-command (See ccommand). s.a

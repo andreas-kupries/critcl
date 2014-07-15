@@ -15,12 +15,12 @@
 //	tags	 indicator mgmt	<--
 //	ccconfig CC config	<-- common cache
 //	log	 Log files	<-- common cache
+//	gopt	 Global options	<--
 //	=======	 =====		============
 //	
 //	TODO
 //		api	(stubs mgmt)
 //		ccode	(collection)
-//		options	(global)
 
 strict digraph {
 	//	Frontend
@@ -45,9 +45,9 @@ strict digraph {
 	cache		[shape="box"];
 	ccconfig	[shape="box"];
 	ccode		[shape="box"];
+	gopt		[shape="box"];
 	log		[shape="box"];
 	meta		[shape="box"];
-	options		[shape="box"];
 	tags		[shape="box"];
 	typeconv	[shape="box"];
 	usrconfig	[shape="box"];
@@ -70,6 +70,7 @@ strict digraph {
 	dict84		->	tags;
 	dict84		->	usrconfig;
 	dict84		->	uuid;
+	gopt		->	at;
 	lassign84	->	at;
 	lassign84	->	scan;
 	lassign84	->	typeconv;
@@ -88,8 +89,8 @@ strict digraph {
 	ccode		->	core;
 	common		->	core;
 	data		->	core;
+	gopt		->	core;
 	meta		->	core;
-	options		->	core;
 	scan		->	core;
 	tags		->	core;
 	typeconv	->	core;

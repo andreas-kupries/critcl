@@ -19,6 +19,7 @@
 package require Tcl 8.4          ;# Minimal supported Tcl runtime.
 package require lassign84        ;# Forward-compatible lassign command.
 package require critcl::who      ;# Management of current file.
+package require critcl::gopt     ;# Management of critcl's global options.
 
 package provide  critcl::at 1
 namespace eval ::critcl::at {
@@ -27,7 +28,6 @@ namespace eval ::critcl::at {
 	here here! \
 	get get* \
 	incr incrt \
-	enable enabled \
 	= cpragma script \
 	lines header
     catch { namespace ensemble create }
@@ -36,8 +36,6 @@ namespace eval ::critcl::at {
 # # ## ### ##### ######## ############# #####################
 ## API commands.
 
-# enable  - enable/disable functionality
-# enabled - check activation state
 # header  - trim leading empty lines, return count and remainder
 # lines   - count lines
 # script  - path ovrride for when sourcing files.
@@ -48,16 +46,6 @@ namespace eval ::critcl::at {
 # incr*   - modify stashed location (only line number, not file).
 # get     - format, return, and clear stash
 # get*    - format & return stash
-
-proc ::critcl::at::enable {{flag 1}} {
-    variable active $flag
-    return $flag
-}
-
-proc ::critcl::at::enabled {} {
-    variable active
-    return  $active
-}
 
 proc ::critcl::at::header {text} {
     if {![regexp {^[\t\n ]+} $text header]} {
@@ -90,13 +78,13 @@ proc ::critcl::at::script {{path} {
 
 proc ::critcl::at::caller {{off 0} {level 0}} {
     ::incr level -3
-    Where $off $level [who-is]
+    Where $off $level [who::is]
     return
 }
 
 proc ::critcl::at::caller! {{off 0} {level 0}} {
     ::incr level -3
-    Where $off $level [who-is]
+    Where $off $level [who::is]
     return [get]
 }
 
@@ -108,18 +96,17 @@ proc ::critcl::at::cpragma {leadoffset level file} {
 }
 
 proc ::critcl::at::here {} {
-    Where 0 -2 [who-is]
+    Where 0 -2 [who::is]
     return
 }
 
 proc ::critcl::at::here! {} {
-    Where 0 -2 [who-is]
+    Where 0 -2 [who::is]
     return [get]
 }
 
 proc ::critcl::at::get {} {
-    variable active
-    if {!$active} {
+    if {![gopt::get lines]} {
 	return {}
     }
 
@@ -180,9 +167,9 @@ proc ::critcl::at::incrt {args} {
 ## Internal state
 
 namespace eval ::critcl::at {
-    # Make relevant "current file" commands available.
-    namespace import ::critcl::who::is
-    rename is who-is
+    # Make relevant "current file" and option commands available.
+    namespace eval who  { namespace import ::critcl::who::is   }
+    namespace eval gopt { namespace import ::critcl::gopt::get }
 
     # Saved location information
     # (2-element list, file name + line number)
@@ -190,11 +177,6 @@ namespace eval ::critcl::at {
 
     # Override information for when sourcing a file.
     variable source
-
-    # Boolean. If set (default) the generator will emit
-    # #line-directives to help locating C code in the .tcl in case of
-    # compile warnings and errors.
-    variable active 1
 }
 
 # # ## ### ##### ######## ############# #####################
