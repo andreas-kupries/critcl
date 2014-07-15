@@ -46,6 +46,7 @@ package require critcl::cache     ;# Result cache access.
 package require critcl::ccconfig  ;# CC configuration database for standard backend.
 package require critcl::common    ;# General utility commands.
 package require critcl::data      ;# Access to templates and other supporting files.
+package require critcl::log       ;# Log files within the result cache.
 package require critcl::meta      ;# Management of teapot meta data
 package require critcl::scan      ;# Static Tcl code scanner.
 package require critcl::tags      ;# Management of indicator flags.
@@ -1498,9 +1499,9 @@ proc ::critcl::cbuild {file {load 1}} {
     }
 
     if {$v::options(force) || ![file exists $shlib]} {
-	LogOpen $file
-	set object [DetermineObjectName $base $file]
+	log::begin $v::prefix $file
 
+	set object [DetermineObjectName $base $file]
 	dict set result object $object
 
 	# XXX This may run cinit and cflags to provide stubs api
@@ -1558,8 +1559,7 @@ proc ::critcl::cbuild {file {load 1}} {
 	    Link result $file $shlib $preload $ldflags
 	}
 
-	set msgs [LogClose]
-
+	set msgs [log::done]
 	dict set result warnings [CheckForWarnings $msgs]
     }
 
@@ -2193,14 +2193,14 @@ proc ::critcl::CompileDirect {file label code {mode temp}} {
     lappendlist cmdline [CompileResult $obj]
     lappend     cmdline $src
 
-    LogOpen $file
-    Log* "${label}... "
+    log::begin $v::prefix $file
+    log::text  "${label}... "
     StatusReset
     set ok [ExecWithLogging $cmdline OK FAILED]
     StatusReset
 
     if {!$ok || ($mode eq "temp")} {
-	LogClose
+	log::done
 	cache::clear check_[pid].*
     }
     return $ok
@@ -2230,11 +2230,11 @@ proc ::critcl::CompileLinkDirect {file label code} {
     lappendlist cmdline [FixLibraries [GetParam $file clibraries]]
     lappendlist cmdline [GetParam $file ldflags]
 
-    Log* "${label} (link)... "
+    log::text "${label} (link)... "
     StatusReset
     set ok [ExecWithLogging $cmdline OK ERR]
 
-    LogClose
+    log::done
     cache::clear check_[pid].*
     return $ok
 }
@@ -2567,8 +2567,8 @@ proc ::critcl::Link {rv file shlib preload ldflags} {
 
     set em [getconfigvalue embed_manifest]
 
-    critcl::Log "Manifest Command: $em"
-    critcl::Log "Manifest File:    [expr {[file exists $shlib.manifest]
+    log::line "Manifest Command: $em"
+    log::line "Manifest File:    [expr {[file exists $shlib.manifest]
 	   ? "$shlib.manifest"
 	   : "<<not present>>, ignored"}]"
 
@@ -2955,45 +2955,6 @@ proc ::critcl::PkgInit {file} {
 }
 
 # # ## ### ##### ######## ############# #####################
-## Implementation -- Internals - Access to the log file
-
-proc ::critcl::LogOpen {file} {
-    set   v::logfile [cache::get [pid].log]
-    set   v::log     [open $v::logfile w]
-    puts $v::log "\n[clock format [clock seconds]] - $file"
-    return
-}
-
-proc ::critcl::LogCmdline {cmdline} {
-    set w [join [lassign $cmdline cmd] \n\t]
-    Log \n$cmd\n\t$w\n
-    return
-}
-
-proc ::critcl::Log {msg} {
-    puts $v::log $msg
-    return
-}
-
-proc ::critcl::Log* {msg} {
-    puts -nonewline $v::log $msg
-    return
-}
-
-proc ::critcl::LogClose {} {
-    # Transfer the log messages for the current file over into the
-    # global critcl log, and cleanup.
-
-    close $v::log
-    set msgs [common::cat $v::logfile]
-    cache::append $v::prefix.log $msgs
-
-    file delete -force $v::logfile
-    unset v::log v::logfile
-    return $msgs
-}
-
-# # ## ### ##### ######## ############# #####################
 ## Implementation -- Internals - UUID management, change detection
 
 proc ::critcl::BaseOf {f} {
@@ -3035,22 +2996,17 @@ proc ::critcl::CheckForWarnings {text} {
     return [dict keys $warnings]
 }
 
-proc ::critcl::Exec {cmdline} {
-    # XXX FIXME all callers.
-    ccconfig::do v::failed v::err $cmdline
-}
-
 proc ::critcl::ExecWithLogging {cmdline okmsg errmsg} {
-    # XXX FIXME all callers.
-    LogCmdline $cmdline
+    set w [join [lassign $cmdline cmd] \n\t]
+    log::text \n$cmd\n\t$w\n
 
-    set ok [ccconfig::do-log v::failed v::err $v::log $cmdline]
+    set ok [ccconfig::do-log v::failed v::err [log::fd] $cmdline]
 
     if {$ok} {
-	Log [uplevel 1 [list subst $okmsg]]
+	log::line [uplevel 1 [list subst $okmsg]]
     } else {
-	Log [uplevel 1 [list subst $errmsg]]
-	Log $v::err
+	log::line [uplevel 1 [list subst $errmsg]]
+	log::line $v::err
     }
 
     return $ok
@@ -3058,20 +3014,6 @@ proc ::critcl::ExecWithLogging {cmdline okmsg errmsg} {
 
 # # ## ### ##### ######## ############# #####################
 ## Initialization
-
-proc ::critcl::Initialize {} {
-    # The prefix is based on the package's version. This allows
-    # multiple versions of the package to use the same cache without
-    # interfering with each. Note that we cannot use 'pid' and similar
-    # information, because this would circumvent the goal of the
-    # cache, the reuse of binaries whose sources did not change.
-
-    variable v::prefix	"v[package require critcl]"
-    regsub -all {\.} $prefix {} prefix
-
-    rename ::critcl::Initialize {}
-    return
-}
 
 # # ## ### ##### ######## ############# #####################
 ## State
@@ -3085,13 +3027,18 @@ namespace eval ::critcl {
     # keep all variables in a sub-namespace for easy access
     namespace eval v {
 	# ----------------------------------------------------------------
+	variable prefix ;# String. The string to start all file names
+			 # generated by the package with. The prefix
+	                 # is based on the package's version. This
+	                 # allows multiple versions of the package to
+	                 # use the same cache without interfering with
+	                 # each. Note that we cannot use 'pid' and
+	                 # similar information, because this would
+	                 # circumvent the goal of the cache, the reuse
+	                 # of binaries whose sources did not change.
+	set prefix "v[package require critcl]"
+	regsub -all {\.} $prefix {} prefix
 
-	# ----------------------------------------------------------------
-
-	variable prefix          ;# String. The string to start all file names
-				  # generated by the package with. See
-				  # 'Initialize' for our choice and
-				  # explanation of it.
 	variable options         ;# An array containing options
 				  # controlling the code generator.
 				  # For more details see below.
@@ -3234,9 +3181,6 @@ namespace eval ::critcl {
 	# _____________________________________________________________________
 	# State used by "cbuild" ______________________________________________
 
-	variable log     ""      ;# Log channel, opened to logfile.
-	variable logfile ""      ;# Path of logfile. Accessed by
-				  # "Log*" and "ExecWithLogging".
 	variable failed  0       ;# Build status. Used by "Status*"
 	variable err     ""	 ;# and "Exec*". Build error text.
 
@@ -3254,7 +3198,6 @@ namespace eval ::critcl {
 	variable block           ;# C code assembled by Emit* calls
 				  # between Begin- and EndCommand.
     }
-
 }
 
 # # ## ### ##### ######## ############# #####################
@@ -3275,6 +3218,4 @@ namespace eval ::critcl {
 
 # # ## ### ##### ######## ############# #####################
 ## Ready
-
-::critcl::Initialize
 return

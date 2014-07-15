@@ -14,13 +14,13 @@
 //	meta	 teapot meta	<-- dict84
 //	tags	 indicator mgmt	<--
 //	ccconfig CC config	<-- common cache
+//	log	 Log files	<-- common cache
 //	=======	 =====		============
 //	
 //	TODO
-//		log
 //		api	(stubs mgmt)
 //		ccode	(collection)
-//		meta
+//		options	(global)
 
 strict digraph {
 	//	Frontend
@@ -47,6 +47,7 @@ strict digraph {
 	ccode		[shape="box"];
 	log		[shape="box"];
 	meta		[shape="box"];
+	options		[shape="box"];
 	tags		[shape="box"];
 	typeconv	[shape="box"];
 	usrconfig	[shape="box"];
@@ -57,8 +58,10 @@ strict digraph {
 
 	at		->	typeconv;
 	cache		->	ccconfig;
+	cache		->	log;
 	common		->	cache;
 	common		->	ccconfig;
+	common		->	log;
 	common		->	meta;
 	common		->	scan;
 	data		->	common;
@@ -86,6 +89,7 @@ strict digraph {
 	common		->	core;
 	data		->	core;
 	meta		->	core;
+	options		->	core;
 	scan		->	core;
 	tags		->	core;
 	typeconv	->	core;
