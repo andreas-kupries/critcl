@@ -1394,10 +1394,10 @@ proc ::critcl::debug {args} {
     foreach arg $args {
 	switch -- $arg {
 	    memory  {
-		foreach x [getconfigvalue debug_memory]  { cflags $x }
+		foreach x [ccconfig::get debug_memory]  { cflags $x }
 	    }
 	    symbols {
-		foreach x [getconfigvalue debug_symbols] { cflags $x }
+		foreach x [ccconfig::get debug_symbols] { cflags $x }
 		set option::debug_symbols 1
 	    }
 	    default {
@@ -2181,7 +2181,7 @@ proc ::critcl::Emitln {{s ""}} {
 ## Backend, Checking that we have a compiler
 
 proc ::critcl::HasCompiler {} {
-    return [llength [auto_execok [lindex [getconfigvalue compile] 0]]]
+    return [llength [auto_execok [lindex [ccconfig::get compile] 0]]]
 }
 
 # # ## ### ##### ######## ############# #####################
@@ -2189,12 +2189,12 @@ proc ::critcl::HasCompiler {} {
 
 proc ::critcl::CompileDirect {file label code {mode temp}} {
     set src [cache::write check_[pid].c $code]
-    set obj [file rootname $src][getconfigvalue object]
+    set obj [file rootname $src][ccconfig::get object]
 
     # See also the internal helper command 'Compile'. The code here is
     # in essence a simplified form of that.
 
-    set         cmdline [getconfigvalue compile]
+    set         cmdline [ccconfig::get compile]
     lappendlist cmdline [GetParam $file cflags]
     lappendlist cmdline [SystemIncludes $file]
     lappendlist cmdline [CompileResult $obj]
@@ -2220,15 +2220,15 @@ proc ::critcl::CompileLinkDirect {file label code} {
     }
 
     set out [cache::get check_[pid].out]
-    set obj [file rootname $out][getconfigvalue object]
+    set obj [file rootname $out][ccconfig::get object]
 
-    set cmdline [getconfigvalue link]
+    set cmdline [ccconfig::get link]
 
     if {$option::debug_symbols} {
-	lappendlist cmdline [getconfigvalue link_debug]
+	lappendlist cmdline [ccconfig::get link_debug]
     } else {
-	lappendlist cmdline [getconfigvalue strip]
-	lappendlist cmdline [getconfigvalue link_release]
+	lappendlist cmdline [ccconfig::get strip]
+	lappendlist cmdline [ccconfig::get link_release]
     }
 
     lappendlist cmdline [LinkResult $out]
@@ -2362,13 +2362,13 @@ proc ::critcl::TclIncludes {tclversion} {
 	set path [cache::copy2 $path]
     }
 
-    return [list $c::include$path]
+    return [list [ccconfig::get include]$path]
 }
 
 proc ::critcl::SystemIncludes {file} {
     set includes {}
     foreach dir [SystemIncludePaths $file] {
-	lappend includes $c::include$dir
+	lappend includes [ccconfig::get include]$dir
     }
     return $includes
 }
@@ -2409,7 +2409,7 @@ proc ::critcl::SystemIncludePaths {file} {
 proc ::critcl::SystemLibraries {} {
     set libincludes {}
     foreach dir [SystemLibraryPaths] {
-	lappend libincludes $c::libinclude$dir
+	lappend libincludes [ccconfig::get libinclude]$dir
     }
     return $libincludes
 }
@@ -2443,11 +2443,11 @@ proc ::critcl::Compile {rv tclfile origin cfile obj} {
     #
     # obj = Object file to compile to, to generate.
 
-    set         cmdline [getconfigvalue compile]
+    set         cmdline [ccconfig::get compile]
     lappendlist cmdline [GetParam $tclfile cflags]
-    lappendlist cmdline [getconfigvalue threadflags]
+    lappendlist cmdline [ccconfig::get threadflags]
     if {[gopt::get combine] ne "standalone"} {
-	lappendlist cmdline [getconfigvalue tclstubs]
+	lappendlist cmdline [ccconfig::get tclstubs]
     }
     if {[gopt::get language] ne "" && [file tail $tclfile] ne "critcl.tcl"} {
 	# XXX Is this gcc specific ?
@@ -2475,12 +2475,12 @@ proc ::critcl::Compile {rv tclfile origin cfile obj} {
 
     # Add the Tk stubs to the command line, if requested and not suppressed
     if {[UsingTk $tclfile] && ([gopt::get combine] ne "standalone")} {
-	lappendlist cmdline [getconfigvalue tkstubs]
+	lappendlist cmdline [ccconfig::get tkstubs]
     }
 
     if {!$option::debug_symbols} {
-	lappendlist cmdline [getconfigvalue optimize]
-	lappendlist cmdline [getconfigvalue noassert]
+	lappendlist cmdline [ccconfig::get optimize]
+	lappendlist cmdline [ccconfig::get noassert]
     }
 
     if {[ExecWithLogging $cmdline \
@@ -2502,7 +2502,7 @@ proc ::critcl::MakePreloadLibrary {rv file} {
     # compile and link the preload support, if necessary, i.e. not yet
     # done.
 
-    set shlib [cache::get preload[getconfigvalue sharedlibext]]
+    set shlib [cache::get preload[ccconfig::get sharedlibext]]
     if {[file exists $shlib]} return
 
     # Operate like TclIncludes. Use the template file directly, if
@@ -2521,9 +2521,9 @@ proc ::critcl::MakePreloadLibrary {rv file} {
 
     # ... and link it.
     # Custom linker command. XXX Can we bent Link to the task?
-    set         cmdline [getconfigvalue link]
+    set         cmdline [ccconfig::get link]
     lappend     cmdline $obj
-    lappendlist cmdline [getconfigvalue strip]
+    lappendlist cmdline [ccconfig::get strip]
     lappendlist cmdline [LinkResult $shlib]
 
     ExecWithLogging $cmdline \
@@ -2541,17 +2541,17 @@ proc ::critcl::Link {rv file shlib preload ldflags} {
     StatusAbort?
 
     # Assemble the link command.
-    set cmdline [getconfigvalue link]
+    set cmdline [ccconfig::get link]
 
     if {[llength $preload]} {
-	lappendlist cmdline [getconfigvalue link_preload]
+	lappendlist cmdline [ccconfig::get link_preload]
     }
 
     if {$option::debug_symbols} {
-	lappendlist cmdline [getconfigvalue link_debug]
+	lappendlist cmdline [ccconfig::get link_debug]
     } else {
-	lappendlist cmdline [getconfigvalue strip]
-	lappendlist cmdline [getconfigvalue link_release]
+	lappendlist cmdline [ccconfig::get strip]
+	lappendlist cmdline [ccconfig::get link_release]
     }
 
     lappendlist cmdline [LinkResult $shlib]
@@ -2572,7 +2572,7 @@ proc ::critcl::Link {rv file shlib preload ldflags} {
     # happening on Windows platforms, and with newer dev environments
     # actually using manifests.
 
-    set em [getconfigvalue embed_manifest]
+    set em [ccconfig::get embed_manifest]
 
     log::line "Manifest Command: $em"
     log::line "Manifest File:    [expr {[file exists $shlib.manifest]
@@ -2615,7 +2615,7 @@ proc ::critcl::CompanionObject {src} {
 	set srcbase [file tail [file dirname $src]]_$srcbase
     }
 
-    return [cache::get ${srcbase}[getconfigvalue object]]
+    return [cache::get ${srcbase}[ccconfig::get object]]
 
     # Examples, with a .c file found in- and out-side of the cache.
     ##
@@ -2634,16 +2634,16 @@ proc ::critcl::CompanionObject {src} {
 proc ::critcl::CompileResult {object} {
     # Variable used by the subst'able config setting.
     set outfile $object
-    return [subst $c::output]
+    return [subst [ccconfig::get output]]
 }
 
 proc ::critcl::LinkResult {shlib} {
     # Variable used by the subst'able config setting.
     set outfile $shlib
 
-    set ldout [subst $c::ldoutput]
+    set ldout [subst [ccconfig::get ldoutput]]
     if {$ldout eq ""} {
-	set ldout [subst $c::output]
+	set ldout [subst [ccconfig::get output]]
     }
 
     return $ldout
@@ -2752,7 +2752,7 @@ proc ::critcl::BuildDefines {fd file} {
     set defines {}
 
     # First step - get list of matching defines
-    set         cmd [getconfigvalue preproc_define]
+    set         cmd [ccconfig::get preproc_define]
     lappendlist cmd $hdrs
     lappend     cmd $defpath
 
@@ -2785,7 +2785,7 @@ proc ::critcl::BuildDefines {fd file} {
 
     # Second step - get list of enums
 
-    set         cmd [getconfigvalue preproc_enum]
+    set         cmd [ccconfig::get preproc_enum]
     lappendlist cmd $hdrs
     lappend     cmd $defpath
 
@@ -2895,7 +2895,7 @@ proc ::critcl::AbortWhenCalledAfterBuild {} {
 
 proc ::critcl::DetermineShlibName {base} {
     # The name of the shared library we hope to produce (or use)
-    return ${base}[getconfigvalue sharedlibext]
+    return ${base}[ccconfig::get sharedlibext]
 }
 
 proc ::critcl::DetermineObjectName {base file} {
@@ -2922,9 +2922,9 @@ proc ::critcl::DetermineObjectName {base file} {
     # rebuild.
     switch -- [gopt::get combine] {
 	""         -
-	dynamic    { append object _pic[getconfigvalue object] }
-	static     { append object _stub[getconfigvalue object] }
-	standalone { append object [getconfigvalue object] }
+	dynamic    { append object _pic  [ccconfig::get object] }
+	static     { append object _stub [ccconfig::get object] }
+	standalone { append object       [ccconfig::get object] }
     }
 
     return $object
