@@ -1487,6 +1487,19 @@ proc ::critcl::cbuild {file {load 1}} {
     set mintcl   [MinTclVersion $file]
 
     # The result dictionary is local information.
+    #	initname   - String. Foo in Foo_Init().
+    #	tsources   - List. The companion tcl sources for <file>.
+    #	object	   - String. Name of the object file backing <file>.
+    #	objects	   - List. All object files, main and companions.
+    #	shlib	   - String. Name of the shared library backing <file>.
+    #	base	   - String. Common prefix (file root) of 'object' and 'shlib'.
+    #	clibraries - List. See config. Copy for global linkage.
+    #	ldflags	   - List. See config. Copy for global linkage.
+    #	mintcl	   - String. Minimum version of Tcl required by the package.
+    #	preload	   - List. Names of all libraries to load before
+    #	             the package library.
+    #	license    - String. License text.
+    #	<= "critcl::cresults"
 
     dict set result base       $base
     dict set result shlib      $shlib
@@ -3112,21 +3125,6 @@ namespace eval ::critcl {
 	# Keys for 'code' (above) and their contents:
 	#
 	# <file> -> Per-file information, nested dictionary. Sub keys:
-	#
-	#	result		- Results needed for 'generate package'.
-	#		initname	- String. Foo in Foo_Init().
-	#		tsources	- List. The companion tcl sources for <file>.
-	#		object		- String. Name of the object file backing <file>.
-	#		objects		- List. All object files, main and companions.
-	#		shlib		- String. Name of the shared library backing <file>.
-	#		base		- String. Common prefix (file root) of 'object' and 'shlib'.
-	#		clibraries	- List. See config. Copy for global linkage.
-	#		ldflags		- List. See config. Copy for global linkage.
-	#		mintcl		- String. Minimum version of Tcl required by the package.
-	#		preload		- List. Names of all libraries to load before the package library.
-	#		license		- String. License text.
-	#	<= "critcl::cresults"
-	#
 	#	config		- Collected code and configuration (ccode, etc.).
 	#		tsources	- List. The companion tcl sources for <file>.
 	#				  => "critcl::tsources".
@@ -3143,7 +3141,6 @@ namespace eval ::critcl {
 	#		block		- Dictionary. Maps the hashes to their C sources for fragments.
 	#		defs		- List. Hashes of the collected C source bodies (only unnamed code), for extraction of defines.
 	#		const		- Dictionary. Maps the names of defines to the namespace their variables will be in.
-	#		uuid		- List. Strings used to generate the file's uuid/hash.
 	#		mintcl		- String. Minimum version of Tcl required by the package.
 	#		preload		- List. Names of all libraries to load
 	#				  before the package library. This
@@ -3166,8 +3163,6 @@ namespace eval ::critcl {
 	#			as::build::date	- Date-stamp for the build.
 	#
 	# ---------------------------------------------------------------------
-	#
-	# <file>,failed -> Per-file information: Boolean. Build status. Failed or not.
 	#
 	# 'ccode'     -> Accumulated in-memory storage of code-fragments.
 	#                Extended by 'ccode', used by 'BuildDefines',
