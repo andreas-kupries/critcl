@@ -2600,7 +2600,9 @@ proc ::critcl::Load {shlib init tsrc} {
 }
 
 proc ::critcl::AbortWhenCalledAfterBuild {} {
-    if {![done]} return
+    # Inlined [done]. Simplified, always called after SkipIgnored.
+    if {![tags::has [who::is] done]} return
+
     set cloc {}
     if {![catch {
 	array set loc [info frame -2]
