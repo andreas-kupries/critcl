@@ -2003,22 +2003,7 @@ proc ::critcl::SetParam {type values {expand 1} {uuid 0}} {
 
 proc ::critcl::Expand {file pattern} {
     set base [file dirname $file]
-
-    # Note: We cannot use -directory here. The PATTERN may already be
-    # an absolute path, in which case the join will return the
-    # unmodified PATTERN to glob on, whereas with -directory the final
-    # pattern will be BASE/PATTERN which won't find anything, even if
-    # PATTERN actually exists.
-
-    set files {}
-    foreach vfile [glob [file join $base $pattern]] {
-	set vfile [file normalize $vfile]
-	if {![file exists $vfile]} {
-	    error "$vfile: not found"
-	}
-	lappend files $vfile
-    }
-    return $files
+    return [common::expand-glob $base $pattern]
 }
 
 proc ::critcl::InitializeFile {file} {

@@ -22,7 +22,7 @@ package provide  critcl::common 1
 namespace eval ::critcl::common {
     namespace export cat write append \
 	text2words text2authors license-text \
-	today now maxlen
+	today now maxlen expand-glob
     catch { namespace ensemble create }
 
     namespace import ::critcl::data::file
@@ -105,6 +105,25 @@ proc ::critcl::common::maxlen {list} {
 	set max $l
     }
     return $max
+}
+
+proc ::critcl::common::expand-glob {base pattern} {
+    # Search is relative to the base directory, for a relative
+    # pattern. Note however that we cannot use 'glob -directory'
+    # here. The PATTERN may already be an absolute path, in which case
+    # the join will return the unmodified PATTERN to glob on, whereas
+    # with -directory the final pattern will be BASE/PATTERN which
+    # won't find anything, even if PATTERN actually exists.
+
+    set files {}
+    foreach vfile [glob [file join $base $pattern]] {
+	set vfile [file normalize $vfile]
+	if {![file exists $vfile]} {
+	    error "$vfile: not found"
+	}
+	lappend files $vfile
+    }
+    return $files
 }
 
 if {[package vsatisfies [package present Tcl] 8.5]} {
