@@ -255,9 +255,8 @@ proc ::critcl::ccconfig::choose {targetid {err 0}} {
     # on failure, error out if requested
     if {![llength $match] && $err} {
 	set choices [linsert [join [lsort -dict $knowntargets] {, }] end-1 or]
-	return -code error \
-	    -errorcode {CRITCL CCCONFIG INVALID TARGET-ID} \
-	    "Invalid target \"$target\", must be one of $choices"
+	Error "Invalid target \"$target\", must be one of $choices" \
+	    INVALID TARGET-ID
     }
     return $match
 }
@@ -421,7 +420,7 @@ proc ::critcl::ccconfig::read {config} {
 		    if {[gets $cfg more] == -1} {
 			set msg "incomplete command in Critcl Config file "
 			append msg "starting at line $i"
-			error $msg
+			::critcl::error $msg
 		    }
 		    append line  "\n$more"
 
@@ -713,6 +712,11 @@ proc ::critcl::ccconfig::Null {} {
     } else {
 	return /dev/null
     }
+}
+
+proc ::critcl::ccconfig::Error {msg args} {
+    set code [linsert $args 0 CRITCL CC CONFIG]
+    return -code error -errorcode $code $msg
 }
 
 # # ## ### ##### ######## ############# #####################

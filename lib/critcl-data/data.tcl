@@ -35,12 +35,17 @@ proc ::critcl::data::available-tcl {} {
     return  $available
 }
 
-proc ::critcl::data::cfile {name} { file c/$name }
-proc ::critcl::data::hdr   {name} { file h/$name }
+proc ::critcl::data::cfile {name} {
+    file c/$name
+}
+
+proc ::critcl::data::hdr {name} {
+    file h/$name
+}
 
 proc ::critcl::data::file {name} {
     variable selfdir
-    return [file join $selfdir $name]
+    return [::file join $selfdir $name]
 }
 
 proc ::critcl::data::tcl-decls {tclversion} {
@@ -65,19 +70,29 @@ namespace eval ::critcl::data {
 # # ## ### ##### ######## ############# #####################
 ## Internal support commands
 
-proc ::critcl::TclDef {tclversion hdrfile var} {
+proc ::critcl::data::TclDef {tclversion hdrfile var} {
     #puts F|$file
-    set hdrfile [hdr tcl$tclversion $file] $hdrfile]
+    set hdr [hdr tcl$tclversion/$hdrfile]
 
-    if {![file exists   $hdrfile]} { error "Header file not found: $hdrfile" }
-    if {![file isfile   $hdrfile]} { error "Header not a file: $hdrfile" }
-    if {![file readable $hdrfile]} { error "Header not readable: $hdrfile (no permission)" }
+    if {![::file exists $hdr]} {
+	HdrError " file not found: $hdrfile" \
+	    MISSING $hdrfile
+    }
+    if {![::file isfile $hdr]} {
+	HdrError " not a file: $hdrfile" \
+	    NOT-FILE $hdrfile
+    }
+    if {![::file readable $hdr]} {
+	HdrError " not readable: $hdrfile (no permission)" \
+	    NOT-READABLE $hdrfile
+    }
 
     #puts H|$hdrfile
     if {[catch {
-	set hdrcontent [split [Cat $hdrfile] \n]
+	set hdrcontent [split [Cat $hdr] \n]
     } msg]} {
-	error "Header not readable: $hdrfile ($msg)"
+	HdrError " not readable: $hdrfile ($msg)" \
+	    NOT-READABLE $hdrfile
     }
 
     # Note, Danger: The code below is able to use declarations which
@@ -87,17 +102,24 @@ proc ::critcl::TclDef {tclversion hdrfile var} {
 
     set ext [Grep *extern* $hdrcontent]
     if {![llength $ext]} {
-	error "No extern declarations found in $hdr"
+	HdrError ": No extern declarations found in $hdrfile" \
+	    NO-EXTERN $hdrfile
     }
 
     set vardecl [Grep *${var}* $ext]
     if {![llength $vardecl]} {
-	error "No declarations for $var found in $hdr"
+	HdrError ": No declarations for $var found in $hdrfile" \
+	    NO-DECL $hdrfile
     }
 
     set def [string map {extern {}} [lindex $vardecl 0]]
-    msg " ($var => $def)"
+    ::critcl::msg " ($var => $def)"
     return $def
+}
+
+proc ::critcl::data::HdrError {msg args} {
+    set code [linsert $args 0 CRITCL DATA HEADER]
+    return -code error -errorcode $code "Header$msg"
 }
 
 proc ::critcl::data::Grep {pattern lines} {
@@ -124,7 +146,7 @@ proc ::critcl::data::Cat {path} {
 ## Initialization
 
 proc ::critcl::data::Initialize {} {
-    variable selfdir   [file dirname [file normalize [info script]]]
+    variable selfdir   [::file dirname [::file normalize [info script]]]
     variable available {}
 
     # Scan the directory holding our copies of the Tcl header and

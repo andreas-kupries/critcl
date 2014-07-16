@@ -112,9 +112,7 @@ proc ::critcl::at::get {} {
 
     variable where
     if {![info exists where]} {
-	return -code error \
-	    -errorcode {CRITCL AT UNDEFINED} \
-	    "No location defined"
+	Error "No location defined" UNDEFINED
     }
 
     set result [Format $where]
@@ -125,9 +123,7 @@ proc ::critcl::at::get {} {
 proc ::critcl::at::get* {} {
     variable where
     if {![info exists where]} {
-	return -code error \
-	    -errorcode {CRITCL AT UNDEFINED} \
-	    "No location defined"
+	Error "No location defined" UNDEFINED
     }
     return [Format $where]
 }
@@ -151,9 +147,7 @@ proc ::critcl::at::incr {args} {
 proc ::critcl::at::incrt {args} {
     variable where
     if {$where eq {}} {
-	return -code error \
-	    -errorcode {CRITCL AT EMPTY} \
-	    "No location to change"
+	Error "No location to change" EMPTY
     }
     lassign $where file line
     foreach text $args {
@@ -273,6 +267,11 @@ proc ::critcl::at::SHOWFRAMES {level {all 1}} {
 	if {($level > $id) && !$all} break
     }
     return
+}
+
+proc ::critcl::at::Error {msg args} {
+    set code [linsert $args 0 CRITCL AT]
+    return -code error -errorcode $code $msg
 }
 
 # # ## ### ##### ######## ############# #####################

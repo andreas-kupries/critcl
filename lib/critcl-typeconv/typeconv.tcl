@@ -47,9 +47,8 @@ proc ::critcl::typeconv::arg-def {name conversion {ctypevar {}} {ctypearg {}}} {
     # ctypearg - C type of formal C function argument.
 
     if {[info exists aconv($name)]} {
-	return -code error \
-	    -errorcode {CRITCL TYPECONV ARGUMENT DUPLICATE} \
-	    "Illegal duplicate definition of '$name'."
+	Error "Illegal duplicate definition of '$name'." \
+	    ARGUMENT DUPLICATE $name
     }
 
     set csupport {}
@@ -87,15 +86,10 @@ proc ::critcl::typeconv::arg-set-support {name code} {
     variable aconv
     variable asupport
 
-    if {![info exists aconv($name)]} {
-	return -code error \
-	    -errorcode {CRITCL TYPECONV ARG-TYPE UNKNOWN} \
-	    "No definition for '$name'."
-    }
+    CheckArgument $name
     if {$asupport($name) ne {}} {
-	return -code error \
-	    -errorcode {CRITCL TYPECONV ARG-TYPE SUPPORT DUPLICATE} \
-	    "Illegal duplicate support of '$name'."
+	Error "Illegal duplicate support-code of '$name'." \
+	    ARGUMENT SUPPORT-DUPLICATE $name
     }
 
     lappend lines "#ifndef CRITCL_$name"
@@ -112,9 +106,8 @@ proc ::critcl::typeconv::result-def {name conversion {ctype {}}} {
     variable rconv
 
     if {[info exists rconv($name)]} {
-	return -code error \
-	    -errorcode {CRITCL TYPECONV RESULT DUPLICATE} \
-	    "Illegal duplicate definition of '$name'."
+	Error "Illegal duplicate definition of '$name'." \
+	    RESULT DUPLICATE $name
     }
 
     # Handle aliases by copying the original definition.
@@ -233,17 +226,20 @@ namespace eval ::critcl::typeconv {
 proc ::critcl::typeconv::CheckResult {type} {
     variable rconv
     if {[info exists rconv($type)]} return
-    return -code error \
-	-errorcode {CRITCL TYPECONV RESULT UNKNOWN} \
-	"Unknown result type '$type'"
+    Error "Unknown result type '$type'" \
+	RESULT UNKNOWN $type
 }
 
 proc ::critcl::typeconv::CheckArgument {type} {
     variable aconv
     if {[info exists aconv($type)]} return
-    return -code error \
-	-errorcode {CRITCL TYPECONV ARGUMENT UNKNOWN} \
-	"Unknown argument type '$type'"
+    Error "Unknown argument type '$type'" \
+	ARGUMENT UNKNOWN $type
+}
+
+proc ::critcl::typeconv::Error {msg args} {
+    set code [linsert $args 0 CRITCL TYPECONV]
+    return -code error -errorcode $code $msg
 }
 
 # # ## ### ##### ######## ############# #####################

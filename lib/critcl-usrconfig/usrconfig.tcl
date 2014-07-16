@@ -78,9 +78,9 @@ proc ::critcl::usrconfig::c_query {ref oname} {
 
     # Reject the use of undeclared user flags.
     if {![dict exists $config $ref $oname type]} {
-	return -code error \
-	    -errorcode {CRITCL USRCONFIG INVALID FLAG} \
-	    "Unknown user flag \"$oname\""
+	set choices [linsert [join [lsort -dict [dict keys [dict get $config $ref]]] {, }] end-1 or]
+	Error "Unknown user flag \"$oname\", expected one of $choices" \
+	    INVALID FLAG $oname
     }
 
     # Check if a value was supplied by the calling application. If it
@@ -142,20 +142,23 @@ proc ::critcl::usrconfig::Validate {oname otype value} {
     switch -exact -- $otype {
 	bool {
 	    if {![string is bool -strict $value]} {
-		return -code error \
-		    -errorcode {CRITCL USRCONFIG INVALID BOOL} \
-		    "Expected boolean for user flag \"$oname\", got \"$value\""
+		Error "Expected boolean for user flag \"$oname\", got \"$value\"" \
+		    INVALID BOOL $value $oname
 	    }
 	}
 	default {
 	    if {[lsearch -exact $otype $value] < 0} {
 		set choices [linsert [join $otype {, }] end-1 or]
-		return -code error \
-		    -errorcode {CRITCL USRCONFIG INVALID ENUM} \
-		    "Expected one of $choices for user flag \"$oname\", got \"$value\""
+		Error "Expected one of $choices for user flag \"$oname\", got \"$value\"" \
+		    INVALID ENUM $value $oname
 	    }
 	}
     }
+}
+
+proc ::critcl::usrconfig::Error {msg args} {
+    set code [linsert $args 0 CRITCL USRCONFIG]
+    return -code error -errorcode $code $msg
 }
 
 # # ## ### ##### ######## ############# #####################

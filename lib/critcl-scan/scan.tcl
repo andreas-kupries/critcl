@@ -140,15 +140,15 @@ proc ::critcl::scan-dependencies {key file {mode plain}} {
     dict with capture {
 	if {$mode eq "provide"} {
 	    ::critcl::msg -nonewline " (provide $name $version)"
-	    meta-assign $key name     $name
-	    meta-assign $key version  $version
+	    meta::assign $key name     $name
+	    meta::assign $key version  $version
 	}
 
 	dict for {k vlist} [dict get $capture meta-system] {
 	    if {$k eq "name"}    continue
 	    if {$k eq "version"} continue
 
-	    meta-extend $key $k $vlist
+	    meta::extend $key $k $vlist
 
 	    if {$k ne "require"} continue
 	    ::critcl::msg -nonewline " ($k [join $vlist {}])"
@@ -183,9 +183,8 @@ namespace eval ::critcl::scan {
     variable saved
 
     namespace import ::critcl::common::*
-    namespace import ::critcl::usrconfig::default ; rename default uc-default
-    namespace import ::critcl::meta::assign ;       rename assign  meta-assign
-    namespace import ::critcl::meta::extend ;       rename assign  meta-extend
+    namespace eval usrconfig { namespace import ::critcl::userconfig::* }
+    namespace eval meta      { namespace import ::critcl::meta::* }
 }
 
 # # ## ### ##### ######## ############# #####################
@@ -279,6 +278,8 @@ proc critcl::scan::Core {lines theconfig} {
     }
 }
 
+namespace eval ::critcl::scan::critcl {}
+
 proc ::critcl::scan::critcl::Files {args} {
     variable ::critcl::scan::capture
     set res {}
@@ -308,7 +309,7 @@ proc ::critcl::scan::critcl::Expand {pattern} {
     foreach vfile [glob [file join $base $pattern]] {
 	set xfile [file normalize $vfile]
 	if {![file exists $xfile]} {
-	    error "$vfile: not found"
+	    Error "$vfile: not found" MISSING $vfile
 	}
 
 	# Constrain to be inside of the base directory.
@@ -317,7 +318,7 @@ proc ::critcl::scan::critcl::Expand {pattern} {
 	set npath [file split $xfile]
 
 	if {![string match -nocase "${prefix} *" $npath]} {
-	    error "$vfile: Not inside of $base"
+	    Error "$vfile: Not inside of $base" OUTSIDE $vfile $base
 	}
 
 	set xfile [eval [linsert [lrange $npath [llength $prefix] end] 0 file join ]]
@@ -523,7 +524,7 @@ proc ::critcl::scan::critcl::userconfig {cmd args} {
 	    lassign $args oname odesc otype odefault
 	    set odesc [string trim $odesc]
 	    if {[llength $args] < 4} {
-		set odefault [uc-default $otype]
+		set odefault [usrconfig::default $otype]
 	    }
 	    dict lappend capture config [list $oname $odesc $otype $odefault]
 	    ::critcl::print "\tUser Config:  $oname ([join $otype { }] -> $odefault) $odesc"
@@ -536,6 +537,11 @@ proc ::critcl::scan::critcl::userconfig {cmd args} {
 
 # # ## ### ##### ######## ############# #####################
 ## Full internal helper commands.
+
+proc ::critcl::scan::critcl::Error {msg args} {
+    set code [linsert $args 0 CRITCL SCAN]
+    return -code error -errorcode $code $msg
+}
 
 # # ## ### ##### ######## ############# #####################
 ## Initialization

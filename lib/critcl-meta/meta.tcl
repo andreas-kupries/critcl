@@ -71,7 +71,7 @@ proc ::critcl::meta::get {ref key} {
 	return [dict get $user $ref $key]
     }
 
-    return -code error "Unknown meta data key \"$key\""
+    Error "Unknown meta data key \"$key\"" INVALID $key
 }
 
 proc ::critcl::meta::gets {ref key} {
@@ -80,7 +80,7 @@ proc ::critcl::meta::gets {ref key} {
 	return [dict get $system $ref $key]
     }
 
-    return -code error "Unknown system meta data key \"$key\""
+    Error "Unknown system meta data key \"$key\"" INVALID-SYSTEM $key
 }
 
 proc ::critcl::meta::require {ref args} {
@@ -165,7 +165,10 @@ namespace eval ::critcl::meta {
 # # ## ### ##### ######## ############# #####################
 ## Internal support commands
 
-# -- none --
+proc ::critcl::meta::Error {msg args} {
+    set code [linsert $args 0 CRITCL META]
+    return -code error -errorcode $code $msg
+}
 
 # # ## ### ##### ######## ############# #####################
 ## Initialization
