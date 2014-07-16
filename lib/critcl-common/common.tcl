@@ -22,7 +22,7 @@ package provide  critcl::common 1
 namespace eval ::critcl::common {
     namespace export cat write append \
 	text2words text2authors license-text \
-	today
+	today now maxlen
     catch { namespace ensemble create }
 
     namespace import ::critcl::data::file
@@ -91,6 +91,20 @@ proc ::critcl::common::license-text {words} {
 
 proc ::critcl::common::today {} {
     return [clock format [clock seconds] -format {%Y-%m-%d}]
+}
+`
+proc ::critcl::common::now {} {
+    return [clock format [clock seconds]]
+}
+
+proc ::critcl::common::maxlen {list} {
+    set max 0
+    foreach el $list {
+	set l [string length $el]
+	if {$l <= $max} continue
+	set max $l
+    }
+    return $max
 }
 
 if {[package vsatisfies [package present Tcl] 8.5]} {

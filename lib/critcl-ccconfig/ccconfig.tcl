@@ -18,8 +18,10 @@
 package require Tcl 8.4        ;# Minimal supported Tcl runtime.
 package require critcl::cache  ;# Result cache access (See 'use').
 package require critcl::common ;# Common utilities
+package require lassign84      ;# Forward compatible lassign
+package require dict84         ;# Forward compatible dict
 
-# XXX FIXME all the v:: state variables.
+# # ## ### ##### ######## ############# #####################
 
 package provide  critcl::ccconfig 1
 namespace eval ::critcl::ccconfig {
@@ -27,8 +29,6 @@ namespace eval ::critcl::ccconfig {
 	known target targetpplatform buildplatform \
 	sharedlibext crosscheck do do-log
     catch { namespace ensemble create }
-
-    namespace import ::critcl::common::cat
 }
 
 # # ## ### ##### ######## ############# #####################
@@ -68,33 +68,40 @@ proc ::critcl::ccconfig::do-log {failvar rv log cmdline} {
 # for explanations of the exact differences between these.
 
 proc ::critcl::ccconfig::known {} {
-    return $v::knowntargets
+    variable knowntargets
+    return  $knowntargets
 }
 
 proc ::critcl::ccconfig::target {} {
-    return $v::targetconfig
+    variable target
+    return  $target
 }
 
 proc ::critcl::ccconfig::targetplatform {} {
-    return $v::targetplatform
+    variable targetplatform
+    return  $targetplatform
 }
 
 proc ::critcl::ccconfig::buildplatform {} {
-    return $v::buildplatform
+    variable buildplatform
+    return  $buildplatform
 }
 
 proc ::critcl::ccconfig::actual {} {
     # Check if the chosen target is a cross-compile target.  If yes,
     # we return the actual platform identifier of the target. This is
-    # used to select the proper platform director names in the critcl
+    # used to select the proper platform directory names in the critcl
     # cache, generated packages, when searching for preload libraries,
     # etc. Whereas the chosen target provides the proper compile
     # configuration which will invoke the proper cross-compiler, etc.
 
-    if {[info exists v::xtargets($v::targetplatform)]} {
-	return $v::xtargets($v::targetplatform)
+    variable xtargets
+    variable targetplatform
+
+    if {[info exists xtargets($targetplatform)]} {
+	return $xtargets($targetplatform)
     } else {
-	return $v::targetplatform
+	return $targetplatform
     }
 }
 
@@ -103,12 +110,13 @@ proc ::critcl::ccconfig::sharedlibext {} {
 }
 
 proc ::critcl::ccconfig::crosscheck {} {
-    # Run the 'version' command
+    variable xtargets
 
+    # Run the 'version' command
     set     cmd [get version]
     lappend cmd 2> [Null]
     if {[do _ config $cmd]} {
-	# Was successful, parse the retunred string, aka stdout.
+	# Was successful, parse the returned string, aka stdout.
 	set host   ""
 	set target ""
 	foreach line $config {
@@ -120,7 +128,7 @@ proc ::critcl::ccconfig::crosscheck {} {
 	    }
 	}
 	if {($host ne $target) &&
-	    [info exists v::xtargets($target)]
+	    [info exists xtargets($target)]
 	} {
 	    # Change target
 	    use $target
@@ -140,62 +148,75 @@ proc ::critcl::ccconfig::showall {{ofd {}}} {
 	fcopy $ifd $ofd
 	close $ifd
     } else {
-	return [cat $datafile]
+	return [common::cat $datafile]
     }
 }
 
 proc ::critcl::ccconfig::show {{fd {}}} {
     variable datafile
-    variable vars
+    variable buildplatform
+    variable targetplatform
+    variable tools
+    variable current
 
-    # XXX replace gen - v::buildplatform
-    # XXX Do not use v::targetplatform here. Use v::config.
-    # XXX Similarly in 'use'.
-
-    set gen $v::buildplatform
-    if {$v::targetplatform eq ""} {
+    if {$targetplatform eq ""} {
 	set plat "default"
     } else {
-	set plat $v::targetplatform
+	set plat $targetplatform
     }
+
     set out [list]
-    if {$plat eq $gen} {
+    if {$plat eq $buildplatform} {
 	lappend out "Config: $plat"
     } else {
-	lappend out "Config: $plat (built on $gen)"
+	lappend out "Config: $plat (built on $buildplatform)"
     }
     lappend out "Origin: $datafile"
-    lappend out "    [format %-15s cache] [critcl::cache]"
-    foreach var [lsort $vars] {
-	set val [get $var]
-	set line "    [format %-15s $var]"
+
+    # Get the full target configuration.
+    set definitions [dict get tools $targetplatform]
+
+    # Show the config variables first.
+    # "cache" is a pseudo-variable.
+
+    set max [common::maxlen [dict keys $current]]
+    lappend out "    [format %-${max}s cache] [cache::get]"
+
+    foreach var [lsort -dict [dict keys $current]] {
+	if {![dict exists $definitions $var]} continue
+
+	set val [Resolve [dict get $definitions $var]]
+	set line "    [format %-${max}s $var]"
+
+	# Break value across lines (assuming a width of 70).
+	# XXX Use textutil::adjust+indent instead ?
 	foreach word [split [string trim $val]] {
 	    if {[set word [string trim $word]] eq ""} continue
 	    if {[string length "$line $word"] > 70} {
 		lappend out "$line \\"
-		set line "    [format %-15s { }] $word"
+		set line "    [format %-${max}s { }] $word"
 	    } else {
 		set line "$line $word"
 	    }
 	}
 	lappend out $line
     }
-    # Tcl variables
-    set vars [list]
-    set max 0
-    foreach idx [array names v::toolchain $v::targetplatform,*] {
-	set var [lindex [split $idx ,] 1]
-	if {[set len [string length $var]] > $max} {
-	    set max $len
-	}
-	if {$var ne "when" && ![info exists c::$var]} {
-	    lappend vars $idx $var
-	}
+
+    # Now show the part of the config which are not known variables,
+    # and are thus plain Tcl. If any.
+
+    set tclvars [list]
+    foreach var [dict keys $definitions] {
+	if {($var eq "when")} continue
+	if {[dict exists $current $var]} continue
+	lappend tclvars $var
     }
-    if {[llength $vars]} {
+    if {[llength $tclvars]} {
+	set max [common::maxlen $tclvars]
+
 	lappend out "Tcl variables:"
-	foreach {idx var} $vars {
-	    set val $v::toolchain($idx)
+	foreach var $tclvars {
+	    set val [dict get $definitions $var]
 	    if {[llength $val] == 1} {
 		# for when someone inevitably puts quotes around
 		# values - e.g. "Windows NT"
@@ -204,6 +225,9 @@ proc ::critcl::ccconfig::show {{fd {}}} {
 	    lappend out "    [format %-${max}s $var] $val"
 	}
     }
+
+    # All assembled, now we can write or return the result.
+
     set out [join $out \n]
     if {$fd ne ""} {
 	puts $fd $out
@@ -213,33 +237,37 @@ proc ::critcl::ccconfig::show {{fd {}}} {
 }
 
 proc ::critcl::ccconfig::get {var} {
-    variable cip
-    if {[catch {
-	set val [interp eval $cip [list subst [set c::$var]]]
-    }]} {
-	set val [set c::$var]
-    }
-    return $val
+    variable current
+    return [Resolve [dict get $current $var]]
 }
 
-proc ::critcl::ccconfig::choose {targetconfig {err 0}} {
+proc ::critcl::ccconfig::choose {targetid {err 0}} {
+    variable knowntargets
+
     # first try to match exactly
-    set match [lsearch -exact -all -inline $v::knowntargets $targetconfig]
+    set match [lsearch -exact -all -inline $knowntargets $targetid]
 
     # on failure, try to match as glob pattern
     if {![llength $match]} {
-        set match [lsearch -glob -all -inline $v::knowntargets $targetconfig]
+        set match [lsearch -glob -all -inline $knowntargets $targetid]
     }
 
     # on failure, error out if requested
     if {![llength $match] && $err} {
-	error "unknown target $targetconfig - use one of $v::knowntargets"
+	set choices [linsert [join [lsort -dict $knowntargets] {, }] end-1 or]
+	return -code error \
+	    -errorcode {CRITCL CCCONFIG INVALID TARGET-ID} \
+	    "Invalid target \"$target\", must be one of $choices"
     }
     return $match
 }
 
 proc ::critcl::ccconfig::use {targetconfig} {
-    set v::targetconfig $targetconfig
+    variable target         $targetconfig
+    variable targetplatform $targetconfig
+    variable buildplatform
+    variable tools
+    variable version
 
     # Strip the compiler information from the configuration to get the
     # platform identifier embedded into it. This is a semi-recurrence
@@ -252,74 +280,79 @@ proc ::critcl::ccconfig::use {targetconfig} {
     # in code. For symmetry the other compilers (-cc, -cl) are handled
     # as well.
 
-    set v::targetplatform $targetconfig
     foreach p {gcc cc_r xlc xlc_r cc cl} {
-	if {[regsub -- "-$p\$" $v::targetplatform {} v::targetplatform]} break
+	if {[regsub -- "-$p\$" $targetplatform {} vtargetplatform]} break
     }
 
-    set c::platform     ""
-    set c::sharedlibext ""
+    # (**) Defaults.
+    dict set current platform     ""
+    dict set current sharedlibext ""
 
-    foreach var $v::configvars {
-	if {[info exists v::toolchain($targetconfig,$var)]} {
+    # Copy the chosen configuration into the current one.
+    # Get the full target configuration.
 
-	    set c::$var $v::toolchain($targetconfig,$var)
+    set definitions [dict get tools $targetconfig]
+    foreach var [dict keys $current] {
+	if {![dict exists $definitions $var]} continue
+	set val [dict get $definitions $var]
+	dict set current $var $val
+	# Note: Resolve happens on actual use.
 
-	    if {$var eq "platform"} {
-		set px [get platform]
-		set v::targetplatform [lindex $px 0]
-		set v::version        [lindex $px 1]
-	    }
-	}
+	if {$var ne "platform"} continue
+	lassign [Resolve $val] targetplatform version
     }
     if {[info exists ::env(CFLAGS)]} {
-	variable c::compile
-	append   c::compile      " $::env(CFLAGS)"
+	dict append current compile " $::env(CFLAGS)"
     }
     if {[info exists ::env(LDFLAGS)]} {
-	variable c::link
-	append   c::link         " $::env(LDFLAGS)"
-	append   c::link_preload " $::env(LDFLAGS)"
+	dict append current link         " $::env(LDFLAGS)"
+	dict append current link_preload " $::env(LDFLAGS)"
     }
-    if {[string match $v::targetplatform $v::buildplatform]} {
+    if {[string match $targetplatform $buildplatform]} {
 	# expand platform to match host if it contains wildcards
-	set v::targetplatform $v::buildplatform
+	set targetplatform $buildplatform
     }
-    if {$c::platform eq ""} {
+
+    # Override defaults (see **) with more sensible information.
+    if {[dict get $current platform] eq ""} {
 	# default config platform (mainly for the "show" command)
-	set c::platform $v::targetplatform
+	dict set current platform $targetplatform
     }
-    if {$c::sharedlibext eq ""} {
-	set c::sharedlibext [info sharedlibextension]
+    if {[dict get $current sharedlibext] eq ""} {
+	dict set current sharedlibext [info sharedlibextension]
     }
 
-    cache::def [file join ~ .critcl $v::targetplatform]
+    cache::def [file join ~ .critcl $targetplatform]
 
-    #  set any Tcl variables
-    foreach idx [array names v::toolchain $v::targetplatform,*] {
-	set var [lindex [split $idx ,] 1]
-	if {![info exists c::$var]} {
-	    set val $v::toolchain($idx)
-	    if {[llength $val] == 1} {
-		# for when someone inevitably puts quotes around
-		# values - e.g. "Windows NT"
-		set val [lindex $val 0]
-	    }
-	    set $var $val
+    # Now take the part of the config which are not known variables,
+    # and are thus plain Tcl. If any. Set them XXX ?WHERE?
+
+    foreach var [dict keys $definitions] {
+	if {($var eq "when")} continue
+	if {[dict exists $current $var]} continue
+
+	set val [dict get $definitions $var]
+	if {[llength $val] == 1} {
+	    # for when someone inevitably puts quotes around
+	    # values - e.g. "Windows NT"
+	    set val [lindex $val 0]
 	}
+	set $var $val
     }
     return
 }
 
 proc ::critcl::ccconfig::read {config} {
     variable cip
+    variable buildplatform
+    variable current
 
     set cfg [open $config]
     set knowntargets [list]
     set cont ""
     set whenplat ""
 
-    interp eval $cip set platform $v::buildplatform
+    interp eval $cip set platform $buildplatform
 
     set i 0
     while {[gets $cfg line] >= 0} {
@@ -401,7 +434,9 @@ proc ::critcl::ccconfig::read {config} {
 	    if {$plat eq "#"} continue
 
 	    # (4), or (5).
-	    if {[lsearch -exact $v::configvars $plat] != -1} {
+	    if {[lsearch -exact [dict keys $current] $plat] != -1} {
+		# XXX FIXME USE dict exists $current $plat
+
 		# (5) default config option
 		set cmd ""
 		if {![regexp {(\S+)\s+(.*)} $line -> type cmd]} {
@@ -424,8 +459,8 @@ proc ::critcl::ccconfig::read {config} {
 		#      standard selection for the configuration.
 
 		if {$type eq "when" &&
-		    ( [string match ${v::buildplatform}* $plat] ||
-		      [string match ${plat}* $v::buildplatform] )} {
+		    ( [string match ${buildplatform}* $plat] ||
+		      [string match ${plat}* $buildplatform] )} {
 		    set res ""
 		    catch {
 			set res [interp eval $cip expr $cmd]
@@ -446,20 +481,21 @@ proc ::critcl::ccconfig::read {config} {
                     if {$cmd eq ""} {
                         set cmd $plat
                     }
-                    set v::xtargets($plat) $cmd
+                    set xtargets($plat) $cmd
                 }
                 copy {
                     # (4c) copy an existing config
                     # XXX - should we error out if no definitions exist
                     # for parent platform config
                     # $cmd contains the parent platform
-                    foreach {key val} [array get v::toolchain "$cmd,*"] {
-                        set key [lindex [split $key ,] 1]
-                        set v::toolchain($plat,$key) $val
-                    }
+		    if {[dict exists $tools $cmd]} {
+			dict for {key val} [dict get $tools $cmd] {
+			    dict set tools $plat $key $val
+			}
+		    }
                 }
                 default {
-                    set v::toolchain($plat,$type) $cmd
+                    dict set tools $plat $type $cmd
                 }
 	    }
 	}
@@ -470,17 +506,15 @@ proc ::critcl::ccconfig::read {config} {
     # Config file processing has completed.
     # Now select the platform to configure the
     # compiler backend with.
-
-    set v::knowntargets $knowntargets
-
+    #
     # The config file may have selected a configuration based on the
-    # TRUE when conditions. Which were matched to v::buildplatform,
+    # TRUE when conditions. Which were matched to buildplatform,
     # making the chosen config a variant of it. If that did not happen
     # a platform is chosen from the set of defined targets.
     if {$whenplat ne ""} {
 	set match [list $whenplat]
     } else {
-	set match [choose $v::buildplatform]
+	set match [choose $buildplatform]
     }
 
     # Initial configuration of the backend.
@@ -489,7 +523,7 @@ proc ::critcl::ccconfig::read {config} {
     if {[llength $match]} {
 	use [lindex $match 0]
     } else {
-	use $v::buildplatform
+	use $buildplatform
     }
     return
 }
@@ -498,123 +532,134 @@ proc ::critcl::ccconfig::read {config} {
 ## Internal state
 
 namespace eval ::critcl::ccconfig {
+    namespace eval common { namespace import ::critcl::common::* }
+    namespace eval cache  { namespace import ::critcl::cache::*  }
 
-    # v::xtargets
-    # v::targetconfig   - def:use
-    # v::knowntargets   - def:read
-    # v::targetplatform
-    # v::buildplatform
-    # v::toolchain
-    # v::version
+    # String. Min version number on platform.
+    # XXX It is unclear who/where this is actually used.
+    # XXX OS X maybe ?
+    variable version ""
 
-	variable version ""      ;# String. Min version number on platform
+    # (XX) To understand the set of variables below and their
+    # differences some terminology is required.
+    #
+    # First we have to distinguish between "target identifiers" and
+    # "platform identifiers". The first is the name for a particular
+    # set of configuration settings specifying commands and command
+    # line arguments to use. The second is the name of a machine
+    # configuration, identifying both operating system, and cpu
+    # architecture.
+    #
+    # The problem critcl has is that in 99% of the cases found in a
+    # critcl config file the "target identifier" is also a valid
+    # "platform identifier". Example: "linux-ix86". That does not make
+    # them semantically interchangable however.
+    #
+    # Especially when we add cross-compilation to the mix, where we
+    # have to further distinguish between the platform critcl itself
+    # is running on (build), and the platform for which critcl is
+    # generating code (target), and the last one sounds similar to
+    # "target identifier".
 
-	# (XX) To understand the set of variables below and their
-	# differences some terminology is required.
-	#
-	# First we have to distinguish between "target identifiers"
-	# and "platform identifiers". The first is the name for a
-	# particular set of configuration settings specifying commands
-	# and command line arguments to use. The second is the name of
-	# a machine configuration, identifying both operating system,
-	# and cpu architecture.
-	#
-	# The problem critcl has is that in 99% of the cases found in
-	# a critcl config file the "target identifier" is also a valid
-	# "platform identifier". Example: "linux-ix86". That does not
-	# make them semantically interchangable however.
-	#
-	# Especially when we add cross-compilation to the mix, where
-	# we have to further distinguish between the platform critcl
-	# itself is running on (build), and the platform for which
-	# critcl is generating code (target), and the last one sounds
-	# similar to "target identifier".
+    variable target          ;# Target identifier. The chosen configuration.
+    variable targetplatform  ;# Platform identifier. We generate binaries for there.
+    variable buildplatform   ;# Platform identifier. We run here.
 
-	variable targetconfig    ;# Target identifier. The chosen configuration.
-	variable targetplatform  ;# Platform identifier. We generate binaries for there.
-	variable buildplatform   ;# Platform identifier. We run here.
-
-	variable knowntargets {} ;# List of all target identifiers found
-	# in the configuration file last processed by "readconfig".
+    variable knowntargets {} ;# List of all target identifiers found
+                              # in the configuration file last processed
+                              # by "read".
 	
-	variable xtargets        ;# Cross-compile targets. This array maps from
-	array set xtargets {}    ;# the target identifier to the actual platform
-	# identifier of the target platform in question. If a target identifier
-	# has no entry here, it is assumed to be the platform identifier itself.
-	# See "critcl::actualtarget".
+    variable  xtargets       ;# Cross-compile targets. This array maps from
+    array set xtargets {}    ;# the target identifier to the actual platform
+    # identifier of the target platform in question. If a target identifier
+    # has no entry here, it is assumed to be the platform identifier itself.
+    # See "critcl::actualtarget".
 
-
-    # Interpreter used to resolve configuration values.
+    # Interpreter used to resolve configuration values. As they may contain
+    # references to other variables.
     variable cip
 
-    # List naming all the known and legal configuration variables.
-    variable vars {
-	compile
-	debug_memory
-	debug_symbols
-	include
-	libinclude
-	ldoutput
-	embed_manifest
-	link
-	link_debug
-	link_preload
-	link_release
-	noassert
-	object
-	optimize
-	output
-	platform
-	preproc_define
-	preproc_enum
-	sharedlibext
-	strip
-	tclstubs
-	threadflags
-	tkstubs
-	version
+    # Database mapping from target identifier and variable name to its
+    # value. In-memory form of the configuration file.  When a target
+    # is chosen the values which config are copied into "current", see
+    # below.
+    #
+    # dict: (target -> (varname -> value))
+    variable tools {}
+
+    # Dictionary holding the currently chosen compiler configuration
+    # (commands and options for the various tasks, i.e. compilation,
+    # linking, etc.). They keys of this dictionary are implicitly
+    # naming all the known and legal configuration variables. The full
+    # details regarding their meaning and use can be found in the
+    # standard configuration file "Config" which is part of the
+    # package. Keep this information in sync with the contents of
+    # 'Config'.
+
+    variable current {
+	compile        {}
+	debug_memory   {}
+	debug_symbols  {}
+	include        {}
+	libinclude     {}
+	ldoutput       {}
+	embed_manifest {}
+	link           {}
+	link_debug     {}
+	link_preload   {}
+	link_release   {}
+	noassert       {}
+	object	       {}
+	optimize       {}
+	output         {}
+	platform       {}
+	preproc_define {}
+	preproc_enum   {}
+	sharedlibext   {}
+	strip	       {}
+	tclstubs       {}
+	threadflags    {}
+	tkstubs        {}
+	version        {}
     }
 
-    # Child namespace holding the currently chosen compiler
-    # configuration (commands and options for the various tasks,
-    # i.e. compilation, linking, etc.).
-    namespace eval c {
-	# See sibling file 'Config' for the detailed and full
-	# information about the variables in use. configvars above, and
-	# the code below list only the variables relevant to C. Keep this
-	# information in sync with the contents of 'Config'.
-
-	# compile         Command to compile a C source file to an object file
-	# debug_memory    Compiler flags to enable memory debugging
-	# debug_symbols   Compiler flags to add symbols to resulting library
-	# include         Compiler flag to add an include directory
-	# libinclude      Linker flag to add a library directory
-	# ldoutput       - ? See 'Config'
-	# link            Command to link one or more object files and create a shared library
-	# embed_manifest  Command to embed a manifest into a DLL. (Win-specific)
-	# link_debug     - ? See 'Config'
-	# link_preload   Linker flags to use when dependent libraries are pre-loaded.
-	# link_release   - ? See 'Config'
-	# noassert        Compiler flag to turn off assertions in Tcl code
-	# object          File extension for object files
-	# optimize        Compiler flag to specify optimization level
-	# output          Compiler flag to set output file, with argument $object => Use via [subst].
-	# platform        Platform identification string (defaults to platform::generic)
-	# preproc_define  Command to preprocess C source file (for critcl::cdefines)
-	# preproc_enum    ditto
-	# sharedlibext    The platform's file extension used for shared library files.
-	# strip           Compiler flag to tell the linker to strip symbols
-	# target          Presence of this key indicates that this is a cross-compile target
-	# tclstubs        Compiler flag to set USE_TCL_STUBS
-	# threadflags     Compiler flags to enable threaded build
-	# tkstubs         Compiler flag to set USE_TK_STUBS
-	# version         Command to print the compiler version number
-    }
-
+    # compile         Command to compile a C source file to an object file
+    # debug_memory    Compiler flags to enable memory debugging
+    # debug_symbols   Compiler flags to add symbols to resulting library
+    # include         Compiler flag to add an include directory
+    # libinclude      Linker flag to add a library directory
+    # ldoutput       - ? See 'Config'
+    # link            Command to link one or more object files and create a shared library
+    # embed_manifest  Command to embed a manifest into a DLL. (Win-specific)
+    # link_debug     - ? See 'Config'
+    # link_preload   Linker flags to use when dependent libraries are pre-loaded.
+    # link_release   - ? See 'Config'
+    # noassert        Compiler flag to turn off assertions in Tcl code
+    # object          File extension for object files
+    # optimize        Compiler flag to specify optimization level
+    # output          Compiler flag to set output file, with argument $object => Use via [subst].
+    # platform        Platform identification string (defaults to platform::generic)
+    # preproc_define  Command to preprocess C source file (for critcl::cdefines)
+    # preproc_enum    ditto
+    # sharedlibext    The platform's file extension used for shared library files.
+    # strip           Compiler flag to tell the linker to strip symbols
+    # target          Presence of this key indicates that this is a cross-compile target
+    # tclstubs        Compiler flag to set USE_TCL_STUBS
+    # threadflags     Compiler flags to enable threaded build
+    # tkstubs         Compiler flag to set USE_TK_STUBS
+    # version         Command to print the compiler version number
 }
 
 # # ## ### ##### ######## ############# #####################
 ## Internal support commands
+
+proc ::critcl::ccconfig::Resolve {value} {
+    variable cip
+    catch {
+	set value [interp eval $cip [list subst $value]]
+    }
+    return $value
+}
 
 proc ::critcl::ccconfig::BuildPlatform {} {
     set platform [::platform::generic]
@@ -675,16 +720,8 @@ proc ::critcl::ccconfig::Null {} {
 
 proc ::critcl::ccconfig::Initialize {} {
     variable cip [interp create]
-    variable vars
     variable datafile
-
-    variable v::buildplatform [BuildPlatform]
-
-    # We keep the current configuration in a namespace.
-    # Initalize all variables to a default.
-    foreach var $vars {
-	set c::$var {}
-    }
+    variable buildplatform [BuildPlatform]
 
     set selfdir  [file dirname [file normalize [info script]]]
     set datafile [file join $selfdir Config]

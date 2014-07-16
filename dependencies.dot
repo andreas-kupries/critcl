@@ -65,6 +65,7 @@ strict digraph {
 	common		->	meta;
 	common		->	scan;
 	data		->	common;
+	dict84		->	ccconfig;
 	dict84		->	meta;
 	dict84		->	scan;
 	dict84		->	tags;
@@ -72,6 +73,7 @@ strict digraph {
 	dict84		->	uuid;
 	gopt		->	at;
 	lassign84	->	at;
+	lassign84	->	ccconfig;
 	lassign84	->	scan;
 	lassign84	->	typeconv;
 	meta		->	scan;

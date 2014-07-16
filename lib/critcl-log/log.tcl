@@ -18,8 +18,8 @@ namespace eval ::critcl::log {
     namespace export begin line text done fd
     catch { namespace ensemble create }
 
-    namespace eval cache { namespace import ::critcl::cache::* }
-    namespace import ::critcl::common::cat
+    namespace eval cache  { namespace import ::critcl::cache::*  }
+    namespace eval common { namespace import ::critcl::common::* }
 }
 
 # # ## ### ##### ######## ############# #####################
@@ -35,7 +35,7 @@ proc ::critcl::log::start {cookie file} {
     variable path    [cache::get [pid].log]
     variable fd      [open $path $w]
 
-    puts $fd "\n[clock format [clock seconds]] - $file"
+    puts $fd "\n[common::now] - $file"
     return
 }
 
@@ -62,7 +62,7 @@ proc ::critcl::log::done {} {
     variable fd
 
     close $fd
-    cache::append $session.log [set msgs [cat $path]]
+    cache::append $session.log [set msgs [common::cat $path]]
     file delete -force $path
 
     unset session path fd
