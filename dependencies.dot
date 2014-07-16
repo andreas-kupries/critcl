@@ -1,6 +1,7 @@
 //	Package	 Notes		Dependencies
 //	=======	 =====		============
 //	at	 #line mgmt	<-- who lassign84
+//	api	stubs mgmt	<-- dict84 meta uuid who
 //	cache	 result cache	<-- common
 //	common	 general utils	<-- data
 //	data	 data file stor	<--
@@ -19,7 +20,6 @@
 //	=======	 =====		============
 //	
 //	TODO
-//		api	(stubs mgmt)
 //		ccode	(collection)
 
 strict digraph {
@@ -57,14 +57,17 @@ strict digraph {
 	//	Dependencies
 
 	at		->	typeconv;
+	cache		->	api;
 	cache		->	ccconfig;
 	cache		->	log;
+	//common		->	api;
 	//common		->	cache;
 	//common		->	ccconfig;
 	//common		->	log;
 	//common		->	meta;
 	//common		->	scan;
 	data		->	common;
+	//dict84		->	api;
 	//dict84		->	ccconfig;
 	//dict84		->	meta;
 	//dict84		->	scan;
@@ -72,13 +75,17 @@ strict digraph {
 	//dict84		->	usrconfig;
 	//dict84		->	uuid;
 	gopt		->	at;
+	//lassign84	->	api;
 	//lassign84	->	at;
 	//lassign84	->	ccconfig;
 	//lassign84	->	scan;
 	//lassign84	->	typeconv;
+	meta		->	api;
 	meta		->	scan;
 	usrconfig	->	scan;
+	uuid		->	api;
 	uuid		->	usrconfig;
+	who		->	api;
 	who		->	at;
 
 	ccconfig	->	cc;

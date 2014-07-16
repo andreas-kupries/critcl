@@ -42,6 +42,7 @@ package require critcl::at        ;# Management of #line pragmas.
 #   incr*   - modify stashed location (only line number, not file).
 #   get     - format, return, and clear stash
 #   get*    - format & return stash
+package require critcl::api       ;# Management of stubs tables.
 package require critcl::cache     ;# Result cache access.
 package require critcl::ccconfig  ;# CC configuration database for standard backend.
 package require critcl::common    ;# General utility commands.
@@ -661,7 +662,7 @@ proc ::critcl::source {path} {
     # Source a critcl file in the context of the current file,
     # i.e. [who::is]. Enables the factorization of a large critcl
     # file into smaller, easier to read pieces.
-    SkipIgnored [set file [who::is]]
+    set file [SkipIgnored [who::is]]
     AbortWhenCalledAfterBuild
 
     msg -nonewline " (importing $path)"
@@ -931,7 +932,7 @@ proc ::critcl::userconfig {cmd args} {
     }
 
     # Dispatch
-    return [eval [linsert $args 0 ::critcl::userconfig::c_$cmd $file]]
+    return [eval [linsert $args 0 ::critcl::usrconfig::c_$cmd $file]]
 }
 
 # # ## ### ##### ######## ############# #####################
@@ -941,304 +942,12 @@ proc ::critcl::api {cmd args} {
     set file [SkipIgnored [who::is]]
     AbortWhenCalledAfterBuild
 
-    if {![llength [info commands ::critcl::API$cmd]]} {
+    if {![llength [info commands ::critcl::api::c_$cmd]]} {
 	return -code error "Unknown method \"$cmd\""
     }
 
     # Dispatch
-    return [eval [linsert $args 0 ::critcl::API$cmd $file]]
-}
-
-proc ::critcl::APIscspec {file scspec} {
-    uuid::add $file .api-scspec $scspec
-    dict set v::code($file) config api_scspec $scspec
-    return
-}
-
-proc ::critcl::APIimport {file name version} {
-
-    # First we request the imported package, giving it a chance to
-    # generate the headers searched for in a moment (maybe it was
-    # critcl based as well, and generates things dynamically).
-
-    # Note that this can fail, for example in a cross-compilation
-    # environment. Such a failure however does not imply that the
-    # required API headers are not present, so we can continue.
-
-    catch {
-	package require $name $version
-    }
-
-    meta::require $file [list $name $version]
-
-    # Now we check that the relevant headers of the imported package
-    # can be found in the specified search paths.
-
-    set cname [string map {:: _} $name]
-
-    set at [API_locate $cname]
-    if {$at eq {}} {
-	error "Headers for API $name not found"
-    } else {
-	msg -nonewline " (stubs import $name $version @ $at/$cname)"
-    }
-
-    set def [list $name $version]
-    uuid::add $file .api-import $def
-    dict update v::code($file) config c {
-	dict lappend c api_use $def
-    }
-
-    # At last look for the optional .decls file. Ignore if there is
-    # none. Decode and return contained stubs table otherwise.
-
-    set decls $at/$cname/$cname.decls
-    if {[file exists $decls]} {
-	package require stubs::reader
-	set T [stubs::container::new]
-	stubs::reader::file T $decls
-	return $T
-    }
-    return
-}
-
-proc ::critcl::APIexport {file name} {
-    msg -nonewline " (stubs export $name)"
-
-    uuid::add $file .api-self $name
-    return [dict set v::code($file) config api_self $name]
-}
-
-proc ::critcl::APIheader {file args} {
-    uuid::add $file .api-headers $args
-    return [SetParam api_hdrs $args]
-}
-
-proc ::critcl::APIextheader {file args} {
-    uuid::add $file .api-eheaders $args
-    return [SetParam api_ehdrs $args 0]
-}
-
-proc ::critcl::APIfunction {file rtype name arguments} {
-    package require stubs::reader
-
-    # Generate a declaration as it would have come straight out of the
-    # stubs reader. To this end we generate a C code fragment as it
-    # would be have been written inside of a .decls file.
-
-    # TODO: We should record this as well, and later generate a .decls
-    # file as part of the export. Or regenerate it from the internal
-    # representation.
-
-    if {[llength $arguments]} {
-	foreach {t a} $arguments {
-	    lappend ax "$t $a"
-	}
-    } else {
-	set ax void
-    }
-    set decl [stubs::reader::ParseDecl "$rtype $name ([join $ax ,])"]
-
-    uuid::add $file .api-fun $decl
-    dict update v::code($file) config c {
-	dict lappend c api_fun $decl
-    }
-    return
-}
-
-proc ::critcl::API_locate {name} {
-    foreach dir [SystemIncludePaths [who::is]] {
-	if {[API_at $dir $name]} { return $dir }
-    }
-    return {}
-}
-
-proc ::critcl::API_at {dir name} {
-    foreach suffix {
-	Decls.h StubLib.h
-    } {
-	if {![file exists [file join $dir $name $name$suffix]]} { return 0 }
-    }
-    return 1
-}
-
-proc ::critcl::API_setup {rv file} {
-    upvar 1 $rv result
-
-    package require stubs::gen
-
-    lassign [API_setup_import $file] iprefix idefines
-    dict set result apidefines $idefines
-
-    append prefix $iprefix
-    append prefix [API_setup_export result $file]
-
-    # Save prefix to result dictionary for pickup by Compile.
-    if {$prefix eq ""} return
-    dict set result apiprefix  $prefix\n
-    return
-}
-
-proc ::critcl::API_setup_import {file} {
-    if {![dict exists $v::code($file) config api_use]} {
-	return ""
-    }
-
-    #msg -nonewline " (stubs import)"
-
-    set prefix ""
-    set defines {}
-
-    foreach def [dict get $v::code($file) config api_use] {
-	lassign $def iname iversion
-
-	set cname   [string map {:: _} $iname]
-	set upname  [string toupper  $cname]
-	set capname [stubs::gen::cap $cname]
-
-	set import [at::here!][subst -nocommands {
-	    /* Import API: $iname */
-	    #define USE_${upname}_STUBS 1
-	    #include <$cname/${cname}Decls.h>
-	}]
-	append prefix \n$import
-	ccode $import
-
-	# TODO :: DOCUMENT environment of the cinit code.
-	cinit [subst -nocommands {
-	    if (!${capname}_InitStubs (ip, "$iversion", 0)) {
-		return TCL_ERROR;
-	    }
-	}] [subst -nocommands {
-	    #include <$cname/${cname}StubLib.h>
-	}]
-
-	lappend defines -DUSE_${upname}_STUBS=1
-    }
-
-    return [list $prefix $defines]
-}
-
-proc ::critcl::API_setup_export {rv file} {
-    upvar 1 $rv result
-
-    if {![dict exists $v::code($file) config api_hdrs] &&
-	![dict exists $v::code($file) config api_ehdrs] &&
-	![dict exists $v::code($file) config api_fun]} return
-
-    if {[dict exists $v::code($file) config api_self]} {
-	# API name was declared explicitly
-	set ename [dict get $v::code($file) config api_self]
-    } else {
-	# API name is implicitly defined, as the package name.
-	set ename [meta::gets $file name]
-    }
-
-    set prefix ""
-
-    #msg -nonewline " (stubs export)"
-
-    set cname   [string map {:: _} $ename]
-    set upname  [string toupper  $cname]
-    set capname [stubs::gen::cap $cname]
-
-    set import [at::here!][subst -nocommands {
-	/* Import our own exported API: $ename, mapping disabled */
-	#undef USE_${upname}_STUBS
-	#include <$cname/${cname}Decls.h>
-    }]
-    append prefix \n$import
-    ccode $import
-
-    # Generate the necessary header files.
-
-    append sdecls "\#ifndef ${cname}_DECLS_H\n"
-    append sdecls "\#define ${cname}_DECLS_H\n"
-    append sdecls "\n"
-    append sdecls "\#include <tcl.h>\n"
-
-    if {[dict exists $v::code($file) config api_ehdrs]} {
-	append sdecls "\n"
-	foreach hdr [dict get $v::code($file) config api_ehdrs] {
-	    append sdecls "\#include \"[file tail $hdr]\"\n"
-	}
-    }
-
-    if {[dict exists $v::code($file) config api_hdrs]} {
-	append sdecls "\n"
-	foreach hdr [dict get $v::code($file) config api_hdrs] {
-	    set hfile [file tail $hdr]
-	    cache::copy2 $hdr $cname/$hfile
-	    append sdecls "\#include \"$hfile\"\n"
-	}
-    }
-
-    # Insert code to handle the storage class settings on Windows.
-
-    append sdecls [string map \
-		       [list @cname@ $cname @up@ $upname] \
-		       $v::storageclass]
-
-    package require stubs::container
-    package require stubs::reader
-    package require stubs::gen
-    package require stubs::gen::header
-    package require stubs::gen::init
-    package require stubs::gen::lib
-    package require stubs::writer
-
-    # Implied .decls file. Not actually written, only implied in the
-    # stubs container invocations, as if read from such a file.
-
-    set T [stubs::container::new]
-    stubs::container::library   T $ename
-    stubs::container::interface T $cname
-
-    if {[dict exists $v::code($file) config api_scspec]} {
-	stubs::container::scspec T \
-	    [dict get $v::code($file) config api_scspec]
-    }
-
-    if {[dict exists $v::code($file) config api_fun]} {
-	set index 0
-	foreach decl [dict get $v::code($file) config api_fun] {
-	    #puts D==|$decl|
-	    stubs::container::declare T $cname $index generic $decl
-	    incr index
-	}
-	append sdecls "\n"
-	append sdecls [stubs::gen::header::gen $T $cname]
-    } 
-
-    append sdecls "\#endif /* ${cname}_DECLS_H */\n"
-
-    set comment "/* Stubs API Export: $ename */"
-
-    set    thedecls [stubs::writer::gen $T]
-    set    slib     [stubs::gen::lib::gen $T]
-    set    sinitstatic "  $comment\n  "
-    append sinitstatic [stubs::gen::init::gen $T]
-
-    set pn [meta::gets $file name]
-    set pv [meta::gets $file version]
-
-    set    sinitrun $comment\n
-    append sinitrun "Tcl_PkgProvideEx (ip, \"$pn\", \"$pv\", (ClientData) &${cname}Stubs);"
-
-    # Save the header files to the result cache for pickup (importers
-    # in mode "compile & run", or by the higher-level code doing a
-    # "generate package")
-
-    cache::write $cname/${cname}Decls.h   $sdecls
-    cache::write $cname/${cname}StubLib.h $slib
-    cache::write $cname/${cname}.decls    $thedecls
-
-    dict lappend result apiheader [cache::get $cname]
-
-    cinit $sinitrun $sinitstatic
-    cflags -DBUILD_$cname
-
-    return $prefix
+    return [eval [linsert $args 0 ::critcl::api::c_$cmd $file]]
 }
 
 # # ## ### ##### ######## ############# #####################
@@ -1457,6 +1166,21 @@ proc ::critcl::cbuild {file {load 1}} {
     set buildforpackage $v::buildforpackage
     set v::buildforpackage 0
 
+    # Complete stubs handling for the file/package.
+    # This feeds a number of last-minute C fragments into the system.
+
+    lassign [api::complete $file] \
+	xxcname xxdefines xxflags xxcode xxdecls xxinit
+
+    foreach i $xxinit d $xxdecls {
+	cinit $i $d
+    }
+    foreach import $xxcode {
+	ccode $import ;# (**)
+    }
+
+    # Begin with result dict here ... Keeping or not is handled after build/load...
+
     ## before this line - frontend operation
     # # ## ### ##### ######## #############
     ## after this line - backend execution
@@ -1520,7 +1244,19 @@ proc ::critcl::cbuild {file {load 1}} {
 	# XXX FIXME TODO API_setup disentangle these intermingled functions and
 	# XXX FIXME TODO API_setup responsibilities.
 
-	API_setup result $file
+	# XXX FIXME cname, etc. can be empty (no stubs).
+
+	# XXX uses apiprefix  => CollectEmbedded... header.c
+	# XXX      apidefines => Compile ... cc cmdline
+	# XXX      apiheader  => app-critcl
+
+	# XXX apiprefix header.c vs [ccode] (see (**)) ?!
+
+	dict set result apidefines $xxdefines
+	if {[llength $xxcode]} {
+	    dict set     result apiprefix  \n[join $xxcode \n]\n
+	    dict lappend result apiheader [cache::get $xxcname]
+	}
 
 	if {[dict exists $result apiprefix]} {
 	    set api [dict get $result apiprefix]
@@ -2376,7 +2112,7 @@ proc ::critcl::SystemIncludePaths {file} {
     foreach flag [GetParam $file cheaders] {
 	if {![string match "-*" $flag]} {
 	    # flag = normalized absolute path to a header file.
-	    # Transform into a -I directory reference.
+	    # Transform into a directory reference.
 	    set dir [file dirname $flag]
 	} else {
 	    # Chop leading -I
@@ -3036,44 +2772,6 @@ namespace eval ::critcl {
 	# XXX clientdata() per-command (See ccommand). per-file+ccommand better?
 	# XXX delproc()    per-command (See ccommand). s.a
 
-	# XXX toolchain()  <platform>,<configvarname> -> data
-	# XXX            Used only in {read,set,show}config.
-	# XXX            Seems to be a database holding the total contents of the
-	# XXX            config file.
-
-	# knowntargets  - See the *config commands, list of all platforms we can compile for.
-
-	# I suspect that this came later
-
-	variable storageclass {
-/*
- * These macros are used to control whether functions are being declared for
- * import or export. If a function is being declared while it is being built
- * to be included in a shared library, then it should have the DLLEXPORT
- * storage class. If is being declared for use by a module that is going to
- * link against the shared library, then it should have the DLLIMPORT storage
- * class. If the symbol is beind declared for a static build or for use from a
- * stub library, then the storage class should be empty.
- *
- * The convention is that a macro called BUILD_xxxx, where xxxx is the name of
- * a library we are building, is set on the compile line for sources that are
- * to be placed in the library. When this macro is set, the storage class will
- * be set to DLLEXPORT. At the end of the header file, the storage class will
- * be reset to DLLIMPORT.
- */
-
-#undef TCL_STORAGE_CLASS
-#ifdef BUILD_@cname@
-#   define TCL_STORAGE_CLASS DLLEXPORT
-#else
-#   ifdef USE_@up@_STUBS
-#      define TCL_STORAGE_CLASS
-#   else
-#      define TCL_STORAGE_CLASS DLLIMPORT
-#   endif
-#endif
-	}
-
 	variable code	         ;# This array collects all code snippets and
 				  # data about them.
 
@@ -3104,10 +2802,6 @@ namespace eval ::critcl {
 	#				  packages with preload can't be used
 	#				  in mode 'compile & run'.
 	#		license		- String. License text.
-	#		api_self	- String. Name of our API. Defaults to package name.
-	#		api_hdrs	- List. Exported public headers of the API.
-	#		api_ehdrs	- List. Exported external public headers of the API.
-	#		api_fun		- List. Exported functions (signatures of result type, name, and arguments (C syntax))
 	#		meta		- Dictionary. Arbitrary keys to values, the user meta-data for the package.
 	#		package		- Dictionary. Keys, see below. System meta data for the package. Values are lists.
 	#			name		- Name of current package
