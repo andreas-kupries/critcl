@@ -26,7 +26,7 @@ package require dict84         ;# Forward compatible dict
 package provide  critcl::ccconfig 1
 namespace eval ::critcl::ccconfig {
     namespace export showall show get use choose read \
-	known target targetpplatform buildplatform \
+	known target targetplatform buildplatform \
 	sharedlibext crosscheck do do-log
     catch { namespace ensemble create }
 }
