@@ -51,7 +51,7 @@ proc ::critcl::usrconfig::c_define {ref oname odesc otype {odefault {}}} {
     # everything.
     Validate $oname $otype $odefault
 
-    uuid-add $ref .uc-def [list $oname $otype $odefault]
+    uuid::add $ref .uc-def [list $oname $otype $odefault]
 
     dict set config $ref $oname type    $otype
     dict set config $ref $oname default $odefault
@@ -132,7 +132,7 @@ namespace eval ::critcl::usrconfig {
     #                  -> "="       ->
     variable config {}
 
-    namespace import ::critcl::uuid::add ; rename add uuid-add
+    namespace eval uuid { namespace import ::critcl::uuid::* }
 }
 
 # # ## ### ##### ######## ############# #####################
