@@ -1332,7 +1332,7 @@ proc ::critcl::cbuild {file {load 1}} {
     dict unset v::code($file) config
     uuid::clear      $file
     usrconfig::clear $file
-    # api::clear $file FIXME TODO
+    api::clear       $file
     # replacement for v::code($file) FIXME TODO
 
     return [tags::get $file failed]
