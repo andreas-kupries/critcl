@@ -142,8 +142,7 @@ proc ::critcl::TeapotRequire {dspec} {
 ## Implementation -- API: Embed C Code
 
 proc ::critcl::ccode {text} {
-    set file [SkipIgnored [who::is]]
-    AbortWhenCalledAfterBuild
+    set file [CheckEntry]
     set digest [uuid::add $file .ccode $text]
 
     set block {}
@@ -159,8 +158,7 @@ proc ::critcl::ccode {text} {
 }
 
 proc ::critcl::ccommand {name anames args} {
-    set file [SkipIgnored [who::is]]
-    AbortWhenCalledAfterBuild
+    set file [CheckEntry]
 
     # Basic key for the clientdata and delproc arrays.
     set cname $name[uuid::serial $file]
@@ -238,8 +236,7 @@ proc ::critcl::ccommand {name anames args} {
 }
 
 proc ::critcl::cdata {name data} {
-    SkipIgnored [who::is]
-    AbortWhenCalledAfterBuild
+    CheckEntry
     binary scan $data c* bytes ;# split as bytes, not (unicode) chars
 
     set inittext ""
@@ -265,8 +262,7 @@ proc ::critcl::cdata {name data} {
 }
 
 proc ::critcl::cdefines {defines {namespace "::"}} {
-    set file [SkipIgnored [who::is]]
-    AbortWhenCalledAfterBuild
+    set file [CheckEntry]
     set digest [uuid::add $file .cdefines [list $defines $namespace]]
 
     dict update v::code($file) config c {
@@ -477,8 +473,7 @@ proc ::critcl::argconversion {adefs {n 1}} {
 }
 
 proc ::critcl::cproc {name adefs rtype {body "#"} args} {
-    set file [SkipIgnored [who::is]]
-    AbortWhenCalledAfterBuild
+    set file [CheckEntry]
 
     set acname 0
     set passcd 0
@@ -563,8 +558,7 @@ proc ::critcl::cproc {name adefs rtype {body "#"} args} {
 }
 
 proc ::critcl::cinit {text edecls} {
-    set file [SkipIgnored [who::is]]
-    AbortWhenCalledAfterBuild
+    set file [CheckEntry]
 
     set digesta [uuid::add $file .cinit.f $text]
     set digestb [uuid::add $file .cinit.e $edecls]
@@ -662,8 +656,7 @@ proc ::critcl::source {path} {
     # Source a critcl file in the context of the current file,
     # i.e. [who::is]. Enables the factorization of a large critcl
     # file into smaller, easier to read pieces.
-    set file [SkipIgnored [who::is]]
-    AbortWhenCalledAfterBuild
+    set file [CheckEntry]
 
     msg -nonewline " (importing $path)"
 
@@ -712,32 +705,27 @@ proc ::critcl::source {path} {
 proc ::critcl::owns {args} {}
 
 proc ::critcl::cheaders {args} {
-    SkipIgnored [who::is]
-    AbortWhenCalledAfterBuild
+    CheckEntry
     return [SetParam cheaders $args]
 }
 
 proc ::critcl::csources {args} {
-    SkipIgnored [who::is]
-    AbortWhenCalledAfterBuild
+    CheckEntry
     return [SetParam csources $args 1 1]
 }
 
 proc ::critcl::clibraries {args} {
-    SkipIgnored [who::is]
-    AbortWhenCalledAfterBuild
+    CheckEntry
     return [SetParam clibraries $args]
 }
 
 proc ::critcl::cobjects {args} {
-    SkipIgnored [who::is]
-    AbortWhenCalledAfterBuild
+    CheckEntry
     return [SetParam cobjects $args]
 }
 
 proc ::critcl::tsources {args} {
-    set file [SkipIgnored [who::is]]
-    AbortWhenCalledAfterBuild
+    set file [CheckEntry]
     # This, 'license', 'meta?' and 'meta' are the only places where we
     # are not extending the UUID. Because the companion Tcl sources
     # (count, order, and content) have no bearing on the binary at
@@ -756,8 +744,7 @@ proc ::critcl::tsources {args} {
 }
 
 proc ::critcl::cflags {args} {
-    set file [SkipIgnored [who::is]]
-    AbortWhenCalledAfterBuild
+    set file [CheckEntry]
     if {![llength $args]} return
 
     uuid::add $file .cflags $args
@@ -770,8 +757,7 @@ proc ::critcl::cflags {args} {
 }
 
 proc ::critcl::ldflags {args} {
-    set file [SkipIgnored [who::is]]
-    AbortWhenCalledAfterBuild
+    set file [CheckEntry]
     if {![llength $args]} return
 
     uuid::add $file .ldflags $args
@@ -787,8 +773,7 @@ proc ::critcl::ldflags {args} {
 }
 
 proc ::critcl::framework {args} {
-    SkipIgnored [who::is]
-    AbortWhenCalledAfterBuild
+    CheckEntry
 
     # Check if we are building for OSX and ignore the command if we
     # are not. Our usage of "actualtarget" means that we allow for a
@@ -808,8 +793,7 @@ proc ::critcl::framework {args} {
 }
 
 proc ::critcl::tcl {version} {
-    set file [SkipIgnored [who::is]]
-    AbortWhenCalledAfterBuild
+    set file [CheckEntry]
 
     uuid::add $file .mintcl $version
     dict set v::code($file) config mintcl $version
@@ -823,8 +807,7 @@ proc ::critcl::tcl {version} {
 }
 
 proc ::critcl::tk {} {
-    set file [SkipIgnored [who::is]]
-    AbortWhenCalledAfterBuild
+    set file [CheckEntry]
 
     uuid::add $file .tk 1
     dict set v::code($file) config tk 1
@@ -840,8 +823,7 @@ proc ::critcl::tk {} {
 # Register a shared library for pre-loading - this will eventually be
 # redundant when TIP #239 is widely available
 proc ::critcl::preload {args} {
-    set file [SkipIgnored [who::is]]
-    AbortWhenCalledAfterBuild
+    set file [CheckEntry]
     if {![llength $args]} return
 
     uuid::add $file .preload $args
@@ -854,8 +836,7 @@ proc ::critcl::preload {args} {
 }
 
 proc ::critcl::license {who args} {
-    set file [SkipIgnored [who::is]]
-    AbortWhenCalledAfterBuild
+    set file [CheckEntry]
 
     # This, 'tsources', 'meta?', and 'meta' are the only places where
     # we are not extending the UUID. Because the license text has no
@@ -870,8 +851,7 @@ proc ::critcl::license {who args} {
 ## Implementation -- API: meta data (teapot)
 
 proc ::critcl::description {text} {
-    set file [SkipIgnored [who::is]]
-    AbortWhenCalledAfterBuild
+    set file [CheckEntry]
     InitializeFile $file
 
     meta::description $file $text
@@ -879,8 +859,7 @@ proc ::critcl::description {text} {
 }
 
 proc ::critcl::summary {text} {
-    set file [SkipIgnored [who::is]]
-    AbortWhenCalledAfterBuild
+    set file [CheckEntry]
     InitializeFile $file
 
     meta::summary $file $text
@@ -888,8 +867,7 @@ proc ::critcl::summary {text} {
 }
 
 proc ::critcl::subject {args} {
-    set file [SkipIgnored [who::is]]
-    AbortWhenCalledAfterBuild
+    set file [CheckEntry]
     InitializeFile $file
 
     eval [linsert $args 0 meta::subject $file]
@@ -897,8 +875,7 @@ proc ::critcl::subject {args} {
 }
 
 proc ::critcl::meta {key args} {
-    set file [SkipIgnored [who::is]]
-    AbortWhenCalledAfterBuild
+    set file [CheckEntry]
     # This, 'meta?', 'license', and 'tsources' are the only places
     # where we are not extending the UUID. Because the meta data has
     # no bearing on the binary at all.
@@ -909,8 +886,7 @@ proc ::critcl::meta {key args} {
 }
 
 proc ::critcl::meta? {key} {
-    set file [SkipIgnored [who::is]]
-    AbortWhenCalledAfterBuild
+    set file [CheckEntry]
     # This, 'meta', 'license', and 'tsources' are the only places
     # where we are not extending the UUID. Because the meta data has
     # no bearing on the binary at all.
@@ -923,8 +899,7 @@ proc ::critcl::meta? {key} {
 ## Implementation -- API: user configuration options.
 
 proc ::critcl::userconfig {cmd args} {
-    set file [SkipIgnored [who::is]]
-    AbortWhenCalledAfterBuild
+    set file [CheckEntry]
     InitializeFile $file
 
     if {![llength [info commands ::critcl::usrconfig::c_$cmd]]} {
@@ -939,8 +914,7 @@ proc ::critcl::userconfig {cmd args} {
 ## Implementation -- API: API (stubs) management
 
 proc ::critcl::api {cmd args} {
-    set file [SkipIgnored [who::is]]
-    AbortWhenCalledAfterBuild
+    set file [CheckEntry]
 
     if {![llength [info commands ::critcl::api::c_$cmd]]} {
 	return -code error "Unknown method \"$cmd\""
@@ -954,8 +928,7 @@ proc ::critcl::api {cmd args} {
 ## Implementation -- API: Introspection
 
 proc ::critcl::check {args} {
-    set file [SkipIgnored [who::is] 0]
-    AbortWhenCalledAfterBuild
+    set file [CheckEntry 0]
 
     # Syntax:
     # (1) check <code>
@@ -979,8 +952,7 @@ proc ::critcl::check {args} {
 }
 
 proc ::critcl::checklink {args} {
-    set file [SkipIgnored [who::is] 0]
-    AbortWhenCalledAfterBuild
+    set file [CheckEntry 0]
 
     # Syntax:
     # (1) check <code>
@@ -1004,14 +976,12 @@ proc ::critcl::checklink {args} {
 }
 
 proc ::critcl::compiled {} {
-    SkipIgnored [who::is] 1
-    AbortWhenCalledAfterBuild
+    CheckEntry 1
     return 0
 }
 
 proc ::critcl::compiling {} {
-    SkipIgnored [who::is] 0
-    AbortWhenCalledAfterBuild
+    CheckEntry 0
     # Check that we can indeed run a compiler
     # Should only need to do this if we have to compile the code?
     return [HasCompiler]
@@ -1098,8 +1068,8 @@ proc ::critcl::AbortWhenCalledAfterBuild {} {
     error "[lindex [info level -1] 0]$cloc: Illegal attempt to define C code in [who::is] after it was built."
 }
 
-proc ::critcl::Checks {{result {}}} {
-    set file [SkipIgnored [who::is]]
+proc ::critcl::CheckEntry {{result {}}} {
+    set file [SkipIgnored [who::is] $result]
     AbortWhenCalledAfterBuild
     return $file
 }
@@ -1290,7 +1260,7 @@ proc ::critcl::cbuild {file {load 1}} {
 	# Generate the main C file
 	CollectEmbeddedSources $file $api $base.c $object $initname $placestubs
 
-	# Set the marker for critcl::done and its user, AbortWhenCalledAfterBuild.
+	# Set the marker for critcl::done and its user, AbortWhenCalledAfterBuild, CheckEntry.
 	tags::set $file done
 
 	# Compile main file
