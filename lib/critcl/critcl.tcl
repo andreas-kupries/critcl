@@ -1047,14 +1047,27 @@ proc ::critcl::Ignore {f} {
 }
 
 proc ::critcl::SkipIgnored {f {result {}}} {
+    # File is marked to be ignored. Force the caller to return with
+    # specified fake result.
     if {[tags::has $f ignore]} { return -code return $result }
     return $f
 }
 
-proc ::critcl::AbortWhenCalledAfterBuild {} {
-    # Inlined [done]. Simplified, always called after SkipIgnored.
-    if {![tags::has [who::is] done]} return
+proc ::critcl::CheckEntry {{result {}}} {
+    set file [who::is]
 
+    # Inlined SkipIgnored...
+    # File is marked to be ignored. Force the caller to return with
+    # specified fake result.
+    if {[tags::has $file ignore]} { return -code return $result }
+
+    # Inlined AbortWhenCalledAfterBuild, no separate definition anymore.
+    # Inlined [done]. Simplified, always called after SkipIgnored.
+    # When not done simply return the file|ref to operate on.
+    if {![tags::has $file done]} { return $file }
+
+    # Fail case. The file is marked as done, yet now we got another
+    # definition, and thus have to error out.
     set cloc {}
     if {![catch {
 	array set loc [info frame -2]
@@ -1065,13 +1078,9 @@ proc ::critcl::AbortWhenCalledAfterBuild {} {
 	    set cloc " ([array get loc])"
 	}
     } ;#else { set cloc " ($msg)" }
-    error "[lindex [info level -1] 0]$cloc: Illegal attempt to define C code in [who::is] after it was built."
-}
-
-proc ::critcl::CheckEntry {{result {}}} {
-    set file [SkipIgnored [who::is] $result]
-    AbortWhenCalledAfterBuild
-    return $file
+    return -code error \
+	-errorcode {CRITCL DONE} \
+	"[lindex [info level -1] 0]$cloc: Illegal attempt to define C code in [who::is] after it was built."
 }
 
 # # ## ### ##### ######## ############# #####################
@@ -1260,7 +1269,7 @@ proc ::critcl::cbuild {file {load 1}} {
 	# Generate the main C file
 	CollectEmbeddedSources $file $api $base.c $object $initname $placestubs
 
-	# Set the marker for critcl::done and its user, AbortWhenCalledAfterBuild, CheckEntry.
+	# Set the marker for "critcl::done" and "CheckEntry".
 	tags::set $file done
 
 	# Compile main file
