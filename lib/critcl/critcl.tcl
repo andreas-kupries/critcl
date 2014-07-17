@@ -1081,6 +1081,29 @@ proc ::critcl::SkipIgnored {f {result {}}} {
     return $f
 }
 
+proc ::critcl::AbortWhenCalledAfterBuild {} {
+    # Inlined [done]. Simplified, always called after SkipIgnored.
+    if {![tags::has [who::is] done]} return
+
+    set cloc {}
+    if {![catch {
+	array set loc [info frame -2]
+    } msg]} {
+	if {$loc(type) eq "source"} {
+	    set cloc "@$loc(file):$loc(line)"
+	} else {
+	    set cloc " ([array get loc])"
+	}
+    } ;#else { set cloc " ($msg)" }
+    error "[lindex [info level -1] 0]$cloc: Illegal attempt to define C code in [who::is] after it was built."
+}
+
+proc ::critcl::Checks {{result {}}} {
+    set file [SkipIgnored [who::is]]
+    AbortWhenCalledAfterBuild
+    return $file
+}
+
 # # ## ### ##### ######## ############# #####################
 ## Implementation -- API: Build Management
 
@@ -2597,23 +2620,6 @@ proc ::critcl::Load {shlib init tsrc} {
 	source $t
     }
     return
-}
-
-proc ::critcl::AbortWhenCalledAfterBuild {} {
-    # Inlined [done]. Simplified, always called after SkipIgnored.
-    if {![tags::has [who::is] done]} return
-
-    set cloc {}
-    if {![catch {
-	array set loc [info frame -2]
-    } msg]} {
-	if {$loc(type) eq "source"} {
-	    set cloc "@$loc(file):$loc(line)"
-	} else {
-	    set cloc " ([array get loc])"
-	}
-    } ;#else { set cloc " ($msg)" }
-    error "[lindex [info level -1] 0]$cloc: Illegal attempt to define C code in [who::is] after it was built."
 }
 
 proc ::critcl::DetermineShlibName {base} {
