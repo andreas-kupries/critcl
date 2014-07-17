@@ -159,7 +159,7 @@ proc ::critcl::ccode {text} {
 }
 
 proc ::critcl::ccommand {name anames args} {
-    SkipIgnored [set file [who::is]]
+    set file [SkipIgnored [who::is]]
     AbortWhenCalledAfterBuild
 
     # Basic key for the clientdata and delproc arrays.
@@ -477,7 +477,7 @@ proc ::critcl::argconversion {adefs {n 1}} {
 }
 
 proc ::critcl::cproc {name adefs rtype {body "#"} args} {
-    SkipIgnored [set file [who::is]]
+    set file [SkipIgnored [who::is]]
     AbortWhenCalledAfterBuild
 
     set acname 0
@@ -563,7 +563,7 @@ proc ::critcl::cproc {name adefs rtype {body "#"} args} {
 }
 
 proc ::critcl::cinit {text edecls} {
-    set file [SkipIgnored [set file [who::is]]]
+    set file [SkipIgnored [who::is]]
     AbortWhenCalledAfterBuild
 
     set digesta [uuid::add $file .cinit.f $text]
