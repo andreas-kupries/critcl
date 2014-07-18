@@ -37,7 +37,9 @@ strict digraph {
 	at		->	typeconv;
 	cache		->	api;
 	cache		->	ccconfig;
+	cache		->	cdefs;
 	cache		->	log;
+	cdefs		->	api;
 	//common		->	api;
 	//common		->	cache;
 	//common		->	ccconfig;
@@ -56,6 +58,7 @@ strict digraph {
 	//dict84		->	usrconfig;
 	//dict84		->	uuid;
 	gopt		->	at;
+	gopt		->	cdefs;
 	//lassign84	->	api;
 	//lassign84	->	at;
 	//lassign84	->	ccconfig;

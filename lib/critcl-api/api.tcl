@@ -18,11 +18,10 @@ package require Tcl 8.4            ;# Minimal supported Tcl runtime.
 package require dict84             ;# Forward-compatible dict command.
 package require lassign84          ;# Forward-compatible lassign command.
 package require critcl::cache      ;# Access to result cache
+package require critcl::cdefs      ;# General collected C definitions.
 package require critcl::common     ;# General critcl utilities.
 package require critcl::meta       ;# Management of teapot meta data.
 package require critcl::uuid       ;# Digesting, change detection.
-
-# XXX SystemIncludePaths - cdefs!
 
 package provide  critcl::api 1
 namespace eval ::critcl::api {
@@ -450,6 +449,7 @@ namespace eval ::critcl::api {
     variable use    {} ;# dict (<ref> -> list-of (pair (pkgname pkgver)))
 
     namespace eval cache  { namespace import ::critcl::cache::*  }
+    namespace eval cdefs  { namespace import ::critcl::cdefs::*  }
     namespace eval common { namespace import ::critcl::common::* }
     namespace eval meta   { namespace import ::critcl::meta::*   }
     namespace eval uuid   { namespace import ::critcl::uuid::*   }
@@ -459,9 +459,7 @@ namespace eval ::critcl::api {
 ## Internal support commands
 
 proc ::critcl::::api::LocateDecls {ref name} {
-    # XXX FIXME back reference - backend - include paths ...
-    # XXX FIXME actually based on global options
-    foreach dir [SystemIncludePaths $ref] {
+    foreach dir [cdefs::system-include-paths $ref] {
 	if {[DeclsAt $dir $name]} { return $dir }
     }
     return {}

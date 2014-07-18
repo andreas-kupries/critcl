@@ -17,7 +17,8 @@
 package require Tcl 8.4            ;# Minimal supported Tcl runtime.
 package require dict84             ;# Forward-compatible dict command.
 # package require lassign84          ;# Forward-compatible lassign command.
-# package require critcl::cache      ;# Access to result cache
+package require critcl::cache      ;# Access to result cache.
+package require critcl::gopt       ;# Access to global options.
 package require critcl::common     ;# General critcl utilities.
 package require critcl::data       ;# Access to data files.
 package require critcl::meta       ;# Management of teapot meta data.
@@ -31,7 +32,7 @@ namespace eval ::critcl::cdefs {
         init ldflags libs objs preload srcs tcls usetcl usetk \
 	code? edecls? flags? funs? hdrs? inits? ldflags? libs? \
 	objs? preload? srcs? tcls? usetcl? usetk? \
-	clear
+	clear system-include-paths
     catch { namespace ensemble create }
 }
 
@@ -299,6 +300,36 @@ proc ::critcl::cdefs::usetk? {ref} {
     Get $ref tk 1
 }
 
+proc ::critcl::cdefs::system-include-paths {ref} {
+    set paths {}
+    set has   {}
+
+    # critcl -I options.
+    foreach dir [gopt::get I] {
+	+Path has paths $dir
+    }
+
+    # The result cache is a source of header files too (stubs tables,
+    # and other generated files).
+    +Path has paths [cache::get]
+
+    # critcl::cheaders
+    foreach flag [hdrs? $file] {
+	if {![string match "-*" $flag]} {
+	    # flag = normalized absolute path to a header file.
+	    # Transform into a directory reference.
+	    set dir [file dirname $flag]
+	} else {
+	    # Chop leading -I
+	    set dir [string range $flag 2 end]
+	}
+
+	+Path has paths $dir
+    }
+
+    return $paths
+}
+
 proc ::critcl::cdefs::clear {ref} {
     variable block      ; dict unset block      $ref
     variable cflags     ; dict unset cflags     $ref
@@ -365,10 +396,12 @@ namespace eval ::critcl::cdefs {
     #			  packages with preload can't be used
     #			  in mode 'compile & run'.
 
+    namespace eval cache  { namespace import ::critcl::cache::*  }
     namespace eval common { namespace import ::critcl::common::* }
+    namespace eval data   { namespace import ::critcl::data::*   }
+    namespace eval gopt   { namespace import ::critcl::gop::*    }
     namespace eval meta   { namespace import ::critcl::meta::*   }
     namespace eval uuid   { namespace import ::critcl::uuid::*   }
-    namespace eval data   { namespace import ::critcl::data::*   }
     namespace import ::critcl::scan-dependencies
 
 #     namespace eval who    { namespace import ::critcl::who::*    }
@@ -376,6 +409,14 @@ namespace eval ::critcl::cdefs {
 
 # # ## ### ##### ######## ############# #####################
 ## Internal support commands
+
+proc ::critcl::cdefs::+Path {hv pv path} {
+    upvar 1 $hv has $pv pathlist
+    if {[dict exists $has $dir]} continue
+    dict set has $dir yes
+    lappend pathlist $path
+    return
+}
 
 proc ::critcl::cdefs::Get {ref dbvar {default {}}} {
     variable $dbvar

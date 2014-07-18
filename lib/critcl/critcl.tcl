@@ -45,6 +45,7 @@ package require critcl::at        ;# Management of #line pragmas.
 package require critcl::api       ;# Management of stubs tables.
 package require critcl::cache     ;# Result cache access.
 package require critcl::ccconfig  ;# CC configuration database for standard backend.
+package require critcl::cdefs     ;# General collection of C definitions.
 package require critcl::common    ;# General utility commands.
 package require critcl::data      ;# Access to templates and other supporting files.
 package require critcl::log       ;# Log files within the result cache.
@@ -1919,43 +1920,10 @@ proc ::critcl::TclIncludes {tclversion} {
 
 proc ::critcl::SystemIncludes {file} {
     set includes {}
-    foreach dir [SystemIncludePaths $file] {
+    foreach dir [cdefs::system-include-paths $file] {
 	lappend includes [ccconfig::get include]$dir
     }
     return $includes
-}
-
-proc ::critcl::SystemIncludePaths {file} {
-    set paths {}
-    set has {}
-
-    # critcl -I options.
-    foreach dir [gopt::get I] {
-	if {[dict exists $has $dir]} continue
-	dict set has $dir yes
-	lappend paths $dir
-    }
-
-    # Result cache may be source of header files too.
-    lappend paths [cache::get]
-
-    # critcl::cheaders
-    foreach flag [cdefs::hdrs? $file] {
-	if {![string match "-*" $flag]} {
-	    # flag = normalized absolute path to a header file.
-	    # Transform into a directory reference.
-	    set dir [file dirname $flag]
-	} else {
-	    # Chop leading -I
-	    set dir [string range $flag 2 end]
-	}
-
-	if {[dict exists $has $dir]} continue
-	dict set has $dir yes
-	lappend paths $dir
-    }
-
-    return $paths
 }
 
 proc ::critcl::SystemLibraries {} {
