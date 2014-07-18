@@ -2232,6 +2232,10 @@ proc ::critcl::SetupTkStubs {fd} {
 }
 
 proc ::critcl::BuildDefines {fd file} {
+    # The result of the next two steps, a list of triples (namespace +
+    # label + value) of the defines to export.
+
+    set defines {}
     # we process the cdefines in three steps
     #   - get the list of defines by preprocessing the source using the
     #     cpp -dM directive which causes any #defines to be output
@@ -2243,22 +2247,15 @@ proc ::critcl::BuildDefines {fd file} {
     # we then search in.
 
     set def   define_[pid].c
-    set dcode {}
-    foreach digest [dict get $v::code($file) config defs] {
-	append dcode [dict get $v::code($file) config block $digest]
-    }
+    set dcode [cdefs::code? $file defs]
     set defpath [cache::write $def $dcode]
 
+    # # ## ### ##### ######## ############# #####################
+    # # ## ### ##### ######## ############# #####################
     # For the command lines to be constructed we need all the include
     # information the regular files will get during their compilation.
 
     set hdrs [SystemIncludes $file]
-
-    # The result of the next two steps, a list of triples (namespace +
-    # label + value) of the defines to export.
-
-    set defines {}
-
     # First step - get list of matching defines
     set         cmd [ccconfig::get preproc_define]
     lappendlist cmd $hdrs
@@ -2300,6 +2297,8 @@ proc ::critcl::BuildDefines {fd file} {
     set pipe [open "| $cmd" r]
     set code [read $pipe]
     close $pipe
+    # # ## ### ##### ######## ############# #####################
+    # # ## ### ##### ######## ############# #####################
 
     set matches [regexp -all -inline {enum [^\{\(\)]*{([^\}]*)}} $code]
     foreach {match submatch} $matches {

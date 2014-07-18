@@ -244,11 +244,12 @@ proc ::critcl::cdefs::usetk {ref} {
     return
 }
 
-proc ::critcl::cdefs::code? {ref} {
+proc ::critcl::cdefs::code? {ref {mode all}} {
     set sep [common::separator]
     set code {}
     set block [Get $ref block]
-    foreach hash [Get $ref fragments] {
+    set mode [expr {$mode eq "all" ? "fragments" : "defs"}]
+    foreach hash [Get $ref $mode] {
 	append code $sep \n [dict get $block $hash]
     }
     return $code
