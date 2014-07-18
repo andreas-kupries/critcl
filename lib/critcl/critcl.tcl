@@ -228,19 +228,13 @@ proc ::critcl::cdata {name data} {
 
     # NOTE: The uplevel is needed because otherwise 'ccommand' will
     # not properly determine the caller's namespace.
-    uplevel 1 [list critcl::ccommand $name {dummy ip objc objv} [at::caller!]$body]
+    uplevel 1 [list ::critcl::ccommand $name {dummy ip objc objv} [at::caller!]$body]
     return $name
 }
 
 proc ::critcl::cdefines {defines {namespace "::"}} {
     set file [CheckEntry]
-    set digest [uuid::add $file .cdefines [list $defines $namespace]]
-
-    dict update v::code($file) config c {
-	foreach def $defines {
-	    dict set c const $def $namespace
-	}
-    }
+    cdefs::defs $file $defines $namespace
     return
 }
 
@@ -531,10 +525,6 @@ proc ::critcl::cproc {name adefs rtype {body "#"} args} {
 proc ::critcl::cinit {text edecls} {
     set file [CheckEntry]
 
-    set digesta [uuid::add $file .cinit.f $text]
-    set digestb [uuid::add $file .cinit.e $edecls]
-
-    set initc {}
     set skip [at::lines $text]
     lassign [at::header $text] leadoffset text
     if {[gopt::get lines]} {
@@ -542,7 +532,6 @@ proc ::critcl::cinit {text edecls} {
     }
     append initc $text \n
 
-    set edec {}
     lassign [at::header $edecls] leadoffset edecls
     if {[gopt::get lines]} {
 	incr leadoffset $skip
@@ -550,10 +539,7 @@ proc ::critcl::cinit {text edecls} {
     }
     append edec $edecls \n
 
-    dict update v::code($file) config c {
-	dict append  c initc  $initc \n
-	dict append  c edecls $edec  \n
-    }
+    cdefs::init $initc $edec
     return
 }
 
@@ -591,7 +577,7 @@ proc ::critcl::collect_end {} {
     set block {}
 
     foreach digest [dict get $v::code($slot) config fragments] {
-	append block "[Separator]\n\n"
+	append block "[common::separator]\n\n"
 	append block [dict get $v::code($slot) config block $digest]\n
     }
 
@@ -660,7 +646,8 @@ proc ::critcl::source {path} {
 	set undivert 1
     }
 
-    foreach f [Expand $file $path] {
+    set base [file dirname $file]
+    foreach f [common::expand-glob $base $path] {
 	at::script $f
 	uplevel #0 [list ::source $f]
 	at::script {}
@@ -676,70 +663,46 @@ proc ::critcl::source {path} {
 proc ::critcl::owns {args} {}
 
 proc ::critcl::cheaders {args} {
-    CheckEntry
-    return [SetParam cheaders $args]
+    set file [CheckEntry]
+    eval [linsert $args 0 cdefs::hdrs $file]
+    return
 }
 
 proc ::critcl::csources {args} {
-    CheckEntry
-    return [SetParam csources $args 1 1]
+    set file [CheckEntry]
+    eval [linsert $args 0 cdefs::srcs $file]
+    return
 }
 
 proc ::critcl::clibraries {args} {
-    CheckEntry
-    return [SetParam clibraries $args]
+    set file [CheckEntry]
+    eval [linsert $args 0 cdefs::libs $file]
+    return
 }
 
 proc ::critcl::cobjects {args} {
-    CheckEntry
-    return [SetParam cobjects $args]
+    set file [CheckEntry]
+    eval [linsert $args 0 cdefs::objs $file]
+    return
 }
 
 proc ::critcl::tsources {args} {
     set file [CheckEntry]
-    # This, 'license', 'meta?' and 'meta' are the only places where we
-    # are not extending the UUID. Because the companion Tcl sources
-    # (count, order, and content) have no bearing on the binary at
-    # all.
     InitializeFile $file
 
-    dict update v::code($file) config c {
-	foreach f $args {
-	    foreach e [Expand $file $f] {
-		dict lappend c tsources $e
-	        scan-dependencies $file $e
-	    }
-	}
-    }
+    eval [linsert $args 0 cdefs::tcls $file]
     return
 }
 
 proc ::critcl::cflags {args} {
     set file [CheckEntry]
-    if {![llength $args]} return
-
-    uuid::add $file .cflags $args
-    dict update v::code($file) config c {
-	foreach flag $args {
-	    dict lappend c cflags $flag
-	}
-    }
+    eval [linsert $args 0 cdefs::flags $file]
     return
 }
 
 proc ::critcl::ldflags {args} {
     set file [CheckEntry]
-    if {![llength $args]} return
-
-    uuid::add $file .ldflags $args
-    dict update v::code($file) config c {
-	foreach flag $args {
-	    # Drop any -Wl prefix which will be added back a moment
-	    # later, otherwise it would be doubled, breaking the command.
-	    regsub -all {^-Wl,} $flag {} flag
-	    dict lappend c ldflags -Wl,$flag
-	}
-    }
+    eval [linsert $args 0 cdefs::ldflags $file]
     return
 }
 
@@ -765,29 +728,13 @@ proc ::critcl::framework {args} {
 
 proc ::critcl::tcl {version} {
     set file [CheckEntry]
-
-    uuid::add $file .mintcl $version
-    dict set v::code($file) config mintcl $version
-
-    # This is also a dependency to record in the meta data. A 'package
-    # require' is not needed. This can be inside of the generated and
-    # loaded C code.
-
-    meta::require $file [list Tcl $version]
+    cdefs::usetcl $file $version
     return
 }
 
 proc ::critcl::tk {} {
     set file [CheckEntry]
-
-    uuid::add $file .tk 1
-    dict set v::code($file) config tk 1
-
-    # This is also a dependency to record in the meta data. A 'package
-    # require' is not needed. This can be inside of the generated and
-    # loaded C code.
-
-    meta::require $file Tk
+    cdefs::usetk $file
     return
 }
 
@@ -795,14 +742,7 @@ proc ::critcl::tk {} {
 # redundant when TIP #239 is widely available
 proc ::critcl::preload {args} {
     set file [CheckEntry]
-    if {![llength $args]} return
-
-    uuid::add $file .preload $args
-    dict update v::code($file) config c {
-	foreach lib $args {
-	    dict lappend c preload $lib
-	}
-    }
+    eval [linsert $args 0 cdefs::preload $file]
     return
 }
 
@@ -812,8 +752,8 @@ proc ::critcl::license {who args} {
     # This, 'tsources', 'meta?', and 'meta' are the only places where
     # we are not extending the UUID. Because the license text has no
     # bearing on the binary at all.
-    InitializeFile $file
 
+    InitializeFile $file
     eval [linsert $args 0 meta::license $file $who]
     return
 }
@@ -823,24 +763,24 @@ proc ::critcl::license {who args} {
 
 proc ::critcl::description {text} {
     set file [CheckEntry]
-    InitializeFile $file
 
+    InitializeFile $file
     meta::description $file $text
     return
 }
 
 proc ::critcl::summary {text} {
     set file [CheckEntry]
-    InitializeFile $file
 
+    InitializeFile $file
     meta::summary $file $text
     return
 }
 
 proc ::critcl::subject {args} {
     set file [CheckEntry]
-    InitializeFile $file
 
+    InitializeFile $file
     eval [linsert $args 0 meta::subject $file]
     return
 }
@@ -850,8 +790,8 @@ proc ::critcl::meta {key args} {
     # This, 'meta?', 'license', and 'tsources' are the only places
     # where we are not extending the UUID. Because the meta data has
     # no bearing on the binary at all.
-    InitializeFile $file
 
+    InitializeFile $file
     eval [linsert $args 0 meta::general $file $key]
     return
 }
@@ -861,8 +801,8 @@ proc ::critcl::meta? {key} {
     # This, 'meta', 'license', and 'tsources' are the only places
     # where we are not extending the UUID. Because the meta data has
     # no bearing on the binary at all.
-    InitializeFile $file
 
+    InitializeFile $file
     return [meta::get $file $key]
 }
 
@@ -871,13 +811,12 @@ proc ::critcl::meta? {key} {
 
 proc ::critcl::userconfig {cmd args} {
     set file [CheckEntry]
-    InitializeFile $file
-
     if {![llength [info commands ::critcl::usrconfig::c_$cmd]]} {
 	return -code error "Unknown method \"$cmd\""
     }
 
     # Dispatch
+    InitializeFile $file
     return [eval [linsert $args 0 ::critcl::usrconfig::c_$cmd $file]]
 }
 
@@ -886,7 +825,6 @@ proc ::critcl::userconfig {cmd args} {
 
 proc ::critcl::api {cmd args} {
     set file [CheckEntry]
-
     if {![llength [info commands ::critcl::api::c_$cmd]]} {
 	return -code error "Unknown method \"$cmd\""
     }
@@ -1174,8 +1112,8 @@ proc ::critcl::cbuild {file {load 1}} {
     set base     [BaseOf             $file]
     set shlib    [DetermineShlibName $base]
     set initname [DetermineInitName  $file [expr {$buildforpackage ? "ns" : ""}]]
-    set tsources [GetParam $file tsources]
-    set mintcl   [MinTclVersion $file]
+    set tsources [cdefs::tcls? $file]
+    set mintcl   [cdefs::usetcl? $file]
 
     # The result dictionary is local information.
     #	initname   - String. Foo in Foo_Init().
@@ -1247,7 +1185,7 @@ proc ::critcl::cbuild {file {load 1}} {
         lappend objects [Compile result $file $file $base.c $object]
 
 	# Compile the companion C sources as well, if there are any.
-        foreach src [GetParam $file csources] {
+        foreach src [cdefs::srcs? $file] {
 	    lappend objects [Compile result $file $src $src [CompanionObject $src]]
 	}
 
@@ -1256,15 +1194,15 @@ proc ::critcl::cbuild {file {load 1}} {
 	# (mode 'generate package') must know all this to be able to
 	# perform the final link.
 
-	lappendlist objects [GetParam $file cobjects]
+	lappendlist objects [cdefs::objs? $file]
 
-	set ldflags [GetParam $file ldflags]
-	set preload [GetParam $file preload]
+	set ldflags [cdefs::ldflags? $file]
+	set preload [cdefs::preload? $file]
 
-	dict set result clibraries [GetParam $file clibraries]
+	dict set result clibraries [cdefs::libs? $file]
 	dict set result ldflags    $ldflags
 	dict set result objects    $objects
-	dict set result tk         [UsingTk  $file]
+	dict set result tk         [cdefs::usetk? $file]
 	dict set result preload    $preload
 	dict set result license    [GetParam $file license <<Undefined>>]
 	dict set result log        {}
@@ -1655,66 +1593,6 @@ proc ::critcl::EmitShimFooter {rtype} {
 # # ## ### ##### ######## ############# #####################
 ## Implementation -- Internals - Manage complex per-file settings.
 
-proc ::critcl::GetParam {file type {default {}}} {
-    if {[info exists  v::code($file)] &&
-	[dict exists $v::code($file) config $type]} {
-	return [dict get $v::code($file) config $type]
-    } else {
-	return $default
-    }
-}
-
-proc ::critcl::SetParam {type values {expand 1} {uuid 0}} {
-    # XXX review call sites to note which combinations of expand and
-    # XXX uuid are in actual use.
-    # XXX Note: uuid is only effective under expand.
-
-    set file [who::is]
-    if {![llength $values]} return
-    InitializeFile $file
-
-    uuid::add $file .$type $values
-
-    if {[llength $values]} {
-	# Process the list of flags, treat non-option arguments as
-	# glob patterns and expand them to a set of files, stored as
-	# absolute paths.
-	set tmp {}
-	foreach v $values {
-	    if {[string match "-*" $v]} {
-		lappend tmp $v
-	    } else {
-		if {$expand} {
-		    if {$uuid} {
-			foreach f [Expand $file $v] {
-			    lappend tmp $f
-			    uuid::add $file .$type.$f [common::cat $f]
-			}
-		    } else {
-			lappendlist tmp [Expand $file $v]
-		    }
-		} else {
-		    lappend tmp $v
-		}
-	    }
-	}
-
-	# And save into the system state.
-	dict update v::code($file) config c {
-	    foreach v $tmp {
-		dict lappend c $type $v
-	    }
-	}
-    } elseif {[dict exists $v::code($file) config $type]} {
-	return [dict get $v::code($file) config $type]
-    }
-}
-
-proc ::critcl::Expand {file pattern} {
-    set base [file dirname $file]
-    return [common::expand-glob $base $pattern]
-}
-
 proc ::critcl::InitializeFile {file} {
     # XXX FIXME TODO remove 'v::code($file)' entirely
     if {![info exists v::code($file)]} {
@@ -1793,6 +1671,7 @@ proc ::critcl::name2c {name} {
 
 proc ::critcl::BeginCommand {visibility name args} {
     # Locate caller, as the data is saved per .tcl file.
+    # XXX FIXME get file reference as argument.
     set file [who::is]
 
     # Inlined name2c
@@ -1836,12 +1715,7 @@ proc ::critcl::BeginCommand {visibility name args} {
     # script without leading ::.
     set ::auto_index([string trimleft $ns$name :]) [list [namespace current]::cbuild $file]
 
-    set v::curr [uuid::add $file .function "$ns $name $args"]
-
-    dict update v::code($file) config c {
-	dict lappend c functions $cns$cname
-	dict lappend c fragments $v::curr
-    }
+    set v::curr [cdefs::func-begin $file $ns$name $cns$cname $args]
 
     if {$visibility eq "public"} {
 	Emitln "#define ns_$cns$cname \"$ns$name\""
@@ -1850,11 +1724,12 @@ proc ::critcl::BeginCommand {visibility name args} {
 }
 
 proc ::critcl::EndCommand {} {
-    set file [who::is]
-
+    # XXX CHECK - what is this for?
     set v::code($v::curr) $v::block
 
-    dict set v::code($file) config block $v::curr $v::block
+    # XXX FIXME get file reference as argument.
+    set file [who::is]
+    cdefs::func-done $file $v::curr $v::block
 
     unset v::curr
     unset v::block
@@ -1889,7 +1764,7 @@ proc ::critcl::CompileDirect {file label code {mode temp}} {
     # in essence a simplified form of that.
 
     set         cmdline [ccconfig::get compile]
-    lappendlist cmdline [GetParam $file cflags]
+    lappendlist cmdline [cdefs::flags? $file]
     lappendlist cmdline [SystemIncludes $file]
     lappendlist cmdline [CompileResult $obj]
     lappend     cmdline $src
@@ -1928,8 +1803,8 @@ proc ::critcl::CompileLinkDirect {file label code} {
     lappendlist cmdline [LinkResult $out]
     lappendlist cmdline $obj
     lappendlist cmdline [SystemLibraries]
-    lappendlist cmdline [FixLibraries [GetParam $file clibraries]]
-    lappendlist cmdline [GetParam $file ldflags]
+    lappendlist cmdline [FixLibraries [cdefs::libs? $file]]
+    lappendlist cmdline [cdefs::ldflags? $file]
 
     log::text "${label} (link)... "
     StatusReset
@@ -1953,20 +1828,17 @@ proc ::critcl::CollectEmbeddedSources {file api destination libfile ininame plac
     #         ^=> file, libfile, api
 
     # Make Tk available, if requested
-    if {[UsingTk $file]} {
+    if {[cdefs::usetk? $file]} {
 	puts $fd "\n#include \"tk.h\""
     }
 
     # Write the collected C fragments, in order of collection.
-    foreach digest [GetParam $file fragments] {
-	puts $fd "[Separator]\n"
-	puts $fd [dict get $v::code($file) config block $digest]
-    }
+    puts $fd [cdefs::code? $file]
 
     # Boilerplate trailer.
     # Stubs setup, Tcl, and, if requested, Tk as well.
-    puts $fd [Separator]
-    set mintcl [MinTclVersion $file]
+    puts $fd [common::separator]
+    set mintcl [cdefs::usetcl? $file]
 
     if {$placestubs} {
 	# Put full stubs definitions into the code, which can be
@@ -1982,25 +1854,25 @@ proc ::critcl::CollectEmbeddedSources {file api destination libfile ininame plac
 	#                    ^=> mintcl
     }
 
-    if {[UsingTk $file]} {
+    if {[cdefs::usetk? $file]} {
 	SetupTkStubs $fd
     }
 
     # Initialization boilerplate. This ends in the middle of the
     # FOO_Init() function, leaving it incomplete.
 
-    set ext [GetParam $file edecls]
+    set ext [cdefs::edecls? $file]
     puts $fd [subst [common::cat [data::cfile pkginit.c]]]
     #         ^=> ext, ininame
 
     # From here on we are completing FOO_Init().
     # Tk setup first, if requested. (Tcl is already done).
-    if {[UsingTk $file]} {
+    if {[cdefs::usetk? $file]} {
 	puts $fd [common::cat [data::cfile pkginittk.c]]
     }
 
     # User specified initialization code.
-    puts $fd "[GetParam $file initc] "
+    puts $fd "[cdefs::init? $file] "
 
     # Setup of the variables serving up defined constants.
     if {[dict exists $v::code($file) config const]} {
@@ -2009,7 +1881,7 @@ proc ::critcl::CollectEmbeddedSources {file api destination libfile ininame plac
 
     # Take the names collected earlier and register them as Tcl
     # commands.
-    foreach name [lsort [GetParam $file functions]] {
+    foreach name [lsort -dict [cdefs::fun? $file]] {
 	if {[info exists v::clientdata($name)]} {
 	    set cd $v::clientdata($name)
 	} else {
@@ -2027,20 +1899,6 @@ proc ::critcl::CollectEmbeddedSources {file api destination libfile ininame plac
     puts  $fd [common::cat [data::cfile pkginitend.c]]
     close $fd
     return
-}
-
-proc ::critcl::MinTclVersion {file} {
-    set required [GetParam $file mintcl 8.4]
-    foreach version [data::available-tcl] {
-	if {[package vsatisfies $version $required]} {
-	    return $version
-	}
-    }
-    return $required
-}
-
-proc ::critcl::UsingTk {file} {
-    return [GetParam $file tk 0]
 }
 
 proc ::critcl::TclIncludes {tclversion} {
@@ -2082,7 +1940,7 @@ proc ::critcl::SystemIncludePaths {file} {
     lappend paths [cache::get]
 
     # critcl::cheaders
-    foreach flag [GetParam $file cheaders] {
+    foreach flag [cdefs::hdrs? $file] {
 	if {![string match "-*" $flag]} {
 	    # flag = normalized absolute path to a header file.
 	    # Transform into a directory reference.
@@ -2138,7 +1996,7 @@ proc ::critcl::Compile {rv tclfile origin cfile obj} {
     # obj = Object file to compile to, to generate.
 
     set         cmdline [ccconfig::get compile]
-    lappendlist cmdline [GetParam $tclfile cflags]
+    lappendlist cmdline [cdefs::flags? $tclfile]
     lappendlist cmdline [ccconfig::get threadflags]
     if {[gopt::get combine] ne "standalone"} {
 	lappendlist cmdline [ccconfig::get tclstubs]
@@ -2149,7 +2007,7 @@ proc ::critcl::Compile {rv tclfile origin cfile obj} {
 	# See also -x none below.
 	lappend cmdline -x [gopt::get language]
     }
-    lappendlist cmdline [TclIncludes [MinTclVersion $tclfile]]
+    lappendlist cmdline [TclIncludes [cdefs::usetcl? $tclfile]]
     lappendlist cmdline [SystemIncludes $tclfile]
 
     if {[dict exists $result apidefines]} {
@@ -2168,7 +2026,8 @@ proc ::critcl::Compile {rv tclfile origin cfile obj} {
     }
 
     # Add the Tk stubs to the command line, if requested and not suppressed
-    if {[UsingTk $tclfile] && ([gopt::get combine] ne "standalone")} {
+    if {[cdefs::usetk? $tclfile] &&
+	([gopt::get combine] ne "standalone")} {
 	lappendlist cmdline [ccconfig::get tkstubs]
     }
 
@@ -2733,28 +2592,6 @@ namespace eval ::critcl {
 	#
 	# <file> -> Per-file information, nested dictionary. Sub keys:
 	#	config		- Collected code and configuration (ccode, etc.).
-	#		tsources	- List. The companion tcl sources for <file>.
-	#				  => "critcl::tsources".
-	#		cheaders	- List. => "critcl::cheaders"
-	#		csources	- List. => "critcl::csources"
-	#		clibraries	- List. => "critcl::clibraries"
-	#		cflags		- List. => "critcl::cflags", "critcl::framework",
-	#					   "critcl::debug", "critcl::include"
-	#		ldflags		- List. => "critcl::ldflags", "critcl::framework"
-	#		initc		- String. Initialization code for Foo_Init(), "critcl::cinit"
-	#		edecls		- String. Declarations of externals needed by Foo_Init(), "critcl::cinit"
-	#		functions	- List. Collected function names.
-	#		fragments	- List. Hashes of the collected C source bodies (functions, and unnamed code).
-	#		block		- Dictionary. Maps the hashes to their C sources for fragments.
-	#		defs		- List. Hashes of the collected C source bodies (only unnamed code), for extraction of defines.
-	#		const		- Dictionary. Maps the names of defines to the namespace their variables will be in.
-	#		mintcl		- String. Minimum version of Tcl required by the package.
-	#		preload		- List. Names of all libraries to load
-	#				  before the package library. This
-	#				  information is used only by mode
-	#				  'generate package'. This means that
-	#				  packages with preload can't be used
-	#				  in mode 'compile & run'.
 	#		license		- String. License text.
 	#		meta		- Dictionary. Arbitrary keys to values, the user meta-data for the package.
 	#		package		- Dictionary. Keys, see below. System meta data for the package. Values are lists.
@@ -2766,13 +2603,6 @@ namespace eval ::critcl {
 	#			as::build::date	- Date-stamp for the build.
 	#
 	# ---------------------------------------------------------------------
-	#
-	# 'ccode'     -> Accumulated in-memory storage of code-fragments.
-	#                Extended by 'ccode', used by 'BuildDefines',
-	#                called by 'cbuild'. Apparently tries to extract defines
-	#                and enums, and their values, for comparison with 'cdefine'd
-	#		 values.
-	#
 	# NOTE: <file> are normalized absolute path names for exact
 	#       identification of the relevant .tcl file.
 

@@ -1,8 +1,9 @@
 //	Package	 Notes		Dependencies
 //	=======	 =====		============
 //	at	 #line mgmt	<-- who lassign84
-//	api	stubs mgmt	<-- dict84 meta uuid who
+//	api	 stubs mgmt	<-- dict84 meta uuid who
 //	cache	 result cache	<-- common
+//	cdefs	 C definitions	<-- uuid dict84
 //	common	 general utils	<-- data
 //	data	 data file stor	<--
 //	dict84	 Fwd-compat	<--
@@ -18,9 +19,6 @@
 //	log	 Log files	<-- common cache
 //	gopt	 Global options	<--
 //	=======	 =====		============
-//	
-//	TODO
-//		ccode	(collection)
 
 strict digraph {
 	//	Frontend
@@ -44,7 +42,7 @@ strict digraph {
 	at		[shape="box"];
 	cache		[shape="box"];
 	ccconfig	[shape="box"];
-	ccode		[shape="box"];
+	cdefs		[shape="box"];
 	gopt		[shape="box"];
 	log		[shape="box"];
 	meta		[shape="box"];
@@ -55,6 +53,7 @@ strict digraph {
 	who		[shape="box"];
 
 	//	Dependencies
+	//	A -> B   <==> A is-used-by B
 
 	at		->	typeconv;
 	cache		->	api;
@@ -63,12 +62,15 @@ strict digraph {
 	//common		->	api;
 	//common		->	cache;
 	//common		->	ccconfig;
+	//common		->	cdefs;
 	//common		->	log;
 	//common		->	meta;
 	//common		->	scan;
 	data		->	common;
+	data		->	cdefs;
 	//dict84		->	api;
 	//dict84		->	ccconfig;
+	//dict84		->	cdefs;
 	//dict84		->	meta;
 	//dict84		->	scan;
 	//dict84		->	tags;
@@ -81,9 +83,12 @@ strict digraph {
 	//lassign84	->	scan;
 	//lassign84	->	typeconv;
 	meta		->	api;
+	meta		->	cdefs;
 	meta		->	scan;
+	scan		->	cdefs;
 	usrconfig	->	scan;
 	uuid		->	api;
+	uuid		->	cdefs;
 	uuid		->	usrconfig;
 	who		->	api;
 	who		->	at;
@@ -95,7 +100,7 @@ strict digraph {
 	at		->	core;
 	cache		->	core;
 	cc		->	core;
-	ccode		->	core;
+	cdefs		->	core;
 	common		->	core;
 	data		->	core;
 	gopt		->	core;
