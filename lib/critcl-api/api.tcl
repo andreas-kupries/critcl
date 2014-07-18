@@ -21,9 +21,8 @@ package require critcl::cache      ;# Access to result cache
 package require critcl::common     ;# General critcl utilities.
 package require critcl::meta       ;# Management of teapot meta data.
 package require critcl::uuid       ;# Digesting, change detection.
-package require critcl::who        ;# Management of current file.
 
-# XXX SystemIncludePaths - gopt
+# XXX SystemIncludePaths - cdefs!
 
 package provide  critcl::api 1
 namespace eval ::critcl::api {
@@ -66,7 +65,7 @@ proc ::critcl::api::c_import {file name version} {
 
     set cname [string map {:: _} $name]
 
-    set at [LocateDecls $cname]
+    set at [LocateDecls $file $cname]
     if {$at eq {}} {
 	::critcl::error "Headers for API $name not found"
     } else {
@@ -454,16 +453,15 @@ namespace eval ::critcl::api {
     namespace eval common { namespace import ::critcl::common::* }
     namespace eval meta   { namespace import ::critcl::meta::*   }
     namespace eval uuid   { namespace import ::critcl::uuid::*   }
-    namespace eval who    { namespace import ::critcl::who::*    }
 }
 
 # # ## ### ##### ######## ############# #####################
 ## Internal support commands
 
-proc ::critcl::::api::LocateDecls {name} {
+proc ::critcl::::api::LocateDecls {ref name} {
     # XXX FIXME back reference - backend - include paths ...
     # XXX FIXME actually based on global options
-    foreach dir [SystemIncludePaths [who::is]] {
+    foreach dir [SystemIncludePaths $ref] {
 	if {[DeclsAt $dir $name]} { return $dir }
     }
     return {}

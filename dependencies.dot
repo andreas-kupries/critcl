@@ -90,7 +90,6 @@ strict digraph {
 	uuid		->	api;
 	uuid		->	cdefs;
 	uuid		->	usrconfig;
-	who		->	api;
 	who		->	at;
 
 	ccconfig	->	cc;
