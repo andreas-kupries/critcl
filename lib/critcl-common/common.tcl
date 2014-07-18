@@ -22,7 +22,7 @@ package provide  critcl::common 1
 namespace eval ::critcl::common {
     namespace export cat write append \
 	text2words text2authors license-text \
-	today now maxlen expand-glob
+	today now maxlen expand-glob separator
     catch { namespace ensemble create }
 
     namespace import ::critcl::data::file
@@ -31,6 +31,10 @@ namespace eval ::critcl::common {
 
 # # ## ### ##### ######## ############# #####################
 ## API commands.
+
+proc ::critcl::common::separator {} {
+    return "/* [string repeat - 70] */"
+}
 
 proc ::critcl::common::cat {path} {
     # Easier to write our own copy than requiring fileutil and then

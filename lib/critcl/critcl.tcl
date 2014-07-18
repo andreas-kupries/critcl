@@ -2653,10 +2653,6 @@ proc ::critcl::BaseOf {f} {
 # # ## ### ##### ######## ############# #####################
 ## Implementation -- Internals - Miscellanea
 
-proc ::critcl::Separator {} {
-    return "/* [string repeat - 70] */"
-}
-
 # # ## ### ##### ######## ############# #####################
 ## Implementation -- Internals - Status Operations, and execution
 ## of external commands.
