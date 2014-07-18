@@ -1801,6 +1801,8 @@ proc ::critcl::CompileLinkDirect {file label code} {
     lappendlist cmdline [LinkResult $out]
     lappendlist cmdline $obj
     lappendlist cmdline [SystemLibraries $file]
+    # XXX NOTE system-lib-paths used inside of Fix ...
+    # XXX NOTE could make use of clibrary information, i.e. same.
     lappendlist cmdline [FixLibraries $file [cdefs::libs? $file]]
     lappendlist cmdline [cdefs::ldflags? $file]
 
@@ -2051,7 +2053,11 @@ proc ::critcl::Link {rv file shlib preload ldflags} {
     lappendlist cmdline [LinkResult $shlib]
     lappendlist cmdline [GetObjects $result]
     lappendlist cmdline [SystemLibraries $file]
-    lappendlist cmdline [GetLibraries $file $result]
+
+    # XXX NOTE clibraries <=> [cdefs::libs?]
+    # XXX NOTE system-lib-paths used inside of Fix ...
+    # XXX NOTE could make use of clibrary information, i.e. same.
+    lappendlist cmdline [FixLibraries $file [dict get $result clibraries]]
     lappendlist cmdline $ldflags
     # lappend cmdline bufferoverflowU.lib ;# msvc >=1400 && <1500 for amd64
 
