@@ -174,10 +174,8 @@ proc ::critcl::ccommand {name anames args} {
 	set wname tcl_$cns$cname
     }
 
-    # XXX clientdata/delproc, either note clashes, or keep information per-file.
-
-    set v::clientdata($key) $clientdata
-    set v::delproc($key) $delproc
+    cdefs::func-cdata  $file $cns$cname $clientdata
+    cdefs::func-delete $file $cns$cname $delproc
 
     #set body [join $args]
     if {$body != ""} {
@@ -1241,11 +1239,10 @@ proc ::critcl::cbuild {file {load 1}} {
 
     # Release the data which was collected for the just-built file, as
     # it is not needed any longer.
-    dict unset v::code($file) config
     uuid::clear      $file
     usrconfig::clear $file
     api::clear       $file
-    # replacement for v::code($file) FIXME TODO
+    cdefs::clear     $file
 
     return [tags::get $file failed]
 }
@@ -1882,18 +1879,8 @@ proc ::critcl::CollectEmbeddedSources {file api destination libfile ininame plac
 
     # Take the names collected earlier and register them as Tcl
     # commands.
-    foreach name [lsort -dict [cdefs::fun? $file]] {
-	if {[info exists v::clientdata($name)]} {
-	    set cd $v::clientdata($name)
-	} else {
-	    set cd NULL
-	}
-	if {[info exists v::delproc($name)]} {
-	    set dp $v::delproc($name)
-	} else {
-	    set dp 0
-	}
-	puts $fd "  Tcl_CreateObjCommand(ip, ns_$name, tcl_$name, $cd, $dp);"
+    foreach name [lsort -dict [cdefs::funcs? $file]] {
+	puts $fd [cdefs::func-create-code $file $name]
     }
 
     # Complete the trailer and be done.
@@ -2549,9 +2536,6 @@ namespace eval ::critcl {
 	                 # of binaries whose sources did not change.
 	set prefix "v[package require critcl]"
 	regsub -all {\.} $prefix {} prefix
-
-	# XXX clientdata() per-command (See ccommand). per-file+ccommand better?
-	# XXX delproc()    per-command (See ccommand). s.a
 
 	variable code	         ;# This array collects all code snippets and
 				  # data about them.

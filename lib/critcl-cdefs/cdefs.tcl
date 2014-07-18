@@ -84,6 +84,18 @@ proc ::critcl::cdefs::func-begin {ref tclname cname details} {
     return $digest
 }
 
+proc ::critcl::cdefs::func-cdata {ref cname cdata} {
+    variable funcdata
+    dict set funcdata $ref $cname $cdata
+    return
+}
+
+proc ::critcl::cdefs::func-delete {ref cname delproc} {
+    variable fundelete
+    dict set fundelete $ref $cname $delproc
+    return
+}
+
 proc ::critcl::cdefs::func-done {ref digest code} {
     variable fragments
     variable block
@@ -250,8 +262,18 @@ proc ::critcl::cdefs::flags? {ref} {
     Get $ref flags
 }
 
-proc ::critcl::cdefs::funs? {ref} {
+proc ::critcl::cdefs::funcs? {ref} {
     Get $ref functions
+}
+
+proc ::critcl::cdefs::func-create-code {ref cname} {
+    set cd [Get $ref funcdata]
+    set dp [Get $ref fundelete]
+
+    set cd [expr {[dict exists $cd $cname] ? [dict get $cd $cname] : "NULL"}]
+    set dp [expr {[dict exists $dp $cname] ? [dict get $dp $cname] : 0}]
+
+    return "  Tcl_CreateObjCommand(ip, ns_$cname, tcl_$cname, $cd, $dp);"
 }
 
 proc ::critcl::cdefs::hdrs? {ref} {
@@ -342,6 +364,8 @@ proc ::critcl::cdefs::clear {ref} {
     variable edecls     ; dict unset edecls     $ref
     variable fragments  ; dict unset fragments  $ref
     variable functions  ; dict unset functions  $ref
+    variable funcdata   ; dict unset funcdata   $ref
+    variable fundelete  ; dict unset fundelete  $ref
     variable initc      ; dict unset initc      $ref
     variable ldflags    ; dict unset ldflags    $ref
     variable mintcl     ; dict unset mintcl     $ref
@@ -368,6 +392,8 @@ namespace eval ::critcl::cdefs {
     variable edecls     {} ;# dict (<ref> -> C-code)              | cinit
     variable fragments  {} ;# dict (<ref> -> list (hash...))      | ccode    ccommand cproc
     variable functions  {} ;# dict (<ref> -> list (C-name...))    |          ccommand cproc
+    variable funcdata   {} ;# dict (<ref> -> cname -> cdata)      |          ccommand
+    variable fundelete  {} ;# dict (<ref> -> cname -> delfunc)    |          ccommand
     variable initc      {} ;# dict (<ref> -> C-code)              | cinit
     variable ldflags    {} ;# dict (<ref> -> list (flag...))      | ldflags
     variable mintcl     {} ;# dict (<ref> -> version)             | tcl
