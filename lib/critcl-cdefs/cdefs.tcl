@@ -105,7 +105,8 @@ proc ::critcl::cdefs::func-done {ref digest code} {
 }
 
 proc ::critcl::cdefs::hdrs {ref args} {
-    FlagsAndPatterns $ref cheaders $args
+    # Accept: -Ipath, path/to/header-file
+    FlagsAndPatterns $ref cheaders $args -I
     return
 }
 
@@ -138,7 +139,8 @@ proc ::critcl::cdefs::ldflags {ref args} {
 }
 
 proc ::critcl::cdefs::libs {ref args} {
-    FlagsAndPatterns $ref clibraries $args
+    # Accept: -Lpath, -lname, -l:name, path/to/lib-file
+    FlagsAndPatterns $ref clibraries $args {-L -l}
     return
 }
 
@@ -463,8 +465,9 @@ proc ::critcl::cdefs::Get {ref dbvar {default {}}} {
     return [[dict get $data $ref]
 }
 
-proc ::critcl::cdefs::FlagsAndPatterns {ref dbvar words} {
+proc ::critcl::cdefs::FlagsAndPatterns {ref dbvar words options} {
     # args = list (flag|glob-pattern...) = list (flag|file...)
+    # XXX TODO: options = list of allowed flags
     if {![llength $words]} return
     variable $dbvar
     upvar 0  $dbvar options
