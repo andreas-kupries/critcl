@@ -1,24 +1,3 @@
-//	Package	 Notes		Dependencies
-//	=======	 =====		============
-//	at	 #line mgmt	<-- who lassign84
-//	api	 stubs mgmt	<-- dict84 meta uuid who
-//	cache	 result cache	<-- common
-//	cdefs	 C definitions	<-- uuid dict84
-//	common	 general utils	<-- data
-//	data	 data file stor	<--
-//	dict84	 Fwd-compat	<--
-//	lassign84 Fwd-compat	<--
-//	scan	 static scanner	<-- common dict84 lassign84 usrconfig meta /core(msg) core(TeapotRequire)
-//	typeconv cproc types	<-- at lassign84
-//	uuid	 code digest	<-- dict84
-//	who	 current file	<--
-//	usrconfig usr options	<-- uuid dict84
-//	meta	 teapot meta	<-- dict84
-//	tags	 indicator mgmt	<--
-//	ccconfig CC config	<-- common cache
-//	log	 Log files	<-- common cache
-//	gopt	 Global options	<--
-//	=======	 =====		============
 
 strict digraph {
 	//	Frontend
@@ -28,29 +7,29 @@ strict digraph {
 	cc		[shape="hexagon"];
 
 	//	Stateless functionality.
-	common		[];
-	dict84		[];
-	lassign84	[];
+	common		[];				// Critcl specific general utilities
+	dict84		[];				// Forward compatible dict command for 8.4
+	lassign84	[];				// Forward compatible lassign command for 8.4
 	//	Only transient state during operation.
-	scan		[];
+	scan		[];				// Static scanner of .(cri)tcl files
 
 	//	File container
-	data		[shape="triangle"];
+	data		[shape="triangle"];		// Container for template and other data files
 
 	//	System state (in-memory databases)
-	api		[shape="box"];
-	at		[shape="box"];
-	cache		[shape="box"];
-	ccconfig	[shape="box"];
-	cdefs		[shape="box"];
-	gopt		[shape="box"];
-	log		[shape="box"];
-	meta		[shape="box"];
-	tags		[shape="box"];
-	typeconv	[shape="box"];
-	usrconfig	[shape="box"];
-	uuid		[shape="box"];
-	who		[shape="box"];
+	api		[shape="box"];			// Management of stubs tables, i.e. package APIs
+	at		[shape="box"];			// Management of #line information in generated code
+	cache		[shape="box"];			// Management of the result cache (directory)
+	ccconfig	[shape="box"];			// Configuration information for external CC, multi-platform
+	cdefs		[shape="box"];			// Management of the collected C definitions.
+	gopt		[shape="box"];			// Global option management
+	log		[shape="box"];			// Log file handling
+	meta		[shape="box"];			// Management of TEApot meta data
+	tags		[shape="box"];			// Management of general indicator flags
+	typeconv	[shape="box"];			// Management of type conversions (args, results) for cproc
+	usrconfig	[shape="box"];			// Management of user-specified configuration options
+	uuid		[shape="box"];			// Code hashes for change detection.
+	who		[shape="box"];			// Management of the "current" file.
 
 	//	Dependencies
 	//	A -> B   <==> A is-used-by B
