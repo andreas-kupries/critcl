@@ -23,6 +23,9 @@ package require dict84            ;# Forward-compatible dict command.
 package require lassign84         ;# Forward-compatible lassign command.
 
 package provide  critcl::scan 1
+namespace eval ::critcl {
+    namespace export scan scan-dependencies
+}
 namespace eval ::critcl::scan {}
 
 # Core API commands used here (back references).
@@ -486,9 +489,7 @@ proc ::critcl::scan::package {cmd args} {
 	if {[lindex $args 0] eq "critcl"} return
 
 	dict update capture meta-system m {
-	    dict lappend m $rkey \
-		[::critcl::TeapotRequire $args]
-	    # XXX back reference into critcl core
+	    dict lappend m $rkey [TeapotRequire $args]
 	}
 	return
     }
@@ -537,6 +538,29 @@ proc ::critcl::scan::critcl::userconfig {cmd args} {
 
 # # ## ### ##### ######## ############# #####################
 ## Full internal helper commands.
+
+proc ::critcl::scan::critcl::TeapotRequire {dspec} {
+    # Syntax of dspec: (a) pname
+    #             ...: (b) pname req-version...
+    #             ...: (c) pname -exact req-version
+    #
+    # We can assume that the syntax is generally ok, because otherwise
+    # the 'package require' itself will fail in a moment, blocking the
+    # further execution of the .critcl file. So we only have to
+    # distinguish the cases.
+
+    if {([llength $dspec] == 3) &&
+	([lindex $dspec 1] eq "-exact")} {
+	# (c)
+	lassign $dspec pn _ pv
+	set spec [list $pn ${pv}-$pv]
+    } else {
+	# (a, b)
+	set spec $dspec
+    }
+
+    return $spec
+}
 
 proc ::critcl::scan::critcl::Error {msg args} {
     set code [linsert $args 0 CRITCL SCAN]

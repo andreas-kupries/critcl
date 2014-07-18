@@ -115,45 +115,16 @@ proc ::critcl::TeapotPlatform {} {
     return $platform
 }
 
-proc ::critcl::TeapotRequire {dspec} {
-    # Syntax of dspec: (a) pname
-    #             ...: (b) pname req-version...
-    #             ...: (c) pname -exact req-version
-    #
-    # We can assume that the syntax is generally ok, because otherwise
-    # the 'package require' itself will fail in a moment, blocking the
-    # further execution of the .critcl file. So we only have to
-    # distinguish the cases.
-
-    if {([llength $dspec] == 3) &&
-	([lindex $dspec 1] eq "-exact")} {
-	# (c)
-	lassign $dspec pn _ pv
-	set spec [list $pn ${pv}-$pv]
-    } else {
-	# (a, b)
-	set spec $dspec
-    }
-
-    return $spec
-}
-
 # # ## ### ##### ######## ############# #####################
 ## Implementation -- API: Embed C Code
 
 proc ::critcl::ccode {text} {
     set file [CheckEntry]
-    set digest [uuid::add $file .ccode $text]
 
-    set block {}
     lassign [at::header $text] leadoffset text
     append block [at::cpragma $leadoffset -2 $file] $text \n
 
-    dict update v::code($file) config c {
-	dict lappend c fragments $digest
-	dict set     c block     $digest $block
-	dict lappend c defs      $digest
-    }
+    cdefs::code $file $text
     return
 }
 
