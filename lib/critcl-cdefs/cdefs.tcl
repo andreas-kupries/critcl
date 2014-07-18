@@ -23,16 +23,15 @@ package require critcl::common     ;# General critcl utilities.
 package require critcl::data       ;# Access to data files.
 package require critcl::meta       ;# Management of teapot meta data.
 package require critcl::uuid       ;# Digesting, change detection.
-# package require critcl::who        ;# Management of current file.
 package require critcl::scan       ;# Static Tcl file scanner.
 
 package provide  critcl::cdefs 1
 namespace eval ::critcl::cdefs {
-    namespace export code defs flags func-begin func-done hdrs \
-        init ldflags libs objs preload srcs tcls usetcl usetk \
-	code? edecls? flags? funs? hdrs? inits? ldflags? libs? \
-	objs? preload? srcs? tcls? usetcl? usetk? \
-	clear system-include-paths
+    namespace export clear code defs flags func-begin func-cdata \
+	func-delete func-done hdrs init ldflags libs objs preload \
+	srcs tcls usetcl usetk code? edecls? flags? funcs? hdrs? \
+	inits? ldflags? libs? objs? preload? srcs? tcls? usetcl? \
+	usetk? func-create-code system-include-paths system-lib-paths
     catch { namespace ensemble create }
 }
 
@@ -323,6 +322,20 @@ proc ::critcl::cdefs::usetk? {ref} {
     Get $ref tk 1
 }
 
+proc ::critcl::cdefs::system-lib-paths {ref} {
+    set paths {}
+    set has   {}
+
+    # critcl -L options.
+    foreach dir [gopt::get L] {
+	+Path has paths $dir
+    }
+
+    # Use critcl::clibraries?
+
+    return $paths
+}
+
 proc ::critcl::cdefs::system-include-paths {ref} {
     set paths {}
     set has   {}
@@ -430,8 +443,6 @@ namespace eval ::critcl::cdefs {
     namespace eval meta   { namespace import ::critcl::meta::*   }
     namespace eval uuid   { namespace import ::critcl::uuid::*   }
     namespace import ::critcl::scan-dependencies
-
-#     namespace eval who    { namespace import ::critcl::who::*    }
 }
 
 # # ## ### ##### ######## ############# #####################

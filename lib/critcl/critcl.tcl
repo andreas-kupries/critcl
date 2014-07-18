@@ -1800,8 +1800,8 @@ proc ::critcl::CompileLinkDirect {file label code} {
 
     lappendlist cmdline [LinkResult $out]
     lappendlist cmdline $obj
-    lappendlist cmdline [SystemLibraries]
-    lappendlist cmdline [FixLibraries [cdefs::libs? $file]]
+    lappendlist cmdline [SystemLibraries $file]
+    lappendlist cmdline [FixLibraries $file [cdefs::libs? $file]]
     lappendlist cmdline [cdefs::ldflags? $file]
 
     log::text "${label} (link)... "
@@ -1913,26 +1913,12 @@ proc ::critcl::SystemIncludes {file} {
     return $includes
 }
 
-proc ::critcl::SystemLibraries {} {
+proc ::critcl::SystemLibraries {file} {
     set libincludes {}
-    foreach dir [SystemLibraryPaths] {
+    foreach dir [cdefs::system-lib-paths $file] {
 	lappend libincludes [ccconfig::get libinclude]$dir
     }
     return $libincludes
-}
-
-proc ::critcl::SystemLibraryPaths {} {
-    set paths {}
-    set has {}
-
-    # critcl -L options.
-    foreach dir [gopt::get L] {
-	if {[dict exists $has $dir]} continue
-	dict set has $dir yes
-	lappend paths $dir
-    }
-
-    return $paths
 }
 
 proc ::critcl::Compile {rv tclfile origin cfile obj} {
@@ -2064,8 +2050,8 @@ proc ::critcl::Link {rv file shlib preload ldflags} {
 
     lappendlist cmdline [LinkResult $shlib]
     lappendlist cmdline [GetObjects $result]
-    lappendlist cmdline [SystemLibraries]
-    lappendlist cmdline [GetLibraries $result]
+    lappendlist cmdline [SystemLibraries $file]
+    lappendlist cmdline [GetLibraries $file $result]
     lappendlist cmdline $ldflags
     # lappend cmdline bufferoverflowU.lib ;# msvc >=1400 && <1500 for amd64
 
@@ -2172,13 +2158,13 @@ proc ::critcl::GetObjects {result} {
     return [list @$rsp]
 }
 
-proc ::critcl::GetLibraries {result} {
+proc ::critcl::GetLibraries {file result} {
     # On windows using the native MSVC compiler, transform all -lFOO
     # references into FOO.lib.
-    return [FixLibraries [dict get $result clibraries]]
+    return [FixLibraries $file [dict get $result clibraries]]
 }
 
-proc ::critcl::FixLibraries {libraries} {
+proc ::critcl::FixLibraries {file libraries} {
     if {[string match "win32-*-cl" [ccconfig::buildplatform]]} {
 	# On windows using the native MSVC compiler, transform all
 	# -lFOO references into FOO.lib.
@@ -2194,7 +2180,7 @@ proc ::critcl::FixLibraries {libraries} {
 	# and -l: overrides that).
 
 	# Search paths specified via -L, -libdir.
-	set lpath [SystemLibraryPaths]
+	set lpath [cdefs::system-lib-paths $file]
 
 	set tmp {}
 	foreach word $libraries {
