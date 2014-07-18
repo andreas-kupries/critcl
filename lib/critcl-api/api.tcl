@@ -450,6 +450,7 @@ namespace eval ::critcl::api {
     # (2) Imported tables.
     variable use    {} ;# dict (<ref> -> list-of (pair (pkgname pkgver)))
 
+    namespace eval cache  { namespace import ::critcl::cache::*  }
     namespace eval common { namespace import ::critcl::common::* }
     namespace eval meta   { namespace import ::critcl::meta::*   }
     namespace eval uuid   { namespace import ::critcl::uuid::*   }
