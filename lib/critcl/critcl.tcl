@@ -1172,7 +1172,7 @@ proc ::critcl::cbuild {file {load 1}} {
 	}
 
 	# Generate the main C file
-	CollectEmbeddedSources $file $api $base.c $object $initname $placestubs
+	CollectEmbeddedSources $file $api $base.c $object $initname $placestubs $mintcl
 
 	# Set the marker for "critcl::done" and "CheckEntry".
 	tags::set $file done
@@ -1817,75 +1817,34 @@ proc ::critcl::CompileLinkDirect {file label code} {
 # # ## ### ##### ######## ############# #####################
 ## Backend Processing, Collected Sources
 
-proc ::critcl::CollectEmbeddedSources {file api destination libfile ininame placestubs} {
+proc ::critcl::CollectEmbeddedSources {file api destination libfile ininame placestubs mintcl} {
     # Start assembly.
 
     set fd [open $destination w]
 
-    # Boilerplate header.
-    puts $fd [subst [common::cat [data::cfile header.c]]]
-    #         ^=> file, libfile, api
-
-    # Make Tk available, if requested
-    if {[cdefs::usetk? $file]} {
-	puts $fd "\n#include \"tk.h\""
-    }
+    CommonHeading $fd $file $libfile $api
+    TkHeading     $fd
 
     # Write the collected C fragments, in order of collection.
     puts $fd [cdefs::code? $file]
 
-    # Boilerplate trailer.
-    # Stubs setup, Tcl, and, if requested, Tk as well.
     puts $fd [common::separator]
-    set mintcl [cdefs::usetcl? $file]
 
-    if {$placestubs} {
-	# Put full stubs definitions into the code, which can be
-	# either the bracket generated for a -pkg, or the package
-	# itself, build in mode "compile & run".
-	set stubs     [data::tcl-decls      $mintcl]
-	set platstubs [data::tcl-plat-decls $mintcl]
-	puts -nonewline $fd [subst [common::cat [data::cfile stubs.c]]]
-	#                    ^=> mintcl, stubs, platstubs
-    } else {
-	# Declarations only, for linking, in the sub-packages.
-	puts -nonewline $fd [subst [common::cat [data::cfile stubs_e.c]]]
-	#                    ^=> mintcl
-    }
+    SetupTclStubs $fd       $placestubs $mintcl
+    SetupTkStubs  $fd $file
 
-    if {[cdefs::usetk? $file]} {
-	SetupTkStubs $fd
-    }
+    SetupTclInit  $fd $file $ininame
+    SetupTkInit   $fd $file
+    SetupUserInit $fd $file
 
-    # Initialization boilerplate. This ends in the middle of the
-    # FOO_Init() function, leaving it incomplete.
+    BuildDefines  $fd $file ;# XXX backend calls here (pre-processor)
 
-    set ext [cdefs::edecls? $file]
-    puts $fd [subst [common::cat [data::cfile pkginit.c]]]
-    #         ^=> ext, ininame
-
-    # From here on we are completing FOO_Init().
-    # Tk setup first, if requested. (Tcl is already done).
-    if {[cdefs::usetk? $file]} {
-	puts $fd [common::cat [data::cfile pkginittk.c]]
-    }
-
-    # User specified initialization code.
-    puts $fd "[cdefs::init? $file] "
-
-    # Setup of the variables serving up defined constants.
-    if {[dict exists $v::code($file) config const]} {
-	BuildDefines $fd $file
-    }
-
-    # Take the names collected earlier and register them as Tcl
-    # commands.
+    # Take the collected functions and register them as Tcl commands.
     foreach name [lsort -dict [cdefs::funcs? $file]] {
 	puts $fd [cdefs::func-create-code $file $name]
     }
 
-    # Complete the trailer and be done.
-    puts  $fd [common::cat [data::cfile pkginitend.c]]
+    CommonFooter $fd
     close $fd
     return
 }
@@ -2213,12 +2172,76 @@ proc ::critcl::ResolveColonSpec {lpath name} {
     return -l:$name
 }
 
-proc ::critcl::SetupTkStubs {fd} {
+proc ::critcl::CommonHeading {fd file libfile api} {
+    # Boilerplate header.
+    puts $fd [subst [common::cat [data::cfile header.c]]]
+    #         ^=> file, libfile, api
+    return
+}
+
+proc ::critcl::CommonFooter {fd} {
+    # Complete the trailer and be done.
+    puts  $fd [common::cat [data::cfile pkginitend.c]]
+    return
+}
+
+proc ::critcl::TkHeading {fd file} {
+    # Make Tk available, if requested
+    if {![cdefs::usetk? $file]} return
+    puts $fd "\n#include \"tk.h\""
+    return
+}
+
+proc ::critcl::SetupTclInit {fd file ininame} {
+    set ext [cdefs::edecls? $file]
+    puts $fd [subst [common::cat [data::cfile pkginit.c]]]
+    #         ^=> ext, ininame
+    # This ends in the middle of the FOO_Init() function, leaving it
+    # incomplete.
+    return
+}
+
+proc ::critcl::SetupTkInit {fd file} {
+    if {![cdefs::usetk? $file]} return
+    # From here on we are completing FOO_Init().
+    # Tk setup first, if requested. (Tcl is already done).
+    puts $fd [common::cat [data::cfile pkginittk.c]]
+    return
+}
+
+proc ::critcl::SetupUserInit {fd file} {
+    # User specified initialization code.
+    puts $fd "[cdefs::init? $file] "
+    return
+}
+
+proc ::critcl::SetupTclStubs {fd placestubs mintcl} {
+    if {$placestubs} {
+	# Put full stubs definitions into the code, which can be
+	# either the bracket generated for a -pkg, or the package
+	# itself, build in mode "compile & run".
+	set stubs     [data::tcl-decls      $mintcl]
+	set platstubs [data::tcl-plat-decls $mintcl]
+	puts -nonewline $fd [subst [common::cat [data::cfile stubs.c]]]
+	#                    ^=> mintcl, stubs, platstubs
+    } else {
+	# Declarations only, for linking, in the sub-packages.
+	puts -nonewline $fd [subst [common::cat [data::cfile stubs_e.c]]]
+	#                    ^=> mintcl
+    }
+    return
+}
+
+proc ::critcl::SetupTkStubs {fd file} {
+    if {![cdefs::usetk? $file]} return
     puts -nonewline $fd [common::cat [data::cfile tkstubs.c]]
     return
 }
 
 proc ::critcl::BuildDefines {fd file} {
+    # Setup of the variables serving up defined constants, if any
+    if {![cdefs::has-const $file]} return
+
     # The result of the next two steps, a list of triples (namespace +
     # label + value) of the defines to export.
 
