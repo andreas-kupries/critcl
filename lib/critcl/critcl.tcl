@@ -706,8 +706,8 @@ proc ::critcl::framework {args} {
     CheckEntry
 
     # Check if we are building for OSX and ignore the command if we
-    # are not. Our usage of "actualtarget" means that we allow for a
-    # cross-compilation environment to OS X as well.
+    # are not. Our usage of "ccconfig::actual" means that we allow for
+    # a cross-compilation environment to OS X as well.
     if {![string match "macosx*" [ccconfig::actual]]} return
 
     foreach arg $args {
@@ -999,29 +999,27 @@ proc ::critcl::config {option {newvalue {}}} {
 }
 
 proc ::critcl::debug {args} {
-    # XXX FIXME - Use tag to hold the information ?
-    # XXX FIXME - Or use the general ccode container to come?
-
-    # Replace 'all' everywhere, and squash duplicates, whether from
-    # this, or user-specified.
-    set args [string map {all {memory symbols}} $args]
-    set args [lsort -unique $args]
-
-    foreach arg $args {
-	switch -- $arg {
-	    memory  {
-		foreach x [ccconfig::get debug_memory]  { cflags $x }
+    set file [CheckEntry]
+    # The information is stored in tags.
+    foreach flag $args {
+	switch -exact -- $flag {
+	    all {
+		tags::set $file debug-memory
+		tags::set $file debug-symbols
+	    }
+	    memory {
+		tags::set $file debug-memory
 	    }
 	    symbols {
-		foreach x [ccconfig::get debug_symbols] { cflags $x }
-		set option::debug_symbols 1
+		tags::set $file debug-symbols
 	    }
 	    default {
-		error "unknown critcl::debug option - $arg"
+		return -code error \
+		    -errorcode {CRITCL DEBUG INVALID} \
+		    "Invalid flag \"$flag\", expected one of all, memory, or symbols."
 	    }
 	}
     }
-    return
 }
 
 # # ## ### ##### ######## ############# #####################
@@ -1245,6 +1243,9 @@ proc ::critcl::Clear {file} {
     usrconfig::clear $file
     api::clear       $file
     cdefs::clear     $file
+    # All unwanted tags must be removed explicitly.
+    tags::unset      $file debug-memory
+    tags::unset      $file debug-symbols
     return
 }
 
@@ -1763,6 +1764,7 @@ proc ::critcl::CompileDirect {file label code {mode temp}} {
     # in essence a simplified form of that.
 
     set         cmdline [ccconfig::get compile]
+    DebugFlags  cmdline $file
     lappendlist cmdline [cdefs::flags? $file]
     lappendlist cmdline [SystemIncludes $file]
     lappendlist cmdline [CompileResult $obj]
@@ -1792,7 +1794,7 @@ proc ::critcl::CompileLinkDirect {file label code} {
 
     set cmdline [ccconfig::get link]
 
-    if {$option::debug_symbols} {
+    if {[tags::has $file debug-symbols]} {
 	lappendlist cmdline [ccconfig::get link_debug]
     } else {
 	lappendlist cmdline [ccconfig::get strip]
@@ -1898,6 +1900,7 @@ proc ::critcl::Compile {rv tclfile origin cfile obj} {
 
     set         cmdline [ccconfig::get compile]
     lappendlist cmdline [cdefs::flags? $tclfile]
+    DebugFlags  cmdline $file
     lappendlist cmdline [ccconfig::get threadflags]
     if {[gopt::get combine] ne "standalone"} {
 	lappendlist cmdline [ccconfig::get tclstubs]
@@ -1932,7 +1935,7 @@ proc ::critcl::Compile {rv tclfile origin cfile obj} {
 	lappendlist cmdline [ccconfig::get tkstubs]
     }
 
-    if {!$option::debug_symbols} {
+    if {![tags::has $tclfile debug-symbols]} {
 	lappendlist cmdline [ccconfig::get optimize]
 	lappendlist cmdline [ccconfig::get noassert]
     }
@@ -2003,6 +2006,8 @@ proc ::critcl::MakePreloadLibrary {rv file} {
 proc ::critcl::Link {rv file shlib preload ldflags} {
     upvar 1 $rv result
 
+    # See also CompileLinkDirect for possible code sharing...
+
     StatusAbort?
 
     # Assemble the link command.
@@ -2012,7 +2017,7 @@ proc ::critcl::Link {rv file shlib preload ldflags} {
 	lappendlist cmdline [ccconfig::get link_preload]
     }
 
-    if {$option::debug_symbols} {
+    if {[tags::has $file debug-symbols]} {
 	lappendlist cmdline [ccconfig::get link_debug]
     } else {
 	lappendlist cmdline [ccconfig::get strip]
@@ -2412,7 +2417,7 @@ proc ::critcl::DetermineObjectName {base file} {
     }
 
     # Modify the output file name if debugging symbols are requested.
-    if {$option::debug_symbols} {
+    if {[tags::has $file debug-symbols]} {
         append object _g
     }
 
@@ -2522,11 +2527,6 @@ proc ::critcl::ExecWithLogging {cmdline okmsg errmsg} {
 ## State
 
 namespace eval ::critcl {
-    # namespace to flag when options set
-    namespace eval option {
-        variable debug_symbols  0
-    }
-
     # keep all variables in a sub-namespace for easy access
     namespace eval v {
 	# ----------------------------------------------------------------
