@@ -108,7 +108,7 @@ proc ::critcl::TeapotPlatform {} {
     # running we are SOL, because we have no place to pull the
     # necessary detail from, 'identify' is a purely local operation :(
 
-    set platform [actualtarget]
+    set platform [ccconfig::actual]
     if {[platform::generic] eq $platform} {
 	set platform [platform::identify]
     }
@@ -708,7 +708,7 @@ proc ::critcl::framework {args} {
     # Check if we are building for OSX and ignore the command if we
     # are not. Our usage of "actualtarget" means that we allow for a
     # cross-compilation environment to OS X as well.
-    if {![string match "macosx*" [actualtarget]]} return
+    if {![string match "macosx*" [ccconfig::actual]]} return
 
     foreach arg $args {
 	# if an arg contains a slash it must be a framework path
@@ -1948,6 +1948,17 @@ proc ::critcl::Compile {rv tclfile origin cfile obj} {
     return $obj
 }
 
+proc ::critcl::DebugFlags {cv file} {
+    upvar 1 $cv cmdline
+    if {[tags::has $file debug-symbols]} {
+	lappendlist cmdline [ccconfig::get debug_symbols]
+    }
+    if {[tags::has $file debug-memory]} {
+	lappendlist cmdline [ccconfig::get debug_memory]
+    }
+    return
+}
+
 proc ::critcl::MakePreloadLibrary {rv file} {
     upvar 1 $rv result
 
@@ -1956,7 +1967,7 @@ proc ::critcl::MakePreloadLibrary {rv file} {
     # compile and link the preload support, if necessary, i.e. not yet
     # done.
 
-    set shlib [cache::get preload[ccconfig::get sharedlibext]]
+    set shlib [cache::get preload[ccconfig::sharedlibext]]
     if {[file exists $shlib]} return
 
     # Operate like TclIncludes. Use the template file directly, if
@@ -2382,7 +2393,7 @@ proc ::critcl::Load {shlib init tsrc} {
 
 proc ::critcl::DetermineShlibName {base} {
     # The name of the shared library we hope to produce (or use)
-    return ${base}[ccconfig::get sharedlibext]
+    return ${base}[ccconfig::sharedlibext]
 }
 
 proc ::critcl::DetermineObjectName {base file} {
