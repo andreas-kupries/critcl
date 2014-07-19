@@ -31,7 +31,8 @@ namespace eval ::critcl::cdefs {
 	func-delete func-done hdrs init ldflags libs objs preload \
 	srcs tcls usetcl usetk code? edecls? flags? funcs? hdrs? \
 	inits? ldflags? libs? objs? preload? srcs? tcls? usetcl? \
-	usetk? func-create-code system-include-paths system-lib-paths
+	usetk? has-const const2ns func-create-code system-include-paths \
+	system-lib-paths
     catch { namespace ensemble create }
 }
 
@@ -58,6 +59,7 @@ proc ::critcl::cdefs::defs {ref defines {namespace "::"}} {
     uuid::add $ref .cdefines [list $defines $namespace]
 
     foreach def $defines {
+	# Note: The <def>'s are glob patterns.
 	dict set const $ref $def $namespace
     }
     return
@@ -322,6 +324,20 @@ proc ::critcl::cdefs::usetk? {ref} {
     Get $ref tk 1
 }
 
+proc ::critcl::cdefs::has-const {ref} {
+    Has $ref const
+}
+
+proc ::critcl::cdefs::const2ns {ref constname nsvar} {
+    foreach {pattern namespace} [Get $ref const] {
+	if {![string match $pattern $constname]} continue
+	upvar 1 $nsvar nsresult
+	set nsresult $namespace
+	return yes
+    }
+    return no
+}
+
 proc ::critcl::cdefs::system-lib-paths {ref} {
     set paths {}
     set has   {}
@@ -461,6 +477,12 @@ proc ::critcl::cdefs::Get {ref dbvar {default {}}} {
     upvar 0  $dbvar data
     if {![dict exists $data $ref]} { return $default }
     return [[dict get $data $ref]
+}
+
+proc ::critcl::cdefs::Has {ref dbvar} {
+    variable $dbvar
+    upvar 0  $dbvar data
+    return [dict exists $data $ref]
 }
 
 proc ::critcl::cdefs::FlagsAndPatterns {ref dbvar words} {

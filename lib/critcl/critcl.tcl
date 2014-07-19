@@ -2264,7 +2264,7 @@ proc ::critcl::BuildDefines {fd file} {
 	# interested in making public. This is, in essence, a set
 	# intersection on the names of the defines.
 
-	if {![TakeDefine $file $var namespace]} continue
+	if {![cdefs::const2ns $file $var namespace]} continue
 
 	# And for those which are kept we integrate the information
 	# from both sources, i.e. namespace, and definition, under a
@@ -2283,8 +2283,6 @@ proc ::critcl::BuildDefines {fd file} {
     set pipe [open "| $cmd" r]
     set code [read $pipe]
     close $pipe
-    # # ## ### ##### ######## ############# #####################
-    # # ## ### ##### ######## ############# #####################
 
     set matches [regexp -all -inline {enum [^\{\(\)]*{([^\}]*)}} $code]
     foreach {match submatch} $matches {
@@ -2297,7 +2295,7 @@ proc ::critcl::BuildDefines {fd file} {
 		# essence, a set intersection on the names of the
 		# enum values.
 
-		if {![TakeDefine $file $enum namespace]} continue
+		if {![cdefs::const2ns $file $enum namespace]} continue
 
 		# And for those which are kept we integrate the
 		# information from both sources, i.e. namespace, and
@@ -2307,6 +2305,8 @@ proc ::critcl::BuildDefines {fd file} {
 	    }
 	}
     }
+    # # ## ### ##### ######## ############# #####################
+    # # ## ### ##### ######## ############# #####################
 
     # Third step - generate Tcl_ObjSetVar2 commands exporting the
     # defines and their values as Tcl variables.
@@ -2334,21 +2334,6 @@ proc ::critcl::BuildDefines {fd file} {
 	cache::clear $def
     }
     return
-}
-
-proc ::critcl::TakeDefine {file identifier nsvar} {
-    upvar 1 $nsvar dst
-    if 0 {if {[dict exists $v::code($file) config const $identifier]} {
-	set dst [dict get $v::code($file) config const $identifier]
-	return 1
-    }}
-    foreach {pattern def} [dict get $v::code($file) config const] {
-	if {[string match $pattern $identifier]} {
-	    set dst $def
-	    return 1
-	}
-    }
-    return 0
 }
 
 proc ::critcl::Load {shlib init tsrc} {
