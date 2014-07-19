@@ -31,8 +31,8 @@ namespace eval ::critcl::cdefs {
 	func-delete func-done hdrs init ldflags libs objs preload \
 	srcs tcls usetcl usetk code? edecls? flags? funcs? hdrs? \
 	inits? ldflags? libs? objs? preload? srcs? tcls? usetcl? \
-	usetk? has-const const2ns func-create-code system-include-paths \
-	system-lib-paths
+	usetk? has-const has-code const2ns func-create-code \
+	system-include-paths system-lib-paths
     catch { namespace ensemble create }
 }
 
@@ -326,6 +326,10 @@ proc ::critcl::cdefs::usetk? {ref} {
 
 proc ::critcl::cdefs::has-const {ref} {
     Has $ref const
+}
+
+proc ::critcl::cdefs::has-code {ref} {
+    Has $ref fragments
 }
 
 proc ::critcl::cdefs::const2ns {ref constname nsvar} {

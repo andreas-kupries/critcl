@@ -1264,7 +1264,7 @@ proc ::critcl::cnothingtodo {f} {
     if {[dict exists $v::code($f) result]} { return 0 }
 
     # No C code collected for compilation ?
-    if {![dict exists $v::code($f) config fragments]} { return 1 }
+    if {![cdefs::has-code $f]} { return 1 }
 
     # Ok, something has to be done.
     return 0
