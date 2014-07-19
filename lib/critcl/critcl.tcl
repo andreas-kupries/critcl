@@ -100,22 +100,6 @@ proc ::critcl::buildrequirement {script} {
     uplevel 1 $script
 }
 
-proc ::critcl::TeapotPlatform {} {
-    # Platform identifier HACK. Most of the data in critcl is based on
-    # 'platform::generic'. The TEApot MD however uses
-    # 'platform::identify' with its detail information (solaris kernel
-    # version, linux glibc version). But, if a cross-compile is
-    # running we are SOL, because we have no place to pull the
-    # necessary detail from, 'identify' is a purely local operation :(
-
-    set platform [ccconfig::actual]
-    if {[platform::generic] eq $platform} {
-	set platform [platform::identify]
-    }
-
-    return $platform
-}
-
 # # ## ### ##### ######## ############# #####################
 ## Implementation -- API: Embed C Code
 
@@ -1622,6 +1606,22 @@ proc ::critcl::InitializeFile {file} {
     return
 }
 
+proc ::critcl::TeapotPlatform {} {
+    # Platform identifier HACK. Most of the data in critcl is based on
+    # 'platform::generic'. The TEApot MD however uses
+    # 'platform::identify' with its detail information (solaris kernel
+    # version, linux glibc version). But, if a cross-compile is
+    # running we are SOL, because we have no place to pull the
+    # necessary detail from, 'identify' is a purely local operation :(
+
+    set platform [ccconfig::actual]
+    if {[platform::generic] eq $platform} {
+	set platform [platform::identify]
+    }
+
+    return $platform
+}
+
 # # ## ### ##### ######## ############# #####################
 ## Implementation -- Internals - Management of in-memory C source fragment.
 
@@ -2029,7 +2029,9 @@ proc ::critcl::Link {rv file shlib preload ldflags} {
     lappendlist cmdline [SystemLibraries $file]
     lappendlist cmdline [GetLibraries $file $result]
     lappendlist cmdline $ldflags
-    # lappend cmdline bufferoverflowU.lib ;# msvc >=1400 && <1500 for amd64
+    # lappend cmdline bufferoverflowU.lib
+    #      msvc >=1400 && <1500 for amd64
+    # Handled in the configuration.
 
     # Run the linker
     ExecWithLogging $cmdline \
