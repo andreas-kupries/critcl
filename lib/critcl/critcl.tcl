@@ -558,7 +558,9 @@ proc ::critcl::collect_begin {{slot {}}} {
     if {$slot eq {}} {
 	set slot MEMORY[who::depth]
     }
-    # Prefix prevents collision of slot names and file paths.
+
+    # The added schema-prefix prevents collisions between our slot
+    # names and the paths used for regular .critcl files.
     who::push critcl://$slot
     return
 }
@@ -569,22 +571,17 @@ proc ::critcl::collect_end {} {
 
     # Ensure that a diversion is actually open.
     if {![who::depth]} {
-	return -code error "collect_end mismatch, no diversions active"
+	return -code error \
+	    -errorcode {CRITCL COLLECT MISMATCH} \
+	    "collect_end mismatch, no diversions active"
     }
 
-    set slot [who::pop]
-    set block {}
-
-    foreach digest [dict get $v::code($slot) config fragments] {
-	append block "[common::separator]\n\n"
-	append block [dict get $v::code($slot) config block $digest]\n
-    }
-
+    set slot  [who::pop]
+    set block [cdefs::code? $slot]
     # Drop all the collected data. Note how anything other than the C
     # code fragments is lost, and how cbuild results are removed
     # also. These do not belong anyway.
-    unset v::code($slot)
-
+    Clear $slot
     return $block
 }
 
@@ -1237,14 +1234,18 @@ proc ::critcl::cbuild {file {load 1}} {
     # # ## ### ##### ######## #############
     ## after this line - frontend operation
 
+    Clear $file
+    return [tags::get $file failed]
+}
+
+proc ::critcl::Clear {file} {
     # Release the data which was collected for the just-built file, as
     # it is not needed any longer.
     uuid::clear      $file
     usrconfig::clear $file
     api::clear       $file
     cdefs::clear     $file
-
-    return [tags::get $file failed]
+    return
 }
 
 proc ::critcl::cresults {{file {}}} {
