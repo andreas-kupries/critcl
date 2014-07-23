@@ -74,16 +74,24 @@ strict digraph {
 	uuid		->	usrconfig;
 	who		->	at;
 
+	cache		->	cc;
 	ccconfig	->	cc;
+	cdefs		->	cc;
+	//common		->	cc;
+	data		->	cc;
+	gopt		->	cc;
 	log		->	cc;
+	meta		->	cc;
+	tags		->	cc;
+	uuid		->	cc;
 
 	api		->	core;
 	at		->	core;
 	cache		->	core;
 	cc		->	core;
 	cdefs		->	core;
-	common		->	core;
-	data		->	core;
+	//common		->	core;
+	data		->	core;	// for CollectEmbedded only.
 	gopt		->	core;
 	meta		->	core;
 	scan		->	core;

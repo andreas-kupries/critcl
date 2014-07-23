@@ -44,12 +44,13 @@ package require critcl::at        ;# Management of #line pragmas.
 #   get*    - format & return stash
 package require critcl::api       ;# Management of stubs tables.
 package require critcl::cache     ;# Result cache access.
+package require critcl::cc        ;# Backend using an external CC for building, and linking.
 package require critcl::ccconfig  ;# CC configuration database for standard backend.
 package require critcl::cdefs     ;# General collection of C definitions.
 package require critcl::common    ;# General utility commands.
 package require critcl::data      ;# Access to templates and other supporting files.
-package require critcl::log       ;# Log files within the result cache.
 package require critcl::gopt      ;# Management of global options.
+#package require critcl::log       ;# Log files within the result cache.
 package require critcl::meta      ;# Management of teapot meta data.
 package require critcl::scan      ;# Static Tcl code scanner.
 package require critcl::tags      ;# Management of indicator flags.
@@ -70,6 +71,8 @@ interp alias {} ::critcl::argtype        {} ::critcl::typeconv::arg-def
 interp alias {} ::critcl::argtypesupport {} ::critcl::typeconv::arg-set-support
 interp alias {} ::critcl::resulttype     {} ::critcl::typeconv::result-def
 
+# XXX FIXME move these into critcl::cc. Allows a backend to provide fake information
+# I.e a tcc4tcl backend is compile&run only, no x-compile, no configs, etc ...
 interp alias {} ::critcl::readconfig     {} ::critcl::ccconfig::read
 interp alias {} ::critcl::setconfig      {} ::critcl::ccconfig::use
 interp alias {} ::critcl::showallconfig  {} ::critcl::ccconfig::showall
@@ -689,6 +692,8 @@ proc ::critcl::ldflags {args} {
 proc ::critcl::framework {args} {
     CheckEntry
 
+    # XXX FIXME actual target - go through backend?!
+
     # Check if we are building for OSX and ignore the command if we
     # are not. Our usage of "ccconfig::actual" means that we allow for
     # a cross-compilation environment to OS X as well.
@@ -836,7 +841,7 @@ proc ::critcl::check {args} {
 	}
     }
 
-    set ok [CompileDirect $file $label $code]
+    set ok [cc::build-direct $file $label $code]
     return $ok
 }
 
@@ -860,7 +865,7 @@ proc ::critcl::checklink {args} {
 	}
     }
 
-    set ok [CompileLinkDirect $file $label $code]
+    set ok [cc::link-direct $file $label $code]
     return $ok
 }
 
@@ -873,7 +878,7 @@ proc ::critcl::compiling {} {
     CheckEntry 0
     # Check that we can indeed run a compiler
     # Should only need to do this if we have to compile the code?
-    return [HasCompiler]
+    return [cc::has-compiler]
 }
 
 proc ::critcl::done {} {
@@ -1040,6 +1045,11 @@ proc ::critcl::buildforpackage {{buildforpackage 1}} {
     return
 }
 
+# Variants:
+# - cbuild-auto - autoindex  - build, link, load (c&run) | drop results
+# - cbuild-pkg  - app-critcl - build                     | keep results
+# - cbuild-main - app-critcl - build, link               | keep results
+
 proc ::critcl::cbuild {file {load 1}} {
     # Fast path for known result.
     if {[tags::has $file failed] && !$load} {
@@ -1059,162 +1069,29 @@ proc ::critcl::cbuild {file {load 1}} {
     # This feeds a number of last-minute C fragments into the system.
 
     lassign [api::complete $file] \
-	xxcname xxdefines xxflags xxcode xxdecls xxinit
+	cname defines flags code decls init
+    # XXX FIXME: api::complete flags information is not used.
 
-    foreach i $xxinit d $xxdecls {
+    foreach i $init d $decls {
 	cinit $i $d
     }
-    foreach import $xxcode {
-	ccode $import ;# (**)
+    foreach import $code {
+	ccode $import ;# (**) cc.tcl
     }
 
     # Begin with result dict here ... Keeping or not is handled after build/load...
 
-    ## before this line - frontend operation
-    # # ## ### ##### ######## #############
-    ## after this line - backend execution
-    ## arguments from frontend
-    ## - file
-    ## - buildforpackage
-    ## - load
-
-    StatusReset
-
-    # Determine if we should place stubs code into the generated file.
-    set placestubs [expr {!$buildforpackage}]
-
-    # NOTE: The 4 pieces of data just below has to be copied into the
-    # result even if the build and link-steps are suppressed. Because
-    # the load-step must have this information.
-
-    set base     [BaseOf             $file]
-    set shlib    [DetermineShlibName $base]
-    set initname [DetermineInitName  $file [expr {$buildforpackage ? "ns" : ""}]]
-    set tsources [cdefs::tcls? $file]
-    set mintcl   [cdefs::usetcl? $file]
-
-    # The result dictionary is local information.
-    #	initname   - String. Foo in Foo_Init().
-    #	tsources   - List. The companion tcl sources for <file>.
-    #	object	   - String. Name of the object file backing <file>.
-    #	objects	   - List. All object files, main and companions.
-    #	shlib	   - String. Name of the shared library backing <file>.
-    #	base	   - String. Common prefix (file root) of 'object' and 'shlib'.
-    #	clibraries - List. See config. Copy for global linkage.
-    #	ldflags	   - List. See config. Copy for global linkage.
-    #	mintcl	   - String. Minimum version of Tcl required by the package.
-    #	preload	   - List. Names of all libraries to load before
-    #	             the package library.
-    #	license    - String. License text.
-    #	<= "critcl::cresults"
-
-    dict set result base       $base
-    dict set result shlib      $shlib
-    dict set result initname   $initname
-    dict set result tsources   $tsources
-    dict set result mintcl     $mintcl
-
-    catch {
-	dict set result pkgname [meta::gets $file name]
+    dict set result apidefines $defines
+    if {[llength $code]} {
+	dict set     result apiprefix \n[join $code \n]\n
+	dict lappend result apiheader [cache::get $cname]
     }
 
-    if {[gopt::get force] || ![file exists $shlib]} {
-	log::begin $v::prefix $file
+    cc::build-for result $v::prefix $file $buildforpackage $load
 
-	set object [DetermineObjectName $base $file]
-	dict set result object $object
-
-	# XXX This may run cinit and cflags to provide stubs api
-	# XXX header information. I.e. it influences the collected C.
-	# XXX As such it should possibly move to the head, keeping it
-	# XXX as part of the frontend. Except it already saves data
-	# XXX backend is using for itself.
-	##
-	# XXX FIXME TODO API_setup disentangle these intermingled functions and
-	# XXX FIXME TODO API_setup responsibilities.
-
-	# XXX FIXME cname, etc. can be empty (no stubs).
-
-	# XXX uses apiprefix  => CollectEmbedded... header.c
-	# XXX      apidefines => Compile ... cc cmdline
-	# XXX      apiheader  => app-critcl
-
-	# XXX apiprefix header.c vs [ccode] (see (**)) ?!
-
-	dict set result apidefines $xxdefines
-	if {[llength $xxcode]} {
-	    dict set     result apiprefix  \n[join $xxcode \n]\n
-	    dict lappend result apiheader [cache::get $xxcname]
-	}
-
-	if {[dict exists $result apiprefix]} {
-	    set api [dict get $result apiprefix]
-	} else {
-	    set api ""
-	}
-
-	# Generate the main C file
-	CollectEmbeddedSources $file $api $base.c $object $initname $placestubs $mintcl
-
-	# Set the marker for "critcl::done" and "CheckEntry".
-	tags::set $file done
-
-	# Compile main file
-        lappend objects [Compile result $file $file $base.c $object]
-
-	# Compile the companion C sources as well, if there are any.
-        foreach src [cdefs::srcs? $file] {
-	    lappend objects [Compile result $file $src $src [CompanionObject $src]]
-	}
-
-	# NOTE: The information below has to be copied into the result
-	# even if the link-step is suppressed. Because the application
-	# (mode 'generate package') must know all this to be able to
-	# perform the final link.
-
-	lappendlist objects [cdefs::objs? $file]
-
-	set ldflags [cdefs::ldflags? $file]
-	set preload [cdefs::preload? $file]
-
-	dict set result clibraries [cdefs::libs? $file]
-	dict set result ldflags    $ldflags
-	dict set result objects    $objects
-	dict set result tk         [cdefs::usetk? $file]
-	dict set result preload    $preload
-	dict set result license    [GetParam $file license <<Undefined>>]
-	dict set result log        {}
-	dict set result meta       [meta::getall $file]
-
-	# Link and load steps.
-        if {$load || !$buildforpackage} {
-	    Link result $file $shlib $preload $ldflags
-	}
-
-	set msgs [log::done]
-	dict set result warnings [CheckForWarnings $msgs]
-    }
-
-    if {$v::failed} {
-	if {!$buildforpackage} {
-	    print stderr "$msgs\ncritcl build failed ($file)"
-	} else {
-	    dict set result log $msgs
-	}
-    } elseif {$load && !$buildforpackage} {
-	Load $shlib $initname $tsources
-    }
 
     # Store collected results for pickup through "cresults".
     tags::set $file result $result
-
-    # Save final status
-    tags::set $file failed $v::failed
-    StatusReset
-
-    ## before this line - backend execution
-    # # ## ### ##### ######## #############
-    ## after this line - frontend operation
 
     Clear $file
     return [tags::get $file failed]
@@ -1614,6 +1491,9 @@ proc ::critcl::TeapotPlatform {} {
     # running we are SOL, because we have no place to pull the
     # necessary detail from, 'identify' is a purely local operation :(
 
+    # XXX FIXME actual target - go through backend?!
+    # XXX FIXME!! Initialization step on first declaration.
+
     set platform [ccconfig::actual]
     if {[platform::generic] eq $platform} {
 	set platform [platform::identify]
@@ -1747,86 +1627,14 @@ proc ::critcl::Emitln {{s ""}} {
 }
 
 # # ## ### ##### ######## ############# #####################
-## Backend, Checking that we have a compiler
-
-proc ::critcl::HasCompiler {} {
-    return [llength [auto_execok [lindex [ccconfig::get compile] 0]]]
-}
-
-# # ## ### ##### ######## ############# #####################
-## Backend, Direct compiling, linking of test C sources.
-
-proc ::critcl::CompileDirect {file label code {mode temp}} {
-    set src [cache::write check_[pid].c $code]
-    set obj [file rootname $src][ccconfig::get object]
-
-    # See also the internal helper command 'Compile'. The code here is
-    # in essence a simplified form of that.
-
-    set         cmdline [ccconfig::get compile]
-    DebugFlags  cmdline $file
-    lappendlist cmdline [cdefs::flags? $file]
-    lappendlist cmdline [SystemIncludes $file]
-    lappendlist cmdline [CompileResult $obj]
-    lappend     cmdline $src
-
-    log::begin $v::prefix $file
-    log::text  "${label}... "
-    StatusReset
-    set ok [ExecWithLogging $cmdline OK FAILED]
-    StatusReset
-
-    if {!$ok || ($mode eq "temp")} {
-	log::done
-	cache::clear check_[pid].*
-    }
-    return $ok
-}
-
-proc ::critcl::CompileLinkDirect {file label code} {
-    set ok [CompileDirect $file "$label (build)" $code keep]
-    if {!$ok} {
-	return 0
-    }
-
-    set out [cache::get check_[pid].out]
-    set obj [file rootname $out][ccconfig::get object]
-
-    set cmdline [ccconfig::get link]
-
-    if {[tags::has $file debug-symbols]} {
-	lappendlist cmdline [ccconfig::get link_debug]
-    } else {
-	lappendlist cmdline [ccconfig::get strip]
-	lappendlist cmdline [ccconfig::get link_release]
-    }
-
-    lappendlist cmdline [LinkResult $out]
-    lappendlist cmdline $obj
-    lappendlist cmdline [SystemLibraries $file]
-    # XXX NOTE system-lib-paths used inside of Fix ...
-    # XXX NOTE could make use of clibrary information, i.e. same.
-    lappendlist cmdline [FixLibraries $file [cdefs::libs? $file]]
-    lappendlist cmdline [cdefs::ldflags? $file]
-
-    log::text "${label} (link)... "
-    StatusReset
-    set ok [ExecWithLogging $cmdline OK ERR]
-
-    log::done
-    cache::clear check_[pid].*
-    return $ok
-}
-
-# # ## ### ##### ######## ############# #####################
 ## Backend Processing, Collected Sources
 
-proc ::critcl::CollectEmbeddedSources {file api destination libfile ininame placestubs mintcl} {
+proc ::critcl::CollectEmbeddedSources {file api destination ininame placestubs mintcl} {
     # Start assembly.
 
     set fd [open $destination w]
 
-    CommonHeading $fd $file $libfile $api
+    CommonHeading $fd $file $api
     TkHeading     $fd
 
     # Write the collected C fragments, in order of collection.
@@ -1841,7 +1649,8 @@ proc ::critcl::CollectEmbeddedSources {file api destination libfile ininame plac
     SetupTkInit   $fd $file
     SetupUserInit $fd $file
 
-    BuildDefines  $fd $file ;# XXX backend calls here (pre-processor)
+    # XXX FIXME build-defines - backend calls (pre-processor)
+    BuildDefines  $fd $file
 
     # Take the collected functions and register them as Tcl commands.
     foreach name [lsort -dict [cdefs::funcs? $file]] {
@@ -1853,353 +1662,10 @@ proc ::critcl::CollectEmbeddedSources {file api destination libfile ininame plac
     return
 }
 
-proc ::critcl::TclIncludes {tclversion} {
-    # Provide access to the Tcl/Tk headers using a -I flag pointing
-    # into the critcl package directory hierarchy. No copying of files
-    # required. This also handles the case of the X11 headers on
-    # windows, for free.
-
-    set path [data::hdr tcl$tclversion]
-    if {[file system $path] ne "native"} {
-	# The critcl package is wrapped. Copy the relevant headers out
-	# to disk (cache) and change the include path appropriately.
-	set path [cache::copy2 $path]
-    }
-
-    return [list [ccconfig::get include]$path]
-}
-
-proc ::critcl::SystemIncludes {file} {
-    set includes {}
-    foreach dir [cdefs::system-include-paths $file] {
-	lappend includes [ccconfig::get include]$dir
-    }
-    return $includes
-}
-
-proc ::critcl::SystemLibraries {file} {
-    set libincludes {}
-    foreach dir [cdefs::system-lib-paths $file] {
-	lappend libincludes [ccconfig::get libinclude]$dir
-    }
-    return $libincludes
-}
-
-proc ::critcl::Compile {rv tclfile origin cfile obj} {
-    upvar 1 $rv result
-
-    StatusAbort?
-
-    # tclfile = The .tcl file under whose auspices the C is compiled.
-    # origin  = The origin of the C sources, either tclfile, or cfile.
-    # cfile   = The file holding the C sources to compile.
-    #
-    # 'origin == cfile' for the companion C files of a critcl file,
-    # i.e. the csources. For a .tcl critcl file, the 'origin ==
-    # tclfile', and the cfile is the .c derived from tclfile.
-    #
-    # obj = Object file to compile to, to generate.
-
-    set         cmdline [ccconfig::get compile]
-    lappendlist cmdline [cdefs::flags? $tclfile]
-    DebugFlags  cmdline $file
-    lappendlist cmdline [ccconfig::get threadflags]
-    if {[gopt::get combine] ne "standalone"} {
-	lappendlist cmdline [ccconfig::get tclstubs]
-    }
-    if {[gopt::get language] ne "" && [file tail $tclfile] ne "critcl.tcl"} {
-	# XXX Is this gcc specific ?
-	# XXX Should this not be configurable via some c::* setting ?
-	# See also -x none below.
-	lappend cmdline -x [gopt::get language]
-    }
-    lappendlist cmdline [TclIncludes [cdefs::usetcl? $tclfile]]
-    lappendlist cmdline [SystemIncludes $tclfile]
-
-    if {[dict exists $result apidefines]} {
-	lappendlist cmdline [dict get $result apidefines]
-    }
-
-    lappendlist cmdline [CompileResult $obj]
-    lappend     cmdline $cfile
-
-    if {[gopt::get language] ne ""} {
-	# Allow the compiler to determine the type of file otherwise
-	# it will try to compile the libs
-	# XXX Is this gcc specific ?
-	# XXX Should this not be configurable via some c::* setting ?
-	lappend cmdline -x none
-    }
-
-    # Add the Tk stubs to the command line, if requested and not suppressed
-    if {[cdefs::usetk? $tclfile] &&
-	([gopt::get combine] ne "standalone")} {
-	lappendlist cmdline [ccconfig::get tkstubs]
-    }
-
-    if {![tags::has $tclfile debug-symbols]} {
-	lappendlist cmdline [ccconfig::get optimize]
-	lappendlist cmdline [ccconfig::get noassert]
-    }
-
-    if {[ExecWithLogging $cmdline \
-	     {$obj: [file size $obj] bytes} \
-	     {ERROR while compiling code in $origin:}]} {
-	if {![gopt::get keepsrc] && $cfile ne $origin} {
-	    file delete $cfile
-	}
-    }
-
-    return $obj
-}
-
-proc ::critcl::DebugFlags {cv file} {
-    upvar 1 $cv cmdline
-    if {[tags::has $file debug-symbols]} {
-	lappendlist cmdline [ccconfig::get debug_symbols]
-    }
-    if {[tags::has $file debug-memory]} {
-	lappendlist cmdline [ccconfig::get debug_memory]
-    }
-    return
-}
-
-proc ::critcl::MakePreloadLibrary {rv file} {
-    upvar 1 $rv result
-
-    StatusAbort?
-
-    # compile and link the preload support, if necessary, i.e. not yet
-    # done.
-
-    set shlib [cache::get preload[ccconfig::sharedlibext]]
-    if {[file exists $shlib]} return
-
-    # Operate like TclIncludes. Use the template file directly, if
-    # possible, or, if we reside in a virtual filesystem, copy it to
-    # disk.
-
-    set src [data::cfile preload.c]
-    if {[file system $src] ne "native"} {
-	set src [cache::copy2 $src]
-    }
-
-    # Build the object for the helper package, 'preload' ...
-
-    set obj [cache::get preload.o]
-    Compile result $file $src $src $obj
-
-    # ... and link it.
-    # Custom linker command. XXX Can we bent Link to the task?
-    set         cmdline [ccconfig::get link]
-    lappend     cmdline $obj
-    lappendlist cmdline [ccconfig::get strip]
-    lappendlist cmdline [LinkResult $shlib]
-
-    ExecWithLogging $cmdline \
-	{$shlib: [file size $shlib] bytes} \
-	{ERROR while linking $shlib:}
-
-    # Now the critcl application can pick up this helper shlib and
-    # stuff it into the package it is making.
-    return
-}
-
-proc ::critcl::Link {rv file shlib preload ldflags} {
-    upvar 1 $rv result
-
-    # See also CompileLinkDirect for possible code sharing...
-
-    StatusAbort?
-
-    # Assemble the link command.
-    set cmdline [ccconfig::get link]
-
-    if {[llength $preload]} {
-	lappendlist cmdline [ccconfig::get link_preload]
-    }
-
-    if {[tags::has $file debug-symbols]} {
-	lappendlist cmdline [ccconfig::get link_debug]
-    } else {
-	lappendlist cmdline [ccconfig::get strip]
-	lappendlist cmdline [ccconfig::get link_release]
-    }
-
-    lappendlist cmdline [LinkResult $shlib]
-    lappendlist cmdline [GetObjects $result]
-    lappendlist cmdline [SystemLibraries $file]
-
-    # XXX NOTE clibraries <=> [cdefs::libs?]
-    # XXX NOTE system-lib-paths used inside of Fix ...
-    # XXX NOTE could make use of clibrary information, i.e. same.
-    lappendlist cmdline [FixLibraries $file [dict get $result clibraries]]
-    lappendlist cmdline $ldflags
-    # lappend cmdline bufferoverflowU.lib
-    #      msvc >=1400 && <1500 for amd64
-    # Handled in the configuration.
-
-    # Run the linker
-    ExecWithLogging $cmdline \
-	{$shlib: [file size $shlib] bytes} \
-	{ERROR while linking $shlib:}
-
-    # Now, if there is a manifest file around, and the
-    # 'embed_manifest' command defined we use its command to merge the
-    # manifest into the shared library. This is pretty much only
-    # happening on Windows platforms, and with newer dev environments
-    # actually using manifests.
-
-    set em [ccconfig::get embed_manifest]
-
-    log::line "Manifest Command: $em"
-    log::line "Manifest File:    [expr {[file exists $shlib.manifest]
-	   ? "$shlib.manifest"
-	   : "<<not present>>, ignored"}]"
-
-    if {[llength $em] && [file exists $shlib.manifest]} {
-	set cmdline [ManifestCommand $em $shlib]
-
-	# Run the manifest tool
-	ExecWithLogging $cmdline \
-	    {$shlib: [file size $shlib] bytes, with manifest} \
-	    {ERROR while embedding the manifest into $shlib:}
-    }
-
-    # At last, build the preload support library, if necessary.
-    if {[llength $preload]} {
-	MakePreloadLibrary result $file
-    }
-    return
-}
-
-proc ::critcl::ManifestCommand {em shlib} {
-    # Variable used by the subst'able config setting.
-    set outfile $shlib
-    return [subst $em]
-}
-
-proc ::critcl::CompanionObject {src} {
-    set tail    [file tail $src]
-    set srcbase [file rootname $tail]
-    if {[file dirname $src] ne [cache::get]} {
-	# The .c file does not reside in the cache directory.  Change
-	# the source base so that the generated object file, which
-	# will be put into the cache, does not collide with the object
-	# files of other .c files with the same name.  This is done by
-	# adding the last segment of the directory the file is in to
-	# the base. While this can still lead to collisions the
-	# probability should be low(er).
-	set srcbase [file tail [file dirname $src]]_$srcbase
-    }
-
-    return [cache::get ${srcbase}[ccconfig::get object]]
-
-    # Examples, with a .c file found in- and out-side of the cache.
-    ##
-    # (1) src     = $cache/foo.c
-    #     tail    = foo.c
-    #     srcbase = foo
-    #     object  = $cache/foo.o
-    ##
-    # (2) src      = /some/other/foo.c
-    #     tail     = foo.c
-    #     srcbase  = foo
-    #     srcbase' = other_foo
-    #     object   = $cache/other_foo.o
-}
-
-proc ::critcl::CompileResult {object} {
-    # Variable used by the subst'able config setting.
-    set outfile $object
-    return [subst [ccconfig::get output]]
-}
-
-proc ::critcl::LinkResult {shlib} {
-    # Variable used by the subst'able config setting.
-    set outfile $shlib
-
-    set ldout [subst [ccconfig::get ldoutput]]
-    if {$ldout eq ""} {
-	set ldout [subst [ccconfig::get output]]
-    }
-
-    return $ldout
-}
-
-proc ::critcl::GetObjects {result} {
-    # On windows using the native MSVC compiler put the companion
-    # object files into a link file to read, instead of separately on
-    # the command line.
-
-    set objects [dict get $result objects]
-
-    if {![string match "win32-*-cl" [ccconfig::buildplatform]]} {
-	return $objects
-    }
-
-    set rsp [cache::write link.fil \"[join $objects \"\n\"]\"]
-    return [list @$rsp]
-}
-
-proc ::critcl::GetLibraries {file result} {
-    # On windows using the native MSVC compiler, transform all -lFOO
-    # references into FOO.lib.
-    return [FixLibraries $file [dict get $result clibraries]]
-}
-
-proc ::critcl::FixLibraries {file libraries} {
-    if {[string match "win32-*-cl" [ccconfig::buildplatform]]} {
-	# On windows using the native MSVC compiler, transform all
-	# -lFOO references into FOO.lib.
-
-	regsub -all -- {-l(\S+)} $libraries {\1.lib} libraries
-    } else {
-	# On unix we look for '-l:' references and rewrite them to the
-	# full path of the library, doing the search on our own.
-	#
-	# GNU ld understands this since at least 2.22 (don't know if
-	# earlier, 2.15 definitely doesn't), and it helps in
-	# specifying static libraries (Regular -l prefers .so over .a,
-	# and -l: overrides that).
-
-	# Search paths specified via -L, -libdir.
-	set lpath [cdefs::system-lib-paths $file]
-
-	set tmp {}
-	foreach word $libraries {
-	    # Extend search path with -L options from clibraries.
-	    if {[string match -L* $word]} {
-		lappend lpath [string range $word 2 end]
-		lappend tmp $word
-		continue
-	    }
-	    if {![string match -l:* $word]} {
-		lappend tmp $word
-		continue
-	    }
-	    # Search named library.
-	    lappend tmp [ResolveColonSpec $lpath [string range $word 3 end]]
-	}
-	set libraries $tmp
-    }
-
-    return $libraries
-}
-
-proc ::critcl::ResolveColonSpec {lpath name} {
-    foreach path $lpath {
-	set f [file join $lpath $name]
-	if {![file exists $f]} continue
-	return $f
-    }
-    return -l:$name
-}
-
-proc ::critcl::CommonHeading {fd file libfile api} {
+proc ::critcl::CommonHeading {fd file api} {
     # Boilerplate header.
     puts $fd [subst [common::cat [data::cfile header.c]]]
-    #         ^=> file, libfile, api
+    #         ^=> file, api
     return
 }
 
@@ -2384,153 +1850,6 @@ proc ::critcl::BuildDefines {fd file} {
     return
 }
 
-proc ::critcl::Load {shlib init tsrc} {
-    # Using the renamed builtin. While this is a dependency it was
-    # recorded already. See 'critcl::tcl', and 'critcl::tk'.
-    #package require Tcl $minv
-    ::load $shlib $init
-
-    # With the binary part loaded it is now time to load the Tcl
-    # companion files. Note the use of "Ignore" to prevent issues if a
-    # .critcl file specified itself as a Tcl companion, i.e. disabling
-    # the processing of critcl directives. The "critcl" application
-    # will place equivalent code into the "ifneeded" script of the
-    # packages it generates.
-
-    foreach t $tsrc {
-	Ignore $t
-	source $t
-    }
-    return
-}
-
-proc ::critcl::DetermineShlibName {base} {
-    # The name of the shared library we hope to produce (or use)
-    return ${base}[ccconfig::sharedlibext]
-}
-
-proc ::critcl::DetermineObjectName {base file} {
-    set object $base
-
-    # The generated object file will be saved for permanent use if the
-    # outdir option is set (in which case rebuilds will no longer be
-    # automatic).
-
-    set odir [gopt::get outdir]
-    if {$odir ne ""} {
-	set odir [file join [file dirname $file] $odir]
-	set oroot  [file rootname [file tail $file]]
-	set object [file normalize [file join $odir $oroot]]
-	file mkdir $odir
-    }
-
-    # Modify the output file name if debugging symbols are requested.
-    if {[tags::has $file debug-symbols]} {
-        append object _g
-    }
-
-    # Choose a distinct suffix so switching between them causes a
-    # rebuild.
-    switch -- [gopt::get combine] {
-	""         -
-	dynamic    { append object _pic  [ccconfig::get object] }
-	static     { append object _stub [ccconfig::get object] }
-	standalone { append object       [ccconfig::get object] }
-    }
-
-    return $object
-}
-
-proc ::critcl::DetermineInitName {file prefix} {
-    set ininame [PkgInit $file]
-
-    # Add in the build prefix, if specified. This is done in mode
-    # 'generate package', for the pieces, ensuring that the overall
-    # initialization function cannot be in conflict with the
-    # initialization functions of these same pieces.
-
-    if {$prefix ne ""} {
-        set ininame "${prefix}_$ininame"
-    }
-
-    return $ininame
-}
-
-proc ::critcl::PkgInit {file} {
-    # The init function name takes a capitalized prefix from the name
-    # of the input file name (alphanumeric prefix, including
-    # underscores). This implicitly drops the file extension, as the
-    # '.' is not an allowed character.
-
-    # While related to the package name, it can be different,
-    # especially if the package name contains :: separators.
-
-    if {$file eq {}} {
-	return Stdin
-    } else {
-	set ininame [file rootname [file tail $file]]
-	regsub -all {[^[:alnum:]_]} $ininame {} ininame
-	return [string totitle $ininame]
-    }
-}
-
-# # ## ### ##### ######## ############# #####################
-## Implementation -- Internals - UUID management, change detection
-
-proc ::critcl::BaseOf {f} {
-    # Basename for all generated files (.c, .o, .so)
-    return [file normalize [cache::get ${v::prefix}_[uuid::get $f]]]
-}
-
-# # ## ### ##### ######## ############# #####################
-## Implementation -- Internals - Miscellanea
-
-# # ## ### ##### ######## ############# #####################
-## Implementation -- Internals - Status Operations, and execution
-## of external commands.
-
-proc ::critcl::StatusReset {} {
-    set v::failed 0
-    return
-}
-
-proc ::critcl::StatusAbort? {} {
-    if {$v::failed} { return -code return }
-    return
-}
-
-proc ::critcl::CheckForWarnings {text} {
-    set warnings [dict create]
-    foreach line [split $text \n] {
-	# Ignore everything not a warning.
-        if {![string match -nocase *warning* $line]} continue
-	# Ignore duplicates (which is why we store the lines as dict
-	# keys for now).
-	if {[dict exists $warnings $line]} continue
-	dict set warnings $line .
-    }
-    return [dict keys $warnings]
-}
-
-proc ::critcl::ExecWithLogging {cmdline okmsg errmsg} {
-    set w [join [lassign $cmdline cmd] \n\t]
-    log::text \n$cmd\n\t$w\n
-
-    set ok [ccconfig::do-log v::failed v::err [log::fd] $cmdline]
-
-    if {$ok} {
-	log::line [uplevel 1 [list subst $okmsg]]
-    } else {
-	log::line [uplevel 1 [list subst $errmsg]]
-	log::line $v::err
-    }
-
-    return $ok
-}
-
-# # ## ### ##### ######## ############# #####################
-## Initialization
-
 # # ## ### ##### ######## ############# #####################
 ## State
 
@@ -2573,9 +1892,6 @@ namespace eval ::critcl {
 
 	# _____________________________________________________________________
 	# State used by "cbuild" ______________________________________________
-
-	variable failed  0       ;# Build status. Used by "Status*"
-	variable err     ""	 ;# and "Exec*". Build error text.
 
 	variable buildforpackage 0 ;# Boolean flag controlling
 				    # cbuild's behaviour. Named after
