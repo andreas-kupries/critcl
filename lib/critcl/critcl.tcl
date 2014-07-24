@@ -1068,25 +1068,12 @@ proc ::critcl::cbuild {file {load 1}} {
     # Complete stubs handling for the file/package.
     # This feeds a number of last-minute C fragments into the system.
 
-    lassign [api::complete $file] \
-	cname defines flags code decls init
+    set flags [api::complete $file]
     # XXX FIXME: api::complete flags information is not used.
-
-    foreach i $init d $decls {
-	cinit $i $d
-    }
-    foreach import $code {
-	ccode $import ;# (**) cc.tcl
-    }
 
     # Begin with result dict here ... Keeping or not is handled after build/load...
 
-    dict set result apidefines $defines
-    if {[llength $code]} {
-	dict set     result apiprefix \n[join $code \n]\n
-	dict lappend result apiheader [cache::get $cname]
-    }
-
+    set result {}
     cc::build-for result $v::prefix $file $buildforpackage $load
 
 

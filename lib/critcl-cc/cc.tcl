@@ -162,12 +162,13 @@ proc ::critcl::cc::build-for {rv prefix file buildforpackage load} {
     if {[gopt::get force] || ![file exists $shlib]} {
 	log::begin $prefix $file
 
-	# XXX apiprefix header.c vs [ccode] (see (**)) ?! critcl.tcl
-	if {[dict exists $result apiprefix]} {
-	    set api [dict get $result apiprefix]
-	} else {
-	    set api ""
-	}
+	set apicode [tags::get $file apiprefix]
+	dict set result apiprefix  $apicode
+	dict set result apidefines [tags::get $file apidefines]
+	dict set result apiheader  [tags::get $file apiheader]
+
+	# XXX WHY apiprefix header.c vs [ccode]
+	# XXX WHY (see (**)) ?! critcl.tcl
 
 	# Generate the main C file
 	# XXX FIXME - This should be put into cdefs...
@@ -175,7 +176,7 @@ proc ::critcl::cc::build-for {rv prefix file buildforpackage load} {
 
 	# XXX FIXME split out BuildDefines...
 
-	CollectEmbeddedSources $file $api $base.c $initname $placestubs $mintcl
+	CollectEmbeddedSources $file $apicode $base.c $initname $placestubs $mintcl
 
 	# Set the marker for "critcl::done" and "CheckEntry".
 	tags::set $file done

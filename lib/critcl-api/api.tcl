@@ -22,6 +22,7 @@ package require critcl::cdefs      ;# General collected C definitions.
 package require critcl::common     ;# General critcl utilities.
 package require critcl::meta       ;# Management of teapot meta data.
 package require critcl::uuid       ;# Digesting, change detection.
+package require critcl::tags       ;# Management of indicator flags.
 
 package provide  critcl::api 1
 namespace eval ::critcl::api {
@@ -164,6 +165,11 @@ proc ::critcl::api::clear {ref} {
     variable ehdrs  ; dict unset ehdrs  $ref
     variable fun    ; dict unset fun    $ref
     variable use    ; dict unset use    $ref
+
+    # See api::complete for where these are set/created.
+    tags::unset $ref apidefines
+    tags::unset $ref apiprefix
+    tags::unset $ref apiheader
     return
 }
 
@@ -181,7 +187,24 @@ proc ::critcl::api::complete {ref} {
     CompleteImport $ref
     set cname [CompleteExport $ref]
 
-    return [list $cname $defines $flags $code $decls $init]
+    foreach i $init d $decls {
+	cdefs::init $i $d
+    }
+    foreach import $code {
+	cdefs::code $import ;# (**) cc.tcl
+    }
+
+    tags::set $ref apidefines $defines
+
+    if {[llength $code]} {
+	tags::set $ref apiprefix \n[join $code \n]\n
+	tags::set $ref apiheader [cache::get $cname]
+    } else {
+	tags::set $ref apiprefix {}
+	tags::set $ref apiheader {}
+    }
+
+    return [list $flags]
 }
 
 proc ::critcl::api::CompleteImport {ref} {
@@ -453,6 +476,7 @@ namespace eval ::critcl::api {
     namespace eval common { namespace import ::critcl::common::* }
     namespace eval meta   { namespace import ::critcl::meta::*   }
     namespace eval uuid   { namespace import ::critcl::uuid::*   }
+    namespace eval tags   { namespace import ::critcl::tags::*   }
 }
 
 # # ## ### ##### ######## ############# #####################

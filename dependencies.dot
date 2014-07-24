@@ -68,6 +68,7 @@ strict digraph {
 	meta		->	cdefs;
 	meta		->	scan;
 	scan		->	cdefs;
+	tags		->	api;
 	usrconfig	->	scan;
 	uuid		->	api;
 	uuid		->	cdefs;
