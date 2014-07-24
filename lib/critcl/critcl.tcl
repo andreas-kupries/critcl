@@ -4217,7 +4217,7 @@ proc ::critcl::Load {f} {
     # 'compile & run' we now source the companion files directly.
     foreach t $tsrc {
 	Ignore $t
-	source $t
+	::source $t
     }
     return
 }
