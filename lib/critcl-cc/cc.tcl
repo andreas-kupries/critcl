@@ -118,8 +118,6 @@ proc ::critcl::cc::link-direct {ref label code} {
 proc ::critcl::cc::build-for {rv prefix file buildforpackage load} {
     upvar 1 $rv result
 
-    StatusReset
-
     # Determine if we should place stubs code into the generated file.
     set placestubs [expr {!$buildforpackage}]
 
@@ -159,6 +157,8 @@ proc ::critcl::cc::build-for {rv prefix file buildforpackage load} {
 	dict set result pkgname [meta::gets $file name]
     }
 
+    StatusReset
+
     if {[gopt::get force] || ![file exists $shlib]} {
 	log::begin $prefix $file
 
@@ -177,9 +177,6 @@ proc ::critcl::cc::build-for {rv prefix file buildforpackage load} {
 	# XXX FIXME split out BuildDefines...
 
 	CollectEmbeddedSources $file $apicode $base.c $initname $placestubs $mintcl
-
-	# Set the marker for "critcl::done" and "CheckEntry".
-	tags::set $file done
 
 	set object [DetermineObjectName $base $file]
 	dict set result object $object

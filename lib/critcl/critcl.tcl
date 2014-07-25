@@ -865,7 +865,7 @@ proc ::critcl::compiling {} {
 }
 
 proc ::critcl::done {} {
-    return [tags::has [SkipIgnored [who::is] 1] done]
+    return [tags::has [SkipIgnored [who::is] 1] failed]
 }
 
 proc ::critcl::failed {} {
@@ -939,7 +939,7 @@ proc ::critcl::CheckEntry {{result {}}} {
     # Inlined AbortWhenCalledAfterBuild, no separate definition anymore.
     # Inlined [done]. Simplified, always called after SkipIgnored.
     # When not done simply return the file|ref to operate on.
-    if {![tags::has $file done]} { return $file }
+    if {![tags::has $file failed]} { return $file }
 
     # Fail case. The file is marked as done, yet now we got another
     # definition, and thus have to error out.
@@ -1110,9 +1110,14 @@ proc ::critcl::Clear {file} {
     usrconfig::clear $file
     api::clear       $file
     cdefs::clear     $file
+
     # All unwanted tags must be removed explicitly.
     tags::unset      $file debug-memory
     tags::unset      $file debug-symbols
+
+    # Clear happens after the file is build, so we can drop the
+    # initialization status (and 'failed' build status appears).
+    tags::unset      $file initialized
     return
 }
 
@@ -1122,11 +1127,11 @@ proc ::critcl::cresults {{file {}}} {
 }
 
 proc ::critcl::cnothingtodo {f} {
+    # We have a build status, so there had been something to do.
+    if {[tags::has $f failed]} { return 0 }
+
     # No critcl definitions at all ?
     if {![tags::has $f initialized]} { return 1 }
-
-    # We have results already, so there had been something to do.
-    if {[tags::has $f done]}        { return 0 }
 
     # No C code collected for compilation ?
     if {![cdefs::has-code $f]} { return 1 }

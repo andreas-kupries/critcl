@@ -1,0 +1,31 @@
+Tag db usage in critcl and sub-ordinates
+========================================
+
+Tag		Notes				Definitions		Uses
+---		-----				-----------		----
+initialized	Mark initialized .critcl files	cdefs::initialize	ditto
+		i.e. those which have at least	critcl::Clear		cnothingtodo
+		one critcl definition. Removed
+		when done with a file.
+---		-----				-----------		----
+ignore		Mark .critcl files whose critcl	app-critcl		critcl::SkipIgnored
+		commands must be ignored	critcl::Ignore		critcl::CheckEntry
+		(.critcl as .tcl companion)
+---		-----				-----------		----
+debug-memory	Flags conveying debug modes	critcl::debug		cc::link-direct	?!
+debug-symbols	to use during build		critcl::Clear		cc::DetermineObjectName
+									cc::Compile
+									cc::Link
+									cc::DebugFlags
+---		-----				-----------		----
+failed		Marker holding a .critcl	cc::build-for		cbuild*
+		file's build status. It's				critcl::done
+		existence also serves as marker				critcl::CheckEntry
+		that the file is done.					cnothingtodo
+---		-----				-----------		----
+result		Results from a file's build	cbuild*			cresults
+---		-----				-----------		----
+apiprefix	various pieces of stubs table	api::complete		cc::build-for
+apidefines	information			api::clear
+apiheader
+---		-----				-----------		----
