@@ -33,12 +33,19 @@ namespace eval ::critcl::cdefs {
 	srcs tcls usetcl usetk code? edecls? flags? funcs? hdrs? \
 	inits? ldflags? libs? objs? preload? srcs? tcls? usetcl? \
 	usetk? has-const has-code const2ns func-create-code \
-	system-include-paths system-lib-paths initialize
+	system-include-paths system-lib-paths initialize \
+	on-clear
     catch { namespace ensemble create }
 }
 
 # # ## ### ##### ######## ############# #####################
 ## API commands.
+
+proc ::critcl::cdefs::on-clear {cmd} {
+    variable onclear
+    lappend  onclear $cmd
+    return
+}
 
 proc ::critcl::cdefs::initialize {context} {
     if {[tags::has $context initialized]} return
@@ -441,6 +448,24 @@ proc ::critcl::cdefs::clear {ref} {
     variable preload    ; dict unset preload    $ref
     variable tk         ; dict unset tk         $ref
     variable tsources   ; dict unset tsources   $ref
+
+    # Fixed hooks (dependent databases)
+    meta::clear $ref
+    uuid::clear $ref
+
+    # Unwanted tags must be removed explicitly.  Note that clearing
+    # this database happens after the referenced file is build, so we
+    # can drop the initialization status (and the 'failed' build
+    # status appears).
+    tags::unset      $file debug-memory
+    tags::unset      $file debug-symbols
+    tags::unset      $file initialized
+
+    # Invoke the registered hooks.
+    variable onclear
+    foreach cmd $onclear {
+	uplevel #0 $cmd [list $ref]
+    }
     return
 }
 
@@ -490,6 +515,10 @@ namespace eval ::critcl::cdefs {
     #			  'generate package'. This means that
     #			  packages with preload can't be used
     #			  in mode 'compile & run'.
+
+    # List of command prefixes to run when invoking method "clear". I.e. database hooks.
+    # Commands are called with relevant reference (1 arg).
+    variable onclear {}
 
     namespace eval cache  { namespace import ::critcl::cache::*  }
     namespace eval common { namespace import ::critcl::common::* }

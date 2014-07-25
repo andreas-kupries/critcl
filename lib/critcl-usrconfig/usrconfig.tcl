@@ -28,6 +28,12 @@ namespace eval ::critcl::usrconfig {
 }
 
 # # ## ### ##### ######## ############# #####################
+## Link the lifetime of custom configuration flags to the general C
+## definitions for a context.
+
+cdefs::on-clear ::critcl::usrconfig::clear
+
+# # ## ### ##### ######## ############# #####################
 ## API commands.
 
 ## - Declare a user option.

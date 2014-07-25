@@ -570,7 +570,7 @@ proc ::critcl::collect_end {} {
     # Drop all the collected data. Note how anything other than the C
     # code fragments is lost, and how cbuild results are removed
     # also. These do not belong anyway.
-    Clear $slot
+    cdefs::clear $slot
     return $block
 }
 
@@ -1043,7 +1043,7 @@ proc ::critcl::cbuild-auto {file} {
     set result {}
     cc::build-for result $v::prefix $file 0 1
 
-    Clear $file
+    cdefs::clear $file
     return [tags::get $file failed]
 }
 
@@ -1072,7 +1072,7 @@ proc ::critcl::cbuild-pkgpart {file} {
     # Store collected results for pickup through "cresults".
     tags::set $file result $result
 
-    Clear $file
+    cdefs::clear $file
     return [tags::get $file failed]
 }
 
@@ -1098,27 +1098,9 @@ proc ::critcl::cbuild-pkgmain {} {
     set result {}
     cc::build-for result $v::prefix $file 0 0
 
-    Clear $file
+    cdefs::clear $file
     return [tags::get $file failed]
 
-}
-
-proc ::critcl::Clear {file} {
-    # Release the data which was collected for the just-built file, as
-    # it is not needed any longer.
-    uuid::clear      $file
-    usrconfig::clear $file
-    api::clear       $file
-    cdefs::clear     $file
-
-    # All unwanted tags must be removed explicitly.
-    tags::unset      $file debug-memory
-    tags::unset      $file debug-symbols
-
-    # Clear happens after the file is build, so we can drop the
-    # initialization status (and 'failed' build status appears).
-    tags::unset      $file initialized
-    return
 }
 
 proc ::critcl::cresults {{file {}}} {

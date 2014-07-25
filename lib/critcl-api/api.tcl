@@ -33,6 +33,12 @@ namespace eval ::critcl::api {
 }
 
 # # ## ### ##### ######## ############# #####################
+## Link the lifetime of stubs table information to the general C
+## definitions for a context.
+
+cdefs::on-clear ::critcl::api::clear
+
+# # ## ### ##### ######## ############# #####################
 ## API commands.
 
 proc ::critcl::api::c_scspec {file scspec} {
