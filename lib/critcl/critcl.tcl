@@ -118,6 +118,7 @@ proc ::critcl::ccode {text} {
 
 proc ::critcl::ccommand {name anames args} {
     set file [CheckEntry]
+    cdefs::initialize $file
 
     # Basic key for the clientdata and delproc arrays.
     set cname $name[uuid::serial $file]
@@ -425,6 +426,7 @@ proc ::critcl::argconversion {adefs {n 1}} {
 
 proc ::critcl::cproc {name adefs rtype {body "#"} args} {
     set file [CheckEntry]
+    cdefs::initialize $file
 
     set acname 0
     set passcd 0
@@ -671,8 +673,6 @@ proc ::critcl::cobjects {args} {
 
 proc ::critcl::tsources {args} {
     set file [CheckEntry]
-    InitializeFile $file
-
     eval [linsert $args 0 cdefs::tcls $file]
     return
 }
@@ -738,7 +738,7 @@ proc ::critcl::license {who args} {
     # we are not extending the UUID. Because the license text has no
     # bearing on the binary at all.
 
-    InitializeFile $file
+    cdefs::initialize $file
     eval [linsert $args 0 meta::license $file $who]
     return
 }
@@ -749,7 +749,7 @@ proc ::critcl::license {who args} {
 proc ::critcl::description {text} {
     set file [CheckEntry]
 
-    InitializeFile $file
+    cdefs::initialize $file
     meta::description $file $text
     return
 }
@@ -757,7 +757,7 @@ proc ::critcl::description {text} {
 proc ::critcl::summary {text} {
     set file [CheckEntry]
 
-    InitializeFile $file
+    cdefs::initialize $file
     meta::summary $file $text
     return
 }
@@ -765,7 +765,7 @@ proc ::critcl::summary {text} {
 proc ::critcl::subject {args} {
     set file [CheckEntry]
 
-    InitializeFile $file
+    cdefs::initialize $file
     eval [linsert $args 0 meta::subject $file]
     return
 }
@@ -776,7 +776,7 @@ proc ::critcl::meta {key args} {
     # where we are not extending the UUID. Because the meta data has
     # no bearing on the binary at all.
 
-    InitializeFile $file
+    cdefs::initialize $file
     eval [linsert $args 0 meta::general $file $key]
     return
 }
@@ -787,7 +787,7 @@ proc ::critcl::meta? {key} {
     # where we are not extending the UUID. Because the meta data has
     # no bearing on the binary at all.
 
-    InitializeFile $file
+    cdefs::initialize $file
     return [meta::get $file $key]
 }
 
@@ -801,7 +801,6 @@ proc ::critcl::userconfig {cmd args} {
     }
 
     # Dispatch
-    InitializeFile $file
     return [eval [linsert $args 0 ::critcl::usrconfig::c_$cmd $file]]
 }
 
@@ -1104,12 +1103,10 @@ proc ::critcl::cresults {{file {}}} {
 
 proc ::critcl::cnothingtodo {f} {
     # No critcl definitions at all ?
-    # We have results already, so where had been something to do.
+    if {![tags::has $f initialized]} { return 1 }
 
-    if {![tags::has $f def]} { return 1 }
-
-    if {![info exists  v::code($f)]} { return 1 }
-    if {[dict exists $v::code($f) result]} { return 0 }
+    # We have results already, so there had been something to do.
+    if {[tags::has $f done]}        { return 0 }
 
     # No C code collected for compilation ?
     if {![cdefs::has-code $f]} { return 1 }
@@ -1439,65 +1436,17 @@ proc ::critcl::EmitShimFooter {rtype} {
 }
 
 # # ## ### ##### ######## ############# #####################
-## Implementation -- Internals - Manage complex per-file settings.
-
-proc ::critcl::InitializeFile {file} {
-    # XXX FIXME TODO remove 'v::code($file)' entirely
-    if {![info exists v::code($file)]} {
-	set v::code($file) {}
-    }
-
-    # XXX FIXME TODO remove 'v::code($file) config' entirely
-    if {![dict exists $v::code($file) config]} {
-	dict set v::code($file) config {}
-    }
-
-    if {![tags::has $file def]} {
-	tags::set $file def
-
-	# Initialize the system meta data.
-	# User meta data auto-initializes on write.
-
-	meta::assign $file platform    [list [TeapotPlatform]]
-	meta::assign $file build::date [list [common::today]]
-
-	# May not exist, bracket code.
-	if {![file exists $file]} return
-
-	scan-dependencies $file $file provide
-	return
-    }
-    return
-}
-
-proc ::critcl::TeapotPlatform {} {
-    # Platform identifier HACK. Most of the data in critcl is based on
-    # 'platform::generic'. The TEApot MD however uses
-    # 'platform::identify' with its detail information (solaris kernel
-    # version, linux glibc version). But, if a cross-compile is
-    # running we are SOL, because we have no place to pull the
-    # necessary detail from, 'identify' is a purely local operation :(
-
-    # XXX FIXME actual target - go through backend?!
-    # XXX FIXME!! Initialization step on first declaration.
-
-    set platform [ccconfig::actual]
-    if {[platform::generic] eq $platform} {
-	set platform [platform::identify]
-    }
-
-    return $platform
-}
-
-# # ## ### ##### ######## ############# #####################
 ## Implementation -- Internals - Management of in-memory C source fragment.
 
 proc ::critcl::name2c {name} {
-    # Note: A slightly modified copy (different depth in the call-stack) of this
-    # is inlined into the internal command "BeginCommand".
+    # Note: A slightly modified copy (different depth in the
+    # call-stack) of this code is inlined into the internal command
+    # "BeginCommand".
 
-    # Locate caller, as the data is saved per .tcl file.
+    # Locate caller, as the data (embedded serial number) is computed
+    # per .tcl file.
     set file [who::is]
+    cdefs::initialize $file
 
     if {![string match ::* $name]} {
 	# Locate caller's namespace. Two up, skipping the

@@ -37,6 +37,7 @@ namespace eval ::critcl::api {
 
 proc ::critcl::api::c_scspec {file scspec} {
     variable scspec
+    cdefs::initialize $file
 
     uuid::add $file .api-scspec $scspec
     dict set scspec $file $scspec
@@ -45,6 +46,7 @@ proc ::critcl::api::c_scspec {file scspec} {
 
 proc ::critcl::api::c_import {file name version} {
     variable use
+    cdefs::initialize $file
 
     # First we request the imported package, giving it a chance to
     # generate the headers searched for in a moment (maybe it was
@@ -92,6 +94,7 @@ proc ::critcl::api::c_import {file name version} {
 
 proc ::critcl::api::c_export {file name} {
     variable self
+    cdefs::initialize $file
     ::critcl::msg -nonewline " (stubs export $name)"
 
     uuid::add $file .api-self $name
@@ -101,14 +104,11 @@ proc ::critcl::api::c_export {file name} {
 
 proc ::critcl::api::c_header {file args} {
     variable hdrs
+    cdefs::initialize $file
 
     set base [file dirname $file]
 
     uuid::add $file .api-headers $args
-
-    # XXX FIXME / InitializeFile
-    # XXX FIXME can we use the uuid info as the flag showing init?
-
     foreach pattern $args {
 	foreach v [common::expand-glob $base $pattern] {
 	    dict lappend hdrs $file $v
@@ -119,12 +119,9 @@ proc ::critcl::api::c_header {file args} {
 
 proc ::critcl::api::c_extheader {file args} {
     variable ehdrs
+    cdefs::initialize $file
 
     uuid::add $file .api-eheaders $args
-
-    # XXX FIXME / InitializeFile
-    # XXX FIXME can we use the uuid info as the flag showing init?
-
     foreach v $args {
 	dict lappend ehdrs $file $v
     }
@@ -133,6 +130,7 @@ proc ::critcl::api::c_extheader {file args} {
 
 proc ::critcl::api::c_function {file rtype name arguments} {
     variable fun
+    cdefs::initialize $file
 
     package require stubs::reader
 

@@ -17,7 +17,6 @@
 
 package require Tcl 8.4           ;# Minimal supported Tcl runtime.
 package require critcl::common    ;# General shared utility commands.
-package require critcl::usrconfig ;# Management of user options.
 package require critcl::meta      ;# Management of teapot meta data.
 package require dict84            ;# Forward-compatible dict command.
 package require lassign84         ;# Forward-compatible lassign command.
@@ -186,8 +185,7 @@ namespace eval ::critcl::scan {
     variable saved
 
     namespace import ::critcl::common::*
-    namespace eval usrconfig { namespace import ::critcl::userconfig::* }
-    namespace eval meta      { namespace import ::critcl::meta::* }
+    namespace eval meta { namespace import ::critcl::meta::* }
 }
 
 # # ## ### ##### ######## ############# #####################
@@ -525,10 +523,12 @@ proc ::critcl::scan::critcl::userconfig {cmd args} {
 	    lassign $args oname odesc otype odefault
 	    set odesc [string trim $odesc]
 	    if {[llength $args] < 4} {
-		set odefault [usrconfig::default $otype]
+		dict lappend capture config [list $oname $odesc $otype]
+		::critcl::print "\tUser Config:  $oname ([join $otype { }]) $odesc"
+	    } else {
+		dict lappend capture config [list $oname $odesc $otype $odefault]
+		::critcl::print "\tUser Config:  $oname ([join $otype { }] -> $odefault) $odesc"
 	    }
-	    dict lappend capture config [list $oname $odesc $otype $odefault]
-	    ::critcl::print "\tUser Config:  $oname ([join $otype { }] -> $odefault) $odesc"
 	}
 	set - query -
 	default {}

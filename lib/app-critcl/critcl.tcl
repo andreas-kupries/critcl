@@ -1535,7 +1535,12 @@ proc ::critcl::app::PlaceTEASupport {pkgdir pkgname pversion porg} {
 	lappend macros "## TEA user option setup"
 	lappend macros ""
 	foreach uc $uclist {
-	    lassign $uc oname odesc otype odefault
+	    if {[llength $uc] < 4} {
+		lassign $uc oname odesc otype
+		set odefault [critcl::usr::config::default $otype]
+	    } else {
+		lassign $uc oname odesc otype odefault
+	    }
 
 	    if {$otype eq "bool"} {
 		set odefault [expr {$odefault ? "yes" : "no"}]

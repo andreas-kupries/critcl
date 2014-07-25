@@ -17,6 +17,7 @@
 
 package require Tcl 8.4            ;# Minimal supported Tcl runtime.
 package require dict84             ;# Forward-compatible dict command.
+package require critcl::cdefs      ;# General collected C definitions.
 package require critcl::uuid       ;# Digesting, change detection.
 
 package provide  critcl::usrconfig 1
@@ -51,6 +52,7 @@ proc ::critcl::usrconfig::c_define {ref oname odesc otype {odefault {}}} {
     # everything.
     Validate $oname $otype $odefault
 
+    cdefs::initialize $file
     uuid::add $ref .uc-def [list $oname $otype $odefault]
 
     dict set config $ref $oname type    $otype
@@ -132,7 +134,8 @@ namespace eval ::critcl::usrconfig {
     #                  -> "="       ->
     variable config {}
 
-    namespace eval uuid { namespace import ::critcl::uuid::* }
+    namespace eval cdefs { namespace import ::critcl::cdefs::* }
+    namespace eval uuid  { namespace import ::critcl::uuid::*  }
 }
 
 # # ## ### ##### ######## ############# #####################

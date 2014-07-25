@@ -40,6 +40,7 @@ strict digraph {
 	cache		->	cdefs;
 	cache		->	log;
 	cdefs		->	api;
+	cdefs		->	usrconfig;
 	//common		->	api;
 	//common		->	cache;
 	//common		->	ccconfig;
@@ -69,6 +70,7 @@ strict digraph {
 	meta		->	scan;
 	scan		->	cdefs;
 	tags		->	api;
+	tags		->	cdefs;
 	usrconfig	->	scan;
 	uuid		->	api;
 	uuid		->	cdefs;

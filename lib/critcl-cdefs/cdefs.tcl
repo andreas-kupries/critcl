@@ -24,6 +24,7 @@ package require critcl::data       ;# Access to data files.
 package require critcl::meta       ;# Management of teapot meta data.
 package require critcl::uuid       ;# Digesting, change detection.
 package require critcl::scan       ;# Static Tcl file scanner.
+package require critcl::tags       ;# Management of indicator flags.
 
 package provide  critcl::cdefs 1
 namespace eval ::critcl::cdefs {
@@ -32,17 +33,38 @@ namespace eval ::critcl::cdefs {
 	srcs tcls usetcl usetk code? edecls? flags? funcs? hdrs? \
 	inits? ldflags? libs? objs? preload? srcs? tcls? usetcl? \
 	usetk? has-const has-code const2ns func-create-code \
-	system-include-paths system-lib-paths
+	system-include-paths system-lib-paths initialize
     catch { namespace ensemble create }
 }
 
 # # ## ### ##### ######## ############# #####################
 ## API commands.
 
+proc ::critcl::cdefs::initialize {context} {
+    if {[tags::has $context initialized]} return
+
+    # Initialize the system meta data.
+    # User meta data auto-initializes on 1st write.
+
+    meta::assign $context platform    [list [TeapotPlatform]]
+    meta::assign $context build::date [list [common::today]]
+
+    # Statically scan the context (file) for dependencies and such,
+    # should it exist (Bracket code for example does not). This will
+    # also initialize user meta data, if there are any.
+    if {[file exists $context]} {
+	scan-dependencies $context $context provide
+    }
+
+    tags::set $context initialized
+    return
+}
+
 proc ::critcl::cdefs::code {ref code} {
     variable fragments
     variable block
     variable defs
+    initialize $ref
 
     set digest [uuid::add $ref .ccode $code]
 
@@ -54,8 +76,9 @@ proc ::critcl::cdefs::code {ref code} {
 
 proc ::critcl::cdefs::defs {ref defines {namespace "::"}} {
     if {![llength $defines]} return
-
     variable const
+    initialize $ref
+
     uuid::add $ref .cdefines [list $defines $namespace]
 
     foreach def $defines {
@@ -67,8 +90,9 @@ proc ::critcl::cdefs::defs {ref defines {namespace "::"}} {
 
 proc ::critcl::cdefs::flags {ref args} {
     if {![llength $args]} return
-
     variable cflags
+    initialize $ref
+
     uuid::add $ref .cflags $args
 
     foreach flag $args {
@@ -115,6 +139,8 @@ proc ::critcl::cdefs::hdrs {ref args} {
 proc ::critcl::cdefs::init {ref code decl} {
     variable initc
     variable edecls
+    initialize $ref
+
     uuid::add $ref .cinit [list $code $edecls]
 
     dict append initc  $ref $code \n
@@ -124,8 +150,9 @@ proc ::critcl::cdefs::init {ref code decl} {
 
 proc ::critcl::cdefs::ldflags {ref args} {
     if {![llength $args]} return
-
     variable ldflags
+    initialize $ref
+
     uuid::add $ref .ldflags $args
 
     # Note: Flag may come with and without a -Wl, prefix.
@@ -150,6 +177,7 @@ proc ::critcl::cdefs::objs {ref args} {
     # args = list (glob-pattern...) = list (file...)
     if {![llength $args]} return
     variable cobjects
+    initialize $ref
 
     uuid::add $ref .cobjects $args
 
@@ -171,8 +199,9 @@ proc ::critcl::cdefs::objs {ref args} {
 
 proc ::critcl::cdefs::preload {ref args} {
     if {![llength $args]} return
-
     variable preload
+    initialize $ref
+
     uuid::add $ref .preload $args
 
     foreach lib $args {
@@ -185,6 +214,7 @@ proc ::critcl::cdefs::srcs {ref args} {
     # args = list (glob-pattern...) = list (file...)
     if {![llength $args]} return
     variable csources
+    initialize $ref
 
     uuid::add $ref .csources $args
 
@@ -206,6 +236,7 @@ proc ::critcl::cdefs::tcls {ref args} {
     # args = list (glob-pattern...) = list (file...)
     if {![llength $args]} return
     variable tsources
+    initialize $ref
 
     # Note: The companion Tcl sources (count, order, content) have no bearing
     #       on the binary. Hence no touching of the uuid system here.
@@ -223,6 +254,7 @@ proc ::critcl::cdefs::tcls {ref args} {
 
 proc ::critcl::cdefs::usetcl {ref version} {
     variable mintcl
+    initialize $ref
 
     # This is also a dependency we have to record in the meta data.
     # A 'package require' is not needed. This can be inside of the
@@ -236,6 +268,7 @@ proc ::critcl::cdefs::usetcl {ref version} {
 
 proc ::critcl::cdefs::usetk {ref} {
     variable usetk
+    initialize $ref
 
     # This is also a dependency we have to record in the meta data.
     # A 'package require' is not needed. This can be inside of the
@@ -464,6 +497,7 @@ namespace eval ::critcl::cdefs {
     namespace eval gopt   { namespace import ::critcl::gop::*    }
     namespace eval meta   { namespace import ::critcl::meta::*   }
     namespace eval uuid   { namespace import ::critcl::uuid::*   }
+    namespace eval tags   { namespace import ::critcl::tags::*   }
     namespace import ::critcl::scan-dependencies
 }
 
@@ -497,6 +531,7 @@ proc ::critcl::cdefs::FlagsAndPatterns {ref dbvar words options} {
     if {![llength $words]} return
     variable $dbvar
     upvar 0  $dbvar options
+    initialize $ref
 
     uuid::add $ref .$dbvar $args
 
@@ -524,6 +559,25 @@ proc ::critcl::cdefs::FlagsAndPatterns {ref dbvar words options} {
 proc ::critcl::cdefs::Error {msg args} {
     set code [linsert $args 0 CRITCL CDEFS]
     return -code error -errorcode $code $msg
+}
+
+proc ::critcl::cdefs::TeapotPlatform {} {
+    # Platform identifier HACK. Most of the data in critcl is based on
+    # 'platform::generic'. The TEApot MD however uses
+    # 'platform::identify' with its detail information (solaris kernel
+    # version, linux glibc version). But, if a cross-compile is
+    # running we are SOL, because we have no place to pull the
+    # necessary detail from, 'identify' is a purely local operation :(
+
+    # XXX FIXME actual target - go through backend!!
+    # XXX FIXME!! Initialization step on first declaration.
+
+    set platform [ccconfig::actual]
+    if {[platform::generic] eq $platform} {
+	set platform [platform::identify]
+    }
+
+    return $platform
 }
 
 # # ## ### ##### ######## ############# #####################
