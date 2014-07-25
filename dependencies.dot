@@ -1,3 +1,9 @@
+// The string "//T" is used to mark and disable dependencies satisfied
+// through transitive dependencies. This cleans up the graph a bit.
+//
+// Similarly the string "//G" marks and disables dependencies of
+// packages used pretty much everywhere and as such strongly cluttering
+// the graph.
 
 strict digraph {
 	//	Frontend
@@ -35,72 +41,71 @@ strict digraph {
 	//	A -> B   <==> A is-used-by B
 
 	at		->	typeconv;
-	cache		->	api;
+	//T cache		->	api;
 	cache		->	ccconfig;
 	cache		->	cdefs;
 	cache		->	log;
 	cdefs		->	api;
 	cdefs		->	usrconfig;
-	//common		->	api;
-	//common		->	cache;
-	//common		->	ccconfig;
-	//common		->	cdefs;
-	//common		->	log;
-	//common		->	meta;
-	//common		->	scan;
+	//G common		->	api;
+	//G common		->	cache;
+	//G common		->	ccconfig;
+	//G common		->	cdefs;
+	//G common		->	log;
+	//G common		->	meta;
+	//G common		->	scan;
 	data		->	common;
 	data		->	cdefs;
-	//dict84		->	api;
-	//dict84		->	ccconfig;
-	//dict84		->	cdefs;
-	//dict84		->	meta;
-	//dict84		->	scan;
-	//dict84		->	tags;
-	//dict84		->	usrconfig;
-	//dict84		->	uuid;
+	//G dict84		->	api;
+	//G dict84		->	ccconfig;
+	//G dict84		->	cdefs;
+	//G dict84		->	meta;
+	//G dict84		->	scan;
+	//G dict84		->	tags;
+	//G dict84		->	usrconfig;
+	//G dict84		->	uuid;
 	gopt		->	at;
 	gopt		->	cdefs;
-	//lassign84	->	api;
-	//lassign84	->	at;
-	//lassign84	->	ccconfig;
-	//lassign84	->	scan;
-	//lassign84	->	typeconv;
-	meta		->	api;
+	//G lassign84	->	api;
+	//G lassign84	->	at;
+	//G lassign84	->	ccconfig;
+	//G lassign84	->	scan;
+	//G lassign84	->	typeconv;
+	//T meta		->	api;
 	meta		->	cdefs;
 	meta		->	scan;
 	scan		->	cdefs;
-	tags		->	api;
+	//T tags		->	api;
 	tags		->	cdefs;
-	usrconfig	->	scan;
-	uuid		->	api;
+	//T uuid		->	api;
 	uuid		->	cdefs;
-	uuid		->	usrconfig;
+	//T uuid		->	usrconfig;
 	who		->	at;
 
-	cache		->	cc;
+	//T cache		->	cc;
 	ccconfig	->	cc;
 	cdefs		->	cc;
-	//common		->	cc;
-	data		->	cc;
-	gopt		->	cc;
+	//G common		->	cc;
+	//T data		->	cc;
+	//T gopt		->	cc;
 	log		->	cc;
-	meta		->	cc;
-	tags		->	cc;
-	uuid		->	cc;
+	//T meta		->	cc;
+	//T tags		->	cc;
+	//T uuid		->	cc;
 
 	api		->	core;
 	at		->	core;
-	cache		->	core;
+	//T cache		->	core;
 	cc		->	core;
 	cdefs		->	core;
-	//common		->	core;
-	data		->	core;	// for CollectEmbedded only.
-	gopt		->	core;
-	meta		->	core;
-	scan		->	core;
-	tags		->	core;
+	//G common		->	core;
+	//T data		->	core;	// for CollectEmbedded only.
+	//T gopt		->	core;
+	//T meta		->	core;
+	//T scan		->	core;
+	//T tags		->	core;
 	typeconv	->	core;
 	usrconfig	->	core;
-	uuid		->	core;
-	who		->	core;
+	//T uuid		->	core;
+	//T who		->	core;
 }
