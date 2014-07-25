@@ -83,17 +83,18 @@ proc ::critcl::meta::gets {ref key} {
     Error "Unknown system meta data key \"$key\"" INVALID-SYSTEM $key
 }
 
-proc ::critcl::meta::require {ref args} {
-    extend $ref require $args
+proc ::critcl::meta::require {ref words} {
+    extend $ref require $words
+    return
 }
 
-proc ::critcl::meta::license {ref who args} {
+proc ::critcl::meta::license {ref who words} {
     set who [string trim $who]
     if {$who ne ""} {
 	append license "This software is copyrighted by $who.\n"
     }
 
-    append license [common::license-text $args]
+    append license [common::license-text $words]
 
     assign $ref license [common::text2words   $license]
     assign $ref author  [common::text2authors $who]
@@ -102,21 +103,24 @@ proc ::critcl::meta::license {ref who args} {
 
 proc ::critcl::meta::description {ref text} {
     assign $ref description [common::text2words $text]
+    return
 }
 
 proc ::critcl::meta::summary {ref text} {
     assign $ref summary [common::text2words $text]
+    return
 }
 
-proc ::critcl::meta::subject {ref args} {
-    extend $ref subject $args
+proc ::critcl::meta::subject {ref words} {
+    extend $ref subject $words
+    return
 }
 
-proc ::critcl::meta::general {ref key args} {
+proc ::critcl::meta::general {ref key words} {
     # <=> extend (below), for user, instead of system.
     variable user
     dict update user $ref data {
-	foreach v $args {
+	foreach v $words {
 	    dict lappend data $key $v
 	}
     }

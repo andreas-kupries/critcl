@@ -88,14 +88,14 @@ proc ::critcl::cdefs::defs {ref defines {namespace "::"}} {
     return
 }
 
-proc ::critcl::cdefs::flags {ref args} {
-    if {![llength $args]} return
+proc ::critcl::cdefs::flags {ref words} {
+    if {![llength $words]} return
     variable cflags
     initialize $ref
 
-    uuid::add $ref .cflags $args
+    uuid::add $ref .cflags $words
 
-    foreach flag $args {
+    foreach flag $words {
 	dict lappend cflags $ref $flag
     }
     return
@@ -130,9 +130,9 @@ proc ::critcl::cdefs::func-done {ref digest code} {
     return
 }
 
-proc ::critcl::cdefs::hdrs {ref args} {
+proc ::critcl::cdefs::hdrs {ref words} {
     # Accept: -Ipath, path/to/header-file
-    FlagsAndPatterns $ref cheaders $args -I
+    FlagsAndPatterns $ref cheaders $words -I
     return
 }
 
@@ -148,41 +148,41 @@ proc ::critcl::cdefs::init {ref code decl} {
     return
 }
 
-proc ::critcl::cdefs::ldflags {ref args} {
-    if {![llength $args]} return
+proc ::critcl::cdefs::ldflags {ref words} {
+    if {![llength $words]} return
     variable ldflags
     initialize $ref
 
-    uuid::add $ref .ldflags $args
+    uuid::add $ref .ldflags $words
 
     # Note: Flag may come with and without a -Wl, prefix.
     # We canonicalize this here to always have a -Wl, prefix.
     # This is done by stripping any such prefixes off and then
     # adding it back ourselves.
 
-    foreach flag $args {
+    foreach flag $words {
 	regsub -all {^-Wl,} $flag {} flag
 	dict lappend ldflags $ref -Wl,$flag
     }
     return
 }
 
-proc ::critcl::cdefs::libs {ref args} {
+proc ::critcl::cdefs::libs {ref words} {
     # Accept: -Lpath, -lname, -l:name, path/to/lib-file
-    FlagsAndPatterns $ref clibraries $args {-L -l}
+    FlagsAndPatterns $ref clibraries $words {-L -l}
     return
 }
 
-proc ::critcl::cdefs::objs {ref args} {
-    # args = list (glob-pattern...) = list (file...)
-    if {![llength $args]} return
+proc ::critcl::cdefs::objs {ref words} {
+    # words = list (glob-pattern...) = list (file...)
+    if {![llength $words]} return
     variable cobjects
     initialize $ref
 
-    uuid::add $ref .cobjects $args
+    uuid::add $ref .cobjects $words
 
     set base [file dirname $ref]
-    foreach pattern $args {
+    foreach pattern $words {
 	foreach path [common::expand-glob $base $pattern] {
 	    # XXX TODO: reject non-file|unreadable paths.
 
@@ -197,29 +197,29 @@ proc ::critcl::cdefs::objs {ref args} {
     return
 }
 
-proc ::critcl::cdefs::preload {ref args} {
-    if {![llength $args]} return
+proc ::critcl::cdefs::preload {ref words} {
+    if {![llength $words]} return
     variable preload
     initialize $ref
 
-    uuid::add $ref .preload $args
+    uuid::add $ref .preload $words
 
-    foreach lib $args {
+    foreach lib $words {
 	dict lappend preload $ref $lib
     }
     return
 }
 
-proc ::critcl::cdefs::srcs {ref args} {
-    # args = list (glob-pattern...) = list (file...)
-    if {![llength $args]} return
+proc ::critcl::cdefs::srcs {ref words} {
+    # words = list (glob-pattern...) = list (file...)
+    if {![llength $words]} return
     variable csources
     initialize $ref
 
-    uuid::add $ref .csources $args
+    uuid::add $ref .csources $words
 
     set base [file dirname $ref]
-    foreach pattern $args {
+    foreach pattern $words {
 	foreach path [common::expand-glob $base $pattern] {
 	    # Note: This implicitly rejects all paths which are not
 	    # readable, nor files.
@@ -232,9 +232,9 @@ proc ::critcl::cdefs::srcs {ref args} {
     return
 }
 
-proc ::critcl::cdefs::tcls {ref args} {
-    # args = list (glob-pattern...) = list (file...)
-    if {![llength $args]} return
+proc ::critcl::cdefs::tcls {ref words} {
+    # words = list (glob-pattern...) = list (file...)
+    if {![llength $words]} return
     variable tsources
     initialize $ref
 
@@ -242,7 +242,7 @@ proc ::critcl::cdefs::tcls {ref args} {
     #       on the binary. Hence no touching of the uuid system here.
 
     set base [file dirname $ref]
-    foreach pattern $args {
+    foreach pattern $words {
 	foreach path [common::expand-glob $base $pattern] {
 	    # The scan implicitly rejects paths which are not readable, nor files.
 	    dict lappend tsources $ref $path
@@ -526,22 +526,22 @@ proc ::critcl::cdefs::Has {ref dbvar} {
 }
 
 proc ::critcl::cdefs::FlagsAndPatterns {ref dbvar words options} {
-    # args = list (flag|glob-pattern...) = list (flag|file...)
+    # words = list (flag|glob-pattern...) = list (flag|file...)
     # XXX TODO: options = list of allowed flags
     if {![llength $words]} return
     variable $dbvar
     upvar 0  $dbvar options
     initialize $ref
 
-    uuid::add $ref .$dbvar $args
+    uuid::add $ref .$dbvar $words
 
     set base [file dirname $ref]
 
-    # args is intermingled flags (-*) and glob-patterns.  Flags are
+    # words is intermingled flags (-*) and glob-patterns.  Flags are
     # passed through unchanged. Patterns are expanded.  Contents
     # indirectly affect the binary, and are therefore digested.
 
-    foreach flagOrPattern $args {
+    foreach flagOrPattern $words {
 	if {[string match "-*" $flagOrPattern]} {
 	    # Flag, pass unchanged
 	    dict lappend options $ref $flagOrPattern

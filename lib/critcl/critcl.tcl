@@ -649,43 +649,43 @@ proc ::critcl::owns {args} {}
 
 proc ::critcl::cheaders {args} {
     set file [CheckEntry]
-    eval [linsert $args 0 cdefs::hdrs $file]
+    cdefs::hdrs $file $args
     return
 }
 
 proc ::critcl::csources {args} {
     set file [CheckEntry]
-    eval [linsert $args 0 cdefs::srcs $file]
+    cdefs::srcs $file $args
     return
 }
 
 proc ::critcl::clibraries {args} {
     set file [CheckEntry]
-    eval [linsert $args 0 cdefs::libs $file]
+    cdefs::libs $file $args
     return
 }
 
 proc ::critcl::cobjects {args} {
     set file [CheckEntry]
-    eval [linsert $args 0 cdefs::objs $file]
+    cdefs::objs $file $args
     return
 }
 
 proc ::critcl::tsources {args} {
     set file [CheckEntry]
-    eval [linsert $args 0 cdefs::tcls $file]
+    cdefs::tcls $file $args
     return
 }
 
 proc ::critcl::cflags {args} {
     set file [CheckEntry]
-    eval [linsert $args 0 cdefs::flags $file]
+    cdefs::flags $file $args 0
     return
 }
 
 proc ::critcl::ldflags {args} {
     set file [CheckEntry]
-    eval [linsert $args 0 cdefs::ldflags $file]
+    cdefs::ldflags $file $args
     return
 }
 
@@ -727,19 +727,14 @@ proc ::critcl::tk {} {
 # redundant when TIP #239 is widely available
 proc ::critcl::preload {args} {
     set file [CheckEntry]
-    eval [linsert $args 0 cdefs::preload $file]
+    cdefs::preload $file $args
     return
 }
 
 proc ::critcl::license {who args} {
     set file [CheckEntry]
-
-    # This, 'tsources', 'meta?', and 'meta' are the only places where
-    # we are not extending the UUID. Because the license text has no
-    # bearing on the binary at all.
-
     cdefs::initialize $file
-    eval [linsert $args 0 meta::license $file $who]
+    meta::license $file $who $args
     return
 }
 
@@ -748,7 +743,6 @@ proc ::critcl::license {who args} {
 
 proc ::critcl::description {text} {
     set file [CheckEntry]
-
     cdefs::initialize $file
     meta::description $file $text
     return
@@ -756,7 +750,6 @@ proc ::critcl::description {text} {
 
 proc ::critcl::summary {text} {
     set file [CheckEntry]
-
     cdefs::initialize $file
     meta::summary $file $text
     return
@@ -764,29 +757,20 @@ proc ::critcl::summary {text} {
 
 proc ::critcl::subject {args} {
     set file [CheckEntry]
-
     cdefs::initialize $file
-    eval [linsert $args 0 meta::subject $file]
+    meta::subject $file $args
     return
 }
 
 proc ::critcl::meta {key args} {
     set file [CheckEntry]
-    # This, 'meta?', 'license', and 'tsources' are the only places
-    # where we are not extending the UUID. Because the meta data has
-    # no bearing on the binary at all.
-
     cdefs::initialize $file
-    eval [linsert $args 0 meta::general $file $key]
+    meta::general $file $key $args
     return
 }
 
 proc ::critcl::meta? {key} {
     set file [CheckEntry]
-    # This, 'meta', 'license', and 'tsources' are the only places
-    # where we are not extending the UUID. Because the meta data has
-    # no bearing on the binary at all.
-
     cdefs::initialize $file
     return [meta::get $file $key]
 }
