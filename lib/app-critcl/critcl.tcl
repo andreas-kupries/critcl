@@ -103,45 +103,80 @@ proc ::critcl::msg {args} {
 
 proc ::critcl::app::main {argv} {
     Cmdline $argv
+    switch -exact -- $v::mode {
+	pkg   { DoPackage }
+	tea   { DoTEA     }
+	cache { DoCache   }
+	default {
+	    error "Bad mode $v::mode"
+	}
+    }
+    return
+}
 
+# # ## ### ##### ######## ############# #####################
+
+proc ::critcl::app::DoPackage {} {
     # When creating a package use a transient cache which is not in
     # conflict with "compile & run", or other instances of the critcl
     # application.
 
-    if {$v::mode eq "pkg"} {
-	set pkgcache [PackageCache]
-	critcl::cache $pkgcache
-	critcl::fastuuid
-    }
+    set pkgcache [PackageCache]
+    critcl::cache $pkgcache
+    critcl::fastuuid
 
-    ProcessInput
+    ProcessInputPackage
     StopOnFailed
 
     # All input files have been processed and their data saved. Now
-    # generate the boilerplate bracketing all the sub-ordinate
+    # generate the boilerplate code bracketing all the sub-ordinate
     # Foo_Init() functions, i.e. the code which provides a single
     # initialization function for the whole set of input files.
 
-    if {$v::mode eq "pkg"} {
-	# Create a merged shared library and put a proper Tcl package
-	# around it.
+    # Create a merged shared library and put a proper Tcl package
+    # around it.
 
-	BuildBracket
-	StopOnFailed
-	AssemblePackage
-
-	if {!$v::keep} {
-	    file delete -force $pkgcache
-	}
-    } elseif {$v::mode eq "tea"} {
-	AssembleTEA
-    }
-
+    BuildBracket
     StopOnFailed
 
-    if {$v::keep} {
-	::critcl::print stderr "Files left in [critcl::cache]"
-    }
+    AssemblePackage
+    CacheClear $pkgcache
+    StopOnFailed
+
+    CacheNote
+    return
+}
+
+proc ::critcl::app::DoCache {} {
+    ProcessInputCache
+    StopOnFailed
+
+    CacheNote
+    return
+}
+
+proc ::critcl::app::DoTEA {} {
+    ProcessInputTEA
+    StopOnFailed
+
+    AssembleTEA
+    StopOnFailed
+
+    CacheNote
+    return
+}
+
+# # ## ### ##### ######## ############# #####################
+
+proc ::critcl::app::CacheClear {pkgcache} {
+    if {$v::keep} return
+    file delete -force $pkgcache
+    return
+}
+
+proc ::critcl::app::CacheNote {} {
+    if {!$v::keep} return
+    ::critcl::print stderr "Files left in [critcl::cache]"
     return
 }
 
@@ -527,7 +562,7 @@ proc ::critcl::app::Selftest {} {
     return
 }
 
-proc ::critcl::app::ProcessInput {} {
+proc ::critcl::app::ProcessInputPackage {} {
     # Main loop. This processes the input files, one by one.
 
     set v::debug [lsort -unique $v::debug]
@@ -564,21 +599,7 @@ proc ::critcl::app::ProcessInput {} {
     set first  1  ;# Flag, reset after first round, helps with output formatting.
     set missing 0
 
-    if {$v::mode eq "tea"} {
-	LogLn "Config:   TEA Generation"
-	Log   "Source:   "
-
-	# Initialize the accumulator variables for various per-file
-	# information.
-
-	set v::org      {} ; # Organization the package is licensed by.
-	set v::ver      {} ; # Version of the package.
-	set v::cfiles   {} ; # Companion files (.tcl, .c, .h, etc).
-	set v::teasrc   {} ; # Input file(s) transformed for use in the Makefile.in. 
-	set v::imported {} ; # List of stubs APIs imported from elsewhere.
-	set v::config   {} ; # List of user-specified configuration settings.
-
-    } elseif {[llength $v::src]} {
+    if {[llength $v::src]} {
 	LogLn "Config:   [::critcl::targetconfig]"
 	LogLn "Build:    [::critcl::buildplatform]"
 
@@ -591,114 +612,25 @@ proc ::critcl::app::ProcessInput {} {
 	Log   "Source:   "
     }
 
-    if {$v::mode eq "pkg"} {
-	# Overwrite parts of the critcl package to disable the API
-	# commands which would normally invoke cbuild-auto and build
-	# the package directly. Instead they now just return a result
-	# indicating success, in case the the .critcl file uses them
-	# as guard. They behave like when they are ignored.
+    # Overwrite parts of the critcl package to disable the API
+    # commands which would normally invoke cbuild-auto and build the
+    # package directly. Instead they now just return a result
+    # indicating success, in case the the .critcl file uses them as
+    # guard. They behave like when they are ignored.
 
-	proc ::critcl::failed {} { return 0 }
-	proc ::critcl::load   {} { return 1 }
-    }
+    proc ::critcl::failed {} { return 0 }
+    proc ::critcl::load   {} { return 1 }
 
     foreach f $v::src {
 	# Avoid reloading itself.
 	if {[file rootname [file tail $f]] eq "critcl"} continue
 
-	if {$v::mode eq "tea"} {
-	    lappend v::teasrc "\${srcdir}/src/[file tail $f]"
-	}
-
-	# Canonicalize input argument, and search in a few places.
-	set fn [file normalize $f]
-
-	set found [file exists $fn]
-	if {!$found} {
-	    if {[file extension $fn] ne ".tcl"} {
-		append fn .tcl
-		set found [file exists $fn]
-	    }
-	    if {!$found} {
-		if {!$first} { ::critcl::print stderr "" }
-		::critcl::print stderr "$f doesn't exist"
-		incr missing
-		continue
-	    }
-	}
-
-	set first 0
-	Log "[file tail $fn] "
+	set fn [LocateFile $f]
 	set dir [file dirname $fn]
 
-	if {$v::mode eq "tea"} {
-	    # In TEA mode we are not building anything at all. We only
-	    # wish to know and scan for the declarations of companion
-	    # files, so that we know what to put these into the TEA
-	    # directory hierarchy. This also provides us with the
-	    # version number to use.
+	PropagateFlags $fn
 
-	    LogLn ""
-	    array set r [critcl::scan $fn]
-	    lappend v::cfiles $f $r(files)
-	    if {$r(org) ne {}} {
-		lappend v::org $r(org)
-	    }
-	    if {$r(version) ne {}} {
-		lappend v::ver $r(version)
-	    }
-	    if {$r(imported) ne {}} {
-		critcl::lappendlist v::imported $r(imported)
-	    }
-	    if {$r(config) ne {}} {
-		critcl::lappendlist v::config $r(config)
-	    }
-	    if {$r(meta) ne {}} {
-		lappend v::meta $r(meta)
-	    }
-	    continue
-	}
-
-	set save [info script]
-	info script $fn
-
-	if {[llength $v::debug]} {
-	    # As the debug settings are stored per file we now take
-	    # the information from the application's commandline and
-	    # force things here, faking the proper path information.
-	    foreach v $v::debug {
-		critcl::debug $v
-	    }
-	}
-
-	#puts ||$v::uc||
-	if {[llength $v::uc]} {
-	    # As the user-config settings are stored per file we now
-	    # take the information from the application's commandline
-	    # and force things here, faking the proper path information.
-	    # Full checking of the data happens only if the setting is
-	    # actually used by the file.
-
-	    foreach {k v} $v::uc {
-		#puts UC($k)=|$v|
-		critcl::userconfig set $k $v
-	    }
-	}
-
-	info script $save
-
-	# Execute the input file and collect all the crit(i)c(a)l :)
-	# information. Ensure that critcl's namespace introspection is
-	# done correctly, and not tricked into thinking that
-	# 'critcl::app' is the namespace to use for the user's
-	# commands.
-
-	uplevel #0 [list source $fn]
-
-	if {[critcl::cnothingtodo $fn]} {
-	    ::critcl::print stderr "nothing to build for $f"
-	    continue
-	}
+	Execute $fn
 
 	# Force build. We disabled 'critcl::failed' and 'critcl::load'
 	# above, causing them to return OK, and bypassing anything
@@ -709,16 +641,11 @@ proc ::critcl::app::ProcessInput {} {
 	# script location, something the 'source' comand above did
 	# automatically.
 
-	set save [info script]
-	info script $fn
-	if {$v::mode eq "pkg"} {
+	InContext $fn {
 	    set failed [critcl::cbuild-pkgpart $fn]
-	} else {
-	    # Cache prefill mode.
-	    set failed [critcl::cbuild-auto $fn]
 	}
+
 	incr v::failed $failed
-	info script $save
 
 	# We can skip the part where we collect the build results for
 	# use by the overarching code if either no overall shlib is
@@ -730,20 +657,8 @@ proc ::critcl::app::ProcessInput {} {
 	# maximum information about problems from a single run, not
 	# fix things one by one.
 
-	set results [critcl::cresults $fn]
-	if {$failed} {
-	    lappend v::borken $f
-	    lappend v::log    [dict get $results log]
-	    Log "(FAILED) "
-	} elseif {[dict exists $results warnings]} {
-	    # There might be warnings to print even if the build did
-	    # not fail.
-	    set warnings [dict get $results warnings]
-	    if {[llength $warnings]} {
-		::critcl::print stderr "\n\nWarning  [join $warnings "\nWarning  "]"
-	    }
-	}
-	if {$v::failed || ($v::mode ne "pkg")} continue
+	set results [GetResults $fn]
+	if {$v::failed} continue
 
 	array set r $results
 
@@ -781,8 +696,236 @@ proc ::critcl::app::ProcessInput {} {
     set v::inits [lindex $v::inits 0]
     # Strip the prefix used by the foundation package. Keep in sync.
     regsub {^ns_} $v::inits {} v::inits
+    return
+}
+
+proc ::critcl::app::ProcessInputTEA {} {
+    # Main loop. This processes the input files, one by one.
+    # Other loop status information.
+
+    set first   1  ;# Flag, reset after first round, helps with output formatting.
+    set missing 0
+
+    LogLn "Config:   TEA Generation"
+    Log   "Source:   "
+
+    # Initialize the accumulator variables for various per-file
+    # information.
+
+    set v::org      {} ; # Organization the package is licensed by.
+    set v::ver      {} ; # Version of the package.
+    set v::cfiles   {} ; # Companion files (.tcl, .c, .h, etc).
+    set v::teasrc   {} ; # Input file(s) transformed for use in the Makefile.in. 
+    set v::imported {} ; # List of stubs APIs imported from elsewhere.
+    set v::config   {} ; # List of user-specified configuration settings.
+
+    foreach f $v::src {
+	# Avoid reloading itself.
+	if {[file rootname [file tail $f]] eq "critcl"} continue
+
+	lappend v::teasrc "\${srcdir}/src/[file tail $f]"
+
+	set fn [LocateFile $f]
+
+	# In TEA mode we are not building anything at all. We only
+	# wish to know and scan for the declarations of companion
+	# files, so that we know what to put into the TEA directory
+	# hierarchy. This also provides us with the version number to
+	# use, and the set of user-specified configuration flags.
+
+	LogLn ""
+	array set r [critcl::scan $fn]
+
+	lappend v::cfiles $f $r(files)
+	if {$r(org) ne {}} {
+	    lappend v::org $r(org)
+	}
+	if {$r(version) ne {}} {
+	    lappend v::ver $r(version)
+	}
+	if {$r(imported) ne {}} {
+	    critcl::lappendlist v::imported $r(imported)
+	}
+	if {$r(config) ne {}} {
+	    critcl::lappendlist v::config $r(config)
+	}
+	if {$r(meta) ne {}} {
+	    lappend v::meta $r(meta)
+	}
+    }
+
+    if {$missing} {
+	critcl::error  "Missing files: $missing, aborting"
+    }
+    return
+}
+
+proc ::critcl::app::ProcessInputCache {} {
+    # Main loop. This processes the input files, one by one.
+
+    set v::debug [lsort -unique $v::debug]
+
+    # NOTE that this effectively executes them (source!) in the
+    # context of this application. The files are trusted to not
+    # contain malicious side-effects, etc.
+
+    # Other loop status information.
+
+    set first   1  ;# Flag, reset after first round, helps with output formatting.
+    set missing 0
+
+    if {[llength $v::src]} {
+	LogLn "Config:   [::critcl::targetconfig]"
+	LogLn "Build:    [::critcl::buildplatform]"
+
+	set t [::critcl::targetplatform]
+	if {$v::actualplatform ne $t} {
+	    LogLn "Target:   $v::actualplatform (by $t)"
+	} else {
+	    LogLn "Target:   $v::actualplatform"
+	}
+	Log   "Source:   "
+    }
+
+    foreach f $v::src {
+	# Avoid reloading itself.
+	if {[file rootname [file tail $f]] eq "critcl"} continue
+
+	set fn [LocateFile $f]
+	PropagateFlags $fn
+
+	Execute $fn
+
+	# Force build. We disabled 'critcl::failed' and 'critcl::load'
+	# above, causing them to return OK, and bypassing anything
+	# conditional on their failure. If there is a failure we want
+	# to know it correctly, here.
+	#
+	# Regardless, we have to force (and later restore) the proper
+	# script location, something the 'source' comand above did
+	# automatically.
+
+	InContext $fn {
+	    set failed [critcl::failed]
+	}
+	incr v::failed $failed
+
+	# NOTE that we were NOT skipping the build step for any of the
+	# packages, even if previous packages failed. We want the
+	# maximum information about problems from a single run, not
+	# fix things one by one.
+
+	GetResults $fn
+    }
+
+    if {$missing} {
+	critcl::error "Missing files: $missing, aborting"
+    }
 
     return
+}
+
+proc ::critcl::app::LocateFile {f} {
+    # Import loop state
+    upvar 1 missing missing first first
+
+    # Canonicalize input argument, and search in a few places.
+    set fn [file normalize $f]
+
+    set found [file exists $fn]
+    if {!$found} {
+	if {[file extension $fn] ne ".tcl"} {
+	    append fn .tcl
+	    set found [file exists $fn]
+	}
+	if {!$found} {
+	    if {!$first} { ::critcl::print stderr "" }
+	    ::critcl::print stderr "$f doesn't exist"
+	    incr missing
+	    continue
+	}
+    }
+
+    set first 0
+    Log "[file tail $fn] "
+    return $fn
+}
+
+proc ::critcl::app::PropagateFlags {fn} {
+    # XXX FIXME Use direct access of low-level databases - gopt,
+    # XXX FIXME userconfig. Doing so avoids the need to fiddle
+    # XXX FIXME with 'info script', as we can specifiy the context
+    # XXX FIXME (fn) directly.
+
+    InContext $fn {
+	if {[llength $v::debug]} {
+	    # As the debug settings are stored per file we now take the
+	    # information from the application's commandline and force
+	    # things here, faking the proper path information.
+	    foreach v $v::debug {
+		critcl::debug $v
+	    }
+	}
+
+	#puts ||$v::uc||
+	if {[llength $v::uc]} {
+	    # As the user-config settings are stored per file we now take
+	    # the information from the application's commandline and force
+	    # things here, faking the proper path information.  Full
+	    # checking of the data happens only if the setting is actually
+	    # used by the file.
+	    foreach {k v} $v::uc {
+		#puts UC($k)=|$v|
+		critcl::userconfig set $k $v
+	    }
+	}
+    }
+    return
+}
+
+proc ::critcl::app::Execute {fn} {
+    # Execute the input file and collect all the crit(i)c(a)l :)
+    # information. Ensure that critcl's namespace introspection is
+    # done correctly, and not tricked into thinking that 'critcl::app'
+    # is the namespace to use for the user's commands.
+
+    uplevel #0 [list source $fn]
+
+    if {![critcl::cnothingtodo $fn]} return
+
+    ::critcl::print stderr "nothing to build for $f"
+    return -code continue
+}
+
+proc ::critcl::app::GetResults {fn} {
+    upvar 1 failed failed
+
+    set results [critcl::cresults $fn]
+
+    # XXX FIXME get logs & warnings
+    if {$failed} {
+	lappend v::borken $f
+	lappend v::log    [dict get $results log]
+	Log "(FAILED) "
+    } elseif {[dict exists $results warnings]} {
+	# There might be warnings to print even if the build did
+	# not fail.
+	set warnings [dict get $results warnings]
+	if {[llength $warnings]} {
+	    ::critcl::print stderr "\n\nWarning  [join $warnings "\nWarning  "]"
+	}
+    }
+
+    return $results
+}
+
+proc ::critcl::app::InContext {fn script} {
+    set save [info script]
+    info script $fn
+
+    uplevel 1 $script
+
+    info script $save
 }
 
 proc ::critcl::app::Vmax {a b} {
@@ -814,35 +957,35 @@ proc ::critcl::app::BuildBracket {} {
     # ensures that the generated _Init function has the proper name
     # without having to redefine things through C macros, as was done
     # before.
-    info script $v::shlname
+    InContext $v::shlname {
+	critcl::config combine ""
 
-    critcl::config combine ""
+	# Inject the information collected from the input files, making
+	# them part of the final result.
+	critcl::tcl $v::mintcl
+	if {$v::tk} { critcl::tk }
 
-    # Inject the information collected from the input files, making
-    # them part of the final result.
-    critcl::tcl $v::mintcl
-    if {$v::tk} { critcl::tk }
+	set                 lib critcl::cobjects
+	critcl::lappendlist lib $v::objects
+	eval $lib
 
-    set                 lib critcl::cobjects
-    critcl::lappendlist lib $v::objects
-    eval $lib
+	set                 lib critcl::clibraries
+	critcl::lappendlist lib $v::clibraries
+	eval $lib
 
-    set                 lib critcl::clibraries
-    critcl::lappendlist lib $v::clibraries
-    eval $lib
+	eval [linsert [lsort -unique $v::ldflags] 0 critcl::ldflags]
+	eval [linsert [lsort -unique $v::preload] 0 critcl::preload]
 
-    eval [linsert [lsort -unique $v::ldflags] 0 critcl::ldflags]
-    eval [linsert [lsort -unique $v::preload] 0 critcl::preload]
+	critcl::cinit $v::initnames $v::edecls
 
-    critcl::cinit $v::initnames $v::edecls
+	# And build everything.
+	set failed [critcl::cbuild-pkgmain "" 0]
 
-    # And build everything.
-    set failed [critcl::cbuild-pkgmain "" 0]
-
-    incr v::failed $failed
-    if {$failed} {
-	lappend v::borken <<Bracket>>
-	Log "(FAILED) "
+	incr v::failed $failed
+	if {$failed} {
+	    lappend v::borken <<Bracket>>
+	    Log "(FAILED) "
+	}
     }
     return
 }

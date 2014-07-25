@@ -1,0 +1,34 @@
+cresults, use within critcl::app / app-critcl
+=============================================
+
+CD <=> cdefs
+MD <=> meta
+TA <=> tags
+
+Field		Origin		Meaning
+-----		------		-------
+log		<build>		log output for a file build.
+warnings	<build>		warnings for a file build
+
+initname	<build>
+license		??
+objects		<build>
+-----		------		-------
+apiheader	TA (apiheader)	Header files to export.
+clibraries	CD::libs?	Union clibs to link against
+ldflags		CD::ldflags?	Union linker flags.
+mintcl		CD::usetcl?	Max of (Minimally required Tcl version.)
+preload		CD::preload?	Union of preload libs.
+tk		CD::usetk?	Union of tk usage flag
+tsources	CD::tcls?	Union of Tcl companion files.
+meta		MD::getall	Union of meta data.
+pkgname		MD::gets(name)	
+-----		------		-------
+
+Fields in result, not used by critcl::app
+Other users?
+
+	base		<calc>	/Load
+	shlib		<calc>	/Load
+	apiprefix	TA	CollectEmbedded
+	apidefines	TA	Compile, cmdline
