@@ -42,7 +42,7 @@ package require critcl::at        ;# Management of #line pragmas.
 #   incr*   - modify stashed location (only line number, not file).
 #   get     - format, return, and clear stash
 #   get*    - format & return stash
-package require critcl::api       ;# Management of stubs tables.
+package require critcl::api       ;# Management of stubs tables. - XXX Dispatch only.
 package require critcl::cache     ;# Result cache access.
 package require critcl::cc        ;# Backend using an external CC for building, and linking.
 package require critcl::ccconfig  ;# CC configuration database for standard backend.
@@ -50,12 +50,10 @@ package require critcl::cdefs     ;# General collection of C definitions.
 package require critcl::common    ;# General utility commands.
 package require critcl::data      ;# Access to templates and other supporting files.
 package require critcl::gopt      ;# Management of global options.
-#package require critcl::log       ;# Log files within the result cache.
 package require critcl::meta      ;# Management of teapot meta data.
-package require critcl::scan      ;# Static Tcl code scanner.
 package require critcl::tags      ;# Management of indicator flags.
 package require critcl::typeconv  ;# Handling cproc data types.
-package require critcl::usrconfig ;# Management of user options.
+package require critcl::usrconfig ;# Management of user options. - XXX Dispatch only
 package require critcl::uuid      ;# UUID generation.
 package require critcl::who       ;# Management of current file.
 

@@ -102,7 +102,6 @@ strict digraph {
 	//T data		->	core;	// for CollectEmbedded only.
 	//T gopt		->	core;
 	//T meta		->	core;
-	//T scan		->	core;
 	//T tags		->	core;
 	typeconv	->	core;
 	usrconfig	->	core;
