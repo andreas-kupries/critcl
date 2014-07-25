@@ -591,6 +591,17 @@ proc ::critcl::app::ProcessInput {} {
 	Log   "Source:   "
     }
 
+    if {$v::mode eq "pkg"} {
+	# Overwrite parts of the critcl package to disable the API
+	# commands which would normally invoke cbuild-auto and build
+	# the package directly. Instead they now just return a result
+	# indicating success, in case the the .critcl file uses them
+	# as guard. They behave like when they are ignored.
+
+	proc ::critcl::failed {} { return 0 }
+	proc ::critcl::load   {} { return 1 }
+    }
+
     foreach f $v::src {
 	# Avoid reloading itself.
 	if {[file rootname [file tail $f]] eq "critcl"} continue
@@ -677,24 +688,10 @@ proc ::critcl::app::ProcessInput {} {
 	info script $save
 
 	# Execute the input file and collect all the crit(i)c(a)l :)
-	# information. This may or may not have generated the internal
-	# object file, depending on if the input file called
-	# 'critcl::failed' by itself or not.
-	##
-	# We use 'buildforpackage' to put the implicit call of
-	# 'cbuild' into the right mode.
-	##
-	# XXX FIXME change api - disable critcl::load|failed instead, and
-	# force an explicit call of cbuild below, properly configured for
-	# cache or pkg.
-
-	if {$v::mode eq "pkg"} {
-	    critcl::buildforpackage
-	}
-
-	# Ensure that critcl's namespace introspection is done
-	# correctly, and not thinking that 'critcl::app' is the
-	# namespace to use for the user's commands.
+	# information. Ensure that critcl's namespace introspection is
+	# done correctly, and not tricked into thinking that
+	# 'critcl::app' is the namespace to use for the user's
+	# commands.
 
 	uplevel #0 [list source $fn]
 
@@ -703,10 +700,10 @@ proc ::critcl::app::ProcessInput {} {
 	    continue
 	}
 
-	# Force build. Our 'buildforpackage' call above disabled
-	# 'critcl::failed' and 'critcl::load' (Causing them to return
-	# OK, and bypassing anything conditional on their failure). If
-	# there is a failure we want to know it correctly, here.
+	# Force build. We disabled 'critcl::failed' and 'critcl::load'
+	# above, causing them to return OK, and bypassing anything
+	# conditional on their failure. If there is a failure we want
+	# to know it correctly, here.
 	#
 	# Regardless, we have to force (and later restore) the proper
 	# script location, something the 'source' comand above did
@@ -714,7 +711,12 @@ proc ::critcl::app::ProcessInput {} {
 
 	set save [info script]
 	info script $fn
-	set failed [critcl::cbuild $fn 0]
+	if {$v::mode eq "pkg"} {
+	    set failed [critcl::cbuild-pkgpart $fn]
+	} else {
+	    # Cache prefill mode.
+	    set failed [critcl::cbuild-auto $fn]
+	}
 	incr v::failed $failed
 	info script $save
 
@@ -835,8 +837,7 @@ proc ::critcl::app::BuildBracket {} {
     critcl::cinit $v::initnames $v::edecls
 
     # And build everything.
-    critcl::buildforpackage 0
-    set failed [critcl::cbuild "" 0]
+    set failed [critcl::cbuild-pkgmain "" 0]
 
     incr v::failed $failed
     if {$failed} {

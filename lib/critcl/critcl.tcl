@@ -886,14 +886,12 @@ proc ::critcl::done {} {
 
 proc ::critcl::failed {} {
     SkipIgnored [who::is] 0
-    if {$v::buildforpackage} { return 0 }
-    return [cbuild [who::is] 0]
+    return [cbuild-auto [who::is] 0]
 }
 
 proc ::critcl::load {} {
     SkipIgnored [who::is] 1
-    if {$v::buildforpackage} { return 1 }
-    return [expr {![cbuild [who::is]]}]
+    return [expr {![cbuild-auto [who::is]]}]
 }
 
 # # ## ### ##### ######## ############# #####################
@@ -1039,30 +1037,72 @@ proc ::critcl::debug {args} {
 # C critcl::showallconfig
 # C critcl::showconfig
 
-proc ::critcl::buildforpackage {{buildforpackage 1}} {
-    set v::buildforpackage $buildforpackage
-    return
+# Build Variants:
+# - cbuild-auto    - autoindex  - build, link, load (c&run) | drop results
+# - cbuild-pkgpart - app-critcl - build                     | keep results
+# - cbuild-pkgmain - app-critcl - build, link               | keep results
+
+proc ::critcl::cbuild-auto {file} {
+    # Compile & Run mode.
+    # Critcl App - Cache Prefill mode.
+
+    # Build, Link, and Load.
+    # Do not keep results.
+    # Check for a cached shlib (avoid recollection, define processing).
+
+    set flags [api::complete $file]
+    # XXX FIXME: api::complete flags information is not used.
+
+    # XXX FIXME handling of BuildDefines and CollectEmbedded (= cdefs::complete) in case of cached shlib)
+
+    # Begin with result dict here ... Keeping or not is handled after build/load...
+    set result {}
+    cc::build-for result $v::prefix $file 0 1
+
+    Clear $file
+    return [tags::get $file failed]
 }
 
-# Variants:
-# - cbuild-auto - autoindex  - build, link, load (c&run) | drop results
-# - cbuild-pkg  - app-critcl - build                     | keep results
-# - cbuild-main - app-critcl - build, link               | keep results
+proc ::critcl::cbuild-pkgpart {file} {
+    # Critcl App - Prebuild package - Package parts
+    # Compile. No Link. No load.
+    # Stash results for use by the critcl app.
 
-proc ::critcl::cbuild {file {load 1}} {
     # Fast path for known result.
-    if {[tags::has $file failed] && !$load} {
-	set v::buildforpackage 0
+    if {[tags::has $file failed]} {
 	return [tags::get $file failed]
     }
 
-    if {$file eq ""} {
-	set file [who::is]
-    }
+    # Complete stubs handling for the file/package.
+    # This feeds a number of last-minute C fragments into the system.
 
-    # Determine the requested mode and reset for next call.
-    set buildforpackage $v::buildforpackage
-    set v::buildforpackage 0
+    set flags [api::complete $file]
+    # XXX FIXME: api::complete flags information is not used.
+
+    # XXX FIXME handling of BuildDefines and CollectEmbedded (= cdefs::complete) in case of cached shlib)
+
+    # Begin with result dict here ... Keeping or not is handled after build/load...
+    set result {}
+    cc::build-for result $v::prefix $file 1 0
+
+    # Store collected results for pickup through "cresults".
+    tags::set $file result $result
+
+    Clear $file
+    return [tags::get $file failed]
+}
+
+proc ::critcl::cbuild-pkgmain {} {
+    # Critcl App - Prebuild package - Main package bracketing code.
+    # Compile. Link. No load.
+    # Do not keep results.
+
+    set file [who::is]
+
+    # Fast path for known result.
+    if {[tags::has $file failed]} {
+	return [tags::get $file failed]
+    }
 
     # Complete stubs handling for the file/package.
     # This feeds a number of last-minute C fragments into the system.
@@ -1071,16 +1111,12 @@ proc ::critcl::cbuild {file {load 1}} {
     # XXX FIXME: api::complete flags information is not used.
 
     # Begin with result dict here ... Keeping or not is handled after build/load...
-
     set result {}
-    cc::build-for result $v::prefix $file $buildforpackage $load
-
-
-    # Store collected results for pickup through "cresults".
-    tags::set $file result $result
+    cc::build-for result $v::prefix $file 0 0
 
     Clear $file
     return [tags::get $file failed]
+
 }
 
 proc ::critcl::Clear {file} {
@@ -1529,7 +1565,7 @@ proc ::critcl::BeginCommand {visibility name args} {
     # Note: Removing the leading :: because it trips Tcl's unknown
     # command, i.e. the command will not be found when called in a
     # script without leading ::.
-    set ::auto_index([string trimleft $ns$name :]) [list [namespace current]::cbuild $file]
+    set ::auto_index([string trimleft $ns$name :]) [list [namespace current]::cbuild-auto $file]
 
     set v::curr [cdefs::func-begin $file $ns$name $cns$cname $args]
 
@@ -1825,16 +1861,6 @@ namespace eval ::critcl {
 	# ---------------------------------------------------------------------
 	# NOTE: <file> are normalized absolute path names for exact
 	#       identification of the relevant .tcl file.
-
-	# _____________________________________________________________________
-	# State used by "cbuild" ______________________________________________
-
-	variable buildforpackage 0 ;# Boolean flag controlling
-				    # cbuild's behaviour. Named after
-				    # the mode 'generate package'.
-				    # Auto-resets to OFF after each
-				    # call of "cbuild". Can be activated
-				    # by "buildforpackage".
 
 	# _____________________________________________________________________
 	# State used by "BeginCommand", "EndCommand", "Emit*" _________________
