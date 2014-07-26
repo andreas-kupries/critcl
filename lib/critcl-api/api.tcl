@@ -173,7 +173,8 @@ proc ::critcl::api::clear {ref} {
     # See api::complete for where these are set/created.
     tags::unset $ref apidefines
     tags::unset $ref apiprefix
-    tags::unset $ref apiheader
+    #tags::unset $ref apiheader - XXX lifetime beyond build (app-critcl)
+    # XXX FIXME apiheader destruction in compile&run mode
     return
 }
 

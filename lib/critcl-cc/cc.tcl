@@ -103,7 +103,7 @@ proc ::critcl::cc::link-direct {ref label code} {
     lappendlist cmdline [LibrariesOf [cdefs::system-lib-paths $ref]]
     # XXX NOTE system-lib-paths used inside of Fix ...
     # XXX NOTE could make use of clibrary information, i.e. same.
-    lappendlist cmdline [FixLibraries $ref [cdefs::libs? $ref]]
+    lappendlist cmdline [GetLibraries $ref]
     lappendlist cmdline [cdefs::ldflags? $ref]
 
     log::text "${label} (link)... "
@@ -134,38 +134,19 @@ proc ::critcl::cc::build-for {rv prefix file buildforpackage load} {
 
     # The result dictionary is local information.
     #	initname   - String. Foo in Foo_Init().
-    #	tsources   - List. The companion tcl sources for <file>.
-    #	object	   - String. Name of the object file backing <file>.
-    #	objects	   - List. All object files, main and companions.
     #	shlib	   - String. Name of the shared library backing <file>.
     #	base	   - String. Common prefix (file root) of 'object' and 'shlib'.
-    #	clibraries - List. See config. Copy for global linkage.
-    #	ldflags	   - List. See config. Copy for global linkage.
-    #	mintcl	   - String. Minimum version of Tcl required by the package.
-    #	preload	   - List. Names of all libraries to load before
-    #	             the package library.
     #	license    - String. License text.
     #	<= "critcl::cresults"
 
     dict set result base       $base
     dict set result shlib      $shlib
     dict set result initname   $initname
-    dict set result tsources   $tsources
-    dict set result mintcl     $mintcl
-
-    catch {
-	dict set result pkgname [meta::gets $file name]
-    }
 
     StatusReset
 
     if {[gopt::get force] || ![file exists $shlib]} {
 	log::begin $prefix $file
-
-	set apicode [tags::get $file apiprefix]
-	dict set result apiprefix  $apicode
-	dict set result apidefines [tags::get $file apidefines]
-	dict set result apiheader  [tags::get $file apiheader]
 
 	# XXX WHY apiprefix header.c vs [ccode]
 	# XXX WHY (see (**)) ?! critcl.tcl
@@ -176,45 +157,30 @@ proc ::critcl::cc::build-for {rv prefix file buildforpackage load} {
 
 	# XXX FIXME split out BuildDefines...
 
-	CollectEmbeddedSources $file $apicode $base.c $initname $placestubs $mintcl
+	CollectEmbeddedSources $file $base.c $initname $placestubs $mintcl
 
 	set object [DetermineObjectName $base $file]
-	dict set result object $object
 
 	# Compile main file
-        lappend objects [Compile result $file $file $base.c $object]
+        objs $file [list [Compile $file $file $base.c $object]]
 
 	# Compile the companion C sources as well, if there are any.
         foreach src [cdefs::srcs? $file] {
-	    lappend objects [Compile result $file $src $src [CompanionObject $src]]
+	    objs $file [list [Compile result $file $src $src [CompanionObject $src]]]
 	}
 
-	# NOTE: The information below has to be copied into the result
-	# even if the link-step is suppressed. Because the application
-	# (mode 'generate package') must know all this to be able to
-	# perform the final link.
-
-	lappendlist objects [cdefs::objs? $file]
-
-	set ldflags [cdefs::ldflags? $file]
-	set preload [cdefs::preload? $file]
-
-	dict set result clibraries [cdefs::libs? $file]
-	dict set result ldflags    $ldflags
-	dict set result objects    $objects
-	dict set result tk         [cdefs::usetk? $file]
-	dict set result preload    $preload
 	####	dict set result license    [GetParam $file license <<Undefined>>] ;# XXX FIXME license handling
-	dict set result log        {}
-	dict set result meta       [meta::getall $file]
 
 	# Link and load steps.
         if {$load || !$buildforpackage} {
-	    Link result $file $shlib $preload $ldflags
+	    Link $file $shlib $preload $ldflags
 	}
 
 	set msgs [log::done]
-	dict set result warnings [CheckForWarnings $msgs]
+
+	if {$buildforpackage} {
+	    tags::set $file warnings [CheckForWarnings $msgs]
+	}
     }
 
     if {[Failed]} {
@@ -222,7 +188,7 @@ proc ::critcl::cc::build-for {rv prefix file buildforpackage load} {
 	    # XXX FIXME move into caller? => branch here is c&run or bracket code.
 	    print stderr "$msgs\ncritcl build failed ($file)"
 	} else {
-	    dict set result log $msgs
+	    tags::set $file log $msgs
 	}
     } elseif {$load && !$buildforpackage} {
 	Load $shlib $initname $tsources
@@ -326,9 +292,7 @@ proc ::critcl::cc::DetermineObjectName {base file} {
     return $object
 }
 
-proc ::critcl::cc::Compile {rv tclfile origin cfile obj} {
-    upvar 1 $rv result
-
+proc ::critcl::cc::Compile {tclfile origin cfile obj} {
     StatusAbort?
 
     # tclfile = The .tcl file under whose auspices the C is compiled.
@@ -356,10 +320,7 @@ proc ::critcl::cc::Compile {rv tclfile origin cfile obj} {
     }
     lappendlist cmdline [IncludesOf [TclIncludes [cdefs::usetcl? $tclfile]]]
     lappendlist cmdline [IncludesOf [cdefs::system-include-paths $tclfile]]
-
-    if {[dict exists $result apidefines]} {
-	lappendlist cmdline [dict get $result apidefines]
-    }
+    lappendlist cmdline [tags::get $tclfile apidefines]
 
     lappendlist cmdline [CompileResult $obj]
     lappend     cmdline $cfile
@@ -416,13 +377,13 @@ proc ::critcl::cc::Link {rv file shlib preload ldflags} {
     }
 
     lappendlist cmdline [LinkResult $shlib]
-    lappendlist cmdline [GetObjects $result]
+    lappendlist cmdline [GetObjects $file]
     lappendlist cmdline [LibrariesOf [cdefs::system-lib-paths $file]]
 
     # XXX NOTE clibraries <=> [cdefs::libs?]
     # XXX NOTE system-lib-paths used inside of Fix ...
     # XXX NOTE could make use of clibrary information, i.e. same.
-    lappendlist cmdline [FixLibraries $file [dict get $result clibraries]]
+    lappendlist cmdline [GetLibraries $file]
     lappendlist cmdline $ldflags
     # lappend cmdline bufferoverflowU.lib
     #      msvc >=1400 && <1500 for amd64
@@ -457,7 +418,7 @@ proc ::critcl::cc::Link {rv file shlib preload ldflags} {
 
     # At last, build the preload support library, if necessary.
     if {[llength $preload]} {
-	MakePreloadLibrary result $file
+	MakePreloadLibrary $file
     }
     return
 }
@@ -509,14 +470,12 @@ proc ::critcl::cc::TclIncludes {tclversion} {
     return [list $path]
 }
 
-proc ::critcl::cc::GetObjects {result} {
+proc ::critcl::cc::GetObjects {file} {
     # On windows using the native MSVC compiler put the companion
     # object files into a link file to read, instead of separately on
     # the command line.
 
-    # XXX FIXME - Use cdefs directly?
-
-    set objects [dict get $result objects]
+    set objects [cdefs::objs? $file]
 
     if {![string match "win32-*-cl" [config::buildplatform]]} {
 	return $objects
@@ -526,9 +485,7 @@ proc ::critcl::cc::GetObjects {result} {
     return [list @$rsp]
 }
 
-proc ::critcl::cc::MakePreloadLibrary {rv file} {
-    upvar 1 $rv result
-
+proc ::critcl::cc::MakePreloadLibrary {file} {
     StatusAbort?
 
     # compile and link the preload support, if necessary, i.e. not yet
@@ -549,7 +506,7 @@ proc ::critcl::cc::MakePreloadLibrary {rv file} {
     # Build the object for the helper package, 'preload' ...
 
     set obj [cache::get preload.o]
-    Compile result $file $src $src $obj
+    Compile $file $src $src $obj
 
     # ... and link it.
     # Custom linker command. XXX Can we bent Link to the task?
@@ -603,13 +560,9 @@ proc ::critcl::cc::CompanionObject {src} {
     #     object   = $cache/other_foo.o
 }
 
-proc ::critcl::cc::GetLibraries {file result} {
-    # On windows using the native MSVC compiler, transform all -lFOO
-    # references into FOO.lib.
-    return [FixLibraries $file [dict get $result clibraries]]
-}
+proc ::critcl::cc::GetLibraries {file} {
+    set libraries [cdefs::libs? $ref]
 
-proc ::critcl::cc::FixLibraries {file libraries} {
     if {[string match "win32-*-cl" [config::buildplatform]]} {
 	# On windows using the native MSVC compiler, transform all
 	# -lFOO references into FOO.lib.

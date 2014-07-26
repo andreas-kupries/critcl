@@ -575,15 +575,6 @@ proc ::critcl::app::ProcessInputPackage {} {
     # information which will be needed later when building the
     # over-arching initialization code.
 
-    set v::clibraries {}  ;# External libraries used. To link the final shlib against.
-    set v::ldflags    {}  ;# Linker flags.
-    set v::objects    {}  ;# The object files to link.
-    set v::edecls     {}  ;# Initialization function decls for the pieces.
-    set v::initnames  {}  ;# Initialization function calls for the pieces.
-    set v::tsources   {}  ;# Tcl companion sources.
-    set v::mintcl     8.4 ;# Minimum version of Tcl required to run the package.
-    set v::tk         0   ;# Boolean flag. Set if any sub-package needs Tk, forcing it on the collection as well.
-    set v::preload    {}  ;# List of libraries declared for preload.
     set v::license    {}  ;# Accumulated licenses, if any.
     set v::failed      0  ;# Number of build failures encountered.
     set v::borken     {}  ;# List of files which failed to build.
@@ -593,6 +584,8 @@ proc ::critcl::app::ProcessInputPackage {} {
     set v::pkgs       {}  ;# List of package names for the pieces.
     set v::inits      {}  ;# Init function names for the pieces, list.
     set v::meta       {}  ;# All meta data declared by the input files.
+
+    cdefs::usetcl $v::shlname 8.4
 
     # Other loop status information.
 
@@ -657,32 +650,46 @@ proc ::critcl::app::ProcessInputPackage {} {
 	# maximum information about problems from a single run, not
 	# fix things one by one.
 
-	set results [GetResults $fn]
+	PostBuild $fn
 	if {$v::failed} continue
 
-	array set r $results
+	# Collect various per-file (part) information for use in the
+	# build and link of the main package code bracketing the
+	# parts.  Note! We make use of full access to the databases
+	# used by and underneath of critcl.
 
-	append v::edecls    "extern Tcl_AppInitProc $r(initname)_Init;\n"
-	append v::initnames "    if ($r(initname)_Init(ip) != TCL_OK) return TCL_ERROR;\n"
-	append v::license   [License $f $r(license)]
-
-	lappend v::pkgs  $r(pkgname)
-	lappend v::inits $r(initname)
-	lappend v::meta  $r(meta)
+	# Tk usage is the max over all parts.
+	if {[cdefs::usetk? $fn]} { cdefs::usetk $v::shlname }
 
 	# The overall minimum version of Tcl required by the combined
 	# packages is the maximum over all of their minima.
-	set v::mintcl [Vmax $v::mintcl $r(mintcl)]
-	set v::tk     [Max $v::tk $r(tk)]
-	critcl::lappendlist v::objects    $r(objects)
-	critcl::lappendlist v::tsources   $r(tsources)
-	critcl::lappendlist v::clibraries $r(clibraries)
-	critcl::lappendlist v::ldflags    $r(ldflags)
-	critcl::lappendlist v::preload    $r(preload)
+	cdefs::usetcl $v::shlname \
+	    [Vmax [cdefs::usetcl? $v::shlname] [cdefs::usetcl? $fn]]
 
-	if {[info exists r(apiheader)]} {
-	    critcl::lappendlist v::headers $r(apiheader)
-	}
+	# Accumulate companions, flags, etc.
+	cdefs::tcls    $v::shlname [cdefs::tcls?    $fn]
+	cdefs::preload $v::shlname [cdefs::preload? $fn]
+	cdefs::ldflags $v::shlname [cdefs::ldflags? $fn]
+	cdefs::libs    $v::shlname [cdefs::libs?    $fn]
+	cdefs::objs    $v::shlname [cdefs::objs?    $fn]
+
+	# Header files for stubs tables, see ExportHeaders
+	critcl::lappendlist v::headers [tags::get $fn apiheader]
+
+	# XXX FIXME get rid of cresults in entirety
+	# XXX FIXME r - license
+	# XXX FIXME r - initname
+	array set r [critcl::cresults $fn]
+
+	append v::license [License $f $r(license)]
+
+	cdefs::init $v::shlname \
+	    "    if ($r(initname)_Init(ip) != TCL_OK) return TCL_ERROR;\n" \
+	    "extern Tcl_AppInitProc $r(initname)_Init;\n"
+
+	lappend v::pkgs  [meta::gets $fn name] ;# CreatePackageIndex, IndexCommand, LoadCommand
+	lappend v::inits $r(initname)          ;# LoadCommand
+	lappend v::meta  [meta::getall $fn]    ;# CreateTeapotMetaData
     }
 
     if {$missing} {
@@ -815,7 +822,7 @@ proc ::critcl::app::ProcessInputCache {} {
 	# maximum information about problems from a single run, not
 	# fix things one by one.
 
-	GetResults $fn
+	PostBuild $fn
     }
 
     if {$missing} {
@@ -897,26 +904,25 @@ proc ::critcl::app::Execute {fn} {
     return -code continue
 }
 
-proc ::critcl::app::GetResults {fn} {
+proc ::critcl::app::PostBuild {fn} {
     upvar 1 failed failed
 
-    set results [critcl::cresults $fn]
-
-    # XXX FIXME get logs & warnings
     if {$failed} {
 	lappend v::borken $f
-	lappend v::log    [dict get $results log]
+	lappend v::log    [tags::get $fn log]
 	Log "(FAILED) "
-    } elseif {[dict exists $results warnings]} {
-	# There might be warnings to print even if the build did
-	# not fail.
-	set warnings [dict get $results warnings]
+    } elseif {[tags::has $fn warnings]} {
+	# Note that there might be warnings to print even if the build
+	# succeeded.
+	set warnings [tags::get $fn warnings]
 	if {[llength $warnings]} {
 	    ::critcl::print stderr "\n\nWarning  [join $warnings "\nWarning  "]"
 	}
     }
 
-    return $results
+    tags::unset $file log
+    tags::unset $file warnings
+    return
 }
 
 proc ::critcl::app::InContext {fn script} {
@@ -958,25 +964,11 @@ proc ::critcl::app::BuildBracket {} {
     # without having to redefine things through C macros, as was done
     # before.
     InContext $v::shlname {
+	# NOTE: Most of the information needed is already in the
+	# databases, put into them by ProcessInputPackage as part of
+	# handling each part.
+
 	critcl::config combine ""
-
-	# Inject the information collected from the input files, making
-	# them part of the final result.
-	critcl::tcl $v::mintcl
-	if {$v::tk} { critcl::tk }
-
-	set                 lib critcl::cobjects
-	critcl::lappendlist lib $v::objects
-	eval $lib
-
-	set                 lib critcl::clibraries
-	critcl::lappendlist lib $v::clibraries
-	eval $lib
-
-	eval [linsert [lsort -unique $v::ldflags] 0 critcl::ldflags]
-	eval [linsert [lsort -unique $v::preload] 0 critcl::preload]
-
-	critcl::cinit $v::initnames $v::edecls
 
 	# And build everything.
 	set failed [critcl::cbuild-pkgmain "" 0]
@@ -1089,8 +1081,8 @@ proc ::critcl::app::CreatePackageIndex {shlibdir libname tsources} {
 
     set version [package present $v::pkgs]
 
-    # (=) The 'package present' works because (a) 'ProcessInput'
-    # sources the package files in its own context, this process, and
+    # (=) The 'package present' works because (a) 'ProcessInputPackage'
+    # sourced the package files in its own context, this process, and
     # (b) the package files (are expected to) contain the proper
     # 'package provide' commands (for compile & run mode), and we
     # expect that at least one of the input files specifies the
@@ -1870,9 +1862,15 @@ proc ::critcl::app::LocateAutoconf {iswin} {
 # # ## ### ##### ######## ############# #####################
 
 namespace eval ::critcl::app {
+
+    namespace eval cdefs { namespace import ::critcl::cdefs::* }
+    namespace eval tags  { namespace import ::critcl::tags::*  }
+    namespace eval meta  { namespace import ::critcl::meta::*  }
+
+
     # Path of the application package directory.
     variable myself [file normalize [info script]]
-    variable mydir [file dirname $myself]
+    variable mydir  [file dirname $myself]
 
     variable options {
 	I.arg L.arg cache.arg clean config.arg debug.arg force help
@@ -1911,14 +1909,6 @@ namespace eval ::critcl::app {
 	# Data accumulated while processing the input files.
 
 	variable failed      0  ;# Number of build failures encountered.
-	variable clibraries {}  ;# External libraries used. To link the final shlib against.
-	variable ldflags    {}  ;# Linker flags.
-	variable objects    {}  ;# The object files to link.
-	variable edecls     {}  ;# Initialization function decls for the pieces (C code block).
-	variable initnames  {}  ;# Initialization function calls for the pieces (C code block).
-	variable tsources   {}  ;# Tcl companion sources.
-	variable mintcl     8.4 ;# Minimum version of Tcl required to run the package.
-	variable preload    {}  ;# List of libraries declared for preload.
 	variable license    {}  ;# Accumulated licenses, if any.
 	variable pkgs       {}  ;# List of package names for the pieces.
 	variable inits      {}  ;# Init function names for the pieces, list.

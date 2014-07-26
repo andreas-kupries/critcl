@@ -1570,12 +1570,12 @@ proc ::critcl::Emitln {{s ""}} {
 # # ## ### ##### ######## ############# #####################
 ## Backend Processing, Collected Sources
 
-proc ::critcl::CollectEmbeddedSources {file api destination ininame placestubs mintcl} {
+proc ::critcl::CollectEmbeddedSources {file destination ininame placestubs mintcl} {
     # Start assembly.
 
     set fd [open $destination w]
 
-    CommonHeading $fd $file $api
+    CommonHeading $fd $file [tags::get $file apiprefix]
     TkHeading     $fd
 
     # Write the collected C fragments, in order of collection.

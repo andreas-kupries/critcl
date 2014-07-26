@@ -29,3 +29,8 @@ apiprefix	various pieces of stubs table	api::complete		cc::build-for
 apidefines	information			api::clear
 apiheader
 ---		-----				-----------		----
+warnings	Communication from backend to	cc::buildfor		app::PostBuild
+log		critcl application, general	app::PostBuild
+		compiler log, and warnings in
+		separate list.
+---		-----				-----------		----
