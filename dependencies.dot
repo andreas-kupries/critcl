@@ -12,6 +12,9 @@ strict digraph {
 	//	Backend (External CC)
 	cc		[shape="hexagon"];
 
+	//	Application
+	app		[shape="circle"];
+
 	//	Stateless functionality.
 	common		[];				// Critcl specific general utilities
 	dict84		[];				// Forward compatible dict command for 8.4
@@ -107,4 +110,11 @@ strict digraph {
 	usrconfig	->	core;
 	//T uuid		->	core;
 	//T who		->	core;
+
+
+	// Application linkage
+	core	->	app;
+	cdefs	->	app;
+	meta	->	app;
+	tags	->	app;
 }
