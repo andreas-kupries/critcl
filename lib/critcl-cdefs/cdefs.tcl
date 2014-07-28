@@ -32,9 +32,8 @@ namespace eval ::critcl::cdefs {
 	func-delete func-done hdrs init ldflags libs objs preload \
 	srcs tcls usetcl usetk code? edecls? flags? funcs? hdrs? \
 	inits? ldflags? libs? objs? preload? srcs? tcls? usetcl? \
-	usetk? has-const has-code const2ns func-create-code \
-	system-include-paths system-lib-paths initialize \
-	on-clear
+	usetk? has-const has-code initialize complete on-clear \
+	system-include-paths system-lib-paths
     catch { namespace ensemble create }
 }
 
@@ -310,16 +309,6 @@ proc ::critcl::cdefs::funcs? {ref} {
     Get $ref functions
 }
 
-proc ::critcl::cdefs::func-create-code {ref cname} {
-    set cd [Get $ref funcdata]
-    set dp [Get $ref fundelete]
-
-    set cd [expr {[dict exists $cd $cname] ? [dict get $cd $cname] : "NULL"}]
-    set dp [expr {[dict exists $dp $cname] ? [dict get $dp $cname] : 0}]
-
-    return "  Tcl_CreateObjCommand(ip, ns_$cname, tcl_$cname, $cd, $dp);"
-}
-
 proc ::critcl::cdefs::hdrs? {ref} {
     Get $ref cheaders
 }
@@ -372,16 +361,6 @@ proc ::critcl::cdefs::has-const {ref} {
 
 proc ::critcl::cdefs::has-code {ref} {
     Has $ref fragments
-}
-
-proc ::critcl::cdefs::const2ns {ref constname nsvar} {
-    foreach {pattern namespace} [Get $ref const] {
-	if {![string match $pattern $constname]} continue
-	upvar 1 $nsvar nsresult
-	set nsresult $namespace
-	return yes
-    }
-    return no
 }
 
 proc ::critcl::cdefs::system-lib-paths {ref} {
@@ -469,6 +448,28 @@ proc ::critcl::cdefs::clear {ref} {
     return
 }
 
+proc ::critcl::cdefs::complete {ref mode destination initname defines} {
+    # mode in stubs, !stubs
+
+    set stubs [expr {$mode eq "stubs"}]
+    set fd    [open $destination w]
+
+    CommonHeading $fd $ref
+    TkHeading     $fd
+    CodeBlocks    $fd $ref
+    SetupTclStubs $fd $ref $stubs  
+    SetupTkStubs  $fd $ref
+    SetupTclInit  $fd $ref $initname
+    SetupTkInit   $fd $ref
+    SetupUserInit $fd $ref
+    ExportDefines $fd $ref $defines
+    CommandSetup  $fd $ref
+    CommonFooter  $fd
+
+    close $fd
+    return
+}
+
 # # ## ### ##### ######## ############# #####################
 ## Internal state
 
@@ -532,6 +533,136 @@ namespace eval ::critcl::cdefs {
 
 # # ## ### ##### ######## ############# #####################
 ## Internal support commands
+
+proc ::critcl::cdefs::CommonHeading {fd file} {
+    set api [tags::get $file apiprefix]
+    # Boilerplate header.
+    puts $fd [subst [common::cat [data::cfile header.c]]]
+    #         ^=> file, api
+    return
+}
+
+proc ::critcl::cdefs::CommonFooter {fd} {
+    # Complete the trailer and be done.
+    puts  $fd [common::cat [data::cfile pkginitend.c]]
+    return
+}
+
+proc ::critcl::cdefs::CodeBlocks {fd file} {
+    puts $fd [code? $file]
+    puts $fd [common::separator]
+    return
+}
+
+proc ::critcl::cdefs::TkHeading {fd file} {
+    # Make Tk available, if requested
+    if {![cdefs::usetk? $file]} return
+    puts $fd "\n#include \"tk.h\""
+    return
+}
+
+proc ::critcl::cdefs::SetupTclInit {fd file ininame} {
+    set ext [cdefs::edecls? $file]
+    puts $fd [subst [common::cat [data::cfile pkginit.c]]]
+    #         ^=> ext, ininame
+    # This ends in the middle of the FOO_Init() function, leaving it
+    # incomplete.
+    return
+}
+
+proc ::critcl::cdefs::SetupTkInit {fd file} {
+    if {![cdefs::usetk? $file]} return
+    # From here on we are completing FOO_Init().
+    # Tk setup first, if requested. (Tcl is already done).
+    puts $fd [common::cat [data::cfile pkginittk.c]]
+    return
+}
+
+proc ::critcl::cdefs::SetupUserInit {fd file} {
+    # User specified initialization code.
+    puts $fd "[cdefs::init? $file] "
+    return
+}
+
+proc ::critcl::cdefs::SetupTclStubs {fd file placestubs} {
+    set mintcl [usetcl? $file]
+
+    if {$placestubs} {
+	# Put full stubs definitions into the code, which can be
+	# either the bracket generated for a -pkg, or the package
+	# itself, build in mode "compile & run".
+	set stubs     [data::tcl-decls      $mintcl]
+	set platstubs [data::tcl-plat-decls $mintcl]
+	puts -nonewline $fd [subst [common::cat [data::cfile stubs.c]]]
+	#                    ^=> mintcl, stubs, platstubs
+    } else {
+	# Declarations only, for linking, in the sub-packages.
+	puts -nonewline $fd [subst [common::cat [data::cfile stubs_e.c]]]
+	#                    ^=> mintcl
+    }
+    return
+}
+
+proc ::critcl::cdefs::SetupTkStubs {fd file} {
+    if {![cdefs::usetk? $file]} return
+    puts -nonewline $fd [common::cat [data::cfile tkstubs.c]]
+    return
+}
+
+proc ::critcl::cdefs::CommandSetup {fd ref} {
+    set cd [Get $ref funcdata]
+    set dp [Get $ref fundelete]
+
+    # Take the collected functions and register them as Tcl commands.
+    foreach cname [lsort -dict [funcs? $ref]] {
+	set fcd [expr {[dict exists $cd $cname] ? [dict get $cd $cname] : "NULL"}]
+	set fdp [expr {[dict exists $dp $cname] ? [dict get $dp $cname] : 0}]
+
+	puts $fd "  Tcl_CreateObjCommand(ip, ns_$cname, tcl_$cname, $fcd, $fdp);"
+    }
+    return
+}
+
+proc ::critcl::ExportDefines {fd ref defines} {
+    # Setup of the variables serving up defined constants, if any
+    if {![cdefs::has-const $ref]} return
+    set map [Get $ref const]
+
+    # Generate Tcl_ObjSetVar2 commands exporting the constants
+    # (defines and/or enums) and their values as Tcl variables.
+
+    foreach {constname constvalue} $defines {
+	if {![NamespaceOfConst $map $constname namespace]} continue
+
+	if {![info exists created($namespace)]} {
+	    # we need to force the creation of the namespace
+	    # because this code will be run before the user code
+	    puts $fd "  Tcl_Eval(ip, \"namespace eval $namespace {}\");"
+	    set created($namespace) 1
+	}
+	set var "Tcl_NewStringObj(\"${namespace}::$constname\", -1)"
+	if {$constname eq $constvalue} {
+	    # enum - assume integer
+	    set constvalue "Tcl_NewIntObj($constvalue)"
+	} else {
+	    # text or int - force to string
+	    set constvalue "Tcl_NewStringObj(\"$constvalue\", -1)"
+	}
+	puts $fd "  Tcl_ObjSetVar2(ip, $var, NULL, $constvalue, TCL_GLOBAL_ONLY);"
+    }
+
+    return
+}
+
+proc ::critcl::cdefs::NamespaceOfConst {map constname nsvar} {
+    foreach {pattern namespace} $map {
+	if {![string match $pattern $constname]} continue
+	upvar 1 $nsvar nsresult
+	set nsresult $namespace
+	return yes
+    }
+    return no
+}
 
 proc ::critcl::cdefs::+Path {hv pv path} {
     upvar 1 $hv has $pv pathlist

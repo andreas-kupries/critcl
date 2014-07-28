@@ -868,12 +868,12 @@ proc ::critcl::done {} {
 
 proc ::critcl::failed {} {
     SkipIgnored [who::is] 0
-    return [cbuild-auto [who::is] 0]
+    return [cbuild [who::is] 0]
 }
 
 proc ::critcl::load {} {
     SkipIgnored [who::is] 1
-    return [expr {![cbuild-auto [who::is]]}]
+    return [expr {![cbuild [who::is]]}]
 }
 
 # # ## ### ##### ######## ############# #####################
@@ -1020,11 +1020,11 @@ proc ::critcl::debug {args} {
 # C critcl::showconfig
 
 # Build Variants:
-# - cbuild-auto    - autoindex  - build, link, load (c&run) | drop results
+# - cbuild         - autoindex  - build, link, load (c&run) | drop results
 # - cbuild-pkgpart - app-critcl - build                     | keep results
 # - cbuild-pkgmain - app-critcl - build, link               | keep results
 
-proc ::critcl::cbuild-auto {file} {
+proc ::critcl::cbuild {file} {
     # Compile & Run mode.
     # Critcl App - Cache Prefill mode.
 
@@ -1035,15 +1035,71 @@ proc ::critcl::cbuild-auto {file} {
     set flags [api::complete $file]
     # XXX FIXME: api::complete flags information is not used.
 
-    # XXX FIXME handling of BuildDefines and CollectEmbedded (= cdefs::complete) in case of cached shlib)
+    # Basename for all generated files (.c, .o, .so)
+    set base     [file normalize [cache::get ${prefix}_[uuid::get $file]]]
+    set initname [DetermineInitName $file]
 
-    # Begin with result dict here ... Keeping or not is handled after build/load...
-    set result {}
-    cc::build-for result $v::prefix $file 0 1
+    cc::build-immediate-begin ccstate $v::prefix $file $base $initname
 
+    if {[cc::build-immediate-required ccstate]} {
+	if {[cdefs::has-const $file]} {
+	    set defines [cc::extract-const $file]
+	} else {
+	    set defines {}
+	}
+	cdefs::complete $file stubs $base.c $initname $defines
+	cc::build-immediate ccstate
+    }
+
+    cc::build-immediate-complete ccstate
+
+    # Build for the file completed, drop all the collected information
+    # we now do not need anymore.
     cdefs::clear $file
+
     return [tags::get $file failed]
 }
+
+proc ::critcl::DetermineInitName {file {wrapped 0}} {
+    set ininame [PkgInit $file]
+
+    # Add in the build prefix, if specified. This is done in mode
+    # 'generate package', for the pieces, ensuring that the overall
+    # initialization function cannot be in conflict with the
+    # initialization functions of these same pieces.
+
+    if {$wrapped} {
+        set ininame "ns_$ininame"
+    }
+
+    return $ininame
+}
+
+proc ::critcl::PkgInit {file} {
+    # The init function name takes a capitalized prefix from the name
+    # of the input file name (alphanumeric prefix, including
+    # underscores). This implicitly drops the file extension, as the
+    # '.' is not an allowed character.
+
+    # While related to the package name, it can be different,
+    # especially if the package name contains :: separators.
+
+    if {$file eq {}} {
+	return Stdin
+    } else {
+	set ininame [file rootname [file tail $file]]
+	regsub -all {[^[:alnum:]_]} $ininame {} ininame
+	return [string totitle $ininame]
+    }
+}
+
+## XXX TODO refactor
+## These two build commands should be moved into the application,
+## using direct calls into the databases and backend to perform their
+## work without burdening the core critcl package (except that the work
+## on these should help in factoring the backend into better reusable
+## pieces).
+##
 
 proc ::critcl::cbuild-pkgpart {file} {
     # Critcl App - Prebuild package - Package parts
@@ -1564,230 +1620,6 @@ proc ::critcl::Emit {s} {
 
 proc ::critcl::Emitln {{s ""}} {
     Emit $s\n
-    return
-}
-
-# # ## ### ##### ######## ############# #####################
-## Backend Processing, Collected Sources
-
-proc ::critcl::CollectEmbeddedSources {file destination ininame placestubs mintcl} {
-    # Start assembly.
-
-    set fd [open $destination w]
-
-    CommonHeading $fd $file [tags::get $file apiprefix]
-    TkHeading     $fd
-
-    # Write the collected C fragments, in order of collection.
-    puts $fd [cdefs::code? $file]
-
-    puts $fd [common::separator]
-
-    SetupTclStubs $fd       $placestubs $mintcl
-    SetupTkStubs  $fd $file
-
-    SetupTclInit  $fd $file $ininame
-    SetupTkInit   $fd $file
-    SetupUserInit $fd $file
-
-    # XXX FIXME build-defines - backend calls (pre-processor)
-    BuildDefines  $fd $file
-
-    # Take the collected functions and register them as Tcl commands.
-    foreach name [lsort -dict [cdefs::funcs? $file]] {
-	puts $fd [cdefs::func-create-code $file $name]
-    }
-
-    CommonFooter $fd
-    close $fd
-    return
-}
-
-proc ::critcl::CommonHeading {fd file api} {
-    # Boilerplate header.
-    puts $fd [subst [common::cat [data::cfile header.c]]]
-    #         ^=> file, api
-    return
-}
-
-proc ::critcl::CommonFooter {fd} {
-    # Complete the trailer and be done.
-    puts  $fd [common::cat [data::cfile pkginitend.c]]
-    return
-}
-
-proc ::critcl::TkHeading {fd file} {
-    # Make Tk available, if requested
-    if {![cdefs::usetk? $file]} return
-    puts $fd "\n#include \"tk.h\""
-    return
-}
-
-proc ::critcl::SetupTclInit {fd file ininame} {
-    set ext [cdefs::edecls? $file]
-    puts $fd [subst [common::cat [data::cfile pkginit.c]]]
-    #         ^=> ext, ininame
-    # This ends in the middle of the FOO_Init() function, leaving it
-    # incomplete.
-    return
-}
-
-proc ::critcl::SetupTkInit {fd file} {
-    if {![cdefs::usetk? $file]} return
-    # From here on we are completing FOO_Init().
-    # Tk setup first, if requested. (Tcl is already done).
-    puts $fd [common::cat [data::cfile pkginittk.c]]
-    return
-}
-
-proc ::critcl::SetupUserInit {fd file} {
-    # User specified initialization code.
-    puts $fd "[cdefs::init? $file] "
-    return
-}
-
-proc ::critcl::SetupTclStubs {fd placestubs mintcl} {
-    if {$placestubs} {
-	# Put full stubs definitions into the code, which can be
-	# either the bracket generated for a -pkg, or the package
-	# itself, build in mode "compile & run".
-	set stubs     [data::tcl-decls      $mintcl]
-	set platstubs [data::tcl-plat-decls $mintcl]
-	puts -nonewline $fd [subst [common::cat [data::cfile stubs.c]]]
-	#                    ^=> mintcl, stubs, platstubs
-    } else {
-	# Declarations only, for linking, in the sub-packages.
-	puts -nonewline $fd [subst [common::cat [data::cfile stubs_e.c]]]
-	#                    ^=> mintcl
-    }
-    return
-}
-
-proc ::critcl::SetupTkStubs {fd file} {
-    if {![cdefs::usetk? $file]} return
-    puts -nonewline $fd [common::cat [data::cfile tkstubs.c]]
-    return
-}
-
-proc ::critcl::BuildDefines {fd file} {
-    # Setup of the variables serving up defined constants, if any
-    if {![cdefs::has-const $file]} return
-
-    # The result of the next two steps, a list of triples (namespace +
-    # label + value) of the defines to export.
-
-    set defines {}
-    # we process the cdefines in three steps
-    #   - get the list of defines by preprocessing the source using the
-    #     cpp -dM directive which causes any #defines to be output
-    #   - extract the list of enums using regular expressions (not perfect,
-    #     but will do for now)
-    #   - generate Tcl_ObjSetVar2 commands to initialise Tcl variables
-
-    # Pull the collected ccode blocks together into a transient file
-    # we then search in.
-
-    set def   define_[pid].c
-    set dcode [cdefs::code? $file defs]
-    set defpath [cache::write $def $dcode]
-
-    # # ## ### ##### ######## ############# #####################
-    # # ## ### ##### ######## ############# #####################
-    # For the command lines to be constructed we need all the include
-    # information the regular files will get during their compilation.
-
-    set hdrs [SystemIncludes $file]
-    # First step - get list of matching defines
-    set         cmd [ccconfig::get preproc_define]
-    lappendlist cmd $hdrs
-    lappend     cmd $defpath
-
-    set pipe [open "| $cmd" r]
-    while {[gets $pipe line] >= 0} {
-	# Check if the line contains a define.
-	set fields [split [string trim $line]]
-	if {[lindex $fields 0] ne "#define"} continue
-
-	# Yes. Get name and value. The latter is the joining of all
-	# fields after the name, except for any enclosing parentheses,
-	# which we strip off.
-
-	set var [lindex $fields 1]
-	set val [string trim [join [lrange $fields 2 end]] {()}]
-
-	# We ignore however any and all defines the user is not
-	# interested in making public. This is, in essence, a set
-	# intersection on the names of the defines.
-
-	if {![cdefs::const2ns $file $var namespace]} continue
-
-	# And for those which are kept we integrate the information
-	# from both sources, i.e. namespace, and definition, under a
-	# single name.
-
-	lappend defines $namespace $var $val
-    }
-    close $pipe
-
-    # Second step - get list of enums
-
-    set         cmd [ccconfig::get preproc_enum]
-    lappendlist cmd $hdrs
-    lappend     cmd $defpath
-
-    set pipe [open "| $cmd" r]
-    set code [read $pipe]
-    close $pipe
-
-    set matches [regexp -all -inline {enum [^\{\(\)]*{([^\}]*)}} $code]
-    foreach {match submatch} $matches {
-	foreach line [split $submatch \n] {
-	    foreach sub [split $line ,] {
-		set enum [lindex [split [string trim $sub]] 0]
-
-		# We ignore however any and all enum values the user
-		# is not interested in making public. This is, in
-		# essence, a set intersection on the names of the
-		# enum values.
-
-		if {![cdefs::const2ns $file $enum namespace]} continue
-
-		# And for those which are kept we integrate the
-		# information from both sources, i.e. namespace, and
-		# definition, under a single name.
-
-		lappend defines $namespace $enum $enum
-	    }
-	}
-    }
-    # # ## ### ##### ######## ############# #####################
-    # # ## ### ##### ######## ############# #####################
-
-    # Third step - generate Tcl_ObjSetVar2 commands exporting the
-    # defines and their values as Tcl variables.
-
-    foreach {namespace constname constvalue} $defines {
-	if {![info exists created($namespace)]} {
-	    # we need to force the creation of the namespace
-	    # because this code will be run before the user code
-	    puts $fd "  Tcl_Eval(ip, \"namespace eval $namespace {}\");"
-	    set created($namespace) 1
-	}
-	set var "Tcl_NewStringObj(\"${namespace}::$constname\", -1)"
-	if {$constname eq $constvalue} {
-	    # enum - assume integer
-	    set constvalue "Tcl_NewIntObj($constvalue)"
-	} else {
-	    # text or int - force to string
-	    set constvalue "Tcl_NewStringObj(\"$constvalue\", -1)"
-	}
-	puts $fd "  Tcl_ObjSetVar2(ip, $var, NULL, $constvalue, TCL_GLOBAL_ONLY);"
-    }
-
-    # Cleanup after ourselves, removing the helper file.
-    if {![gopt::get keepsrc]} {
-	cache::clear $def
-    }
     return
 }
 

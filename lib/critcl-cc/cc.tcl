@@ -35,7 +35,7 @@ package require critcl::uuid      ;# UUID generation.
 
 package provide  critcl::cc 1
 namespace eval ::critcl::cc {
-    namespace export has-compiler build-direct link-direct \
+    namespace export has-compiler extract-const build-direct link-direct \
 	build-for
     catch { namespace ensemble create }
 }
@@ -45,6 +45,84 @@ namespace eval ::critcl::cc {
 
 proc ::critcl::cc::has-compiler {} {
     return [llength [auto_execok [lindex [config::get compile] 0]]]
+}
+
+proc ::critcl::cc::extract-const {ref} {
+    # result = list (label value ...)
+    # Elements are all found defines and enum symbols.
+    # This includes platform- and cc-specific defines.
+
+    set defines {}
+    # we process the cdefines in three steps
+    #   - get the list of defines by preprocessing the source using the
+    #     cpp -dM directive which causes any #defines to be output
+    #   - extract the list of enums using regular expressions (not perfect,
+    #     but will do for now)
+    #   - generate Tcl_ObjSetVar2 commands to initialise Tcl variables
+
+    # Pull the collected ccode blocks together into a transient file
+    # we then search in.
+
+    set def     define_[pid].c
+    set dcode   [cdefs::code? $ref defs]
+    set defpath [cache::write $def $dcode]
+    set hdrs    [IncludesOf [cdefs::system-include-paths $ref]]
+
+    # # ## ### ##### ######## ############# #####################
+    # # ## ### ##### ######## ############# #####################
+    # For the command lines to be constructed we need all the include
+    # information the regular files will get during their compilation.
+
+    # First step - get a list of defines
+
+    set         cmd [config::get preproc_define]
+    lappendlist cmd $hdrs
+    lappend     cmd $defpath
+
+    set pipe [open "| $cmd" r]
+    while {[gets $pipe line] >= 0} {
+	# Check if the line contains a define.
+	set fields [split [string trim $line]]
+	if {[lindex $fields 0] ne "#define"} continue
+
+	# Yes. Get name and value. The latter is the joining of all
+	# fields after the name, except for any enclosing parentheses,
+	# which we strip off.
+
+	set var [lindex $fields 1]
+	set val [string trim [join [lrange $fields 2 end]] {()}]
+
+	lappend defines $var $val
+    }
+    close $pipe
+
+    # Second step - get list of enums
+
+    set         cmd [config::get preproc_enum]
+    lappendlist cmd $hdrs
+    lappend     cmd $defpath
+
+    set pipe [open "| $cmd" r]
+    set code [read $pipe]
+    close $pipe
+
+    set matches [regexp -all -inline {enum [^\{\(\)]*{([^\}]*)}} $code]
+    foreach {match submatch} $matches {
+	foreach line [split $submatch \n] {
+	    foreach sub [split $line ,] {
+		set enum [lindex [split [string trim $sub]] 0]
+
+		lappend defines $enum $enum
+	    }
+	}
+    }
+
+    # Cleanup after ourselves, removing the helper file.
+    if {![gopt::get keepsrc]} {
+	cache::clear $def
+    }
+
+    return $defines
 }
 
 proc ::critcl::cc::build-direct {ref label code {mode temp}} {
@@ -125,10 +203,8 @@ proc ::critcl::cc::build-for {rv prefix file buildforpackage load} {
     # if the build and link-steps are suppressed. The load-step must
     # have this information.
 
-    # Basename for all generated files (.c, .o, .so)
-    set base     [file normalize [cache::get ${prefix}_[uuid::get $file]]]
-    set shlib    [DetermineShlibName $base]
     set initname [DetermineInitName  $file $buildforpackage]
+    set shlib    [DetermineShlibName $base]
     set tsources [cdefs::tcls?       $file]
     set mintcl   [cdefs::usetcl?     $file]
 
@@ -225,39 +301,6 @@ namespace eval ::critcl::cc {
 proc ::critcl::cc::DetermineShlibName {base} {
     # The name of the shared library we hope to produce (or use)
     return ${base}[config::sharedlibext]
-}
-
-proc ::critcl::cc::DetermineInitName {file buildforpackage} {
-    set ininame [PkgInit $file]
-
-    # Add in the build prefix, if specified. This is done in mode
-    # 'generate package', for the pieces, ensuring that the overall
-    # initialization function cannot be in conflict with the
-    # initialization functions of these same pieces.
-
-    if {$buildforpackage} {
-        set ininame "ns_$ininame"
-    }
-
-    return $ininame
-}
-
-proc ::critcl::cc::PkgInit {file} {
-    # The init function name takes a capitalized prefix from the name
-    # of the input file name (alphanumeric prefix, including
-    # underscores). This implicitly drops the file extension, as the
-    # '.' is not an allowed character.
-
-    # While related to the package name, it can be different,
-    # especially if the package name contains :: separators.
-
-    if {$file eq {}} {
-	return Stdin
-    } else {
-	set ininame [file rootname [file tail $file]]
-	regsub -all {[^[:alnum:]_]} $ininame {} ininame
-	return [string totitle $ininame]
-    }
 }
 
 proc ::critcl::cc::DetermineObjectName {base file} {
