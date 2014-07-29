@@ -15,42 +15,59 @@
 # # ## ### ##### ######## ############# #####################
 ## Requirements.
 
-package require Tcl 8.4            ;# Minimal supported Tcl runtime.
-package require dict84             ;# Forward-compatible dict command.
+package require Tcl 8.5        ;# Minimal supported Tcl runtime.
+package require debug          ;# debug narrative
 
-package provide  critcl::tags 1
+package provide critcl::tags 4
+
 namespace eval ::critcl::tags {
     namespace export set unset has
-    catch { namespace ensemble create }
+    namespace ensemble create
 }
+
+debug level  critcl/tags
+debug prefix critcl/tags {[debug caller] | }
 
 # # ## ### ##### ######## ############# #####################
 ## API commands.
 
-## - Attach tag to a file.
+## - Attach tag to a file, with optional value.
 ## - Remove tag from a file.
-## - Check if a tg is attached to a file.
+## - Check if a tag is attached to a file.
+## - Return tag value.
 
-proc ::critcl::tags::set {ref tag {value {}}} {
+proc ::critcl::tags::set {context tag {value {}}} {
+    debug.critcl/tags {}
     variable config
-    dict set config $ref $tag ""
+
+    dict set config $context $tag $value
     return
 }
 
-proc ::critcl::tags::unset {ref tag} {
+proc ::critcl::tags::unset {context tag} {
+    debug.critcl/tags {}
     variable config
-    dict unset config $ref $tag
+
+    dict unset config $context $tag
     return
 }
 
-proc ::critcl::tags::has {ref tag} {
+proc ::critcl::tags::has {context tag} {
+    debug.critcl/tags {}
     variable config
-    return [dict exists $config $ref $tag]
+
+    set result [dict exists $config $context $tag]
+    debug.critcl/tags {==> ($result)}
+    return $result
 }
 
-proc ::critcl::tags::get {ref tag} {
+proc ::critcl::tags::get {context tag} {
+    debug.critcl/tags {}
     variable config
-    return [dict get $config $ref $tag]
+
+    set result [dict get $config $context $tag]
+    debug.critcl/tags {==> ($result)}
+    return $result
 }
 
 # NOTE: No "clear" API. The tag database will contain information
@@ -62,22 +79,10 @@ proc ::critcl::tags::get {ref tag} {
 ## Internal state
 
 namespace eval ::critcl::tags {
-    # Per-file (ref) database of TAGS information.
+    # Per-file (context) database of TAGS information.
     # <key> -> <tag> -> ""
     variable config {}
 }
-
-# # ## ### ##### ######## ############# #####################
-## Internal support commands
-
-# -- none --
-
-# # ## ### ##### ######## ############# #####################
-## Initialization -- MD5.
-# Setup is defered to happen only when MD% is actually used.
-# This code requires careful attention to handle boot-strapping.
-
-# -- none --
 
 # # ## ### ##### ######## ############# #####################
 ## Ready

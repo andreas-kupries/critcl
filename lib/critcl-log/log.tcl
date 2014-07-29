@@ -9,18 +9,23 @@
 # # ## ### ##### ######## ############# #####################
 ## Requirements.
 
-package require Tcl 8.4            ;# Minimal supported Tcl runtime.
-package require critcl::cache      ;# Access to result cache.
-package require critcl::common     ;# General utilities.
+package require Tcl 8.5        ;# Minimal supported Tcl runtime.
+package require critcl::cache  ;# Access to result cache.
+package require critcl::common ;# General utilities.
+package require debug          ;# debug narrative
 
-package provide  critcl::log 1
+package provide critcl::log 4
+
 namespace eval ::critcl::log {
     namespace export begin line text done fd
-    catch { namespace ensemble create }
+    namespace ensemble create
 
-    namespace eval cache  { namespace import ::critcl::cache::*  }
-    namespace eval common { namespace import ::critcl::common::* }
+    namespace import ::critcl::cache
+    namespace import ::critcl::common
 }
+
+debug level  critcl/log
+debug prefix critcl/log {[debug caller] | }
 
 # # ## ### ##### ######## ############# #####################
 ## API commands.
@@ -31,41 +36,49 @@ namespace eval ::critcl::log {
 ## - stop logging and save to a session log.
 
 proc ::critcl::log::start {cookie file} {
+    debug.critcl/log {}
+
     variable session $cookie
-    variable path    [cache::get [pid].log]
+    variable path    [cache get [pid].log]
     variable fd      [open $path $w]
 
-    puts $fd "\n[common::now] - $file"
+    puts $fd "\n[common now] - $file"
     return
 }
 
 proc ::critcl::log::fd {} {
     variable fd
+    debug.critcl/log {==> ($fd)}
     return  $fd
 }
 
 proc ::critcl::log::text {text} {
+    debug.critcl/log {}
     variable fd
     puts -newline $fd $text
     return
 }
 
 proc ::critcl::log::line {text} {
+    debug.critcl/log {}
     variable fd
     puts $fd $text
     return
 }
 
 proc ::critcl::log::done {} {
+    debug.critcl/log {}
     variable session
     variable path
     variable fd
 
     close $fd
-    cache::append $session.log [set msgs [common::cat $path]]
+    cache append $session.log [set msgs [common cat $path]]
     file delete -force $path
 
     unset session path fd
+
+    debug.critcl/log {/done}
     return $msgs
 }
 
@@ -77,16 +90,6 @@ namespace eval ::critcl::log {
     variable fd      ;# channel handle of the current log.
     variable session ;# session handle
 }
-
-# # ## ### ##### ######## ############# #####################
-## Internal support commands
-
-# -- none --
-
-# # ## ### ##### ######## ############# #####################
-## Initialization
-
-# -- none --
 
 # # ## ### ##### ######## ############# #####################
 ## Ready

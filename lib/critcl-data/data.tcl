@@ -16,14 +16,19 @@
 # # ## ### ##### ######## ############# #####################
 ## Requirements.
 
-package require Tcl 8.4            ;# Minimal supported Tcl runtime.
+package require Tcl 8.5        ;# Minimal supported Tcl runtime.
+package require debug          ;# debug narrative
 
-package provide  critcl::data 1
+package provide critcl::data 4
+
 namespace eval ::critcl::data {
     namespace export available-tcl cfile file hdr \
 	tcl-decls tcl-plat-decls
-    catch { namespace ensemble create }
+    namespace ensemble create
 }
+
+debug level  critcl/data
+debug prefix critcl/data {[debug caller] | }
 
 # # ## ### ##### ######## ############# #####################
 ## API commands.
@@ -31,7 +36,10 @@ namespace eval ::critcl::data {
 ## - Retrieve paths to data files held by the package.
 
 proc ::critcl::data::available-tcl {} {
+    debug.critcl/data {}
     variable available
+
+    debug.critcl/data {==> $available}
     return  $available
 }
 
@@ -44,8 +52,12 @@ proc ::critcl::data::hdr {name} {
 }
 
 proc ::critcl::data::file {name} {
+    debug.critcl/data {}
     variable selfdir
-    return [::file join $selfdir $name]
+
+    set path  [::file join $selfdir $name]
+    debug.critcl/data {==> $path}
+    return $path
 }
 
 proc ::critcl::data::tcl-decls {tclversion} {
@@ -71,7 +83,8 @@ namespace eval ::critcl::data {
 ## Internal support commands
 
 proc ::critcl::data::TclDef {tclversion hdrfile var} {
-    #puts F|$file
+    debug.critcl/data {}
+
     set hdr [hdr tcl$tclversion/$hdrfile]
 
     if {![::file exists $hdr]} {
@@ -87,7 +100,6 @@ proc ::critcl::data::TclDef {tclversion hdrfile var} {
 	    NOT-READABLE $hdrfile
     }
 
-    #puts H|$hdrfile
     if {[catch {
 	set hdrcontent [split [Cat $hdr] \n]
     } msg]} {
@@ -114,10 +126,13 @@ proc ::critcl::data::TclDef {tclversion hdrfile var} {
 
     set def [string map {extern {}} [lindex $vardecl 0]]
     ::critcl::msg " ($var => $def)"
+
+    debug.critcl/data {==> ($def)}
     return $def
 }
 
 proc ::critcl::data::HdrError {msg args} {
+    debug.critcl/data {}
     set code [linsert $args 0 CRITCL DATA HEADER]
     return -code error -errorcode $code "Header$msg"
 }
@@ -132,6 +147,7 @@ proc ::critcl::data::Grep {pattern lines} {
 }
 
 proc ::critcl::data::Cat {path} {
+    debug.critcl/data {}
     # Easier to write our own copy than requiring fileutil and then
     # using fileutil::cat. Here also needed to avoid a dependency
     # cycle between this and "critcl::common".
@@ -145,7 +161,7 @@ proc ::critcl::data::Cat {path} {
 # # ## ### ##### ######## ############# #####################
 ## Initialization
 
-proc ::critcl::data::Initialize {} {
+apply {{} {
     variable selfdir   [::file dirname [::file normalize [info script]]]
     variable available {}
 
@@ -161,11 +177,8 @@ proc ::critcl::data::Initialize {} {
 	lappend available [regsub {^tcl} $d {}]
     }
 
-    rename ::critcl::data::Initialize {}
     return
-}
-
-::critcl::data::Initialize
+} ::critcl::data}
 
 # # ## ### ##### ######## ############# #####################
 ## Ready

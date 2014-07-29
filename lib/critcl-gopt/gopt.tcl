@@ -9,13 +9,18 @@
 # # ## ### ##### ######## ############# #####################
 ## Requirements.
 
-package require Tcl 8.4            ;# Minimal supported Tcl runtime.
+package require Tcl 8.5        ;# Minimal supported Tcl runtime.
+package require debug          ;# debug narrative
 
-package provide  critcl::gopt 1
+package provide critcl::gopt 4
+
 namespace eval ::critcl::gopt {
     namespace export set unset has
-    catch { namespace ensemble create }
+    namespace ensemble create
 }
+
+debug level  critcl/gopt
+debug prefix critcl/gopt {[debug caller] | }
 
 # # ## ### ##### ######## ############# #####################
 ## API commands.
@@ -24,16 +29,22 @@ namespace eval ::critcl::gopt {
 ## - Retrieve the value of an option.
 
 proc ::critcl::gopt::set {option newvalue} {
+    debug.critcl/gopt {}
     variable data
+
     Check $option
-    ::set data($option) $newvalue
+    dict set data $option $newvalue
     return $newvalue
 }
 
 proc ::critcl::gopt::get {option} {
+    debug.critcl/gopt {}
     variable data
+
     Check $option
-    return $data($option)
+    set result [dict get $data $option]
+    debug.critcl/gopt {==> ($result)}
+    return $result
 }
 
 # # ## ### ##### ######## ############# #####################
@@ -42,16 +53,15 @@ proc ::critcl::gopt::get {option} {
 namespace eval ::critcl::gopt {
     # Global critcl options controlling various aspects of
     # code generation. Below the defaults.
-    variable  data
-    array set data {
-	outdir   {}
-	keepsrc  no
+    variable  data {
 	combine  {}
 	force    no
+	keepsrc  no
 	I        {}
 	L        {}
 	language ""
 	lines    yes
+	outdir   {}
     }
 
     # outdir - Path. If set the place where the generated
@@ -92,8 +102,8 @@ namespace eval ::critcl::gopt {
 
 proc ::critcl::gopt::Check {option} {
     variable data
-    if {[info exists data($option)]} return
-    set choices [linsert [join [lsort -dict [array names data] {, }] end-1 or]
+    if {[dict exists $data $option]} return
+    set choices [linsert [join [lsort -dict [dict keys data] {, }] end-1 or]
     return -code error \
 	-errorcode {CRITCL GOPT INVALID} \
 	"Bad option \"$option\". Must be one of $choices"

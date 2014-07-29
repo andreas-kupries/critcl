@@ -15,19 +15,23 @@
 # # ## ### ##### ######## ############# #####################
 ## Requirements.
 
-package require Tcl 8.4        ;# Minimal supported Tcl runtime.
-package require critcl::data 1 ;# Access to data files (license).
+package require Tcl 8.5        ;# Minimal supported Tcl runtime.
+package require critcl::data 4 ;# Access to data files (license).
+package require debug          ;# debug narrative
 
-package provide  critcl::common 1
+package provide critcl::common 4
+
 namespace eval ::critcl::common {
     namespace export cat write append \
 	text2words text2authors license-text \
 	today now maxlen expand-glob separator
-    catch { namespace ensemble create }
+    namespace ensemble create
 
-    namespace import ::critcl::data::file
-    rename file datafile
+    namespace import ::critcl::data
 }
+
+debug level  critcl/common
+debug prefix critcl/common {[debug caller] | }
 
 # # ## ### ##### ######## ############# #####################
 ## API commands.
@@ -37,36 +41,50 @@ proc ::critcl::common::separator {} {
 }
 
 proc ::critcl::common::cat {path} {
+    debug.critcl/common {}
     # Easier to write our own copy than requiring fileutil and then
     # using fileutil::cat.
 
     set fd [open $path r]
     set data [read $fd]
     close $fd
+
+    debug.critcl/common {==> <data elided>}
     return $data
 }
 
 proc ::critcl::common::write {dst contents} {
+    debug.critcl/common {}
+
     file mkdir [file dirname $dst]
     set    chan [open $dst w]
     puts  $chan $contents
     close $chan
+
+    debug.critcl/common {/done}
     return
 }
 
 proc ::critcl::common::append {dst contents} {
+    debug.critcl/common {}
+
     file mkdir [file dirname $dst]
     set    chan [open $dst a]
     puts  $chan $contents
     close $chan
+
+    debug.critcl/common {/done}
+    return
 }
 
 proc ::critcl::common::text2words {text} {
+    debug.critcl/common {}
     regsub -all {[ \t\n]+} $text { } text
     return [split [string trim $text]]
 }
 
 proc ::critcl::common::text2authors {text} {
+    debug.critcl/common {}
     regsub -all {[ \t\n]+} $text { } text
     set authors {}
     foreach a [split [string trim $text] ,] {
@@ -76,6 +94,7 @@ proc ::critcl::common::text2authors {text} {
 }
 
 proc ::critcl::common::license-text {words} {
+    debug.critcl/common {}
     if {[llength $words]} {
 	# Use the supplied license details as our suffix.
 	return [join $words]
@@ -86,7 +105,7 @@ proc ::critcl::common::license-text {words} {
 	# file. This removes the author information for critcl itself,
 	# allowing us to replace it by the user-supplied author.
 
-	return [join [lrange [split [cat [datafile license.terms]] \
+	return [join [lrange [split [cat [data file license.terms]] \
 				  \n] \
 			  2 end] \
 		    \n]
@@ -94,24 +113,31 @@ proc ::critcl::common::license-text {words} {
 }
 
 proc ::critcl::common::today {} {
+    debug.critcl/common {}
     return [clock format [clock seconds] -format {%Y-%m-%d}]
 }
 `
 proc ::critcl::common::now {} {
+    debug.critcl/common {}
     return [clock format [clock seconds]]
 }
 
 proc ::critcl::common::maxlen {list} {
+    debug.critcl/common {}
+
     set max 0
     foreach el $list {
 	set l [string length $el]
 	if {$l <= $max} continue
 	set max $l
     }
+
+    debug.critcl/common {==> $max}
     return $max
 }
 
 proc ::critcl::common::expand-glob {base pattern} {
+    debug.critcl/common {}
     # Search is relative to the base directory, for a relative
     # pattern. Note however that we cannot use 'glob -directory'
     # here. The PATTERN may already be an absolute path, in which case
@@ -130,23 +156,12 @@ proc ::critcl::common::expand-glob {base pattern} {
     return $files
 }
 
-if {[package vsatisfies [package present Tcl] 8.5]} {
-    # 8.5+
-    proc ::critcl::common::lappendlist {lvar list} {
-	if {![llength $list]} return
-	upvar $lvar dest
-	lappend dest {*}$list
-	return
-    }
-} else {
-    # 8.4
-    proc ::critcl::common::lappendlist {lvar list} {
-	if {![llength $list]} return
-	upvar $lvar dest
-	set dest [eval [linsert $list 0 linsert $dest end]]
-	#set dest [concat $dest $list]
-	return
-    }
+# XXX FIXME lappendlist - remove, replace with proper lappend calls.
+proc ::critcl::common::lappendlist {lvar list} {
+    if {![llength $list]} return
+    upvar $lvar dest
+    lappend dest {*}$list
+    return
 }
 
 # # ## ### ##### ######## ############# #####################
