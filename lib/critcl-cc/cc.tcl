@@ -36,7 +36,8 @@ package require critcl::uuid      ;# UUID generation.
 package provide  critcl::cc 1
 namespace eval ::critcl::cc {
     namespace export has-compiler extract-const build-direct link-direct \
-	build-for
+	build-immediate-start build-immediate-required build-immediate \
+	build-immediate-complete
     catch { namespace ensemble create }
 }
 
@@ -193,85 +194,106 @@ proc ::critcl::cc::link-direct {ref label code} {
     return $ok
 }
 
-proc ::critcl::cc::build-for {rv prefix file buildforpackage load} {
-    upvar 1 $rv result
+proc ::critcl::cc::build-immediate-begin {sv context prefix base initname} {
+    upvar 1 $sv ccstate
 
-    # Determine if we should place stubs code into the generated file.
-    set placestubs [expr {!$buildforpackage}]
+    # The state variable can be used by the members of the
+    # build-immediate-* command-set as they see fit. The caller cannot
+    # assume anything about it.
 
-    # NOTE: The 4 pieces of data just below are always required, even
-    # if the build and link-steps are suppressed. The load-step must
-    # have this information.
+    set shlib [DetermineShlibName $base]
 
-    set initname [DetermineInitName  $file $buildforpackage]
-    set shlib    [DetermineShlibName $base]
-    set tsources [cdefs::tcls?       $file]
-    set mintcl   [cdefs::usetcl?     $file]
+    # The ccstate dictionary is local information.
 
-    # The result dictionary is local information.
-    #	initname   - String. Foo in Foo_Init().
-    #	shlib	   - String. Name of the shared library backing <file>.
-    #	base	   - String. Common prefix (file root) of 'object' and 'shlib'.
-    #	license    - String. License text.
-    #	<= "critcl::cresults"
+    #	initname - String. Foo in Foo_Init().
+    #	shlib	 - String. Name of the shared library backing <context>.
+    #	base	 - String. Common prefix (file root) of 'object' and 'shlib'.
+    #   prefix   - String. General prefix for temp files.
 
-    dict set result base       $base
-    dict set result shlib      $shlib
-    dict set result initname   $initname
+    #--	license  - String. License text.
+
+    dict set ccstate base     $base
+    dict set ccstate initname $initname
+    dict set ccstate prefix   $prefix
+    dict set ccstate shlib    $shlib
+    dict set ccstate context  $context
 
     StatusReset
+    return
+}
 
-    if {[gopt::get force] || ![file exists $shlib]} {
-	log::begin $prefix $file
+proc ::critcl::cc::build-immediate-required {sv} {
+    upvar 1 $sv ccstate
 
-	# XXX WHY apiprefix header.c vs [ccode]
-	# XXX WHY (see (**)) ?! critcl.tcl
+    if {[gopt::get force]} { return yes }
 
-	# Generate the main C file
-	# XXX FIXME - This should be put into cdefs...
-	# XXX FIXME different API re file name/path/fd ?
+    set shlib [dict get $ccstate shlib]
+    if {![file exists $shlib]} { return yes }
 
-	# XXX FIXME split out BuildDefines...
+    return no
+}
 
-	CollectEmbeddedSources $file $base.c $initname $placestubs $mintcl
+proc ::critcl::cc::build-immediate {sv pkgcfile} {
+    upvar 1 $sv ccstate
 
-	set object [DetermineObjectName $base $file]
+    set prefix  [dict get $ccstate prefix]
+    set context [dict get $ccstate context]
+    set base    [dict get $ccstate base]
 
-	# Compile main file
-        objs $file [list [Compile $file $file $base.c $object]]
+    log::begin $prefix $context
 
-	# Compile the companion C sources as well, if there are any.
-        foreach src [cdefs::srcs? $file] {
-	    objs $file [list [Compile result $file $src $src [CompanionObject $src]]]
-	}
+    # XXX WHY apiprefix header.c vs [ccode]
+    # XXX WHY (see (**)) ?! critcl.tcl
 
-	####	dict set result license    [GetParam $file license <<Undefined>>] ;# XXX FIXME license handling
+    set object [DetermineObjectName $base $context]
 
-	# Link and load steps.
-        if {$load || !$buildforpackage} {
-	    Link $file $shlib $preload $ldflags
-	}
+    # Compile main file
+    Compile $context $context $pkgcfile $object
+    cdefs::objs $context [list $object]
 
-	set msgs [log::done]
-
-	if {$buildforpackage} {
-	    tags::set $file warnings [CheckForWarnings $msgs]
-	}
+    # Compile the companion C sources as well, if there are any.
+    foreach src [cdefs::srcs? $context] {
+	set object [CompanionObject $src]
+	Compile $context $src $src $object
+	cdefs::objs $context [list $object]
     }
 
-    if {[Failed]} {
-	if {!$buildforpackage} {
-	    # XXX FIXME move into caller? => branch here is c&run or bracket code.
-	    print stderr "$msgs\ncritcl build failed ($file)"
-	} else {
-	    tags::set $file log $msgs
-	}
-    } elseif {$load && !$buildforpackage} {
+    # XXX see if the cdefs can be moved inside.
+    Link $context $shlib [cdefs::preload? $context] [cdefs::ldflags? $context]
+
+    dict set ccstate msgs [log::done]
+    return
+}
+
+proc ::critcl::cc::build-immediate-complete {sv load} {
+    upvar 1 $sv ccstate
+
+    set context [dict get $ccstate context]
+    set failed  [Failed]
+
+    if {$failed} {
+	set msgs [dict get $ccstate msgs]
+	# ATTENTION: This is in mode 'compile & run'.
+	# How to report the trouble ?
+	# We are already using the regular result (see "cbuild") to
+	# report the general status (ok|failed). And if we were called
+	# via [unknown] even that is swallowed.
+
+	# XXX FIXME better error reporting on dynamic failure.
+	# XXX FIXME maybe storage into tags like 'failed' ?
+	# XXX FIXME then caller can decide how to report and what.
+
+	print stderr "$msgs\ncritcl build failed ($context)"
+    } elseif {$load} {
+	set shlib    [dict get $ccstate shlib]
+	set initname [dict get $ccstate initname]
+	set tsources [cdefs::tcls? $context]
+
 	Load $shlib $initname $tsources
     }
 
     # Save final status
-    tags::set $file failed [Failed]
+    tags::set $file failed $failed
     StatusReset
     return
 }

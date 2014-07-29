@@ -467,7 +467,7 @@ proc ::critcl::cdefs::complete {ref mode destination initname defines} {
     CommonFooter  $fd
 
     close $fd
-    return
+    return $destination
 }
 
 # # ## ### ##### ######## ############# #####################

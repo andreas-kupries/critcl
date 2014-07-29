@@ -1024,7 +1024,7 @@ proc ::critcl::debug {args} {
 # - cbuild-pkgpart - app-critcl - build                     | keep results
 # - cbuild-pkgmain - app-critcl - build, link               | keep results
 
-proc ::critcl::cbuild {file} {
+proc ::critcl::cbuild {file {load yes}} {
     # Compile & Run mode.
     # Critcl App - Cache Prefill mode.
 
@@ -1039,7 +1039,7 @@ proc ::critcl::cbuild {file} {
     set base     [file normalize [cache::get ${prefix}_[uuid::get $file]]]
     set initname [DetermineInitName $file]
 
-    cc::build-immediate-begin ccstate $v::prefix $file $base $initname
+    cc::build-immediate-begin ccstate $file $v::prefix $base $initname
 
     if {[cc::build-immediate-required ccstate]} {
 	if {[cdefs::has-const $file]} {
@@ -1047,15 +1047,17 @@ proc ::critcl::cbuild {file} {
 	} else {
 	    set defines {}
 	}
-	cdefs::complete $file stubs $base.c $initname $defines
-	cc::build-immediate ccstate
+	cc::build-immediate ccstate \
+	    [cdefs::complete $file stubs $base.c $initname $defines]
     }
 
-    cc::build-immediate-complete ccstate
+    cc::build-immediate-complete ccstate $load
 
     # Build for the file completed, drop all the collected information
     # we now do not need anymore.
     cdefs::clear $file
+
+    # XXX FIXME how to report build errors when called via [unknown].
 
     return [tags::get $file failed]
 }
