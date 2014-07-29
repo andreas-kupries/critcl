@@ -1,1 +1,1 @@
-package ifneeded critcl::tags 1 [list source [file join $dir tags.tcl]]
+package ifneeded critcl::tags 4 [list source [file join $dir tags.tcl]]

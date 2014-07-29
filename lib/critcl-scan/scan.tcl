@@ -15,17 +15,20 @@
 # # ## ### ##### ######## ############# #####################
 ## Requirements.
 
-package require Tcl 8.4           ;# Minimal supported Tcl runtime.
-package require critcl::common    ;# General shared utility commands.
-package require critcl::meta      ;# Management of teapot meta data.
-package require dict84            ;# Forward-compatible dict command.
-package require lassign84         ;# Forward-compatible lassign command.
+package require Tcl 8.4        ;# Minimal supported Tcl runtime.
+package require critcl::common ;# General shared utility commands.
+package require critcl::meta   ;# Management of teapot meta data.
+package require debug          ;# debug narrative
 
-package provide  critcl::scan 1
+package provide critcl::scan 4
+
 namespace eval ::critcl {
     namespace export scan scan-dependencies
 }
 namespace eval ::critcl::scan {}
+
+debug level  critcl/scan
+debug prefix critcl/scan {[debug caller] | }
 
 # Core API commands used here (back references).
 # - ::critcl::msg
@@ -35,6 +38,7 @@ namespace eval ::critcl::scan {}
 ## API commands.
 
 proc ::critcl::scan {file} {
+    debug.critcl/scan {}
     set lines [split [scan::cat $file] \n]
 
     scan::Init {
@@ -103,9 +107,7 @@ proc ::critcl::scan {file} {
     dict unset capture meta-system
     dict unset capture tsources
 
-    dict set capture meta \
-	[eval [linsert $md 0 dict merge]]
-    # meta = dict merge {*}$md
+    dict set capture meta [dict merge {*}$md]
 
     if {[dict exists $capture meta require]} {
 	foreach r [dict get $capture meta require] {
@@ -117,6 +119,7 @@ proc ::critcl::scan {file} {
 }
 
 proc ::critcl::scan-dependencies {key file {mode plain}} {
+    debug.critcl/scan {}
     set lines [split [scan::cat $file] \n]
 
     if {$mode eq "capture"} {
@@ -142,15 +145,15 @@ proc ::critcl::scan-dependencies {key file {mode plain}} {
     dict with capture {
 	if {$mode eq "provide"} {
 	    ::critcl::msg -nonewline " (provide $name $version)"
-	    meta::assign $key name     $name
-	    meta::assign $key version  $version
+	    meta assign $key name     $name
+	    meta assign $key version  $version
 	}
 
 	dict for {k vlist} [dict get $capture meta-system] {
 	    if {$k eq "name"}    continue
 	    if {$k eq "version"} continue
 
-	    meta::extend $key $k $vlist
+	    meta extend $key $k $vlist
 
 	    if {$k ne "require"} continue
 	    ::critcl::msg -nonewline " ($k [join $vlist {}])"
@@ -169,7 +172,6 @@ proc ::critcl::scan-dependencies {key file {mode plain}} {
 ## Internal state
 
 namespace eval ::critcl::scan {
-
     # Scanner configuration
     # - Key for collected package requirements
     # - Base directory holding the scanned file.
@@ -184,14 +186,15 @@ namespace eval ::critcl::scan {
     # Stack of saved captures to handle nested invokation.
     variable saved
 
-    namespace import ::critcl::common::*
-    namespace eval meta { namespace import ::critcl::meta::* }
+    namespace import ::critcl::common
+    namespace import ::critcl::meta
 }
 
 # # ## ### ##### ######## ############# #####################
 ## Internal support commands
 
 proc critcl::scan::Init {cap file {key require}} {
+    debug.critcl/scan {}
     variable rkey    $key
     variable base    [file dirname [file normalize $file]]
     variable capture $cap
@@ -199,6 +202,7 @@ proc critcl::scan::Init {cap file {key require}} {
 }
 
 proc critcl::scan::Push {} {
+    debug.critcl/scan {}
     variable capture
     variable saved
     lappend saved $capture
@@ -207,6 +211,7 @@ proc critcl::scan::Push {} {
 }
 
 proc critcl::scan::Pop {} {
+    debug.critcl/scan {}
     variable capture
     variable saved
     set result $capture
@@ -216,6 +221,7 @@ proc critcl::scan::Pop {} {
 }
 
 proc critcl::scan::Core {lines theconfig} {
+    debug.critcl/scan {}
     # config = dictionary
     # - <cmdname> => mode (ok, warn, sub)
     # Unlisted commands are ignored.
@@ -282,6 +288,7 @@ proc critcl::scan::Core {lines theconfig} {
 namespace eval ::critcl::scan::critcl {}
 
 proc ::critcl::scan::critcl::Files {args} {
+    debug.critcl/scan {}
     variable ::critcl::scan::capture
     set res {}
     foreach v $args {
@@ -295,6 +302,7 @@ proc ::critcl::scan::critcl::Files {args} {
 }
 
 proc ::critcl::scan::critcl::Expand {pattern} {
+    debug.critcl/scan {}
     variable ::critcl::scan::base
 
     # ATTENTION: We cannot use "glob -directory" here.
@@ -322,7 +330,7 @@ proc ::critcl::scan::critcl::Expand {pattern} {
 	    Error "$vfile: Not inside of $base" OUTSIDE $vfile $base
 	}
 
-	set xfile [eval [linsert [lrange $npath [llength $prefix] end] 0 file join ]]
+	set xfile [file join {*}[lrange $npath [llength $prefix] end]]
 	lappend files $xfile
     }
     return $files
@@ -335,10 +343,11 @@ proc ::critcl::scan::critcl::Expand {pattern} {
 # Tcl builtin commands.
 
 namespace eval ::critcl::scan::critcl {
-    namespace import ::critcl::common::*
+    namespace import ::critcl::common
 }
 
 proc ::critcl::scan::critcl::buildrequirement {script} {
+    debug.critcl/scan {}
     # Recursive scan of the script, same configuration, except
     # switched to record 'package require's under the build::reqire
     # key.
@@ -360,6 +369,7 @@ proc ::critcl::scan::critcl::buildrequirement {script} {
 # Meta data.
 # Capture specific dependencies
 proc ::critcl::scan::critcl::tcl {version} {
+    debug.critcl/scan {}
     variable ::critcl::scan::capture
     dict update capture meta-system m {
 	dict lappend m require [list Tcl $version]
@@ -368,6 +378,7 @@ proc ::critcl::scan::critcl::tcl {version} {
 }
 
 proc ::critcl::scan::critcl::tk {} {
+    debug.critcl/scan {}
     variable ::critcl::scan::capture
     dict update capture meta-system m {
 	dict lappend m require Tk
@@ -376,6 +387,7 @@ proc ::critcl::scan::critcl::tk {} {
 }
 
 proc ::critcl::scan::critcl::description {text} {
+    debug.critcl/scan {}
     variable ::critcl::scan::capture
     dict set capture meta-system \
 	description [text2words $text]
@@ -383,6 +395,7 @@ proc ::critcl::scan::critcl::description {text} {
 }
 
 proc ::critcl::scan::critcl::summary {text} {
+    debug.critcl/scan {}
     variable ::critcl::scan::capture
     dict set capture meta-system \
 	summary [text2words $text]
@@ -390,6 +403,7 @@ proc ::critcl::scan::critcl::summary {text} {
 }
 
 proc ::critcl::scan::critcl::subject {args} {
+    debug.critcl/scan {}
     variable ::critcl::scan::capture
     dict update capture meta-system m {
 	foreach word $args {
@@ -400,6 +414,7 @@ proc ::critcl::scan::critcl::subject {args} {
 }
 
 proc ::critcl::scan::critcl::meta {key args} {
+    debug.critcl/scan {}
     variable ::critcl::scan::capture
     dict update capture meta-user m {
 	foreach word $args {
@@ -411,23 +426,25 @@ proc ::critcl::scan::critcl::meta {key args} {
 
 # Capture files
 proc ::critcl::scan::critcl::source {path} {
+    debug.critcl/scan {}
     # Recursively scan the imported file.
     # Keep the current context.
     variable ::critcl::scan::config
 
     # XXX in-scanner cross-level references.
     foreach f [Files $path] {
-	set lines [split [cat $f] \n]
+	set lines [split [common cat $f] \n]
 	::critcl::scan::Core $lines $config
     }
     return
 }
-proc ::critcl::scan::critcl::owns     {args} { eval [linsert $args 0 Files] }
-proc ::critcl::scan::critcl::cheaders {args} { eval [linsert $args 0 Files] }
-proc ::critcl::scan::critcl::csources {args} { eval [linsert $args 0 Files] }
+proc ::critcl::scan::critcl::owns     {args} { Files {*}$args }
+proc ::critcl::scan::critcl::cheaders {args} { Files {*}$args }
+proc ::critcl::scan::critcl::csources {args} { Files {*}$args }
 proc ::critcl::scan::critcl::tsources {args} {
+    debug.critcl/scan {}
     variable ::critcl::scan::capture
-    foreach ts [eval [linsert $args 0 Files]] {
+    foreach ts [Files {*}$args] {
 	dict lappend capture tsources $ts
     }
     return
@@ -435,6 +452,7 @@ proc ::critcl::scan::critcl::tsources {args} {
 
 # Capture license (org name)
 proc ::critcl::scan::critcl::license {who args} {
+    debug.critcl/scan {}
     variable ::critcl::scan::capture
     dict set capture org $who
 
@@ -453,6 +471,7 @@ proc ::critcl::scan::critcl::license {who args} {
 
 # Capture version of the provided package.
 proc ::critcl::scan::package {cmd args} {
+    debug.critcl/scan {}
     variable capture
     variable rkey
 
@@ -498,10 +517,11 @@ proc ::critcl::scan::package {cmd args} {
 
 # Capture the APIs imported by the package
 proc ::critcl::scan::critcl::api {cmd args} {
+    debug.critcl/scan {}
     variable ::critcl::scan::capture
     switch -exact -- $cmd {
 	header {
-	    eval [linsert $args 0 Files]
+	    Files {*}$args
 	}
 	import {
 	    # Syntax: critcl::api import <name> <version>
@@ -516,6 +536,7 @@ proc ::critcl::scan::critcl::api {cmd args} {
 
 # Capture the user config options declared by the package
 proc ::critcl::scan::critcl::userconfig {cmd args} {
+    debug.critcl/scan {}
     variable ::critcl::scan::capture
     switch -exact -- $cmd {
 	define {
@@ -540,6 +561,7 @@ proc ::critcl::scan::critcl::userconfig {cmd args} {
 ## Full internal helper commands.
 
 proc ::critcl::scan::critcl::TeapotRequire {dspec} {
+    debug.critcl/scan {}
     # Syntax of dspec: (a) pname
     #             ...: (b) pname req-version...
     #             ...: (c) pname -exact req-version
@@ -550,7 +572,7 @@ proc ::critcl::scan::critcl::TeapotRequire {dspec} {
     # distinguish the cases.
 
     if {([llength $dspec] == 3) &&
-	([lindex $dspec 1] eq "-exact")} {
+	([lindex  $dspec 1] eq "-exact")} {
 	# (c)
 	lassign $dspec pn _ pv
 	set spec [list $pn ${pv}-$pv]
@@ -563,6 +585,7 @@ proc ::critcl::scan::critcl::TeapotRequire {dspec} {
 }
 
 proc ::critcl::scan::critcl::Error {msg args} {
+    debug.critcl/scan {}
     set code [linsert $args 0 CRITCL SCAN]
     return -code error -errorcode $code $msg
 }

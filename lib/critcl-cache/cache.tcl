@@ -26,15 +26,16 @@
 package require Tcl 8.4        ;# Minimal supported Tcl runtime.
 package require fileutil       ;# general path helper commands.
 package require critcl::common ;# general critcl utilities.
+package require debug          ;# debug narrative
 
 package provide  critcl::cache 1
 namespace eval ::critcl::cache {
-    namespace import ::critcl::common::write  ; rename write  fwrite
-    namespace import ::critcl::common::append ; rename append fappend
-
     namespace export def get write append copy2 clear
-    catch { namespace ensemble create }
+    namespace ensemble create
 }
+
+debug level  critcl/cache
+debug prefix critcl/cache {[debug caller] | }
 
 # # ## ### ##### ######## ############# #####################
 ## API commands.
@@ -46,46 +47,51 @@ namespace eval ::critcl::cache {
 ## - Clear cache (by pattern).
 
 proc ::critcl::cache::def {dir} {
+    debug.critcl/cache {}
     # TODO: Check that path exists, is directory, is readable, and writable.
     variable path [file normalize $dir]
     return
 }
 
 proc ::critcl::cache::get {{child {}}} {
+    debug.critcl/cache {}
     variable path
     if {[llength [info level 0]] < 2} {
 	return $path
     }
-    # TODO: Validate that $child is a path in the cache directory.
+    # XXX TODO: Validate that $child is a path in the cache directory.
     set dst [file join $path $child]
     file mkdir [file dirname $dst]
     return $dst
 }
 
 proc ::critcl::cache::write {file contents} {
+    debug.critcl/cache {}
     variable path
-    # TODO: Validate that $file is a path in the cache directory.
-    set     dst [file join $path $file]
-    fwrite $dst $contents
+    # XXX TODO: Validate that $file is a path in the cache directory.
+    set dst [file join $path $file]
+    common write $dst $contents
     return $dst
 }
 
 proc ::critcl::cache::append {file contents} {
+    debug.critcl/cache {}
     variable path
-    # TODO: Validate that $file is a path in the cache directory.
-    set      dst [file join $path $file]
-    fappend $dst $contents
-    return  $dst
+    # XXX TODO: Validate that $file is a path in the cache directory.
+    set dst [file join $path $file]
+    common append $dst $contents
+    return $dst
 }
 
 proc ::critcl::cache::copy2 {src {dst {}}} {
+    debug.critcl/cache {}
     variable path
 
     if {[llength [info level 0]] < 3} {
 	# No dst => Default to src file part
 	set dst [file tail $src]
     }
-    # TODO: Validate that $dst is a path in the cache directory.
+    # XXX TODO: Validate that $dst is a path in the cache directory.
     set dst [file join $path $file]
     file mkdir [file dirname $dst]
 
@@ -96,6 +102,7 @@ proc ::critcl::cache::copy2 {src {dst {}}} {
 }
 
 proc ::critcl::cache::clear {args} {
+    debug.critcl/cache {}
     variable path
     if {![llength $args]} { lappend args * }
     foreach pattern $args {
@@ -112,6 +119,8 @@ proc ::critcl::cache::clear {args} {
 namespace eval ::critcl::cache {
     # Location of the cache directory.
     variable path
+
+    namespace import ::critcl::common
 }
 
 # # ## ### ##### ######## ############# #####################
@@ -119,11 +128,6 @@ namespace eval ::critcl::cache {
 
 # -- none --
 # TODO: Validate that $dst is a path in the cache directory.
-
-# # ## ### ##### ######## ############# #####################
-## Initialization
-
-# -- none --
 
 # # ## ### ##### ######## ############# #####################
 ## Ready

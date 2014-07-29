@@ -16,12 +16,13 @@
 # # ## ### ##### ######## ############# #####################
 ## Requirements.
 
-package require Tcl 8.4          ;# Minimal supported Tcl runtime.
-package require lassign84        ;# Forward-compatible lassign command.
-package require critcl::who      ;# Management of current file.
-package require critcl::gopt     ;# Management of critcl's global options.
+package require Tcl 8.5        ;# Minimal supported Tcl runtime.
+package require critcl::who    ;# Management of current file.
+package require critcl::gopt   ;# Management of critcl's global options.
+package require debug          ;# debug narrative
 
-package provide  critcl::at 1
+package provide critcl::at 4
+
 namespace eval ::critcl::at {
     namespace export \
 	caller caller! \
@@ -30,8 +31,11 @@ namespace eval ::critcl::at {
 	incr incrt \
 	= cpragma script \
 	lines header
-    catch { namespace ensemble create }
+    namespace ensemble create
 }
+
+debug level  critcl/at
+debug prefix critcl/at {[debug caller] | }
 
 # # ## ### ##### ######## ############# #####################
 ## API commands.
@@ -48,6 +52,7 @@ namespace eval ::critcl::at {
 # get*    - format & return stash
 
 proc ::critcl::at::header {text} {
+    debug.critcl/at {}
     if {![regexp {^[\t\n ]+} $text header]} {
 	return [list 0 $text]
     }
@@ -61,11 +66,13 @@ proc ::critcl::at::header {text} {
 }
 
 proc ::critcl::at::lines {text} {
+    debug.critcl/at {}
     set n [regexp -all {\n} $text]
     return $n
 }
 
-proc ::critcl::at::script {{path} {
+proc ::critcl::at::script {path} {
+    debug.critcl/at {}
     variable source
     if {$path eq {}} {
 	unset -nocomplain source
@@ -77,18 +84,21 @@ proc ::critcl::at::script {{path} {
 }
 
 proc ::critcl::at::caller {{off 0} {level 0}} {
+    debug.critcl/at {}
     ::incr level -3
-    Where $off $level [who::is]
+    Where $off $level [who is]
     return
 }
 
 proc ::critcl::at::caller! {{off 0} {level 0}} {
+    debug.critcl/at {}
     ::incr level -3
-    Where $off $level [who::is]
+    Where $off $level [who is]
     return [get]
 }
 
 proc ::critcl::at::cpragma {leadoffset level file} {
+    debug.critcl/at {}
     # internal variant of 'caller!'
     ::incr level -1
     Where $leadoffset $level $file
@@ -96,17 +106,20 @@ proc ::critcl::at::cpragma {leadoffset level file} {
 }
 
 proc ::critcl::at::here {} {
-    Where 0 -2 [who::is]
+    debug.critcl/at {}
+    Where 0 -2 [who is]
     return
 }
 
 proc ::critcl::at::here! {} {
-    Where 0 -2 [who::is]
+    debug.critcl/at {}
+    Where 0 -2 [who is]
     return [get]
 }
 
 proc ::critcl::at::get {} {
-    if {![gopt::get lines]} {
+    debug.critcl/at {}
+    if {![gopt get lines]} {
 	return {}
     }
 
@@ -121,6 +134,7 @@ proc ::critcl::at::get {} {
 }
 
 proc ::critcl::at::get* {} {
+    debug.critcl/at {}
     variable where
     if {![info exists where]} {
 	Error "No location defined" UNDEFINED
@@ -129,12 +143,14 @@ proc ::critcl::at::get* {} {
 }
 
 proc ::critcl::at::= {file line} {
+    debug.critcl/at {}
     variable where
     set where [list $file $line]
     return
 }
 
 proc ::critcl::at::incr {args} {
+    debug.critcl/at {}
     variable where
     lassign $where file line
     foreach offset $args {
@@ -145,6 +161,7 @@ proc ::critcl::at::incr {args} {
 }
 
 proc ::critcl::at::incrt {args} {
+    debug.critcl/at {}
     variable where
     if {$where eq {}} {
 	Error "No location to change" EMPTY
@@ -162,8 +179,8 @@ proc ::critcl::at::incrt {args} {
 
 namespace eval ::critcl::at {
     # Make relevant "current file" and option commands available.
-    namespace eval who  { namespace import ::critcl::who::is   }
-    namespace eval gopt { namespace import ::critcl::gopt::get }
+    namespace import ::critcl::who
+    namespace import ::critcl::gopt
 
     # Saved location information
     # (2-element list, file name + line number)
@@ -177,6 +194,7 @@ namespace eval ::critcl::at {
 ## Internal support commands
 
 proc ::critcl::at::Where {leadoffset level file} {
+    debug.critcl/at {}
     # XXX argument 'file' is not used, superfluous!
     # XXX test this, may allow removal of the dependency
     variable where
@@ -247,7 +265,8 @@ proc ::critcl::at::Where {leadoffset level file} {
 }
 
 proc ::critcl::at::Format {loc} {
-   if {![llength $loc]} {
+    debug.critcl/at {}
+    if {![llength $loc]} {
 	return ""
     }
     lassign $loc file line
@@ -256,6 +275,7 @@ proc ::critcl::at::Format {loc} {
 }
 
 proc ::critcl::at::SHOWFRAMES {level {all 1}} {
+    debug.critcl/at {}
     set n [info frame]
     set i 0
     set id 1
@@ -270,14 +290,10 @@ proc ::critcl::at::SHOWFRAMES {level {all 1}} {
 }
 
 proc ::critcl::at::Error {msg args} {
+    debug.critcl/at {}
     set code [linsert $args 0 CRITCL AT]
     return -code error -errorcode $code $msg
 }
-
-# # ## ### ##### ######## ############# #####################
-## Initialization
-
-# -- none --
 
 # # ## ### ##### ######## ############# #####################
 ## Ready

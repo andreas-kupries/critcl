@@ -1,1 +1,1 @@
-package ifneeded critcl::uuid 1 [list source [file join $dir uuid.tcl]]
+package ifneeded critcl::uuid 4 [list source [file join $dir uuid.tcl]]

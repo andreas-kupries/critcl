@@ -14,17 +14,17 @@
 # # ## ### ##### ######## ############# #####################
 ## Requirements.
 
-package require Tcl 8.4            ;# Minimal supported Tcl runtime.
-package require dict84             ;# Forward-compatible dict command.
-package require lassign84          ;# Forward-compatible lassign command.
-package require critcl::cache      ;# Access to result cache
-package require critcl::cdefs      ;# General collected C definitions.
-package require critcl::common     ;# General critcl utilities.
-package require critcl::meta       ;# Management of teapot meta data.
-package require critcl::uuid       ;# Digesting, change detection.
-package require critcl::tags       ;# Management of indicator flags.
+package require Tcl 8.5        ;# Minimal supported Tcl runtime.
+package require critcl::cache  ;# Access to result cache
+package require critcl::cdefs  ;# General collected C definitions.
+package require critcl::common ;# General critcl utilities.
+package require critcl::meta   ;# Management of teapot meta data.
+package require critcl::uuid   ;# Digesting, change detection.
+package require critcl::tags   ;# Management of indicator flags.
+package require debug          ;# debug narrative
 
-package provide  critcl::api 1
+package provide critcl::api 4
+
 namespace eval ::critcl::api {
     namespace export c_scspec c_import c_export \
 	c_header c_extheader c_function \
@@ -32,27 +32,32 @@ namespace eval ::critcl::api {
     catch { namespace ensemble create }
 }
 
+debug level  critcl/api
+debug prefix critcl/api {[debug caller] | }
+
 # # ## ### ##### ######## ############# #####################
 ## Link the lifetime of stubs table information to the general C
 ## definitions for a context.
 
-cdefs::on-clear ::critcl::api::clear
+cdefs on-clear ::critcl::api::clear
 
 # # ## ### ##### ######## ############# #####################
 ## API commands.
 
-proc ::critcl::api::c_scspec {file scspec} {
+proc ::critcl::api::c_scspec {context scspec} {
+    debug.critcl/api {}
     variable scspec
-    cdefs::initialize $file
+    cdefs initialize $context
 
-    uuid::add $file .api-scspec $scspec
-    dict set scspec $file $scspec
+    uuid add $context .api-scspec $scspec
+    dict set scspec $context $scspec
     return
 }
 
-proc ::critcl::api::c_import {file name version} {
+proc ::critcl::api::c_import {context name version} {
+    debug.critcl/api {}
     variable use
-    cdefs::initialize $file
+    cdefs initialize $context
 
     # First we request the imported package, giving it a chance to
     # generate the headers searched for in a moment (maybe it was
@@ -66,14 +71,14 @@ proc ::critcl::api::c_import {file name version} {
 	package require $name $version
     }
 
-    meta::require $file [list $name $version]
+    meta require $context [list $name $version]
 
     # Now we check that the relevant headers of the imported package
     # can be found in the specified search paths.
 
     set cname [string map {:: _} $name]
 
-    set at [LocateDecls $file $cname]
+    set at [LocateDecls $context $cname]
     if {$at eq {}} {
 	::critcl::error "Headers for API $name not found"
     } else {
@@ -81,8 +86,8 @@ proc ::critcl::api::c_import {file name version} {
     }
 
     set def [list $name $version]
-    uuid::add $file .api-import $def
-    dict lappend use $file $def
+    uuid add $context .api-import $def
+    dict lappend use $context $def
 
     # At last look for the optional .decls file. Ignore if there is
     # none. Decode and return contained stubs table otherwise.
@@ -98,45 +103,49 @@ proc ::critcl::api::c_import {file name version} {
     return
 }
 
-proc ::critcl::api::c_export {file name} {
+proc ::critcl::api::c_export {context name} {
+    debug.critcl/api {}
     variable self
-    cdefs::initialize $file
+    cdefs initialize $context
     ::critcl::msg -nonewline " (stubs export $name)"
 
-    uuid::add $file .api-self $name
-    dict set self $file $name
+    uuid add $context .api-self $name
+    dict set self $context $name
     return $name
 }
 
-proc ::critcl::api::c_header {file args} {
+proc ::critcl::api::c_header {context args} {
+    debug.critcl/api {}
     variable hdrs
-    cdefs::initialize $file
+    cdefs initialize $context
 
-    set base [file dirname $file]
+    set base [file dirname $context]
 
-    uuid::add $file .api-headers $args
+    uuid add $context .api-headers $args
     foreach pattern $args {
-	foreach v [common::expand-glob $base $pattern] {
-	    dict lappend hdrs $file $v
+	foreach v [common expand-glob $base $pattern] {
+	    dict lappend hdrs $context $v
 	}
     }
     return
 }
 
-proc ::critcl::api::c_extheader {file args} {
+proc ::critcl::api::c_extheader {context args} {
+    debug.critcl/api {}
     variable ehdrs
-    cdefs::initialize $file
+    cdefs initialize $context
 
-    uuid::add $file .api-eheaders $args
+    uuid add $context .api-eheaders $args
     foreach v $args {
-	dict lappend ehdrs $file $v
+	dict lappend ehdrs $context $v
     }
     return
 }
 
-proc ::critcl::api::c_function {file rtype name arguments} {
+proc ::critcl::api::c_function {context rtype name arguments} {
+    debug.critcl/api {}
     variable fun
-    cdefs::initialize $file
+    cdefs initialize $context
 
     package require stubs::reader
 
@@ -157,28 +166,30 @@ proc ::critcl::api::c_function {file rtype name arguments} {
     }
 
     set decl [stubs::reader::ParseDecl "$rtype $name ([join $ax ,])"]
-    uuid::add $file .api-fun $decl
-    dict lappend fun $file $decl
+    uuid add $context .api-fun $decl
+    dict lappend fun $context $decl
     return
 }
 
-proc ::critcl::api::clear {ref} {
-    variable scspec ; dict unset scspec $ref
-    variable self   ; dict unset self   $ref
-    variable hdrs   ; dict unset hdrs   $ref
-    variable ehdrs  ; dict unset ehdrs  $ref
-    variable fun    ; dict unset fun    $ref
-    variable use    ; dict unset use    $ref
+proc ::critcl::api::clear {context} {
+    debug.critcl/api {}
+    variable scspec ; dict unset scspec $context
+    variable self   ; dict unset self   $context
+    variable hdrs   ; dict unset hdrs   $context
+    variable ehdrs  ; dict unset ehdrs  $context
+    variable fun    ; dict unset fun    $context
+    variable use    ; dict unset use    $context
 
     # See api::complete for where these are set/created.
-    tags::unset $ref apidefines
-    tags::unset $ref apiprefix
-    #tags::unset $ref apiheader - XXX lifetime beyond build (app-critcl)
+    tags unset $context apidefines
+    tags unset $context apiprefix
+    #tags unset $context apiheader - XXX lifetime beyond build (app-critcl)
     # XXX FIXME apiheader destruction in compile&run mode
     return
 }
 
-proc ::critcl::api::complete {ref} {
+proc ::critcl::api::complete {context} {
+    debug.critcl/api {}
     # Generate various pieces of C code needed to import the used
     # stubs tables into the package.
 
@@ -189,32 +200,33 @@ proc ::critcl::api::complete {ref} {
                     #       (in lieu of a libXXXstub.a).
     set init    {} ;# list: C fragments for calling stubs init functions
 
-    CompleteImport $ref
-    set cname [CompleteExport $ref]
+    CompleteImport $context
+    set cname [CompleteExport $context]
 
     foreach i $init d $decls {
-	cdefs::init $i $d
+	cdefs init $i $d
     }
     foreach import $code {
-	cdefs::code $import ;# (**) cc.tcl
+	cdefs code $import ;# (**) cc.tcl
     }
 
-    tags::set $ref apidefines $defines
+    tags set $context apidefines $defines
 
     if {[llength $code]} {
-	tags::set $ref apiprefix \n[join $code \n]\n
-	tags::set $ref apiheader [cache::get $cname]
+	tags set $context apiprefix \n[join $code \n]\n
+	tags set $context apiheader [cache get $cname]
     } else {
-	tags::set $ref apiprefix {}
-	tags::set $ref apiheader {}
+	tags set $context apiprefix {}
+	tags set $context apiheader {}
     }
 
     return [list $flags]
 }
 
-proc ::critcl::api::CompleteImport {ref} {
+proc ::critcl::api::CompleteImport {context} {
+    debug.critcl/api {}
     variable use
-    if {![dict exists $use $ref]} return
+    if {![dict exists $use $context]} return
 
     upvar 1 defines defines code code decls decls init init
 
@@ -222,7 +234,7 @@ proc ::critcl::api::CompleteImport {ref} {
 
     package require stubs::gen
 
-    foreach def [dict get $use $ref] {
+    foreach def [dict get $use $context] {
 	lassign $def iname iversion
 
 	lappend code [StubUse $iname \
@@ -245,44 +257,45 @@ proc ::critcl::api::CompleteImport {ref} {
     return
 }
 
-proc ::critcl::api::CompleteExport {ref} {
+proc ::critcl::api::CompleteExport {context} {
+    debug.critcl/api {}
     variable hdrs
     variable ehdrs
     variable fun
 
-    if {![dict exists $hdrs  $ref] &&
-	![dict exists $ehdrs $ref] &&
-	![dict exists $fun   $ref]} return
+    if {![dict exists $hdrs  $context] &&
+	![dict exists $ehdrs $context] &&
+	![dict exists $fun   $context]} return
 
     #::critcl::msg -nonewline " (stubs export completion)"
 
     variable self
     upvar 1 flags flags code code decls decls init init
 
-    if {[dict exists $self $ref]} {
+    if {[dict exists $self $context]} {
 	# API name was declared explicitly
-	set ename [dict get $self $ref]
+	set ename [dict get $self $context]
     } else {
 	# API name is implicitly defined, as the package name.
-	set ename [meta::gets $ref name]
+	set ename [meta gets $context name]
     }
 
     lappend code [StubUse $ename \
 		      "Import our own exported API: $ename, mapping disabled" \
 		      cname capname upname]
 
-    StubDeclHeader    sdecls      $cname
-    StubDeclExternals sdecls $ref
-    StubDeclPublic    sdecls $ref $cname
-    StubDeclStorage   sdecls      $cname $upname
-    StubDeclDef       sdecls $ref $cname $ename  T
+    StubDeclHeader    sdecls          $cname
+    StubDeclExternals sdecls $context
+    StubDeclPublic    sdecls $context $cname
+    StubDeclStorage   sdecls          $cname $upname
+    StubDeclDef       sdecls $context $cname $ename  T
     StubDeclTrailer   sdecls $cname
 
-    cache::write $cname/${cname}Decls.h   $sdecls
+    cache write $cname/${cname}Decls.h   $sdecls
 
     set comment "/* Stubs API Export: $ename */"
 
-    lappend init  [StubDeclInitCode $ref $cname $comment]
+    lappend init  [StubDeclInitCode $context $cname $comment]
     lappend decls [StubDeclInitDecl $T $comment]
     lappend flags -DBUILD_$cname
 
@@ -290,8 +303,8 @@ proc ::critcl::api::CompleteExport {ref} {
     # in mode "compile & run", or by the higher-level code doing a
     # "generate package")
 
-    cache::write $cname/${cname}.decls    [stubs::writer::gen   $T]
-    cache::write $cname/${cname}StubLib.h [stubs::gen::lib::gen $T]
+    cache write $cname/${cname}.decls    [stubs::writer::gen   $T]
+    cache write $cname/${cname}StubLib.h [stubs::gen::lib::gen $T]
 
     return $cname
 }
@@ -303,9 +316,10 @@ proc ::critcl::api::StubDeclInitDecl {T comment} {
     return $sinitstatic
 }
 
-proc ::critcl::api::StubDeclInitCode {ref cname comment} {
-    set pn [meta::gets $ref name]
-    set pv [meta::gets $ref version]
+proc ::critcl::api::StubDeclInitCode {context cname comment} {
+    debug.critcl/api {}
+    set pn [meta gets $context name]
+    set pv [meta gets $context version]
 
     append sinitrun $comment
     append sinitrun \n
@@ -315,6 +329,7 @@ proc ::critcl::api::StubDeclInitCode {ref cname comment} {
 }
 
 proc ::critcl::api::StubDeclHeader {sv cname} {
+    debug.critcl/api {}
     upvar 1 $sv sdecls
     # Standard heading for a *Decls.h header file.
 
@@ -326,29 +341,32 @@ proc ::critcl::api::StubDeclHeader {sv cname} {
 }
 
 proc ::critcl::api::StubDeclTrailer {sv cname} {
+    debug.critcl/api {}
     upvar 1 $sv sdecls
     # Standard footer for a *Decls.h header file.
     append sdecls "\#endif /* ${cname}_DECLS_H */\n"
     return
 }
 
-proc ::critcl::api::StubDeclExternals {sv ref} {
+proc ::critcl::api::StubDeclExternals {sv context} {
+    debug.critcl/api {}
     variable ehdrs
-    if {![dict exists $ehdrs $ref]} return
+    if {![dict exists $ehdrs $context]} return
     upvar 1 $sv sdecls
 
     # Make all declared external header files accessible in *Decls.h
 
     append sdecls "\n"
-    foreach hdr [dict get $ehdrs $ref] {
+    foreach hdr [dict get $ehdrs $context] {
 	append sdecls "\#include \"[file tail $hdr]\"\n"
     }
     return
 }
 
-proc ::critcl::api::StubDeclPublic {sv ref cname} {
+proc ::critcl::api::StubDeclPublic {sv context cname} {
+    debug.critcl/api {}
     variable hdrs
-    if {![dict exists $hdrs $ref]} return
+    if {![dict exists $hdrs $context]} return
     upvar 1 $sv sdecls
 
     # Make all declared public header files of the package accessible
@@ -356,15 +374,16 @@ proc ::critcl::api::StubDeclPublic {sv ref cname} {
     # during compilation.
 
     append sdecls "\n"
-    foreach hdr [dict get $hdrs $ref] {
+    foreach hdr [dict get $hdrs $context] {
 	set hfile [file tail $hdr]
-	cache::copy2 $hdr $cname/$hfile
+	cache copy2 $hdr $cname/$hfile
 	append sdecls "\#include \"$hfile\"\n"
     }
     return
 }
 
-proc ::critcl::api::StubDeclDef {sv ref cname ename tv} {
+proc ::critcl::api::StubDeclDef {sv context cname ename tv} {
+    debug.critcl/api {}
     upvar 1 $sv sdecls $tv T
 
     package require stubs::container
@@ -383,14 +402,14 @@ proc ::critcl::api::StubDeclDef {sv ref cname ename tv} {
     stubs::container::interface T $cname
 
     variable scspec
-    if {[dict exists $scspec $ref]} {
-	stubs::container::scspec T [dict get $scspec $ref]
+    if {[dict exists $scspec $context]} {
+	stubs::container::scspec T [dict get $scspec $context]
     }
 
     variable fun
-    if {[dict exists $fun $ref]} {
+    if {[dict exists $fun $context]} {
 	set index 0
-	foreach decl [dict get $fun $ref] {
+	foreach decl [dict get $fun $context] {
 	    #puts D==|$decl|
 	    stubs::container::declare T $cname $index generic $decl
 	    incr index
@@ -403,6 +422,7 @@ proc ::critcl::api::StubDeclDef {sv ref cname ename tv} {
 }
 
 proc ::critcl::api::StubDeclStorage {sv cname upname} {
+    debug.critcl/api {}
     upvar 1 $sv sdecls
 
     # Insert code to handle the storage class settings on Windows.
@@ -442,6 +462,7 @@ proc ::critcl::api::StubDeclStorage {sv cname upname} {
 }
 
 proc ::critcl::api::StubUse {name desc cv cpv uv} {
+    debug.critcl/api {}
     upvar 1 $cv cname $cpv capname $uv upname
 
     set cname   [string map {:: _} $iname]
@@ -459,14 +480,14 @@ proc ::critcl::api::StubUse {name desc cv cpv uv} {
 ## Internal state
 
 namespace eval ::critcl::api {
-    # Per-file (ref) databases of stubs table information.
+    # Per-file (context) databases of stubs table information.
 
     # (1) Exported definitions of this package.
-    variable scspec {} ;# dict (<ref> -> sc-spec)
-    variable self   {} ;# dict (<ref> -> name)
-    variable hdrs   {} ;# dict (<ref> -> list (path))
-    variable ehdrs  {} ;# dict (<ref> -> list (path))
-    variable fun    {} ;# dict (<ref> -> list (decl))
+    variable scspec {} ;# dict (<context> -> sc-spec)
+    variable self   {} ;# dict (<context> -> name)
+    variable hdrs   {} ;# dict (<context> -> list (path))
+    variable ehdrs  {} ;# dict (<context> -> list (path))
+    variable fun    {} ;# dict (<context> -> list (decl))
 
     # self  - String. Name of our API. Defaults to package name.
     # hdrs  - List. Exported public headers of the API.
@@ -474,27 +495,29 @@ namespace eval ::critcl::api {
     # fun   - List. Exported functions (signatures of result type, name, and arguments (C syntax))
 
     # (2) Imported tables.
-    variable use    {} ;# dict (<ref> -> list-of (pair (pkgname pkgver)))
+    variable use    {} ;# dict (<context> -> list-of (pair (pkgname pkgver)))
 
-    namespace eval cache  { namespace import ::critcl::cache::*  }
-    namespace eval cdefs  { namespace import ::critcl::cdefs::*  }
-    namespace eval common { namespace import ::critcl::common::* }
-    namespace eval meta   { namespace import ::critcl::meta::*   }
-    namespace eval uuid   { namespace import ::critcl::uuid::*   }
-    namespace eval tags   { namespace import ::critcl::tags::*   }
+    namespace import ::critcl::cache
+    namespace import ::critcl::cdefs
+    namespace import ::critcl::common
+    namespace import ::critcl::meta
+    namespace import ::critcl::uuid
+    namespace import ::critcl::tags
 }
 
 # # ## ### ##### ######## ############# #####################
 ## Internal support commands
 
-proc ::critcl::::api::LocateDecls {ref name} {
-    foreach dir [cdefs::system-include-paths $ref] {
+proc ::critcl::::api::LocateDecls {context name} {
+    debug.critcl/api {}
+    foreach dir [cdefs system-include-paths $context] {
 	if {[DeclsAt $dir $name]} { return $dir }
     }
     return {}
 }
 
 proc ::critcl::::api::DeclsAt {dir name} {
+    debug.critcl/api {}
     foreach suffix {
 	Decls.h StubLib.h
     } {
@@ -504,6 +527,7 @@ proc ::critcl::::api::DeclsAt {dir name} {
 }
 
 proc ::critcl::api::Error {msg args} {
+    debug.critcl/api {}
     set code [linsert $args 0 CRITCL API]
     return -code error -errorcode $code $msg
 }

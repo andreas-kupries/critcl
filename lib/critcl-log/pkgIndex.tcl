@@ -1,1 +1,1 @@
-package ifneeded critcl::log 1 [list source [file join $dir log.tcl]]
+package ifneeded critcl::log 4 [list source [file join $dir log.tcl]]

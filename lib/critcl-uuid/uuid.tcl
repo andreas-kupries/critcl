@@ -27,14 +27,18 @@
 # # ## ### ##### ######## ############# #####################
 ## Requirements.
 
-package require Tcl 8.4            ;# Minimal supported Tcl runtime.
-package require dict84             ;# Forward-compatible dict command.
+package require Tcl 8.5        ;# Minimal supported Tcl runtime.
+package require debug          ;# debug narrative
 
-package provide  critcl::uuid 1
+package provide critcl::uuid 4
+
 namespace eval ::critcl::uuid {
     namespace export get add serial fast clear
-    catch { namespace ensemble create }
+    namespace ensemble create
 }
+
+debug level  critcl/uuid
+debug prefix critcl/uuid {[debug caller] | }
 
 # # ## ### ##### ######## ############# #####################
 ## API commands.
@@ -44,43 +48,48 @@ namespace eval ::critcl::uuid {
 ## - Retrieve a monotonic serial number.
 ## - Activate fast (counter mode).
 
-proc ::critcl::uuid::get {ref} {
+proc ::critcl::uuid::get {context} {
+    debug.critcl/uuid {}
     variable config
     # See also 'add' for the data going into the uuid.
 
-    # NOTE: While it could be useful to cache the result per ref we
-    # currently have only one user (critcl::BaseOf) which caches its
-    # own results, so doing it here does not gain us anything. Revisit
-    # if that changes.
+    # NOTE: While it could be useful to cache the result per context
+    # we currently have only one user (critcl::BaseOf) which caches
+    # its own results, so doing it here does not gain us
+    # anything. Revisit if that changes.
 
-    return [Hash "$ref [Get $ref]"]
+    return [Hash "$context [Get $context]"]
 }
 
-proc ::critcl::uuid::add {ref key data} {
+proc ::critcl::uuid::add {context key data} {
+    debug.critcl/uuid {}
     variable config
     # Note how the data is reduced to a hash. The final uuid for the
-    # ref is generated from the ref this is stored under and the list
-    # of keys and hashes we accumulated for it here.
+    # context is generated from the context this is stored under and
+    # the list of keys and hashes we accumulated for it here.
 
     set digest [Hash /$data]
-    dict lappend config $ref $key $digest
+    dict lappend config $context $key $digest
     return $digest
 }
 
-proc ::critcl::uuid::serial {ref} {
+proc ::critcl::uuid::serial {context} {
+    debug.critcl/uuid {}
     variable config
-    return [llength [Get $ref]]
+    return [llength [Get $context]]
 }
 
 proc ::critcl::uuid::fast {} {
+    debug.critcl/uuid {}
     # Activate fast UUID generation without MD5.
     variable counter 1
     return
 }
 
-proc ::critcl::uuid::clear {ref} {
+proc ::critcl::uuid::clear {context} {
+    debug.critcl/uuid {}
     variable config
-    dict unset config $ref
+    dict unset config $context
     return
 }
 
@@ -92,17 +101,17 @@ namespace eval ::critcl::uuid {
     # The initialization value forces the default of a MD5-based UUID.
     variable counter 0
 
-    # Per-file (ref) database of UUID information.
+    # Per-file (context) database of UUID information.
     variable config {}
 }
 
 # # ## ### ##### ######## ############# #####################
 ## Internal support commands
 
-proc ::critcl::uuid::Get {ref} {
+proc ::critcl::uuid::Get {context} {
     variable config
     if {[catch {
-	dict get $config $ref
+	dict get $config $context
     } data]} {
 	set data {}
     }
@@ -120,8 +129,10 @@ proc ::critcl::uuid::Hash {data} {
 
 # # ## ### ##### ######## ############# #####################
 ## Initialization -- MD5.
-# Setup is defered to happen only when MD% is actually used.
-# This code requires careful attention to handle boot-strapping.
+#
+# The setup is defered to happen only when MD5 is actually used (See
+# 'Hash' above).  This code requires careful attention to handle
+# boot-strapping.
 
 proc ::critcl::uuid::SetupMD5 {} {
     # I. Locate and activate a suitable implementation.
@@ -140,7 +151,8 @@ proc ::critcl::uuid::SetupMD5 {} {
 
 	if {![catch { md5c "" }]} {
 	    interp alias {} md5 {} md5c
-	} elseif {[catch {package require Trf 2.0}] || [catch {::md5 -- test}]} {
+	} elseif {[catch {package require Trf 2.0}] ||
+		  [catch {::md5 -- test}]} {
 	    # Else try to load the Tcl version in tcllib
 	    catch { package require md5 }
 	    if {![catch { md5::md5 "" }]} {

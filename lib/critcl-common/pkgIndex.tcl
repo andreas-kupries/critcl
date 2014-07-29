@@ -1,1 +1,1 @@
-package ifneeded critcl::common 1 [list source [file join $dir common.tcl]]
+package ifneeded critcl::common 4 [list source [file join $dir common.tcl]]

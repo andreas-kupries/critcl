@@ -1,1 +1,1 @@
-package ifneeded critcl::cache 1 [list source [file join $dir cache.tcl]]
+package ifneeded critcl::cache 4 [list source [file join $dir cache.tcl]]

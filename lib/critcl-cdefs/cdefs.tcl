@@ -14,19 +14,19 @@
 # # ## ### ##### ######## ############# #####################
 ## Requirements.
 
-package require Tcl 8.4            ;# Minimal supported Tcl runtime.
-package require dict84             ;# Forward-compatible dict command.
-# package require lassign84          ;# Forward-compatible lassign command.
-package require critcl::cache      ;# Access to result cache.
-package require critcl::gopt       ;# Access to global options.
-package require critcl::common     ;# General critcl utilities.
-package require critcl::data       ;# Access to data files.
-package require critcl::meta       ;# Management of teapot meta data.
-package require critcl::uuid       ;# Digesting, change detection.
-package require critcl::scan       ;# Static Tcl file scanner.
-package require critcl::tags       ;# Management of indicator flags.
+package require Tcl 8.5        ;# Minimal supported Tcl runtime.
+package require critcl::cache  ;# Access to result cache.
+package require critcl::gopt   ;# Access to global options.
+package require critcl::common ;# General critcl utilities.
+package require critcl::data   ;# Access to data files.
+package require critcl::meta   ;# Management of teapot meta data.
+package require critcl::uuid   ;# Digesting, change detection.
+package require critcl::scan   ;# Static Tcl file scanner.
+package require critcl::tags   ;# Management of indicator flags.
+package require debug          ;# debug narrative
 
-package provide  critcl::cdefs 1
+package provide critcl::cdefs 4
+
 namespace eval ::critcl::cdefs {
     namespace export clear code defs flags func-begin func-cdata \
 	func-delete func-done hdrs init ldflags libs objs preload \
@@ -34,26 +34,31 @@ namespace eval ::critcl::cdefs {
 	inits? ldflags? libs? objs? preload? srcs? tcls? usetcl? \
 	usetk? has-const has-code initialize complete on-clear \
 	system-include-paths system-lib-paths
-    catch { namespace ensemble create }
+    namespace ensemble create
 }
+
+debug level  critcl/cdefs
+debug prefix critcl/cdefs {[debug caller] | }
 
 # # ## ### ##### ######## ############# #####################
 ## API commands.
 
 proc ::critcl::cdefs::on-clear {cmd} {
+    debug.critcl/cdefs {}
     variable onclear
     lappend  onclear $cmd
     return
 }
 
 proc ::critcl::cdefs::initialize {context} {
-    if {[tags::has $context initialized]} return
+    if {[tags has $context initialized]} return
+    debug.critcl/cdefs {}
 
     # Initialize the system meta data.
     # User meta data auto-initializes on 1st write.
 
-    meta::assign $context platform    [list [TeapotPlatform]]
-    meta::assign $context build::date [list [common::today]]
+    meta assign $context platform    [list [TeapotPlatform]]
+    meta assign $context build::date [list [common today]]
 
     # Statically scan the context (file) for dependencies and such,
     # should it exist (Bracket code for example does not). This will
@@ -62,104 +67,114 @@ proc ::critcl::cdefs::initialize {context} {
 	scan-dependencies $context $context provide
     }
 
-    tags::set $context initialized
+    tags set $context initialized
     return
 }
 
-proc ::critcl::cdefs::code {ref code} {
+proc ::critcl::cdefs::code {context code} {
+    debug.critcl/cdefs {}
     variable fragments
     variable block
     variable defs
-    initialize $ref
+    initialize $context
 
-    set digest [uuid::add $ref .ccode $code]
+    set digest [uuid add $context .ccode $code]
 
-    dict lappend fragments $ref $digest
-    dict lappend defs      $ref $digest
-    dict set     block     $ref $digest $code
+    dict lappend fragments $context $digest
+    dict lappend defs      $context $digest
+    dict set     block     $context $digest $code
     return
 }
 
-proc ::critcl::cdefs::defs {ref defines {namespace "::"}} {
+proc ::critcl::cdefs::defs {context defines {namespace "::"}} {
+    debug.critcl/cdefs {}
     if {![llength $defines]} return
     variable const
-    initialize $ref
+    initialize $context
 
-    uuid::add $ref .cdefines [list $defines $namespace]
+    uuid add $context .cdefines [list $defines $namespace]
 
     foreach def $defines {
 	# Note: The <def>'s are glob patterns.
-	dict set const $ref $def $namespace
+	dict set const $context $def $namespace
     }
     return
 }
 
-proc ::critcl::cdefs::flags {ref words} {
+proc ::critcl::cdefs::flags {context words} {
+    debug.critcl/cdefs {}
     if {![llength $words]} return
     variable cflags
-    initialize $ref
+    initialize $context
 
-    uuid::add $ref .cflags $words
+    uuid add $context .cflags $words
 
     foreach flag $words {
-	dict lappend cflags $ref $flag
+	dict lappend cflags $context $flag
     }
     return
 }
 
-proc ::critcl::cdefs::func-begin {ref tclname cname details} {
+proc ::critcl::cdefs::func-begin {context tclname cname details} {
+    debug.critcl/cdefs {}
     variable functions
-    set digest [uuid::add $ref .function [list $tclname $details]]
+    set digest [uuid add $context .function [list $tclname $details]]
 
-    dict lappend functions $ref $cname
+    dict lappend functions $context $cname
     return $digest
 }
 
-proc ::critcl::cdefs::func-cdata {ref cname cdata} {
+proc ::critcl::cdefs::func-cdata {context cname cdata} {
+    debug.critcl/cdefs {}
     variable funcdata
-    dict set funcdata $ref $cname $cdata
+    dict set funcdata $context $cname $cdata
     return
 }
 
-proc ::critcl::cdefs::func-delete {ref cname delproc} {
+proc ::critcl::cdefs::func-delete {context cname delproc} {
+    debug.critcl/cdefs {}
     variable fundelete
-    dict set fundelete $ref $cname $delproc
+    dict set fundelete $context $cname $delproc
     return
 }
 
-proc ::critcl::cdefs::func-done {ref digest code} {
+proc ::critcl::cdefs::func-done {context digest code} {
+    debug.critcl/cdefs {}
     variable fragments
     variable block
 
-    dict lappend fragments $ref $digest
-    dict lappend block     $ref $code
+    dict lappend fragments $context $digest
+    dict lappend block     $context $code
     return
 }
 
-proc ::critcl::cdefs::hdrs {ref words} {
+proc ::critcl::cdefs::hdrs {context words} {
+    debug.critcl/cdefs {}
     # Accept: -Ipath, path/to/header-file
-    FlagsAndPatterns $ref cheaders $words -I
+    FlagsAndPatterns $context cheaders $words -I
     return
 }
 
-proc ::critcl::cdefs::init {ref code decl} {
+proc ::critcl::cdefs::init {context code decl} {
+    debug.critcl/cdefs {}
     variable initc
     variable edecls
-    initialize $ref
+    initialize $context
 
-    uuid::add $ref .cinit [list $code $edecls]
+    uuid add $context .cinit [list $code $edecls]
 
-    dict append initc  $ref $code \n
-    dict append edecls $ref $edecls  \n
+    dict append initc  $context $code   \n
+    dict append edecls $context $edecls \n
     return
 }
 
-proc ::critcl::cdefs::ldflags {ref words} {
+proc ::critcl::cdefs::ldflags {context words} {
+    debug.critcl/cdefs {}
     if {![llength $words]} return
     variable ldflags
-    initialize $ref
+    initialize $context
 
-    uuid::add $ref .ldflags $words
+    uuid add $context .ldflags $words
 
     # Note: Flag may come with and without a -Wl, prefix.
     # We canonicalize this here to always have a -Wl, prefix.
@@ -168,182 +183,202 @@ proc ::critcl::cdefs::ldflags {ref words} {
 
     foreach flag $words {
 	regsub -all {^-Wl,} $flag {} flag
-	dict lappend ldflags $ref -Wl,$flag
+	dict lappend ldflags $context -Wl,$flag
     }
     return
 }
 
-proc ::critcl::cdefs::libs {ref words} {
+proc ::critcl::cdefs::libs {context words} {
+    debug.critcl/cdefs {}
     # Accept: -Lpath, -lname, -l:name, path/to/lib-file
-    FlagsAndPatterns $ref clibraries $words {-L -l}
+    FlagsAndPatterns $context clibraries $words {-L -l}
     return
 }
 
-proc ::critcl::cdefs::objs {ref words} {
+proc ::critcl::cdefs::objs {context words} {
+    debug.critcl/cdefs {}
     # words = list (glob-pattern...) = list (file...)
     if {![llength $words]} return
     variable cobjects
-    initialize $ref
+    initialize $context
 
-    uuid::add $ref .cobjects $words
+    uuid add $context .cobjects $words
 
-    set base [file dirname $ref]
+    set base [file dirname $context]
     foreach pattern $words {
-	foreach path [common::expand-glob $base $pattern] {
+	foreach path [common expand-glob $base $pattern] {
 	    # XXX TODO: reject non-file|unreadable paths.
 
 	    # Companion C object file content technically affects
 	    # binary. Practically this is only used by the critcl
 	    # application to link the package object files with the
 	    # bracketing library.
-	    #uuid::add $ref .cobject.$path [common::cat $path]
-	    dict lappend cobjects $ref $path
+	    #uuid add $context .cobject.$path [common cat $path]
+	    dict lappend cobjects $context $path
 	}
     }
     return
 }
 
-proc ::critcl::cdefs::preload {ref words} {
+proc ::critcl::cdefs::preload {context words} {
+    debug.critcl/cdefs {}
     if {![llength $words]} return
     variable preload
-    initialize $ref
+    initialize $context
 
-    uuid::add $ref .preload $words
+    uuid add $context .preload $words
 
     foreach lib $words {
-	dict lappend preload $ref $lib
+	dict lappend preload $context $lib
     }
     return
 }
 
-proc ::critcl::cdefs::srcs {ref words} {
+proc ::critcl::cdefs::srcs {context words} {
+    debug.critcl/cdefs {}
     # words = list (glob-pattern...) = list (file...)
     if {![llength $words]} return
     variable csources
-    initialize $ref
+    initialize $context
 
-    uuid::add $ref .csources $words
+    uuid add $context .csources $words
 
-    set base [file dirname $ref]
+    set base [file dirname $context]
     foreach pattern $words {
-	foreach path [common::expand-glob $base $pattern] {
+	foreach path [common expand-glob $base $pattern] {
 	    # Note: This implicitly rejects all paths which are not
 	    # readable, nor files.
 
 	    # Companion C file content affects binary.
-	    uuid::add $ref .csources.$path [common::cat $path]
-	    dict lappend csources $ref $path
+	    uuid add $context .csources.$path [common cat $path]
+	    dict lappend csources $context $path
 	}
     }
     return
 }
 
-proc ::critcl::cdefs::tcls {ref words} {
+proc ::critcl::cdefs::tcls {context words} {
+    debug.critcl/cdefs {}
     # words = list (glob-pattern...) = list (file...)
     if {![llength $words]} return
     variable tsources
-    initialize $ref
+    initialize $context
 
     # Note: The companion Tcl sources (count, order, content) have no bearing
     #       on the binary. Hence no touching of the uuid system here.
 
-    set base [file dirname $ref]
+    set base [file dirname $context]
     foreach pattern $words {
-	foreach path [common::expand-glob $base $pattern] {
+	foreach path [common expand-glob $base $pattern] {
 	    # The scan implicitly rejects paths which are not readable, nor files.
-	    dict lappend tsources $ref $path
-	    scan-dependencies $ref $path
+	    dict lappend tsources $context $path
+	    scan-dependencies $context $path
 	}
     }
     return
 }
 
-proc ::critcl::cdefs::usetcl {ref version} {
+proc ::critcl::cdefs::usetcl {context version} {
+    debug.critcl/cdefs {}
     variable mintcl
-    initialize $ref
+    initialize $context
 
     # This is also a dependency we have to record in the meta data.
     # A 'package require' is not needed. This can be inside of the
     # generated and loaded C code.
 
-    dict set mintcl $ref $version
-    uuid::add       $ref .mintcl $version
-    meta::require   $ref [list Tcl $version]
+    dict set mintcl $context $version
+    uuid add       $context .mintcl $version
+    meta require   $context [list Tcl $version]
     return
 }
 
-proc ::critcl::cdefs::usetk {ref} {
+proc ::critcl::cdefs::usetk {context} {
+    debug.critcl/cdefs {}
     variable usetk
-    initialize $ref
+    initialize $context
 
     # This is also a dependency we have to record in the meta data.
     # A 'package require' is not needed. This can be inside of the
     # generated and loaded C code.
 
-    dict set usetk $ref 1
-    uuid::add      $ref .usetk 1
-    meta::require  $ref Tk
+    dict set usetk $context 1
+    uuid add       $context .usetk 1
+    meta require   $context Tk
     return
 }
 
-proc ::critcl::cdefs::code? {ref {mode all}} {
-    set sep [common::separator]
+proc ::critcl::cdefs::code? {context {mode all}} {
+    debug.critcl/cdefs {}
+    set sep [common separator]
     set code {}
-    set block [Get $ref block]
+    set block [Get $context block]
     set mode [expr {$mode eq "all" ? "fragments" : "defs"}]
-    foreach hash [Get $ref $mode] {
+    foreach hash [Get $context $mode] {
 	append code $sep \n [dict get $block $hash]
     }
     return $code
 }
 
-proc ::critcl::cdefs::edecls? {ref} {
-    Get $ref edecls
+proc ::critcl::cdefs::edecls? {context} {
+    debug.critcl/cdefs {}
+    Get $context edecls
 }
 
-proc ::critcl::cdefs::flags? {ref} {
-    Get $ref flags
+proc ::critcl::cdefs::flags? {context} {
+    debug.critcl/cdefs {}
+    Get $context flags
 }
 
-proc ::critcl::cdefs::funcs? {ref} {
-    Get $ref functions
+proc ::critcl::cdefs::funcs? {context} {
+    debug.critcl/cdefs {}
+    Get $context functions
 }
 
-proc ::critcl::cdefs::hdrs? {ref} {
-    Get $ref cheaders
+proc ::critcl::cdefs::hdrs? {context} {
+    debug.critcl/cdefs {}
+    Get $context cheaders
 }
 
-proc ::critcl::cdefs::inits? {ref} {
-    Get $ref initc
+proc ::critcl::cdefs::inits? {context} {
+    debug.critcl/cdefs {}
+    Get $context initc
 }
 
-proc ::critcl::cdefs::ldflags? {ref} {
-    Get $ref ldflags
+proc ::critcl::cdefs::ldflags? {context} {
+    debug.critcl/cdefs {}
+    Get $context ldflags
 }
 
-proc ::critcl::cdefs::libs? {ref} {
-    Get $ref clibraries
+proc ::critcl::cdefs::libs? {context} {
+    debug.critcl/cdefs {}
+    Get $context clibraries
 }
 
-proc ::critcl::cdefs::objs? {ref} {
-    Get $ref cobjects
+proc ::critcl::cdefs::objs? {context} {
+    debug.critcl/cdefs {}
+    Get $context cobjects
 }
 
-proc ::critcl::cdefs::preload? {ref} {
-    Get $ref preload
+proc ::critcl::cdefs::preload? {context} {
+    debug.critcl/cdefs {}
+    Get $context preload
 }
 
-proc ::critcl::cdefs::srcs? {ref} {
-    Get $ref csources
+proc ::critcl::cdefs::srcs? {context} {
+    debug.critcl/cdefs {}
+    Get $context csources
 }
 
-proc ::critcl::cdefs::tcls? {ref} {
-    Get $ref tsources
+proc ::critcl::cdefs::tcls? {context} {
+    debug.critcl/cdefs {}
+    Get $context tsources
 }
 
-proc ::critcl::cdefs::usetcl? {ref} {
-    set required [Get $ref mintcl 8.4]
-    foreach version [data::available-tcl] {
+proc ::critcl::cdefs::usetcl? {context} {
+    debug.critcl/cdefs {}
+    set required [Get $context mintcl 8.4]
+    foreach version [data available-tcl] {
 	if {[package vsatisfies $version $required]} {
 	    return $version
 	}
@@ -351,47 +386,51 @@ proc ::critcl::cdefs::usetcl? {ref} {
     return $required
 }
 
-proc ::critcl::cdefs::usetk? {ref} {
-    Get $ref tk 1
+proc ::critcl::cdefs::usetk? {context} {
+    debug.critcl/cdefs {}
+    Get $context tk 1
 }
 
-proc ::critcl::cdefs::has-const {ref} {
-    Has $ref const
+proc ::critcl::cdefs::has-const {context} {
+    debug.critcl/cdefs {}
+    Has $context const
 }
 
-proc ::critcl::cdefs::has-code {ref} {
-    Has $ref fragments
+proc ::critcl::cdefs::has-code {context} {
+    debug.critcl/cdefs {}
+    Has $context fragments
 }
 
-proc ::critcl::cdefs::system-lib-paths {ref} {
+proc ::critcl::cdefs::system-lib-paths {context} {
+    debug.critcl/cdefs {}
     set paths {}
     set has   {}
 
     # critcl -L options.
-    foreach dir [gopt::get L] {
+    foreach dir [gopt get L] {
 	+Path has paths $dir
     }
 
-    # Use critcl::clibraries?
-
+    # XXX NOTE Use critcl::clibraries?
     return $paths
 }
 
-proc ::critcl::cdefs::system-include-paths {ref} {
+proc ::critcl::cdefs::system-include-paths {context} {
+    debug.critcl/cdefs {}
     set paths {}
     set has   {}
 
     # critcl -I options.
-    foreach dir [gopt::get I] {
+    foreach dir [gopt get I] {
 	+Path has paths $dir
     }
 
     # The result cache is a source of header files too (stubs tables,
     # and other generated files).
-    +Path has paths [cache::get]
+    +Path has paths [cache get]
 
     # critcl::cheaders
-    foreach flag [hdrs? $file] {
+    foreach flag [hdrs? $context] {
 	if {![string match "-*" $flag]} {
 	    # flag = normalized absolute path to a header file.
 	    # Transform into a directory reference.
@@ -407,63 +446,65 @@ proc ::critcl::cdefs::system-include-paths {ref} {
     return $paths
 }
 
-proc ::critcl::cdefs::clear {ref} {
-    variable block      ; dict unset block      $ref
-    variable cflags     ; dict unset cflags     $ref
-    variable cheaders   ; dict unset cheaders   $ref
-    variable clibraries ; dict unset clibraries $ref
-    variable cobjects   ; dict unset cobjects   $ref
-    variable const      ; dict unset const      $ref
-    variable csources   ; dict unset csources   $ref
-    variable defs       ; dict unset defs       $ref
-    variable edecls     ; dict unset edecls     $ref
-    variable fragments  ; dict unset fragments  $ref
-    variable functions  ; dict unset functions  $ref
-    variable funcdata   ; dict unset funcdata   $ref
-    variable fundelete  ; dict unset fundelete  $ref
-    variable initc      ; dict unset initc      $ref
-    variable ldflags    ; dict unset ldflags    $ref
-    variable mintcl     ; dict unset mintcl     $ref
-    variable preload    ; dict unset preload    $ref
-    variable tk         ; dict unset tk         $ref
-    variable tsources   ; dict unset tsources   $ref
+proc ::critcl::cdefs::clear {context} {
+    debug.critcl/cdefs {}
+    variable block      ; dict unset block      $context
+    variable cflags     ; dict unset cflags     $context
+    variable cheaders   ; dict unset cheaders   $context
+    variable clibraries ; dict unset clibraries $context
+    variable cobjects   ; dict unset cobjects   $context
+    variable const      ; dict unset const      $context
+    variable csources   ; dict unset csources   $context
+    variable defs       ; dict unset defs       $context
+    variable edecls     ; dict unset edecls     $context
+    variable fragments  ; dict unset fragments  $context
+    variable functions  ; dict unset functions  $context
+    variable funcdata   ; dict unset funcdata   $context
+    variable fundelete  ; dict unset fundelete  $context
+    variable initc      ; dict unset initc      $context
+    variable ldflags    ; dict unset ldflags    $context
+    variable mintcl     ; dict unset mintcl     $context
+    variable preload    ; dict unset preload    $context
+    variable tk         ; dict unset tk         $context
+    variable tsources   ; dict unset tsources   $context
 
     # Fixed hooks (dependent databases)
-    meta::clear $ref
-    uuid::clear $ref
+    meta clear $context
+    uuid clear $context
 
     # Unwanted tags must be removed explicitly.  Note that clearing
     # this database happens after the referenced file is build, so we
     # can drop the initialization status (and the 'failed' build
     # status appears).
-    tags::unset      $file debug-memory
-    tags::unset      $file debug-symbols
-    tags::unset      $file initialized
+    tags unset      $context debug-memory
+    tags unset      $context debug-symbols
+    tags unset      $context initialized
 
     # Invoke the registered hooks.
     variable onclear
     foreach cmd $onclear {
-	uplevel #0 $cmd [list $ref]
+	uplevel #0 $cmd [list $context]
     }
     return
 }
 
-proc ::critcl::cdefs::complete {ref mode destination initname defines} {
+proc ::critcl::cdefs::complete {context mode destination initname defines} {
+    debug.critcl/cdefs {}
     # mode in stubs, !stubs
 
     set stubs [expr {$mode eq "stubs"}]
     set fd    [open $destination w]
 
-    CommonHeading $fd $ref
+    CommonHeading $fd $context
     TkHeading     $fd
-    CodeBlocks    $fd $ref
-    SetupTclStubs $fd $ref $stubs  
-    SetupTkStubs  $fd $ref
-    SetupTclInit  $fd $ref $initname
-    SetupTkInit   $fd $ref
-    SetupUserInit $fd $ref
-    ExportDefines $fd $ref $defines
-    CommandSetup  $fd $ref
+    CodeBlocks    $fd $context
+    SetupTclStubs $fd $context $stubs  
+    SetupTkStubs  $fd $context
+    SetupTclInit  $fd $context $initname
+    SetupTkInit   $fd $context
+    SetupUserInit $fd $context
+    ExportDefines $fd $context $defines
+    CommandSetup  $fd $context
     CommonFooter  $fd
 
     close $fd
@@ -474,27 +515,27 @@ proc ::critcl::cdefs::complete {ref mode destination initname defines} {
 ## Internal state
 
 namespace eval ::critcl::cdefs {
-    # Per-file (ref) databases of C definitions.
+    # Per-file (context) databases of C definitions.
 
-    variable block      {} ;# dict (<ref> -> <hash> -> C-code)    | ccode
-    variable cflags     {} ;# dict (<ref> -> list (flag...))      | cflags
-    variable cheaders   {} ;# dict (<ref> -> list (flag|file...)) | cheaders
-    variable clibraries {} ;# dict (<ref> -> list (flag|file...)) | clibraries
-    variable cobjects   {} ;# dict (<ref> -> list (file...))      | cobjects
-    variable const      {} ;# dict (<ref> -> <def> -> namespace)  * cdefines
-    variable csources   {} ;# dict (<ref> -> list (file...))      | csources
-    variable defs       {} ;# dict (<ref> -> list (hash...))      * ccode
-    variable edecls     {} ;# dict (<ref> -> C-code)              | cinit
-    variable fragments  {} ;# dict (<ref> -> list (hash...))      | ccode    ccommand cproc
-    variable functions  {} ;# dict (<ref> -> list (C-name...))    |          ccommand cproc
-    variable funcdata   {} ;# dict (<ref> -> cname -> cdata)      |          ccommand
-    variable fundelete  {} ;# dict (<ref> -> cname -> delfunc)    |          ccommand
-    variable initc      {} ;# dict (<ref> -> C-code)              | cinit
-    variable ldflags    {} ;# dict (<ref> -> list (flag...))      | ldflags
-    variable mintcl     {} ;# dict (<ref> -> version)             | tcl
-    variable preload    {} ;# dict (<ref> -> list (libname...))   | preload
-    variable tk         {} ;# dict (<ref> -> bool|presence)       | tk
-    variable tsources   {} ;# dict (<ref> -> list (file...))      | tsources
+    variable block      {} ;# dict (<context> -> <hash> -> C-code)    | ccode
+    variable cflags     {} ;# dict (<context> -> list (flag...))      | cflags
+    variable cheaders   {} ;# dict (<context> -> list (flag|file...)) | cheaders
+    variable clibraries {} ;# dict (<context> -> list (flag|file...)) | clibraries
+    variable cobjects   {} ;# dict (<context> -> list (file...))      | cobjects
+    variable const      {} ;# dict (<context> -> <def> -> namespace)  * cdefines
+    variable csources   {} ;# dict (<context> -> list (file...))      | csources
+    variable defs       {} ;# dict (<context> -> list (hash...))      * ccode
+    variable edecls     {} ;# dict (<context> -> C-code)              | cinit
+    variable fragments  {} ;# dict (<context> -> list (hash...))      | ccode    ccommand cproc
+    variable functions  {} ;# dict (<context> -> list (C-name...))    |          ccommand cproc
+    variable funcdata   {} ;# dict (<context> -> cname -> cdata)      |          ccommand
+    variable fundelete  {} ;# dict (<context> -> cname -> delfunc)    |          ccommand
+    variable initc      {} ;# dict (<context> -> C-code)              | cinit
+    variable ldflags    {} ;# dict (<context> -> list (flag...))      | ldflags
+    variable mintcl     {} ;# dict (<context> -> version)             | tcl
+    variable preload    {} ;# dict (<context> -> list (libname...))   | preload
+    variable tk         {} ;# dict (<context> -> bool|presence)       | tk
+    variable tsources   {} ;# dict (<context> -> list (file...))      | tsources
 
     #	tsources	- List. The companion tcl sources for <file>.
     #	cheaders	- List. The companion C header files for <file>.
@@ -521,100 +562,111 @@ namespace eval ::critcl::cdefs {
     # Commands are called with relevant reference (1 arg).
     variable onclear {}
 
-    namespace eval cache  { namespace import ::critcl::cache::*  }
-    namespace eval common { namespace import ::critcl::common::* }
-    namespace eval data   { namespace import ::critcl::data::*   }
-    namespace eval gopt   { namespace import ::critcl::gop::*    }
-    namespace eval meta   { namespace import ::critcl::meta::*   }
-    namespace eval uuid   { namespace import ::critcl::uuid::*   }
-    namespace eval tags   { namespace import ::critcl::tags::*   }
+    namespace import ::critcl::cache
+    namespace import ::critcl::common
+    namespace import ::critcl::data
+    namespace import ::critcl::gopt
+    namespace import ::critcl::meta
+    namespace import ::critcl::uuid
+    namespace import ::critcl::tags
     namespace import ::critcl::scan-dependencies
 }
 
 # # ## ### ##### ######## ############# #####################
 ## Internal support commands
 
-proc ::critcl::cdefs::CommonHeading {fd file} {
-    set api [tags::get $file apiprefix]
+proc ::critcl::cdefs::CommonHeading {fd context} {
+    debug.critcl/cdefs {}
+    set api  [tags get $context apiprefix]
+    set file $context
     # Boilerplate header.
-    puts $fd [subst [common::cat [data::cfile header.c]]]
+    puts $fd [subst [common cat [data cfile header.c]]]
     #         ^=> file, api
     return
 }
 
 proc ::critcl::cdefs::CommonFooter {fd} {
+    debug.critcl/cdefs {}
     # Complete the trailer and be done.
-    puts  $fd [common::cat [data::cfile pkginitend.c]]
+    puts  $fd [common cat [data cfile pkginitend.c]]
     return
 }
 
-proc ::critcl::cdefs::CodeBlocks {fd file} {
-    puts $fd [code? $file]
-    puts $fd [common::separator]
+proc ::critcl::cdefs::CodeBlocks {fd context} {
+    debug.critcl/cdefs {}
+    puts $fd [code? $context]
+    puts $fd [common separator]
     return
 }
 
-proc ::critcl::cdefs::TkHeading {fd file} {
+proc ::critcl::cdefs::TkHeading {fd context} {
+    debug.critcl/cdefs {}
     # Make Tk available, if requested
-    if {![cdefs::usetk? $file]} return
+    if {![cdefs::usetk? $context]} return
     puts $fd "\n#include \"tk.h\""
     return
 }
 
-proc ::critcl::cdefs::SetupTclInit {fd file ininame} {
-    set ext [cdefs::edecls? $file]
-    puts $fd [subst [common::cat [data::cfile pkginit.c]]]
+proc ::critcl::cdefs::SetupTclInit {fd context ininame} {
+    debug.critcl/cdefs {}
+    set ext [cdefs::edecls? $context]
+    puts $fd [subst [common cat [data cfile pkginit.c]]]
     #         ^=> ext, ininame
     # This ends in the middle of the FOO_Init() function, leaving it
     # incomplete.
     return
 }
 
-proc ::critcl::cdefs::SetupTkInit {fd file} {
-    if {![cdefs::usetk? $file]} return
+proc ::critcl::cdefs::SetupTkInit {fd context} {
+    debug.critcl/cdefs {}
+    if {![cdefs::usetk? $context]} return
     # From here on we are completing FOO_Init().
     # Tk setup first, if requested. (Tcl is already done).
-    puts $fd [common::cat [data::cfile pkginittk.c]]
+    puts $fd [common cat [data cfile pkginittk.c]]
     return
 }
 
-proc ::critcl::cdefs::SetupUserInit {fd file} {
+proc ::critcl::cdefs::SetupUserInit {fd context} {
+    debug.critcl/cdefs {}
     # User specified initialization code.
-    puts $fd "[cdefs::init? $file] "
+    puts $fd "[cdefs::init? $context] "
     return
 }
 
-proc ::critcl::cdefs::SetupTclStubs {fd file placestubs} {
-    set mintcl [usetcl? $file]
+proc ::critcl::cdefs::SetupTclStubs {fd context placestubs} {
+    debug.critcl/cdefs {}
+    set mintcl [usetcl? $context]
 
     if {$placestubs} {
 	# Put full stubs definitions into the code, which can be
 	# either the bracket generated for a -pkg, or the package
 	# itself, build in mode "compile & run".
-	set stubs     [data::tcl-decls      $mintcl]
-	set platstubs [data::tcl-plat-decls $mintcl]
-	puts -nonewline $fd [subst [common::cat [data::cfile stubs.c]]]
+	set stubs     [data tcl-decls      $mintcl]
+	set platstubs [data tcl-plat-decls $mintcl]
+	puts -nonewline $fd [subst [common cat [data cfile stubs.c]]]
 	#                    ^=> mintcl, stubs, platstubs
     } else {
 	# Declarations only, for linking, in the sub-packages.
-	puts -nonewline $fd [subst [common::cat [data::cfile stubs_e.c]]]
+	puts -nonewline $fd [subst [common cat [data cfile stubs_e.c]]]
 	#                    ^=> mintcl
     }
     return
 }
 
-proc ::critcl::cdefs::SetupTkStubs {fd file} {
-    if {![cdefs::usetk? $file]} return
-    puts -nonewline $fd [common::cat [data::cfile tkstubs.c]]
+proc ::critcl::cdefs::SetupTkStubs {fd context} {
+    debug.critcl/cdefs {}
+    if {![cdefs::usetk? $context]} return
+    puts -nonewline $fd [common cat [data cfile tkstubs.c]]
     return
 }
 
-proc ::critcl::cdefs::CommandSetup {fd ref} {
-    set cd [Get $ref funcdata]
-    set dp [Get $ref fundelete]
+proc ::critcl::cdefs::CommandSetup {fd context} {
+    debug.critcl/cdefs {}
+    set cd [Get $context funcdata]
+    set dp [Get $context fundelete]
 
     # Take the collected functions and register them as Tcl commands.
-    foreach cname [lsort -dict [funcs? $ref]] {
+    foreach cname [lsort -dict [funcs? $context]] {
 	set fcd [expr {[dict exists $cd $cname] ? [dict get $cd $cname] : "NULL"}]
 	set fdp [expr {[dict exists $dp $cname] ? [dict get $dp $cname] : 0}]
 
@@ -623,10 +675,11 @@ proc ::critcl::cdefs::CommandSetup {fd ref} {
     return
 }
 
-proc ::critcl::ExportDefines {fd ref defines} {
+proc ::critcl::ExportDefines {fd context defines} {
+    debug.critcl/cdefs {}
     # Setup of the variables serving up defined constants, if any
-    if {![cdefs::has-const $ref]} return
-    set map [Get $ref const]
+    if {![cdefs::has-const $context]} return
+    set map [Get $context const]
 
     # Generate Tcl_ObjSetVar2 commands exporting the constants
     # (defines and/or enums) and their values as Tcl variables.
@@ -655,6 +708,7 @@ proc ::critcl::ExportDefines {fd ref defines} {
 }
 
 proc ::critcl::cdefs::NamespaceOfConst {map constname nsvar} {
+    debug.critcl/cdefs {}
     foreach {pattern namespace} $map {
 	if {![string match $pattern $constname]} continue
 	upvar 1 $nsvar nsresult
@@ -665,6 +719,7 @@ proc ::critcl::cdefs::NamespaceOfConst {map constname nsvar} {
 }
 
 proc ::critcl::cdefs::+Path {hv pv path} {
+    debug.critcl/cdefs {}
     upvar 1 $hv has $pv pathlist
     if {[dict exists $has $dir]} continue
     dict set has $dir yes
@@ -672,30 +727,33 @@ proc ::critcl::cdefs::+Path {hv pv path} {
     return
 }
 
-proc ::critcl::cdefs::Get {ref dbvar {default {}}} {
+proc ::critcl::cdefs::Get {context dbvar {default {}}} {
+    debug.critcl/cdefs {}
     variable $dbvar
     upvar 0  $dbvar data
-    if {![dict exists $data $ref]} { return $default }
-    return [[dict get $data $ref]
+    if {![dict exists $data $context]} { return $default }
+    return [[dict get $data $context]
 }
 
-proc ::critcl::cdefs::Has {ref dbvar} {
+proc ::critcl::cdefs::Has {context dbvar} {
+    debug.critcl/cdefs {}
     variable $dbvar
     upvar 0  $dbvar data
-    return [dict exists $data $ref]
+    return [dict exists $data $context]
 }
 
-proc ::critcl::cdefs::FlagsAndPatterns {ref dbvar words options} {
+proc ::critcl::cdefs::FlagsAndPatterns {context dbvar words options} {
+    debug.critcl/cdefs {}
     # words = list (flag|glob-pattern...) = list (flag|file...)
     # XXX TODO: options = list of allowed flags
     if {![llength $words]} return
     variable $dbvar
     upvar 0  $dbvar options
-    initialize $ref
+    initialize $context
 
-    uuid::add $ref .$dbvar $words
+    uuid add $context .$dbvar $words
 
-    set base [file dirname $ref]
+    set base [file dirname $context]
 
     # words is intermingled flags (-*) and glob-patterns.  Flags are
     # passed through unchanged. Patterns are expanded.  Contents
@@ -704,12 +762,12 @@ proc ::critcl::cdefs::FlagsAndPatterns {ref dbvar words options} {
     foreach flagOrPattern $words {
 	if {[string match "-*" $flagOrPattern]} {
 	    # Flag, pass unchanged
-	    dict lappend options $ref $flagOrPattern
+	    dict lappend options $context $flagOrPattern
 	} else {
 	    # Pattern. Expand, pass the found files.
-	    foreach path [common::expand-glob $base $flagOrPattern] {
-		uuid::add $ref .$dbvar.$path [common::cat $path]
-		dict lappend options $ref $path
+	    foreach path [common expand-glob $base $flagOrPattern] {
+		uuid add $context .$dbvar.$path [common cat $path]
+		dict lappend options $context $path
 	    }
 	}
     }
@@ -717,11 +775,13 @@ proc ::critcl::cdefs::FlagsAndPatterns {ref dbvar words options} {
 }
 
 proc ::critcl::cdefs::Error {msg args} {
+    debug.critcl/cdefs {}
     set code [linsert $args 0 CRITCL CDEFS]
     return -code error -errorcode $code $msg
 }
 
 proc ::critcl::cdefs::TeapotPlatform {} {
+    debug.critcl/cdefs {}
     # Platform identifier HACK. Most of the data in critcl is based on
     # 'platform::generic'. The TEApot MD however uses
     # 'platform::identify' with its detail information (solaris kernel
@@ -739,11 +799,6 @@ proc ::critcl::cdefs::TeapotPlatform {} {
 
     return $platform
 }
-
-# # ## ### ##### ######## ############# #####################
-## Initialization
-
-# -- none --
 
 # # ## ### ##### ######## ############# #####################
 ## Ready
