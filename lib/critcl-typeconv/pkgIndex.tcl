@@ -1,1 +1,1 @@
-package ifneeded critcl::typeconv 1 [list source [file join $dir typeconv.tcl]]
+package ifneeded critcl::typeconv 4 [list source [file join $dir typeconv.tcl]]

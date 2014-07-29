@@ -1,1 +1,1 @@
-package ifneeded critcl::ccconfig 1 [list source [file join $dir ccconfig.tcl]]
+package ifneeded critcl::cc::config 4 [list source [file join $dir ccconfig.tcl]]

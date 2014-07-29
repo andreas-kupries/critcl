@@ -17,8 +17,6 @@ strict digraph {
 
 	//	Stateless functionality.
 	common		[];				// Critcl specific general utilities
-	dict84		[];				// Forward compatible dict command for 8.4
-	lassign84	[];				// Forward compatible lassign command for 8.4
 	//	Only transient state during operation.
 	scan		[];				// Static scanner of .(cri)tcl files
 
@@ -59,21 +57,8 @@ strict digraph {
 	//G common		->	scan;
 	data		->	common;
 	data		->	cdefs;
-	//G dict84		->	api;
-	//G dict84		->	ccconfig;
-	//G dict84		->	cdefs;
-	//G dict84		->	meta;
-	//G dict84		->	scan;
-	//G dict84		->	tags;
-	//G dict84		->	usrconfig;
-	//G dict84		->	uuid;
 	gopt		->	at;
 	gopt		->	cdefs;
-	//G lassign84	->	api;
-	//G lassign84	->	at;
-	//G lassign84	->	ccconfig;
-	//G lassign84	->	scan;
-	//G lassign84	->	typeconv;
 	//T meta		->	api;
 	meta		->	cdefs;
 	meta		->	scan;
@@ -92,9 +77,7 @@ strict digraph {
 	//T data		->	cc;
 	//T gopt		->	cc;
 	log		->	cc;
-	//T meta		->	cc;
 	//T tags		->	cc;
-	//T uuid		->	cc;
 
 	api		->	core;
 	at		->	core;

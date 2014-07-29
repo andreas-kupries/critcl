@@ -19,16 +19,18 @@
 # # ## ### ##### ######## ############# #####################
 ## Requirements
 
+package require Tcl 8.5
+package require debug          ;# debug narrative
 package provide critcl::app [package require critcl]
 package require cmdline
 
-# It is expected here that critcl already imported platform, or an
-# equivalent package, i.e. the critcl::platform fallback. No need to
-# do it again.
+# It is expected here that critcl already imported 'platform', or an
+# equivalent package (i.e. the 'critcl::platform' fallback). No need
+# to do it again.
 #package require platform
 
-# Note: We can assume here that the commands lassign and dict are
-# available. The critcl package has made sure of that.
+debug level  critcl/app
+debug prefix critcl/app {[debug caller] | }
 
 namespace eval ::critcl::app {}
 
@@ -62,7 +64,7 @@ proc package {option args} {
         }
     }
 
-    return [eval [linsert $args 0 ::critcl::app::__package $option]]
+    return [::critcl::app::__package $option {*}$args]
 }
 
 # # ## ### ##### ######## ############# #####################
@@ -72,6 +74,7 @@ proc package {option args} {
 ## catch).
 
 proc ::critcl::error {msg} {
+    debug.critcl/app {}
     global argv0
     puts stderr "$argv0 error: $msg"
     flush stderr
@@ -79,6 +82,7 @@ proc ::critcl::error {msg} {
 }
 
 proc ::critcl::msg {args} {
+    debug.critcl/app {}
     switch -exact -- [llength $args] {
 	1 {
 	    puts stdout [lindex $args 0]
@@ -102,6 +106,7 @@ proc ::critcl::msg {args} {
 # # ## ### ##### ######## ############# #####################
 
 proc ::critcl::app::main {argv} {
+    debug.critcl/app {}
     Cmdline $argv
     switch -exact -- $v::mode {
 	pkg   { DoPackage }
@@ -117,13 +122,14 @@ proc ::critcl::app::main {argv} {
 # # ## ### ##### ######## ############# #####################
 
 proc ::critcl::app::DoPackage {} {
+    debug.critcl/app {}
     # When creating a package use a transient cache which is not in
     # conflict with "compile & run", or other instances of the critcl
     # application.
 
     set pkgcache [PackageCache]
-    critcl::cache $pkgcache
-    critcl::fastuuid
+    critcl cache def $pkgcache
+    critcl uuid fast
 
     ProcessInputPackage
     StopOnFailed
@@ -148,6 +154,7 @@ proc ::critcl::app::DoPackage {} {
 }
 
 proc ::critcl::app::DoCache {} {
+    debug.critcl/app {}
     ProcessInputCache
     StopOnFailed
 
@@ -156,6 +163,7 @@ proc ::critcl::app::DoCache {} {
 }
 
 proc ::critcl::app::DoTEA {} {
+    debug.critcl/app {}
     ProcessInputTEA
     StopOnFailed
 
@@ -169,18 +177,21 @@ proc ::critcl::app::DoTEA {} {
 # # ## ### ##### ######## ############# #####################
 
 proc ::critcl::app::CacheClear {pkgcache} {
+    debug.critcl/app {}
     if {$v::keep} return
     file delete -force $pkgcache
     return
 }
 
 proc ::critcl::app::CacheNote {} {
+    debug.critcl/app {}
     if {!$v::keep} return
-    ::critcl::print stderr "Files left in [critcl::cache]"
+    ::critcl print stderr "Files left in [critcl cache get]"
     return
 }
 
 proc ::critcl::app::PackageCache {} {
+    debug.critcl/app {}
     if {$v::cache ne {}} {
 	return $v::cache
     }
@@ -188,19 +199,21 @@ proc ::critcl::app::PackageCache {} {
 }
 
 proc ::critcl::app::StopOnFailed {} {
+    debug.critcl/app {}
     if {!$v::failed} return
-    ::critcl::print stderr "Files left in [critcl::cache]"
-    ::critcl::print stderr "FAILURES $v::failed"
-    ::critcl::print stderr "FAILED:  [join $v::borken "\nFAILED:  "]"
-    ::critcl::print stderr "FAILED   [join [split [join $v::log \n\n] \n] "\nFAILED   "]"
+    ::critcl print stderr "Files left in [critcl cache get]"
+    ::critcl print stderr "FAILURES $v::failed"
+    ::critcl print stderr "FAILED:  [join $v::borken "\nFAILED:  "]"
+    ::critcl print stderr "FAILED   [join [split [join $v::log \n\n] \n] "\nFAILED   "]"
     exit 1 ; #return -code return
 }
 
 proc ::critcl::app::Cmdline {argv} {
+    debug.critcl/app {}
     variable options
 
     # Rationalized application name. Direct user is the intercepted
-    # '::critcl::error' command.
+    # '::critcl error' command.
     set ::argv0 [cmdline::getArgv0]
 
     # Semi-global application configuration.
@@ -253,7 +266,7 @@ proc ::critcl::app::Cmdline {argv} {
 	}
 	switch -exact -- $opt {
 	    v - -version {
-		::critcl::print [package present critcl]
+		::critcl print [package present critcl]
 		::exit 0
 	    }
 	    I          { AddIncludePath $arg }
@@ -263,15 +276,15 @@ proc ::critcl::app::Cmdline {argv} {
 	    config     { set configfile $arg }
 	    debug      {
 		lappend v::debug $arg
-		#critcl::config lines 0
+		#critcl config lines 0
 	    }
 	    force      {
-		critcl::config force 1
-		::critcl::print stderr "Compilation forced"
+		critcl config force 1
+		::critcl print stderr "Compilation forced"
 	    }
 	    keep       {
-		critcl::config keepsrc 1
-		#critcl::config lines 0
+		critcl config keepsrc 1
+		#critcl config lines 0
 		set v::keep 1
 	    }
 	    help       { incr help }
@@ -326,7 +339,7 @@ proc ::critcl::app::Cmdline {argv} {
 	if {![file exists $configfile]} {
 	    Usate "Can't read configuration file $configfile"
 	}
-	critcl::readconfig $configfile
+	critcl cc readconfig $configfile
     }
 
     # And switch to the user-provided target platform.
@@ -338,40 +351,40 @@ proc ::critcl::app::Cmdline {argv} {
 	    Usage "-target is missing file argument"
 	}
 
-	set match [critcl::chooseconfig $target 1]
+	set match [critcl cc chooseconfig $target 1]
 
 	if {[llength $match] == 1} {
-	    critcl::setconfig [lindex $match 0]
+	    critcl cc setconfig [lindex $match 0]
 	} else {
 	    Usage "multiple targets matched : $match"
 	}
     }
 
     if {($v::mode eq "pkg") || $show} {
-	critcl::crosscheck
+	critcl cc crosscheck
     }
 
     if {$cleaning} {
-	critcl::clean_cache
+	critcl cache clear
     }
 
     if {$show} {
 	if {$v::mode eq "pkg"} {
-	    critcl::cache [PackageCache]
+	    critcl cache def [PackageCache]
 	}
-	critcl::showconfig stdout
+	critcl cc showconfig stdout
     }
 
     if {$showall} {
-	critcl::showallconfig stdout
+	critcl cc showallconfig stdout
     }
 
     if {$showtarget} {
-	::critcl::print [critcl::targetplatform]
+	::critcl print [critcl cc targetplatform]
     }
 
     if {$targets} {
-	::critcl::print [critcl::knowntargets]
+	::critcl print [critcl cc knowntargets]
     }
 
     if {$show || $showall || $targets || $showtarget} {
@@ -458,10 +471,10 @@ proc ::critcl::app::Cmdline {argv} {
 	}
 
 	if {$addext || ([file extension $v::shlname] eq "")} {
-	    append v::shlname [critcl::sharedlibext]
+	    append v::shlname [critcl cc sharedlibext]
 	}
 
-	critcl::config combine dynamic
+	critcl config combine dynamic
 
 	if {![llength $v::src]} {
 	    Usage "No input files"
@@ -471,45 +484,50 @@ proc ::critcl::app::Cmdline {argv} {
     # Determine the platform to use by the build backend, based on
     # actual platform we are on and the user's chosen target, if any.
 
-    set v::actualplatform [::critcl::actualtarget]
+    set v::actualplatform [::critcl cc actualtarget]
     return
 }
 
 proc ::critcl::app::AddIncludePath {path} {
-    set dirs [critcl::config I]
+    debug.critcl/app {}
+    set dirs [critcl config I]
     lappend dirs [file normalize $path]
-    critcl::config I $dirs
+    critcl config I $dirs
     return
 }
 
 proc ::critcl::app::AddLibraryPath {path} {
-    set dirs [critcl::config L]
+    debug.critcl/app {}
+    set dirs [critcl config L]
     lappend dirs [file normalize $path]
-    critcl::config L $dirs
+    critcl config L $dirs
     return
 }
 
 proc ::critcl::app::Log {text} {
+    debug.critcl/app {}
     if {!$v::verbose} return
-    ::critcl::print -nonewline $text
+    ::critcl print -nonewline $text
     flush stdout
     return
 }
 
 proc ::critcl::app::LogLn {text} {
+    debug.critcl/app {}
     if {!$v::verbose} return
-    ::critcl::print $text
+    ::critcl print $text
     flush stdout
     return
 }
 
 proc ::critcl::app::Usage {args} {
+    debug.critcl/app {}
     global argv0
     if {[llength $args]} {
-	::critcl::print stderr "$argv0 error: [join $args]"
+	::critcl print stderr "$argv0 error: [join $args]"
     }
 
-    ::critcl::print stderr [string map [list @ $argv0] {To compile and run a tcl script
+    ::critcl print stderr [string map [list @ $argv0] {To compile and run a tcl script
 	@ [-force] [-keep] [-cache dir] file[.tcl]
 
 To compile and build a package
@@ -542,13 +560,16 @@ You can display the built-in help wiki on most platforms using:
 }
 
 proc ::critcl::app::Help {} {
+    # XXX FIXME new help, no wiki(t), no metakit, no VFS
+
+    debug.critcl/app {}
     if {[catch {package require Mk4tcl} msg] ||
 	[catch {package require Wikit} msg]} {
-	::critcl::print $msg
+	::critcl print $msg
         set txt "Couldn't load the Critcl help Wiki\n"
         append txt "To display the Critcl help wiki run \"critcl\" "
         append txt "without any options.\n"
-        ::critcl::print $txt
+        ::critcl print $txt
         exit
     } else {
         Wikit::init [file join $::starkit::topdir doc critcl.tkd]
@@ -556,6 +577,7 @@ proc ::critcl::app::Help {} {
 }
 
 proc ::critcl::app::Selftest {} {
+    debug.critcl/app {}
     foreach t [glob -directory [file join $starkit::topdir test] *.tst] {
         source $t
     }
@@ -563,6 +585,7 @@ proc ::critcl::app::Selftest {} {
 }
 
 proc ::critcl::app::ProcessInputPackage {} {
+    debug.critcl/app {}
     # Main loop. This processes the input files, one by one.
 
     set v::debug [lsort -unique $v::debug]
@@ -585,7 +608,7 @@ proc ::critcl::app::ProcessInputPackage {} {
     set v::inits      {}  ;# Init function names for the pieces, list.
     set v::meta       {}  ;# All meta data declared by the input files.
 
-    cdefs::usetcl $v::shlname 8.4
+    cdefs usetcl $v::shlname 8.4
 
     # Other loop status information.
 
@@ -593,10 +616,10 @@ proc ::critcl::app::ProcessInputPackage {} {
     set missing 0
 
     if {[llength $v::src]} {
-	LogLn "Config:   [::critcl::targetconfig]"
-	LogLn "Build:    [::critcl::buildplatform]"
+	LogLn "Config:   [::critcl cc targetconfig]"
+	LogLn "Build:    [::critcl cc buildplatform]"
 
-	set t [::critcl::targetplatform]
+	set t [::critcl cc targetplatform]
 	if {$v::actualplatform ne $t} {
 	    LogLn "Target:   $v::actualplatform (by $t)"
 	} else {
@@ -635,7 +658,7 @@ proc ::critcl::app::ProcessInputPackage {} {
 	# automatically.
 
 	InContext $fn {
-	    set failed [critcl::cbuild-pkgpart $fn]
+	    set failed [critcl cbuild-pkgpart $fn]
 	}
 
 	incr v::failed $failed
@@ -659,41 +682,41 @@ proc ::critcl::app::ProcessInputPackage {} {
 	# used by and underneath of critcl.
 
 	# Tk usage is the max over all parts.
-	if {[cdefs::usetk? $fn]} { cdefs::usetk $v::shlname }
+	if {[cdefs usetk? $fn]} { cdefs usetk $v::shlname }
 
 	# The overall minimum version of Tcl required by the combined
 	# packages is the maximum over all of their minima.
-	cdefs::usetcl $v::shlname \
-	    [Vmax [cdefs::usetcl? $v::shlname] [cdefs::usetcl? $fn]]
+	cdefs usetcl $v::shlname \
+	    [Vmax [cdefs usetcl? $v::shlname] [cdefs usetcl? $fn]]
 
 	# Accumulate companions, flags, etc.
-	cdefs::tcls    $v::shlname [cdefs::tcls?    $fn]
-	cdefs::preload $v::shlname [cdefs::preload? $fn]
-	cdefs::ldflags $v::shlname [cdefs::ldflags? $fn]
-	cdefs::libs    $v::shlname [cdefs::libs?    $fn]
-	cdefs::objs    $v::shlname [cdefs::objs?    $fn]
+	cdefs tcls    $v::shlname [cdefs tcls?    $fn]
+	cdefs preload $v::shlname [cdefs preload? $fn]
+	cdefs ldflags $v::shlname [cdefs ldflags? $fn]
+	cdefs libs    $v::shlname [cdefs libs?    $fn]
+	cdefs objs    $v::shlname [cdefs objs?    $fn]
 
 	# Header files for stubs tables, see ExportHeaders
-	critcl::lappendlist v::headers [tags::get $fn apiheader]
+	critcl lappendlist v::headers [tags get $fn apiheader]
 
 	# XXX FIXME get rid of cresults in entirety
 	# XXX FIXME r - license
 	# XXX FIXME r - initname
-	array set r [critcl::cresults $fn]
+	array set r [critcl cresults $fn]
 
 	append v::license [License $f $r(license)]
 
-	cdefs::init $v::shlname \
+	cdefs init $v::shlname \
 	    "    if ($r(initname)_Init(ip) != TCL_OK) return TCL_ERROR;\n" \
 	    "extern Tcl_AppInitProc $r(initname)_Init;\n"
 
-	lappend v::pkgs  [meta::gets $fn name] ;# CreatePackageIndex, IndexCommand, LoadCommand
+	lappend v::pkgs  [meta gets $fn name] ;# CreatePackageIndex, IndexCommand, LoadCommand
 	lappend v::inits $r(initname)          ;# LoadCommand
-	lappend v::meta  [meta::getall $fn]    ;# CreateTeapotMetaData
+	lappend v::meta  [meta getall $fn]    ;# CreateTeapotMetaData
     }
 
     if {$missing} {
-	critcl::error  "Missing files: $missing, aborting"
+	critcl error  "Missing files: $missing, aborting"
     }
 
     # Reduce package and init function to the first pieces. Easier to
@@ -707,6 +730,7 @@ proc ::critcl::app::ProcessInputPackage {} {
 }
 
 proc ::critcl::app::ProcessInputTEA {} {
+    debug.critcl/app {}
     # Main loop. This processes the input files, one by one.
     # Other loop status information.
 
@@ -741,7 +765,7 @@ proc ::critcl::app::ProcessInputTEA {} {
 	# use, and the set of user-specified configuration flags.
 
 	LogLn ""
-	array set r [critcl::scan $fn]
+	array set r [critcl scan $fn]
 
 	lappend v::cfiles $f $r(files)
 	if {$r(org) ne {}} {
@@ -751,10 +775,10 @@ proc ::critcl::app::ProcessInputTEA {} {
 	    lappend v::ver $r(version)
 	}
 	if {$r(imported) ne {}} {
-	    critcl::lappendlist v::imported $r(imported)
+	    critcl lappendlist v::imported $r(imported)
 	}
 	if {$r(config) ne {}} {
-	    critcl::lappendlist v::config $r(config)
+	    critcl lappendlist v::config $r(config)
 	}
 	if {$r(meta) ne {}} {
 	    lappend v::meta $r(meta)
@@ -762,12 +786,13 @@ proc ::critcl::app::ProcessInputTEA {} {
     }
 
     if {$missing} {
-	critcl::error  "Missing files: $missing, aborting"
+	critcl error  "Missing files: $missing, aborting"
     }
     return
 }
 
 proc ::critcl::app::ProcessInputCache {} {
+    debug.critcl/app {}
     # Main loop. This processes the input files, one by one.
 
     set v::debug [lsort -unique $v::debug]
@@ -782,10 +807,10 @@ proc ::critcl::app::ProcessInputCache {} {
     set missing 0
 
     if {[llength $v::src]} {
-	LogLn "Config:   [::critcl::targetconfig]"
-	LogLn "Build:    [::critcl::buildplatform]"
+	LogLn "Config:   [::critcl cc targetconfig]"
+	LogLn "Build:    [::critcl cc buildplatform]"
 
-	set t [::critcl::targetplatform]
+	set t [::critcl cc targetplatform]
 	if {$v::actualplatform ne $t} {
 	    LogLn "Target:   $v::actualplatform (by $t)"
 	} else {
@@ -813,7 +838,7 @@ proc ::critcl::app::ProcessInputCache {} {
 	# automatically.
 
 	InContext $fn {
-	    set failed [critcl::failed]
+	    set failed [critcl failed]
 	}
 	incr v::failed $failed
 
@@ -826,13 +851,14 @@ proc ::critcl::app::ProcessInputCache {} {
     }
 
     if {$missing} {
-	critcl::error "Missing files: $missing, aborting"
+	critcl error "Missing files: $missing, aborting"
     }
 
     return
 }
 
 proc ::critcl::app::LocateFile {f} {
+    debug.critcl/app {}
     # Import loop state
     upvar 1 missing missing first first
 
@@ -846,8 +872,8 @@ proc ::critcl::app::LocateFile {f} {
 	    set found [file exists $fn]
 	}
 	if {!$found} {
-	    if {!$first} { ::critcl::print stderr "" }
-	    ::critcl::print stderr "$f doesn't exist"
+	    if {!$first} { ::critcl print stderr "" }
+	    ::critcl print stderr "$f doesn't exist"
 	    incr missing
 	    continue
 	}
@@ -859,6 +885,7 @@ proc ::critcl::app::LocateFile {f} {
 }
 
 proc ::critcl::app::PropagateFlags {fn} {
+    debug.critcl/app {}
     # XXX FIXME Use direct access of low-level databases - gopt,
     # XXX FIXME userconfig. Doing so avoids the need to fiddle
     # XXX FIXME with 'info script', as we can specifiy the context
@@ -870,7 +897,7 @@ proc ::critcl::app::PropagateFlags {fn} {
 	    # information from the application's commandline and force
 	    # things here, faking the proper path information.
 	    foreach v $v::debug {
-		critcl::debug $v
+		critcl debug $v
 	    }
 	}
 
@@ -883,7 +910,7 @@ proc ::critcl::app::PropagateFlags {fn} {
 	    # used by the file.
 	    foreach {k v} $v::uc {
 		#puts UC($k)=|$v|
-		critcl::userconfig set $k $v
+		critcl userconfig set $k $v
 	    }
 	}
     }
@@ -891,6 +918,7 @@ proc ::critcl::app::PropagateFlags {fn} {
 }
 
 proc ::critcl::app::Execute {fn} {
+    debug.critcl/app {}
     # Execute the input file and collect all the crit(i)c(a)l :)
     # information. Ensure that critcl's namespace introspection is
     # done correctly, and not tricked into thinking that 'critcl::app'
@@ -898,34 +926,36 @@ proc ::critcl::app::Execute {fn} {
 
     uplevel #0 [list source $fn]
 
-    if {![critcl::cnothingtodo $fn]} return
+    if {![critcl cnothingtodo $fn]} return
 
-    ::critcl::print stderr "nothing to build for $f"
+    ::critcl print stderr "nothing to build for $f"
     return -code continue
 }
 
 proc ::critcl::app::PostBuild {fn} {
+    debug.critcl/app {}
     upvar 1 failed failed
 
     if {$failed} {
 	lappend v::borken $f
-	lappend v::log    [tags::get $fn log]
+	lappend v::log    [tags get $fn log]
 	Log "(FAILED) "
-    } elseif {[tags::has $fn warnings]} {
+    } elseif {[tags has $fn warnings]} {
 	# Note that there might be warnings to print even if the build
 	# succeeded.
-	set warnings [tags::get $fn warnings]
+	set warnings [tags get $fn warnings]
 	if {[llength $warnings]} {
-	    ::critcl::print stderr "\n\nWarning  [join $warnings "\nWarning  "]"
+	    ::critcl print stderr "\n\nWarning  [join $warnings "\nWarning  "]"
 	}
     }
 
-    tags::unset $file log
-    tags::unset $file warnings
+    tags unset $file log
+    tags unset $file warnings
     return
 }
 
 proc ::critcl::app::InContext {fn script} {
+    debug.critcl/app {}
     set save [info script]
     info script $fn
 
@@ -935,6 +965,7 @@ proc ::critcl::app::InContext {fn script} {
 }
 
 proc ::critcl::app::Vmax {a b} {
+    debug.critcl/app {}
     if {[package vcompare $a $b] >= 0} {
 	return $a
     } else {
@@ -943,6 +974,7 @@ proc ::critcl::app::Vmax {a b} {
 }
 
 proc ::critcl::app::Max {a b} {
+    debug.critcl/app {}
     if {$a >= $b} {
 	return $a
     } else {
@@ -951,12 +983,14 @@ proc ::critcl::app::Max {a b} {
 }
 
 proc ::critcl::app::License {file text} {
+    debug.critcl/app {}
     if {$text eq "<<Undefined>>"} { return {} }
     return "\n\[\[ [file tail $file] \]\] __________________\n$text"
 }
 
 proc ::critcl::app::BuildBracket {} {
-    ::critcl::print "\nLibrary:  [file tail $v::shlname]"
+    debug.critcl/app {}
+    ::critcl print "\nLibrary:  [file tail $v::shlname]"
 
     # The overarching initialization code, the bracket, has no real
     # file behind it. Fake it based on the destination shlib, this
@@ -968,10 +1002,10 @@ proc ::critcl::app::BuildBracket {} {
 	# databases, put into them by ProcessInputPackage as part of
 	# handling each part.
 
-	critcl::config combine ""
+	critcl config combine ""
 
 	# And build everything.
-	set failed [critcl::cbuild-pkgmain "" 0]
+	set failed [critcl cbuild-pkgmain "" 0]
 
 	incr v::failed $failed
 	if {$failed} {
@@ -994,7 +1028,7 @@ proc ::critcl::app::PlaceShlib {} {
 
     # NOTE that the fake 'info script location' set by 'BuildBracket'
     # is still in effect, making access to the build results easy.
-    set shlib [dict get [critcl::cresults] shlib]
+    set shlib [dict get [critcl cresults] shlib]
     file copy $shlib $v::shlname
 
     # For MSVC debug builds we get a separate debug info file.
@@ -1011,13 +1045,14 @@ proc ::critcl::app::PlaceShlib {} {
 }
 
 proc ::critcl::app::ExportHeaders {} {
+    debug.critcl/app {}
     set incdir [CreateIncludeDirectory]
 
     foreach dir $v::headers {
 	set stem [file tail $dir]
 	set dst  [file join $incdir $stem]
 
-	::critcl::print "Headers:  $v::incdir/$stem"
+	::critcl print "Headers:  $v::incdir/$stem"
 
 	file mkdir $dst
 	foreach f [glob -nocomplain -directory $dir *] {
@@ -1028,6 +1063,7 @@ proc ::critcl::app::ExportHeaders {} {
 }
 
 proc ::critcl::app::AssemblePackage {} {
+    debug.critcl/app {}
 
     # Validate and/or create the main destination directory L. The
     # package will become a subdirectory of L. See (x). And a platform
@@ -1048,7 +1084,7 @@ proc ::critcl::app::AssemblePackage {} {
     } else {
 	set dir $pkgdir
     }
-    ::critcl::print "Package:  $dir"
+    ::critcl print "Package:  $dir"
 
     file mkdir             $pkgdir
     file mkdir             $shlibdir
@@ -1077,6 +1113,7 @@ proc ::critcl::app::AssemblePackage {} {
 }
 
 proc ::critcl::app::CreatePackageIndex {shlibdir libname tsources} {
+    debug.critcl/app {}
     # Build pkgIndex.tcl
 
     set version [package present $v::pkgs]
@@ -1099,20 +1136,22 @@ proc ::critcl::app::CreatePackageIndex {shlibdir libname tsources} {
 }
 
 proc ::critcl::app::Mapping {} {
+    debug.critcl/app {}
     # Create the platform mapping for each of the platforms listed on
     # the Config platform line
 
-    set map    [critcl::getconfigvalue platform]
+    ## XXX FIXME No direct access to backend config!
+    set map    [critcl cc get platform]
     set minver [lindex $map 1]
 
     set plats  [list]
     foreach plat [lrange $map 2 end] {
-	set mapping($plat) [list [critcl::actualtarget] $minver]
+	set mapping($plat) [list [critcl cc actualtarget] $minver]
 	lappend plats $plat
     }
 
     if {[llength $plats]} {
-	::critcl::print "Platform: [join $plats {, }] $minver and later"
+	::critcl print "Platform: [join $plats {, }] $minver and later"
     }
 
     set map {}
@@ -1123,6 +1162,7 @@ proc ::critcl::app::Mapping {} {
 }
 
 proc ::critcl::app::Preload {shlibdir} {
+    debug.critcl/app {}
     if {![llength $v::preload]} { return {} }
 
     # Locate the external libraries declared for preloading and put
@@ -1143,14 +1183,15 @@ proc ::critcl::app::Preload {shlibdir} {
     # package as well.
 
     file copy -force \
-	[file join [critcl::cache] preload[critcl::sharedlibext]] \
+	[file join [critcl cache get] preload[critcl cc sharedlibext]] \
 	$shlibdir
 
-    ::critcl::print "Preload:  [join $preload {, }]"
+    ::critcl print "Preload:  [join $preload {, }]"
     return $preload
 }
 
 proc ::critcl::app::PreloadLocation {shlib} {
+    debug.critcl/app {}
     set searchpath [PreloadSearchPath $shlib]
 
     foreach path $searchpath {
@@ -1162,11 +1203,12 @@ proc ::critcl::app::PreloadLocation {shlib} {
     append msg " for target platform \"$v::actualplatform\";"
     append msg " searched for "
     append msg [linsert [join $searchpath {, }] end-1 and]
-    critcl::error $msg
+    critcl error $msg
     return
 }
 
 proc ::critcl::app::PreloadSearchPath {shlib} {
+    debug.critcl/app {}
 
     # Look for lib FOO as follows:
     # (1) FOO.so
@@ -1199,7 +1241,7 @@ proc ::critcl::app::PreloadSearchPath {shlib} {
 	}
     }
 
-    set ext [critcl::sharedlibext]	    
+    set ext [critcl cc sharedlibext]	    
     return [list \
 		$tail$ext \
 		[file join $dir $tail$ext] \
@@ -1207,11 +1249,13 @@ proc ::critcl::app::PreloadSearchPath {shlib} {
 }
 
 proc ::critcl::app::PackageGuard {v} {
+    debug.critcl/app {}
     return [string map [list @ $v] \
 	{if {![package vsatisfies [package provide Tcl] @]} {return}}]
 }
 
 proc ::critcl::app::IndexCommand {version libname tsources shlibdir} {
+    debug.critcl/app {}
     # We precompute as much as possible instead of wholesale defering
     # to the runtime and dynamic code. See ticket (38bf01b26e). That
     # makes it easier to debug the index command, as it is immediately
@@ -1223,6 +1267,7 @@ proc ::critcl::app::IndexCommand {version libname tsources shlibdir} {
 }
 
 proc ::critcl::app::LoadCommand {version libname tsources shlibdir} {
+    debug.critcl/app {}
     # New style. Precompute as much as possible.
 
     set map [Mapping]
@@ -1275,6 +1320,7 @@ proc ::critcl::app::LoadCommand {version libname tsources shlibdir} {
 }
 
 proc ::critcl::app::IndexCommandXXXXX {version libname tsources shlibdir} {
+    debug.critcl/app {}
     # Old style critcl. Ifneeded and loading is entirely and
     # dynamically handled in the runtime support code.
 
@@ -1285,6 +1331,7 @@ proc ::critcl::app::IndexCommandXXXXX {version libname tsources shlibdir} {
 }
 
 proc ::critcl::app::CreateLicenseTerms {pkgdir} {
+    debug.critcl/app {}
     # Create a license.terms file.
 
     if {$v::license eq ""} {
@@ -1299,8 +1346,9 @@ proc ::critcl::app::CreateLicenseTerms {pkgdir} {
 }
 
 proc ::critcl::app::CreateTeapotMetadata {pkgdir} {
+    debug.critcl/app {}
     if {![llength $v::meta]} {
-	critcl::error "Meta data missing"
+	critcl error "Meta data missing"
 	return
     }
 
@@ -1322,7 +1370,7 @@ proc ::critcl::app::CreateTeapotMetadata {pkgdir} {
 
     foreach k {name version platform} {
 	if {![dict exists $umd $k]} {
-	    critcl::error "Package $k missing in meta data"
+	    critcl error "Package $k missing in meta data"
 	}
     }
 
@@ -1383,8 +1431,9 @@ proc ::critcl::app::CreateTeapotMetadata {pkgdir} {
 }
 
 proc ::critcl::app::PlaceTclCompanionFiles {pkgdir} {
+    debug.critcl/app {}
     # Arrange for the companion Tcl source files (as specified by
-    # critcl::tsources) to be copied into the Tcl subdirectory (in
+    # critcl tsources) to be copied into the Tcl subdirectory (in
     # accordance with TIP 55)
 
     if {![llength $v::tsources]} { return {} }
@@ -1405,6 +1454,7 @@ proc ::critcl::app::PlaceTclCompanionFiles {pkgdir} {
 }
 
 proc ::critcl::app::CreateRuntimeSupport {pkgdir} {
+    debug.critcl/app {}
     # Create the critcl-rt.tcl file in the generated package. This
     # provides the code which dynamically assembles at runtime the
     # package loading code, i.e. the 'package ifneeded' command
@@ -1414,7 +1464,7 @@ proc ::critcl::app::CreateRuntimeSupport {pkgdir} {
     set runtime [file join $mydir runtime.tcl]
 
     if {![file exists $runtime]} {
-	critcl::error "can't find Critcl's package runtime support file \"runtime.tcl\""
+	critcl error "can't find Critcl's package runtime support file \"runtime.tcl\""
     }
 
     set fd [open $runtime]
@@ -1433,6 +1483,7 @@ proc ::critcl::app::CreateRuntimeSupport {pkgdir} {
 }
 
 proc ::critcl::app::DummyCritclPackage {} {
+    debug.critcl/app {}
     # This command provides conditional no-ops for any of the critcl
     # procedures exported by the regular package, so that a .tcl file
     # with embedded C can also be its own companion file declaring Tcl
@@ -1443,7 +1494,7 @@ proc ::critcl::app::DummyCritclPackage {} {
     # command individually to avoid trouble with different versions of
     # critcl which may export a differing set of procedures. This way
     # we will not miss anything just because we assumed that the
-    # presence of critcl::FOO also implies having critcl::BAR, or not.
+    # presence of critcl FOO also implies having critcl BAR, or not.
 
     # Append dummy Critcl procs
     # XXX This should be made conditional on the .tcl actually using itself as companion.
@@ -1463,7 +1514,7 @@ proc ::critcl::app::DummyCritclPackage {} {
 		set ::critcl::v::ignore($who) .
 		catch {
 		    package require critcl::tags
-		    tags::set $who ignore
+		    critcl tags set $who ignore
 		}
 	    }]
 		continue
@@ -1480,6 +1531,7 @@ proc ::critcl::app::DummyCritclPackage {} {
 }
 
 proc ::critcl::app::DummyCritclCommand {name result} {
+    debug.critcl/app {}
     append txt "if \{!\[llength \[info commands ::critcl::$name\]\]\} \{\n"
     append txt "    namespace eval ::critcl \{\}\n"
     append txt "    proc ::critcl::$name \{args\} \{$result\}\n"
@@ -1488,6 +1540,7 @@ proc ::critcl::app::DummyCritclCommand {name result} {
 }
 
 proc ::critcl::app::PlatformGeneric {} {
+    debug.critcl/app {}
     # Return a clone of the platform::generic command, from the
     # currently loaded platform package. The generated package cannot
     # assume that the deployment environment contains this package. To
@@ -1509,6 +1562,7 @@ proc ::critcl::app::PlatformGeneric {} {
 }
 
 proc ::critcl::app::AssembleTEA {} {
+    debug.critcl/app {}
     LogLn {Assembling TEA hierarchy...}
 
     set libdir  [CreateLibDirectory]
@@ -1540,9 +1594,10 @@ proc ::critcl::app::AssembleTEA {} {
 }
 
 proc ::critcl::app::CreateLibDirectory {} {
+    debug.critcl/app {}
     set libdir [file normalize $v::libdir]
     if {[file isfile $libdir]} {
-	critcl::error "can't package $v::shlname - $libdir is not a directory"
+	critcl error "can't package $v::shlname - $libdir is not a directory"
     } elseif {![file isdirectory $libdir]} {
 	file mkdir $libdir
     }
@@ -1551,9 +1606,10 @@ proc ::critcl::app::CreateLibDirectory {} {
 }
 
 proc ::critcl::app::CreateIncludeDirectory {} {
+    debug.critcl/app {}
     set incdir [file normalize $v::incdir]
     if {[file isfile $incdir]} {
-	::critcl::error "can't package $v::shlname headers - $incdir is not a directory"
+	::critcl error "can't package $v::shlname headers - $incdir is not a directory"
     } elseif {![file isdirectory $incdir]} {
 	file mkdir $incdir
     }
@@ -1562,6 +1618,7 @@ proc ::critcl::app::CreateIncludeDirectory {} {
 }
 
 proc ::critcl::app::PlaceTEASupport {pkgdir pkgname pversion porg} {
+    debug.critcl/app {}
     # Create the configure.in file in the generated TEA
     # hierarchy.
 
@@ -1575,7 +1632,7 @@ proc ::critcl::app::PlaceTEASupport {pkgdir pkgname pversion porg} {
     set tea [file join $mydir tea]
 
     if {![file exists $tea]} {
-	critcl::error "can't find Critcl's TEA support files"
+	critcl error "can't find Critcl's TEA support files"
     }
 
     # Copy the raw support files over.
@@ -1661,7 +1718,7 @@ proc ::critcl::app::PlaceTEASupport {pkgdir pkgname pversion porg} {
 	    set udef($oname) $uc
 	}
 	if {!$ok} {
-	    ::critcl::error "Conflicting user-specified configuration settings."
+	    ::critcl error "Conflicting user-specified configuration settings."
 	}
 
 	# Creating the --(with,enable,disable)-foo options for
@@ -1673,7 +1730,7 @@ proc ::critcl::app::PlaceTEASupport {pkgdir pkgname pversion porg} {
 	foreach uc $uclist {
 	    if {[llength $uc] < 4} {
 		lassign $uc oname odesc otype
-		set odefault [critcl::usr::config::default $otype]
+		set odefault [critcl usrconfig default $otype]
 	    } else {
 		lassign $uc oname odesc otype odefault
 	    }
@@ -1730,6 +1787,7 @@ proc ::critcl::app::PlaceTEASupport {pkgdir pkgname pversion porg} {
 }
 
 proc ::critcl::app::Map {path map} {
+    debug.critcl/app {}
     set fd  [open $path r]
     set txt [read $fd]
     close $fd
@@ -1744,6 +1802,7 @@ proc ::critcl::app::Map {path map} {
 }
 
 proc ::critcl::app::PlaceCritclSupport {pkgdir} {
+    debug.critcl/app {}
     LogLn "\tPlacing Critcl support..."
 
     set c [file join $pkgdir critcl]
@@ -1753,6 +1812,8 @@ proc ::critcl::app::PlaceCritclSupport {pkgdir} {
     # Locate the critcl packages, and their forward compatibility
     # support packages, and copy them into the TEA hierarchy for use
     # by the generated Makefile.
+
+    # XXX FIXME extent the set of supporting packages we have to copy.
     foreach {pkg dir} {
 	critcl           critcl
 	critcl::app      app-critcl
@@ -1790,7 +1851,7 @@ proc ::critcl::app::PlaceCritclSupport {pkgdir} {
 		       "foreach p \{\n\t[join $pfiles \n\t]\n\} \{" \
 		       {    source [file dirname [info script]]/lib/$p.tcl} \
 		       "\}" \
-		       {critcl::app::main $argv}] \n]
+		       {critcl app main $argv}] \n]
     close $fd
 
     # Add to set of included files.
@@ -1802,6 +1863,7 @@ proc ::critcl::app::PlaceCritclSupport {pkgdir} {
 }
 
 proc ::critcl::app::PlaceInputFiles {pkgdir} {
+    debug.critcl/app {}
     LogLn "\tPlacing input files..."
 
     # Main critcl source file(s), plus companions
@@ -1837,6 +1899,7 @@ proc ::critcl::app::PlaceInputFiles {pkgdir} {
 }
 
 proc ::critcl::app::LocateAutoconf {iswin} {
+    debug.critcl/app {}
     set ac [auto_execok autoconf]
 
     if {$ac eq {}} {
@@ -1850,7 +1913,7 @@ proc ::critcl::app::LocateAutoconf {iswin} {
 	set cmd [linsert $ac 0 exec]
     }
 
-    set v [lindex [split [eval [linsert $cmd end --version]] \n] 0 end]
+    set v [lindex [split [{*}$cmd --version] \n] 0 end]
 
     if {![package vsatisfies $v 2.59]} {
 	return -code error "$ac $v is not 2.59 or higher, as required"
@@ -1862,11 +1925,10 @@ proc ::critcl::app::LocateAutoconf {iswin} {
 # # ## ### ##### ######## ############# #####################
 
 namespace eval ::critcl::app {
-
-    namespace eval cdefs { namespace import ::critcl::cdefs::* }
-    namespace eval tags  { namespace import ::critcl::tags::*  }
-    namespace eval meta  { namespace import ::critcl::meta::*  }
-
+    namespace import ::critcl::cdefs
+    namespace import ::critcl::tags
+    namespace import ::critcl::meta
+    namespace import ::critcl::cc
 
     # Path of the application package directory.
     variable myself [file normalize [info script]]

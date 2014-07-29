@@ -18,12 +18,16 @@
 # # ## ### ##### ######## ############# #####################
 ## Requirements.
 
-package require Tcl 8.4            ;# Minimal supported Tcl runtime.
-package require lassign84          ;# Forward-compatible lassign command.
-package require critcl::at         ;# Management of #line pragmas in C code.
+package require Tcl 8.5        ;# Minimal supported Tcl runtime.
+package require critcl::at     ;# Management of #line pragmas in C code.
+package require debug          ;# debug narrative
 
-package provide  critcl::typeconv 1
+package provide critcl::typeconv 4
+
 namespace eval ::critcl::typeconv {}
+
+debug level  critcl/typeconv
+debug prefix critcl/typeconv {[debug caller] | }
 
 # # ## ### ##### ######## ############# #####################
 ## API commands.
@@ -38,6 +42,7 @@ namespace eval ::critcl::typeconv {}
 ## - Retrieve result type information: conversion C code
 
 proc ::critcl::typeconv::arg-def {name conversion {ctypevar {}} {ctypearg {}}} {
+    debug.critcl/typeconv {}
     variable atypevar
     variable atypearg
     variable aconv
@@ -64,8 +69,8 @@ proc ::critcl::typeconv::arg-def {name conversion {ctypevar {}} {ctypearg {}}} {
 	set csupport   $asupport($ctypevar)
     } else {
 	# XXX Use of new critcl::at package.
-	lassign [header $conversion] leadoffset conversion
-	set conversion "\t\{\n[caller! $leadoffset]\t[string trim $conversion] \}"
+	lassign [at header $conversion] leadoffset conversion
+	set conversion "\t\{\n[at caller! $leadoffset]\t[string trim $conversion] \}"
 
 	if {$ctypevar eq {}} {
 	    set ctypevar $name
@@ -83,6 +88,7 @@ proc ::critcl::typeconv::arg-def {name conversion {ctypevar {}} {ctypearg {}}} {
 }
 
 proc ::critcl::typeconv::arg-set-support {name code} {
+    debug.critcl/typeconv {}
     variable aconv
     variable asupport
 
@@ -102,6 +108,7 @@ proc ::critcl::typeconv::arg-set-support {name code} {
 }
 
 proc ::critcl::typeconv::result-def {name conversion {ctype {}}} {
+    debug.critcl/typeconv {}
     variable rtype
     variable rconv
 
@@ -119,8 +126,8 @@ proc ::critcl::typeconv::result-def {name conversion {ctype {}}} {
 	set ctype      $rtype($ctype)
     } else {
 	# XXX use critcl::at
-	lassign [header $conversion] leadoffset conversion
-	set conversion [caller! $leadoffset]\t[string trimright $conversion]
+	lassign [at header $conversion] leadoffset conversion
+	set conversion [at caller! $leadoffset]\t[string trimright $conversion]
 
 	if {$ctype eq {}} {
 	    set ctype $name
@@ -133,36 +140,42 @@ proc ::critcl::typeconv::result-def {name conversion {ctype {}}} {
 }
 
 proc ::critcl::typeconv::arg-get-var-type {type} {
+    debug.critcl/typeconv {}
     variable atypevar
     CheckArgument $type
     return $atypevar($type)
 }
 
 proc ::critcl::typeconv::arg-get-arg-type {type} {
+    debug.critcl/typeconv {}
     variable atypearg
     CheckArgument $type
     return $atypearg($type)
 }
 
 proc ::critcl::typeconv::arg-get-conv {type} {
+    debug.critcl/typeconv {}
     variable aconv
     CheckArgument $type
     return $aconv($type)
 }
 
 proc ::critcl::typeconv::arg-get-support {type} {
+    debug.critcl/typeconv {}
     variable asupport
     CheckArgument $type
     return $asupport($type)
 }
 
 proc ::critcl::typeconv::result-get-type {type} {
+    debug.critcl/typeconv {}
     variable rtype
     CheckResult $type
     return $rtype($type)
 }
 
 proc ::critcl::typeconv::result-get-code {type} {
+    debug.critcl/typeconv {}
     variable rconv
     CheckResult $type
     return $rconv($type)
@@ -173,8 +186,7 @@ proc ::critcl::typeconv::result-get-code {type} {
 
 namespace eval ::critcl::typeconv {
     # Make relevant #line management commands available.
-    namespace import ::critcl::at::header
-    namespace import ::critcl::at::caller!
+    namespace import ::critcl::at
 
     # Two databases, for argument- and result-types.
 
@@ -224,6 +236,7 @@ namespace eval ::critcl::typeconv {
 ## Internal support commands
 
 proc ::critcl::typeconv::CheckResult {type} {
+    debug.critcl/typeconv {}
     variable rconv
     if {[info exists rconv($type)]} return
     Error "Unknown result type '$type'" \
@@ -231,6 +244,7 @@ proc ::critcl::typeconv::CheckResult {type} {
 }
 
 proc ::critcl::typeconv::CheckArgument {type} {
+    debug.critcl/typeconv {}
     variable aconv
     if {[info exists aconv($type)]} return
     Error "Unknown argument type '$type'" \
@@ -238,16 +252,15 @@ proc ::critcl::typeconv::CheckArgument {type} {
 }
 
 proc ::critcl::typeconv::Error {msg args} {
+    debug.critcl/typeconv {}
     set code [linsert $args 0 CRITCL TYPECONV]
     return -code error -errorcode $code $msg
 }
 
 # # ## ### ##### ######## ############# #####################
 ## Initialization
-# - Self-destructing named procedure.
-# - We cannot assume to have [apply].
 
-proc ::critcl::typeconv::Initialize {} {
+apply {{} {
     # Define all the standard types provided by critcl.
 
     arg-def int {
@@ -408,11 +421,8 @@ proc ::critcl::typeconv::Initialize {} {
     result-def object = Tcl_Obj*
 
     # Done ...
-
-    rename ::critcl::typeconv::Initialize
     return
-}
-::critcl::typeconv::Initialize
+} ::critcl::typeconv}
 
 # # ## ### ##### ######## ############# #####################
 ## Ready

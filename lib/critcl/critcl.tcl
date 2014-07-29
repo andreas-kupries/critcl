@@ -6,12 +6,12 @@
 
 # CriTcl Core.
 
-package provide critcl 3.1.11
+package provide critcl 4
 
 # # ## ### ##### ######## ############# #####################
 ## Requirements.
 
-package require Tcl 8.4 ; # Minimal supported Tcl runtime.
+package require Tcl 8.5 ; # Minimal supported Tcl runtime.
 if {[catch {
     package require platform 1.0.2 ; # Determine current platform.
 }]} {
@@ -21,17 +21,15 @@ if {[catch {
     package require critcl::platform
 }
 
-# Ensure forward compatibility of commands defined in 8.5+.
-package require lassign84
-package require dict84
-
+# Extended tracking of source locations. Slower interp, better information for generated C code.
+# XXX FIXME do this only for critcl app, NOT compile & run.
 catch { interp debug {} -frame 1 }
-
 
 namespace eval ::critcl {}
 
 # # ## ### ##### ######## ############# #####################
 
+package require debug             ;# debug narrative
 package require critcl::at        ;# Management of #line pragmas.
 # API exported through critcl core
 # ::critcl::at::
@@ -45,7 +43,6 @@ package require critcl::at        ;# Management of #line pragmas.
 package require critcl::api       ;# Management of stubs tables. - XXX Dispatch only.
 package require critcl::cache     ;# Result cache access.
 package require critcl::cc        ;# Backend using an external CC for building, and linking.
-package require critcl::ccconfig  ;# CC configuration database for standard backend.
 package require critcl::cdefs     ;# General collection of C definitions.
 package require critcl::common    ;# General utility commands.
 package require critcl::data      ;# Access to templates and other supporting files.
@@ -56,6 +53,12 @@ package require critcl::typeconv  ;# Handling cproc data types.
 package require critcl::usrconfig ;# Management of user options. - XXX Dispatch only
 package require critcl::uuid      ;# UUID generation.
 package require critcl::who       ;# Management of current file.
+
+debug level  critcl/core
+debug prefix critcl/core {[debug caller] | }
+
+# XXX FIXME clashes - ensemble command api, usrconfig, cache vs
+# XXX FIXME regular commands for these (user visible API).
 
 # # ## ### ##### ######## ############# #####################
 ## Define a few shims for public critcl APIs which are now served by
@@ -69,21 +72,20 @@ interp alias {} ::critcl::argtype        {} ::critcl::typeconv::arg-def
 interp alias {} ::critcl::argtypesupport {} ::critcl::typeconv::arg-set-support
 interp alias {} ::critcl::resulttype     {} ::critcl::typeconv::result-def
 
-# XXX FIXME move these into critcl::cc. Allows a backend to provide fake information
-# I.e a tcc4tcl backend is compile&run only, no x-compile, no configs, etc ...
-interp alias {} ::critcl::readconfig     {} ::critcl::ccconfig::read
-interp alias {} ::critcl::setconfig      {} ::critcl::ccconfig::use
-interp alias {} ::critcl::showallconfig  {} ::critcl::ccconfig::showall
-interp alias {} ::critcl::showconfig     {} ::critcl::ccconfig::show
-interp alias {} ::critcl::getconfigvalue {} ::critcl::ccconfig::get
-interp alias {} ::critcl::knowntargets   {} ::critcl::ccconfig::known
-interp alias {} ::critcl::targetconfig   {} ::critcl::ccconfig::target
-interp alias {} ::critcl::targetplatform {} ::critcl::ccconfig::targetplatform
-interp alias {} ::critcl::buildplatform  {} ::critcl::ccconfig::buildplatform
-interp alias {} ::critcl::actualtarget   {} ::critcl::ccconfig::actual
-interp alias {} ::critcl::sharedlibext   {} ::critcl::ccconfig::sharedlibext
-interp alias {} ::critcl::crosscheck     {} ::critcl::ccconfig::crosscheck
+interp alias {} ::critcl::readconfig     {} ::critcl::cc::read
+interp alias {} ::critcl::setconfig      {} ::critcl::cc::use
+interp alias {} ::critcl::showallconfig  {} ::critcl::cc::showall
+interp alias {} ::critcl::showconfig     {} ::critcl::cc::show
+interp alias {} ::critcl::getconfigvalue {} ::critcl::cc::get
+interp alias {} ::critcl::knowntargets   {} ::critcl::cc::known
+interp alias {} ::critcl::targetconfig   {} ::critcl::cc::target
+interp alias {} ::critcl::targetplatform {} ::critcl::cc::targetplatform
+interp alias {} ::critcl::buildplatform  {} ::critcl::cc::buildplatform
+interp alias {} ::critcl::actualtarget   {} ::critcl::cc::actual
+interp alias {} ::critcl::sharedlibext   {} ::critcl::cc::sharedlibext
+interp alias {} ::critcl::crosscheck     {} ::critcl::cc::crosscheck
 
+# XXX FIXME Overwrites the ensemble command!!
 proc ::critcl::cache {{dir {}}} {
     if {[llength [info level 0]] == 2} {
 	cache::def $dir
@@ -95,6 +97,7 @@ proc ::critcl::cache {{dir {}}} {
 ## 
 
 proc ::critcl::buildrequirement {script} {
+    debug.critcl/core {}
     # In regular code this does nothing. It is a marker for
     # the static scanner to change under what key to record
     # the 'package require' found in the script.
@@ -105,6 +108,7 @@ proc ::critcl::buildrequirement {script} {
 ## Implementation -- API: Embed C Code
 
 proc ::critcl::ccode {text} {
+    debug.critcl/core {}
     set file [CheckEntry]
 
     lassign [at::header $text] leadoffset text
@@ -115,6 +119,7 @@ proc ::critcl::ccode {text} {
 }
 
 proc ::critcl::ccommand {name anames args} {
+    debug.critcl/core {}
     set file [CheckEntry]
     cdefs::initialize $file
 
@@ -218,12 +223,14 @@ proc ::critcl::cdata {name data} {
 }
 
 proc ::critcl::cdefines {defines {namespace "::"}} {
+    debug.critcl/core {}
     set file [CheckEntry]
     cdefs::defs $file $defines $namespace
     return
 }
 
 proc ::critcl::argoptional {adefs} {
+    debug.critcl/core {}
     set optional {}
 
     # A 1st argument matching "Tcl_Interp*" does not count as a user
@@ -244,6 +251,7 @@ proc ::critcl::argoptional {adefs} {
 }
 
 proc ::critcl::argdefaults {adefs} {
+    debug.critcl/core {}
     set defaults {}
 
     # A 1st argument matching "Tcl_Interp*" does not count as a user
@@ -262,6 +270,7 @@ proc ::critcl::argdefaults {adefs} {
 }
 
 proc ::critcl::argnames {adefs} {
+    debug.critcl/core {}
     set names {}
 
     # A 1st argument matching "Tcl_Interp*" does not count as a user
@@ -281,6 +290,7 @@ proc ::critcl::argnames {adefs} {
 }
 
 proc ::critcl::argcnames {adefs {interp ip}} {
+    debug.critcl/core {}
     set cnames {}
 
     if {[lindex $adefs 0] eq "Tcl_Interp*"} {
@@ -299,6 +309,7 @@ proc ::critcl::argcnames {adefs {interp ip}} {
 }
 
 proc ::critcl::argcsignature {adefs} {
+    debug.critcl/core {}
     # Construct the signature of the low-level C function.
 
     set cargs {}
@@ -322,6 +333,7 @@ proc ::critcl::argcsignature {adefs} {
 }
 
 proc ::critcl::argvardecls {adefs} {
+    debug.critcl/core {}
     # Argument variables, destinations for the Tcl -> C conversion.
 
     # A 1st argument matching "Tcl_Interp*" does not count as a user
@@ -342,6 +354,7 @@ proc ::critcl::argvardecls {adefs} {
 }
 
 proc ::critcl::argsupport {adefs} {
+    debug.critcl/core {}
     # Argument global support, outside/before function.
 
     # A 1st argument matching "Tcl_Interp*" does not count as a user
@@ -363,6 +376,7 @@ proc ::critcl::argsupport {adefs} {
 }
 
 proc ::critcl::argconversion {adefs {n 1}} {
+    debug.critcl/core {}
     # A 1st argument matching "Tcl_Interp*" does not count as a user
     # visible command argument.
     if {[lindex $adefs 0] eq "Tcl_Interp*"} {
@@ -423,6 +437,7 @@ proc ::critcl::argconversion {adefs {n 1}} {
 }
 
 proc ::critcl::cproc {name adefs rtype {body "#"} args} {
+    debug.critcl/core {}
     set file [CheckEntry]
     cdefs::initialize $file
 
@@ -509,6 +524,7 @@ proc ::critcl::cproc {name adefs rtype {body "#"} args} {
 }
 
 proc ::critcl::cinit {text edecls} {
+    debug.critcl/core {}
     set file [CheckEntry]
 
     set skip [at::lines $text]
@@ -533,12 +549,14 @@ proc ::critcl::cinit {text edecls} {
 ## Implementation -- API: Input and Output control
 
 proc ::critcl::collect {script {slot {}}} {
+    debug.critcl/core {}
     collect_begin $slot
     uplevel 1 $script
     return [collect_end]
 }
 
 proc ::critcl::collect_begin {{slot {}}} {
+    debug.critcl/core {}
     # Divert the collection of code fragments to slot
     # (output control). Stack on any previous diversion.
 
@@ -553,6 +571,7 @@ proc ::critcl::collect_begin {{slot {}}} {
 }
 
 proc ::critcl::collect_end {} {
+    debug.critcl/core {}
     # Stop last diversion, and return the collected information as
     # single string of C code.
 
@@ -573,12 +592,14 @@ proc ::critcl::collect_end {} {
 }
 
 proc ::critcl::include {path} {
+    debug.critcl/core {}
     # Include a header or other C file into the current code.
     msg -nonewline " (include <$path>)"
     ccode "#include <$path>"
 }
 
 proc ::critcl::make {path contents} {
+    debug.critcl/core {}
     # Generate a header or other C file for pickup by other parts of
     # the current package. Stored in the cache dir, making it local.
     file mkdir [cache]
@@ -593,6 +614,7 @@ proc ::critcl::make {path contents} {
 }
 
 proc ::critcl::source {path} {
+    debug.critcl/core {}
     # Source a critcl file in the context of the current file,
     # i.e. [who::is]. Enables the factorization of a large critcl
     # file into smaller, easier to read pieces.
@@ -646,62 +668,70 @@ proc ::critcl::source {path} {
 proc ::critcl::owns {args} {}
 
 proc ::critcl::cheaders {args} {
+    debug.critcl/core {}
     set file [CheckEntry]
     cdefs::hdrs $file $args
     return
 }
 
 proc ::critcl::csources {args} {
+    debug.critcl/core {}
     set file [CheckEntry]
     cdefs::srcs $file $args
     return
 }
 
 proc ::critcl::clibraries {args} {
+    debug.critcl/core {}
     set file [CheckEntry]
     cdefs::libs $file $args
     return
 }
 
 proc ::critcl::cobjects {args} {
+    debug.critcl/core {}
     set file [CheckEntry]
     cdefs::objs $file $args
     return
 }
 
 proc ::critcl::tsources {args} {
+    debug.critcl/core {}
     set file [CheckEntry]
     cdefs::tcls $file $args
     return
 }
 
 proc ::critcl::cflags {args} {
+    debug.critcl/core {}
     set file [CheckEntry]
     cdefs::flags $file $args 0
     return
 }
 
 proc ::critcl::ldflags {args} {
+    debug.critcl/core {}
     set file [CheckEntry]
     cdefs::ldflags $file $args
     return
 }
 
 proc ::critcl::framework {args} {
+    debug.critcl/core {}
     CheckEntry
 
-    # XXX FIXME actual target - go through backend?!
-
     # Check if we are building for OSX and ignore the command if we
-    # are not. Our usage of "ccconfig::actual" means that we allow for
-    # a cross-compilation environment to OS X as well.
-    if {![string match "macosx*" [ccconfig::actual]]} return
+    # are not. Our usage of "cc::actual" means that we allow for a
+    # cross-compilation environment to OS X as well.
+    if {![string match "macosx*" [cc::actual]]} return
 
     foreach arg $args {
 	# if an arg contains a slash it must be a framework path
 	if {[string first / $arg] == -1} {
+	    # No /
 	    ldflags -framework $arg
 	} else {
+	    # Found /
 	    cflags  -F$arg
 	    ldflags -F$arg
 	}
@@ -710,12 +740,14 @@ proc ::critcl::framework {args} {
 }
 
 proc ::critcl::tcl {version} {
+    debug.critcl/core {}
     set file [CheckEntry]
     cdefs::usetcl $file $version
     return
 }
 
 proc ::critcl::tk {} {
+    debug.critcl/core {}
     set file [CheckEntry]
     cdefs::usetk $file
     return
@@ -724,6 +756,7 @@ proc ::critcl::tk {} {
 # Register a shared library for pre-loading - this will eventually be
 # redundant when TIP #239 is widely available
 proc ::critcl::preload {args} {
+    debug.critcl/core {}
     set file [CheckEntry]
     cdefs::preload $file $args
     return
@@ -740,6 +773,7 @@ proc ::critcl::license {who args} {
 ## Implementation -- API: meta data (teapot)
 
 proc ::critcl::description {text} {
+    debug.critcl/core {}
     set file [CheckEntry]
     cdefs::initialize $file
     meta::description $file $text
@@ -747,6 +781,7 @@ proc ::critcl::description {text} {
 }
 
 proc ::critcl::summary {text} {
+    debug.critcl/core {}
     set file [CheckEntry]
     cdefs::initialize $file
     meta::summary $file $text
@@ -761,6 +796,7 @@ proc ::critcl::subject {args} {
 }
 
 proc ::critcl::meta {key args} {
+    debug.critcl/core {}
     set file [CheckEntry]
     cdefs::initialize $file
     meta::general $file $key $args
@@ -768,6 +804,7 @@ proc ::critcl::meta {key args} {
 }
 
 proc ::critcl::meta? {key} {
+    debug.critcl/core {}
     set file [CheckEntry]
     cdefs::initialize $file
     return [meta::get $file $key]
@@ -777,32 +814,33 @@ proc ::critcl::meta? {key} {
 ## Implementation -- API: user configuration options.
 
 proc ::critcl::userconfig {cmd args} {
+    debug.critcl/core {}
     set file [CheckEntry]
     if {![llength [info commands ::critcl::usrconfig::c_$cmd]]} {
 	return -code error "Unknown method \"$cmd\""
     }
-
-    # Dispatch
-    return [eval [linsert $args 0 ::critcl::usrconfig::c_$cmd $file]]
+    return [usrconfig::c_$cmd $file {*}$args]
 }
 
 # # ## ### ##### ######## ############# #####################
 ## Implementation -- API: API (stubs) management
 
 proc ::critcl::api {cmd args} {
+    debug.critcl/core {}
     set file [CheckEntry]
     if {![llength [info commands ::critcl::api::c_$cmd]]} {
 	return -code error "Unknown method \"$cmd\""
     }
 
     # Dispatch
-    return [eval [linsert $args 0 ::critcl::api::c_$cmd $file]]
+    return [api::c_$cmd $file {*}$args]
 }
 
 # # ## ### ##### ######## ############# #####################
 ## Implementation -- API: Introspection
 
 proc ::critcl::check {args} {
+    debug.critcl/core {}
     set file [CheckEntry 0]
 
     # Syntax:
@@ -827,6 +865,7 @@ proc ::critcl::check {args} {
 }
 
 proc ::critcl::checklink {args} {
+    debug.critcl/core {}
     set file [CheckEntry 0]
 
     # Syntax:
@@ -851,11 +890,13 @@ proc ::critcl::checklink {args} {
 }
 
 proc ::critcl::compiled {} {
+    debug.critcl/core {}
     CheckEntry 1
     return 0
 }
 
 proc ::critcl::compiling {} {
+    debug.critcl/core {}
     CheckEntry 0
     # Check that we can indeed run a compiler
     # Should only need to do this if we have to compile the code?
@@ -863,15 +904,18 @@ proc ::critcl::compiling {} {
 }
 
 proc ::critcl::done {} {
+    debug.critcl/core {}
     return [tags::has [SkipIgnored [who::is] 1] failed]
 }
 
 proc ::critcl::failed {} {
+    debug.critcl/core {}
     SkipIgnored [who::is] 0
     return [cbuild [who::is] 0]
 }
 
 proc ::critcl::load {} {
+    debug.critcl/core {}
     SkipIgnored [who::is] 1
     return [expr {![cbuild [who::is]]}]
 }
@@ -880,6 +924,7 @@ proc ::critcl::load {} {
 ## Default error behaviour
 
 proc ::critcl::error {msg} {
+    debug.critcl/core {}
     return -code error $msg
 }
 
@@ -887,6 +932,7 @@ proc ::critcl::error {msg} {
 ## Default message behaviour
 
 proc ::critcl::msg {args} {
+    debug.critcl/core {}
     # ignore message (compile & run)
 }
 
@@ -894,8 +940,9 @@ proc ::critcl::msg {args} {
 ## Default print behaviour
 
 proc ::critcl::print {args} {
+    debug.critcl/core {}
     # API same as for builtin ::puts. Use as is.
-    return [eval [linsert $args 0 ::puts]]
+    return [::puts {*}$args]
 }
 
 # # ## ### ##### ######## ############# #####################
@@ -915,11 +962,13 @@ proc ::critcl::print {args} {
 ## relevant API commands.
 
 proc ::critcl::Ignore {f} {
+    debug.critcl/core {}
     tags::set [file normalize $f] ignore
     return
 }
 
 proc ::critcl::SkipIgnored {f {result {}}} {
+    debug.critcl/core {}
     # File is marked to be ignored. Force the caller to return with
     # specified fake result.
     if {[tags::has $f ignore]} { return -code return $result }
@@ -927,6 +976,7 @@ proc ::critcl::SkipIgnored {f {result {}}} {
 }
 
 proc ::critcl::CheckEntry {{result {}}} {
+    debug.critcl/core {}
     set file [who::is]
 
     # Inlined SkipIgnored...
@@ -960,6 +1010,7 @@ proc ::critcl::CheckEntry {{result {}}} {
 ## Implementation -- API: Build Management
 
 proc ::critcl::config {option {newvalue {}}} {
+    debug.critcl/core {}
     if {[llength [info level 0]] < 3} {
 	return [gopt::get $option]
     }
@@ -967,6 +1018,7 @@ proc ::critcl::config {option {newvalue {}}} {
 }
 
 proc ::critcl::debug {args} {
+    debug.critcl/core {}
     set file [CheckEntry]
     # The information is stored in tags.
     foreach flag $args {
@@ -997,34 +1049,13 @@ proc ::critcl::debug {args} {
 # # ## ### ##### ######## ############# #####################
 ## Implementation -- API: Application
 
-# The regular commands used by the application, defined in other
-# sections of the package are:
-#
-# C critcl::cache
-# C critcl::ccode
-# C critcl::chooseconfig
-# C critcl::cinit
-# C critcl::clean_cache
-# C critcl::clibraries
-# C critcl::cobjects
-# C critcl::config I, lines, force, keepsrc, combine
-# C critcl::debug
-# C critcl::error               | App overrides our implementation.
-# C critcl::getconfigvalue
-# C critcl::lappendlist
-# C critcl::ldflags
-# C critcl::preload
-# C critcl::readconfig
-# C critcl::setconfig
-# C critcl::showallconfig
-# C critcl::showconfig
-
 # Build Variants:
 # - cbuild         - autoindex  - build, link, load (c&run) | drop results
 # - cbuild-pkgpart - app-critcl - build                     | keep results
 # - cbuild-pkgmain - app-critcl - build, link               | keep results
 
 proc ::critcl::cbuild {file {load yes}} {
+    debug.critcl/core {}
     # Compile & Run mode.
     # Critcl App - Cache Prefill mode.
 
@@ -1063,6 +1094,7 @@ proc ::critcl::cbuild {file {load yes}} {
 }
 
 proc ::critcl::DetermineInitName {file {wrapped 0}} {
+    debug.critcl/core {}
     set ininame [PkgInit $file]
 
     # Add in the build prefix, if specified. This is done in mode
@@ -1078,6 +1110,7 @@ proc ::critcl::DetermineInitName {file {wrapped 0}} {
 }
 
 proc ::critcl::PkgInit {file} {
+    debug.critcl/core {}
     # The init function name takes a capitalized prefix from the name
     # of the input file name (alphanumeric prefix, including
     # underscores). This implicitly drops the file extension, as the
@@ -1104,6 +1137,7 @@ proc ::critcl::PkgInit {file} {
 ##
 
 proc ::critcl::cbuild-pkgpart {file} {
+    debug.critcl/core {}
     # Critcl App - Prebuild package - Package parts
     # Compile. No Link. No load.
     # Stash results for use by the critcl app.
@@ -1133,6 +1167,7 @@ proc ::critcl::cbuild-pkgpart {file} {
 }
 
 proc ::critcl::cbuild-pkgmain {} {
+    debug.critcl/core {}
     # Critcl App - Prebuild package - Main package bracketing code.
     # Compile. Link. No load.
     # Do not keep results.
@@ -1160,11 +1195,15 @@ proc ::critcl::cbuild-pkgmain {} {
 }
 
 proc ::critcl::cresults {{file {}}} {
+    # XXX FIXME cresults - remove entirely
+    debug.critcl/core {}
     if {$file eq ""} { set file [who::is] }
     return [tags::get $file result]
 }
 
 proc ::critcl::cnothingtodo {f} {
+    debug.critcl/core {}
+    # XXX FIXME cnothingtodo - move into the application
     # We have a build status, so there had been something to do.
     if {[tags::has $f failed]} { return 0 }
 
@@ -1179,6 +1218,8 @@ proc ::critcl::cnothingtodo {f} {
 }
 
 proc ::critcl::c++command {tclname class constructors methods} {
+    debug.critcl/core {}
+    # XXX FIXME - c++command - move into a support package similar to critcl::class.
     # Build the body of the function to define a new tcl command for
     # the C++ class
     set helpline {}
@@ -1342,6 +1383,7 @@ proc ::critcl::c++command {tclname class constructors methods} {
 }
 
 proc ::critcl::ProcessArgs {typesArray names cnames}  {
+    debug.critcl/core {}
     upvar 1 $typesArray types
     set body ""
     foreach x $names c $cnames {
@@ -1394,6 +1436,7 @@ proc ::critcl::ProcessArgs {typesArray names cnames}  {
 ## Implementation -- Internals - cproc conversion helpers.
 
 proc ::critcl::EmitShimHeader {wname} {
+    debug.critcl/core {}
     # Function head
     set ca "(ClientData cd, Tcl_Interp *interp, int oc, Tcl_Obj *CONST ov\[])"
     Emitln
@@ -1404,6 +1447,7 @@ proc ::critcl::EmitShimHeader {wname} {
 }
 
 proc ::critcl::EmitShimVariables {adefs rtype} {
+    debug.critcl/core {}
     set opt 0
     foreach d [argvardecls $adefs] o [argoptional $adefs] {
 	Emitln "  $d"
@@ -1419,6 +1463,7 @@ proc ::critcl::EmitShimVariables {adefs rtype} {
 }
 
 proc ::critcl::EmitWrongArgsCheck {adefs offset} {
+    debug.critcl/core {}
     # Code checking for the correct count of arguments, and generating
     # the proper error if not.
 
@@ -1470,6 +1515,7 @@ proc ::critcl::EmitWrongArgsCheck {adefs offset} {
 }
 
 proc ::critcl::EmitArgumentConversion {adefs offset} {
+    debug.critcl/core {}
     incr offset
     foreach c [argconversion $adefs $offset] {
 	Emitln $c
@@ -1478,6 +1524,7 @@ proc ::critcl::EmitArgumentConversion {adefs offset} {
 }
 
 proc ::critcl::EmitCall {cname cnames rtype} {
+    debug.critcl/core {}
     # Invoke the low-level function.
 
     Emitln  "  /* Call - - -- --- ----- -------- */"
@@ -1489,6 +1536,7 @@ proc ::critcl::EmitCall {cname cnames rtype} {
 }
 
 proc ::critcl::EmitShimFooter {rtype} {
+    debug.critcl/core {}
     # Convert the returned low-level result from C to Tcl, if required.
     # Return a standard status, if required.
 
@@ -1502,6 +1550,7 @@ proc ::critcl::EmitShimFooter {rtype} {
 ## Implementation -- Internals - Management of in-memory C source fragment.
 
 proc ::critcl::name2c {name} {
+    debug.critcl/core {}
     # Note: A slightly modified copy (different depth in the
     # call-stack) of this code is inlined into the internal command
     # "BeginCommand".
@@ -1549,6 +1598,7 @@ proc ::critcl::name2c {name} {
 }
 
 proc ::critcl::BeginCommand {visibility name args} {
+    debug.critcl/core {}
     # Locate caller, as the data is saved per .tcl file.
     # XXX FIXME get file reference as argument.
     set file [who::is]
@@ -1603,6 +1653,7 @@ proc ::critcl::BeginCommand {visibility name args} {
 }
 
 proc ::critcl::EndCommand {} {
+    debug.critcl/core {}
     # XXX CHECK - what is this for?
     set v::code($v::curr) $v::block
 
@@ -1616,11 +1667,13 @@ proc ::critcl::EndCommand {} {
 }
 
 proc ::critcl::Emit {s} {
+    debug.critcl/core {}
     append v::block $s
     return
 }
 
 proc ::critcl::Emitln {{s ""}} {
+    debug.critcl/core {}
     Emit $s\n
     return
 }
@@ -1687,7 +1740,7 @@ namespace eval ::critcl {
     # This is exported for critcl::app to pick up when generating the
     # dummy commands in the runtime support of a generated package.
     namespace export Ignore
-    catch { namespace ensemble create }
+    namespace ensemble create
 }
 
 # # ## ### ##### ######## ############# #####################

@@ -15,26 +15,31 @@
 # # ## ### ##### ######## ############# #####################
 ## Requirements.
 
-package require Tcl 8.4        ;# Minimal supported Tcl runtime.
+package require Tcl 8.5        ;# Minimal supported Tcl runtime.
 package require critcl::cache  ;# Result cache access (See 'use').
 package require critcl::common ;# Common utilities
-package require lassign84      ;# Forward compatible lassign
-package require dict84         ;# Forward compatible dict
+package require debug          ;# debug narrative
 
 # # ## ### ##### ######## ############# #####################
 
-package provide  critcl::ccconfig 1
-namespace eval ::critcl::ccconfig {
+package provide  critcl::cc::config 4
+
+namespace eval ::critcl::cc {}
+namespace eval ::critcl::cc::config {
     namespace export showall show get use choose read \
 	known target targetplatform buildplatform \
 	sharedlibext crosscheck do do-log
-    catch { namespace ensemble create }
+    namespace ensemble create
 }
+
+debug level  critcl/cc/config
+debug prefix critcl/cc/config {[debug caller] | }
 
 # # ## ### ##### ######## ############# #####################
 ## API commands.
 
-proc ::critcl::ccconfig::do {failvar rv cmdline} {
+proc ::critcl::cc::config::do {failvar rv cmdline} {
+    debug.critcl/cc/config {}
     upvar 1 $failvar failed $rv result
     variable cip
 
@@ -45,7 +50,8 @@ proc ::critcl::ccconfig::do {failvar rv cmdline} {
     return [expr {!$failed}]
 }
 
-proc ::critcl::ccconfig::do-log {failvar rv log cmdline} {
+proc ::critcl::cc::config::do-log {failvar rv log cmdline} {
+    debug.critcl/cc/config {}
     upvar 1 $failvar failed $rv result
     variable cip
 
@@ -67,27 +73,32 @@ proc ::critcl::ccconfig::do-log {failvar rv log cmdline} {
 # See (XX) at the end of the file (package state variable setup)
 # for explanations of the exact differences between these.
 
-proc ::critcl::ccconfig::known {} {
+proc ::critcl::cc::config::known {} {
     variable knowntargets
-    return  $knowntargets
+    debug.critcl/cc/config {==> ($knowntargets)}
+    return $knowntargets
 }
 
-proc ::critcl::ccconfig::target {} {
+proc ::critcl::cc::config::target {} {
     variable target
-    return  $target
+    debug.critcl/cc/config {==> $target}
+    return $target
 }
 
-proc ::critcl::ccconfig::targetplatform {} {
+proc ::critcl::cc::config::targetplatform {} {
     variable targetplatform
-    return  $targetplatform
+    debug.critcl/cc/config {==> $targetplatform}
+    return $targetplatform
 }
 
-proc ::critcl::ccconfig::buildplatform {} {
+proc ::critcl::cc::config::buildplatform {} {
     variable buildplatform
-    return  $buildplatform
+    debug.critcl/cc/config {==> $buildplatform}
+    return $buildplatform
 }
 
-proc ::critcl::ccconfig::actual {} {
+proc ::critcl::cc::config::actual {} {
+    debug.critcl/cc/config {}
     # Check if the chosen target is a cross-compile target.  If yes,
     # we return the actual platform identifier of the target. This is
     # used to select the proper platform directory names in the critcl
@@ -99,17 +110,21 @@ proc ::critcl::ccconfig::actual {} {
     variable targetplatform
 
     if {[info exists xtargets($targetplatform)]} {
+	debug.critcl/cc/config {X ==> $xtargets($targetplatform)}
 	return $xtargets($targetplatform)
     } else {
+	debug.critcl/cc/config {T ==> $targetplatform}
 	return $targetplatform
     }
 }
 
-proc ::critcl::ccconfig::sharedlibext {} {
+proc ::critcl::cc::config::sharedlibext {} {
+    debug.critcl/cc/config {}
     return [get sharedlibext]
 }
 
-proc ::critcl::ccconfig::crosscheck {} {
+proc ::critcl::cc::config::crosscheck {} {
+    debug.critcl/cc/config {}
     variable xtargets
 
     # Run the 'version' command
@@ -141,18 +156,20 @@ proc ::critcl::ccconfig::crosscheck {} {
     return
 }
 
-proc ::critcl::ccconfig::showall {{ofd {}}} {
+proc ::critcl::cc::config::showall {{ofd {}}} {
+    debug.critcl/cc/config {}
     variable datafile
     if {$ofd ne ""} {
 	set ifd [open $datafile r]
 	fcopy $ifd $ofd
 	close $ifd
     } else {
-	return [common::cat $datafile]
+	return [common cat $datafile]
     }
 }
 
-proc ::critcl::ccconfig::show {{fd {}}} {
+proc ::critcl::cc::config::show {{fd {}}} {
+    debug.critcl/cc/config {}
     variable datafile
     variable buildplatform
     variable targetplatform
@@ -179,8 +196,8 @@ proc ::critcl::ccconfig::show {{fd {}}} {
     # Show the config variables first.
     # "cache" is a pseudo-variable.
 
-    set max [common::maxlen [dict keys $current]]
-    lappend out "    [format %-${max}s cache] [cache::get]"
+    set max [common maxlen [dict keys $current]]
+    lappend out "    [format %-${max}s cache] [cache get]"
 
     foreach var [lsort -dict [dict keys $current]] {
 	if {![dict exists $definitions $var]} continue
@@ -212,7 +229,7 @@ proc ::critcl::ccconfig::show {{fd {}}} {
 	lappend tclvars $var
     }
     if {[llength $tclvars]} {
-	set max [common::maxlen $tclvars]
+	set max [common maxlen $tclvars]
 
 	lappend out "Tcl variables:"
 	foreach var $tclvars {
@@ -236,12 +253,14 @@ proc ::critcl::ccconfig::show {{fd {}}} {
     }
 }
 
-proc ::critcl::ccconfig::get {var} {
+proc ::critcl::cc::config::get {var} {
+    debug.critcl/cc/config {}
     variable current
     return [Resolve [dict get $current $var]]
 }
 
-proc ::critcl::ccconfig::choose {targetid {err 0}} {
+proc ::critcl::cc::config::choose {targetid {err 0}} {
+    debug.critcl/cc/config {}
     variable knowntargets
 
     # first try to match exactly
@@ -261,7 +280,8 @@ proc ::critcl::ccconfig::choose {targetid {err 0}} {
     return $match
 }
 
-proc ::critcl::ccconfig::use {targetconfig} {
+proc ::critcl::cc::config::use {targetconfig} {
+    debug.critcl/cc/config {}
     variable target         $targetconfig
     variable targetplatform $targetconfig
     variable buildplatform
@@ -321,7 +341,7 @@ proc ::critcl::ccconfig::use {targetconfig} {
 	dict set current sharedlibext [info sharedlibextension]
     }
 
-    cache::def [file join ~ .critcl $targetplatform]
+    cache def [file join ~ .critcl $targetplatform]
 
     # Now take the part of the config which are not known variables,
     # and are thus plain Tcl. If any. Set them XXX ?WHERE?
@@ -341,7 +361,8 @@ proc ::critcl::ccconfig::use {targetconfig} {
     return
 }
 
-proc ::critcl::ccconfig::read {config} {
+proc ::critcl::cc::config::read {config} {
+    debug.critcl/cc/config {}
     variable cip
     variable buildplatform
     variable current
@@ -530,9 +551,9 @@ proc ::critcl::ccconfig::read {config} {
 # # ## ### ##### ######## ############# #####################
 ## Internal state
 
-namespace eval ::critcl::ccconfig {
-    namespace eval common { namespace import ::critcl::common::* }
-    namespace eval cache  { namespace import ::critcl::cache::*  }
+namespace eval ::critcl::cc::config {
+    namespace import ::critcl::common
+    namespace import ::critcl::cache
 
     # String. Min version number on platform.
     # XXX It is unclear who/where this is actually used.
@@ -652,7 +673,8 @@ namespace eval ::critcl::ccconfig {
 # # ## ### ##### ######## ############# #####################
 ## Internal support commands
 
-proc ::critcl::ccconfig::Resolve {value} {
+proc ::critcl::cc::config::Resolve {value} {
+    debug.critcl/cc/config {}
     variable cip
     catch {
 	set value [interp eval $cip [list subst $value]]
@@ -660,7 +682,8 @@ proc ::critcl::ccconfig::Resolve {value} {
     return $value
 }
 
-proc ::critcl::ccconfig::BuildPlatform {} {
+proc ::critcl::cc::config::BuildPlatform {} {
+    debug.critcl/cc/config {}
     set platform [::platform::generic]
 
     # Behave like a autoconf generated configure
@@ -698,14 +721,16 @@ proc ::critcl::ccconfig::BuildPlatform {} {
     return $platform
 }
 
-proc ::critcl::ccconfig::IsGCC {path} {
+proc ::critcl::cc::config::IsGCC {path} {
+    debug.critcl/cc/config {}
     if {[catch {
 	set lines [exec $path -v |& grep gcc]
     }] || ($lines eq {})} { return 0 }
     return 1
 }
 
-proc ::critcl::ccconfig::Null {} {
+proc ::critcl::cc::config::Null {} {
+    debug.critcl/cc/config {}
     global tcl_platform
     if {$tcl_platform(platform) eq "windows"} {
 	return NUL:
@@ -714,7 +739,8 @@ proc ::critcl::ccconfig::Null {} {
     }
 }
 
-proc ::critcl::ccconfig::Error {msg args} {
+proc ::critcl::cc::config::Error {msg args} {
+    debug.critcl/cc/config {}
     set code [linsert $args 0 CRITCL CC CONFIG]
     return -code error -errorcode $code $msg
 }
@@ -722,7 +748,7 @@ proc ::critcl::ccconfig::Error {msg args} {
 # # ## ### ##### ######## ############# #####################
 ## Initialization
 
-proc ::critcl::ccconfig::Initialize {} {
+apply {{} {
     variable cip [interp create]
     variable datafile
     variable buildplatform [BuildPlatform]
@@ -734,11 +760,9 @@ proc ::critcl::ccconfig::Initialize {} {
     # This also chooses and sets the target platform.
     read $datafile
 
-    # XXX FIXME - remove IsGCC, BuildPlatform as well
-    rename ::critcl::ccconfig::Initialize {}
+    # XXX FIXME - remove IsGCC, BuildPlatform
     return
-}
-::critcl::ccconfig::Initialize
+} ::critcl::cc::config}
 
 # # ## ### ##### ######## ############# #####################
 ## Ready
