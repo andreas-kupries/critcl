@@ -7,7 +7,7 @@
 # from and to a C enum. Not a full Tcl_ObjType. Based on
 # Tcl_GetIndexFromObj() instead.
 
-package provide critcl::enum 1
+package provide critcl::enum 1.0.1
 
 # # ## ### ##### ######## ############# #####################
 ## Requirements.
@@ -49,9 +49,10 @@ proc ::critcl::enum::def {name dict} {
 	lappend table "\t\t\"$str\","
     }
 
-    lappend map @NAME@  $name
-    lappend map @TABLE@ \n[join $table \n]
-    lappend map @TSIZE@ [llength $table]
+    lappend map @NAME@   $name
+    lappend map @TABLE@  \n[join $table \n]
+    lappend map @TSIZE@  [llength $table]
+    lappend map @TSIZE1@ [expr {1 + [llength $table]}]
 
     critcl::include [critcl::make ${name}.h \n[critcl::at::here!][string map $map {
 	#ifndef @NAME@_HEADER
@@ -77,7 +78,7 @@ proc ::critcl::enum::def {name dict} {
 			   int           flags,
 			   int*          literal )
 	{
-	    static const char* strings[@TSIZE@] = {@TABLE@
+	    static const char* strings[@TSIZE1@] = {@TABLE@
 		NULL
 	    };
 

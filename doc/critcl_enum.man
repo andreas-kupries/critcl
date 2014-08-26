@@ -1,5 +1,5 @@
 [comment {-*- tcl -*- doctools manpage}]
-[vset enum_version 1]
+[vset enum_version 1.0.1]
 [manpage_begin critcl::enum n [vset enum_version]]
 [include include/module2.inc]
 [keywords singleton {Tcl Interp Association}]
