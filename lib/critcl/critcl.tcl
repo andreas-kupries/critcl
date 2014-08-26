@@ -6,7 +6,7 @@
 
 # CriTcl Core.
 
-package provide critcl 3.1.11
+package provide critcl 3.1.12
 
 # # ## ### ##### ######## ############# #####################
 ## Requirements.
@@ -2825,7 +2825,7 @@ proc ::critcl::ScanDependencies {dfile file {mode plain}} {
     return
 }
 
-proc critcl::ScanCore {lines theconfig} {
+proc ::critcl::ScanCore {lines theconfig} {
     # config = dictionary
     # - <cmdname> => mode (ok, warn, sub)
     # Unlisted commands are ignored.
@@ -4217,7 +4217,7 @@ proc ::critcl::Load {f} {
     # 'compile & run' we now source the companion files directly.
     foreach t $tsrc {
 	Ignore $t
-	source $t
+	::source $t
     }
     return
 }

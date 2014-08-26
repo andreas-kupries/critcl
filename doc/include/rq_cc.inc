@@ -29,5 +29,5 @@ to tutorials, howtos and references for the various platforms.
 [para] Links of interest:
 
 [list_begin definitions]
-[def [url http://www.tldp.org/HOWTO/HOWTO-INDEX/programming.html]]
+[def [uri http://www.tldp.org/HOWTO/HOWTO-INDEX/programming.html]]
 [list_end]

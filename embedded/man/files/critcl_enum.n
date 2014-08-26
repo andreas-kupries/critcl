@@ -1,10 +1,8 @@
 '\"
-'\" Generated from file 'critcl_sources\&.man' by tcllib/doctools with format 'nroff'
-'\" Copyright (c) Jean-Claude Wippler
-'\" Copyright (c) Steve Landers
-'\" Copyright (c) 2011-2013 Andreas Kupries
+'\" Generated from file 'critcl_enum\&.man' by tcllib/doctools with format 'nroff'
+'\" Copyright (c) 2011-2012 Andreas Kupries
 '\"
-.TH "critcl_sources" n 3\&.1\&.12 doc "C Runtime In Tcl (CriTcl)"
+.TH "critcl::enum" n 1 doc "C Runtime In Tcl (CriTcl)"
 .\" The -*- nroff -*- definitions below are for supplemental macros used
 .\" in Tcl/Tk manual entries.
 .\"
@@ -274,75 +272,171 @@ Database Class:	\\fB\\$3\\fR
 ..
 .BS
 .SH NAME
-critcl_sources \- Critcl - How To Get The Sources
+critcl::enum \- CriTcl Utilities: String/Integer mapping
+.SH SYNOPSIS
+package require \fBTcl  8\&.4\fR
+.sp
+package require \fBcritcl  ?3\&.1\&.11?\fR
+.sp
+package require \fBcritcl::enum  ?1?\fR
+.sp
+\fB::critcl::enum::def\fR \fIname\fR \fIdefinition\fR
+.sp
+.BE
 .SH DESCRIPTION
+.PP
 Welcome to the \fIC Runtime In Tcl\fR, \fICriTcl\fR for short, a
 system to build C extension packages for Tcl on the fly, from C code
 embedded within Tcl scripts, for all who wish to make their code go
 faster\&.
 .PP
-The audience of this document is anyone wishing to either have
-just a look at Critcl's source code, or build the packages, or to
-extend and modify them\&.
+This document is the reference manpage for the
+\fBcritcl::enum\fR package\&. This package provides convenience
+commands for advanced functionality built on top of both critcl core
+and package \fBcritcl::literals\fR\&.
 .PP
-For builders and developers we additionally provide
-.IP [1]
-\fICritcl - License\fR\&.
-.IP [2]
-\fICritcl - The Installer's Guide\fR\&.
-.IP [3]
-\fICritcl - The Developer's Guide\fR\&.
+It is an extended form of string pool which not only converts
+integer values into Tcl-level strings, but also handles the reverse
+direction, converting from strings to the associated integer values\&.
 .PP
-respectively\&.
-.SH "SOURCE LOCATION"
-The official repository for Critcl can be found at
-\fIhttp://andreas-kupries\&.github\&.com/critcl\fR
-.SH RETRIEVAL
-Assuming that you simply wish to look at the sources, or build a
-specific revision, the easiest way of retrieving it is to:
-.IP [1]
-Go to this site\&.
-.IP [2]
-Follow the 'Fork me on Github' link (top-right corner) to the project sources\&.
-.IP [3]
-Choose the revision under the Commits panel you wish to have and
-.IP [4]
-follow its 'Browse code' link to its detailed information page\&.
-.IP [5]
-On that page, choose either the "ZIP" link to get a copy of this revision as a Zip archive\&.
+It essentially provides a bi-directional mapping between a C
+enumeration type and a set of strings, one per enumeration value\&.
 .PP
-.SH "SOURCE CODE MANAGEMENT"
-For the curious (or a developer-to-be), the sources are managed by the
-\fIGit SCM\fR [http://www\&.git-scm\&.com]\&.
-Binaries for popular platforms can be found directly at its
-\fIdownload page\fR [http://www\&.fossil-scm\&.org/downloads]\&.
+This package was written to make declaration and management of
+such mappings easy\&. It uses a string pool for one of the directions
+to make use of its ability to returned shared literals and conserve
+memory\&.
 .PP
-With that tool available the full history can be retrieved via:
+Its intended audience are mainly developers wishing to write
+Tcl packages with embedded C code\&.
+.PP
+This package resides in the Core Package Layer of CriTcl\&.
+.PP
+.PS
+.nf
++----------------+
+|Applications    |
+| critcl         |
+| critcl::app    |
++----------------+
+
+*================*
+|Core Packages   |
+| critcl         |
+| critcl::util   |
+*================*
+
++----------------+
+|Support Packages|
+| stubs::*       |
+| md5, platform  |
+|  \&.\&.\&.           |
++----------------+
+
+.fi
+.PE
+.PP
+.SH API
+.TP
+\fB::critcl::enum::def\fR \fIname\fR \fIdefinition\fR
+This command defines two C functionsfor the conversion between
+C values and Tcl_Obj'ects, with named derived from \fIname\fR\&.
+.sp
+The \fIdefinition\fR dictionary provides the mapping from the
+C-level symbolic names to the strings themselves\&.
+.sp
+The package generates multiple things (declarations and
+definitions) with names derived from \fIname\fR, which has to be a
+proper C identifier\&.
+.RS
+.TP
+\fIname\fR_ToObj
+The function converting from integer value to Tcl string\&.
+Its signature is
+.sp
 .CS
 
 
-    git clone http://github\&.com/andreas-kupries/critcl
-    cd critcl
+Tcl_Obj* \fIname\fR_ToObj (Tcl_Interp* interp, \fIname\fR_names literal);
 
 .CE
-to get a checkout of the head of the trunk and move into it for browsing, editing, etc\&.
+.TP
+\fIname\fR_GetFromObj
+The function converting from Tcl string to integer value\&.
+Its signature is
+.sp
+.CS
+
+
+int \fIname\fR_GetFromObj (Tcl_Interp* interp, Tcl_Obj* obj, int flags, int* literal);
+
+.CE
+.IP
+The \fIflags\fR are like for \fBTcl_GetIndexFromObj\fR\&.
+.TP
+\fIname\fR\&.h
+A header file containing the declarations for the converter functions,
+for use by other parts of the system, if necessary\&.
+.sp
+The generated file is stored in a place where it will not
+interfere with the overall system outside of the package, yet also be
+available for easy inclusion by package files (\fBcsources\fR)\&.
+.TP
+\fIname\fR
+At the level of critcl itself the command registers a new result-type
+for \fBcritcl::cproc\fR, which takes an integer result from the function
+and converts it to the equivalent string in the pool for the script\&.
+.TP
+\fIname\fR
+At the level of critcl itself the command registers a new argument-type
+for \fBcritcl::cproc\fR, which takes a Tcl string and converts it to the
+equivalent integer for delivery to the function\&.
+.RE
+.PP
+.SH EXAMPLE
+The example shown below is the specification for a set of actions, methods,
+and the like, a function may take as argument\&.
+.CS
+
+
+package require Tcl 8\&.5
+package require critcl 3\&.1\&.11
+
+critcl::buildrequirement {
+    package require critcl::enum
+}
+
+critcl::enum::def action {
+    w_create	"create"
+    w_directory	"directory"
+    w_events	"events"
+    w_file	"file"
+    w_handler	"handler"
+    w_remove	"remove"
+}
+
+# Declarations: action\&.h
+# Type:         action_names
+# Accessor:     Tcl_Obj* action_ToObj (Tcl_Interp* interp, int literal);
+# Accessor:     int action_GetFromObj (Tcl_Interp* interp, Tcl_Obj* o, int flags, int* literal);
+# ResultType:   action
+# ArgType:      action
+
+.CE
 .SH AUTHORS
-Jean Claude Wippler, Steve Landers, Andreas Kupries
+Andreas Kupries
 .SH "BUGS, IDEAS, FEEDBACK"
 This document, and the package it describes, will undoubtedly contain
 bugs and other problems\&.
-Please report them at \fIhttps://github\&.com/andreas-kupries/critcl/issues\fR\&.
-Ideas for enhancements you may have for either package, application,
-and/or the documentation are also very welcome and should be reported
-at \fIhttps://github\&.com/andreas-kupries/critcl/issues\fR as well\&.
+Please report such at \fIhttps://github\&.com/andreas-kupries/critcl\fR\&.
+Please also report any ideas for enhancements you may have for either
+package and/or documentation\&.
 .SH KEYWORDS
-C code, Embedded C Code, code generator, compile & run, compiler, dynamic code generation, dynamic compilation, generate package, linker, on demand compilation, on-the-fly compilation
+C code, Embedded C Code, Tcl Interp Association, code generator, compile & run, compiler, conversion, dynamic code generation, dynamic compilation, generate package, int to string mapping, linker, literal pool, on demand compilation, on-the-fly compilation, singleton, string pool, string to int mapping
 .SH CATEGORY
 Glueing/Embedded C code
 .SH COPYRIGHT
 .nf
-Copyright (c) Jean-Claude Wippler
-Copyright (c) Steve Landers
-Copyright (c) 2011-2013 Andreas Kupries
+Copyright (c) 2011-2012 Andreas Kupries
 
 .fi

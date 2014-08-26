@@ -4,7 +4,7 @@
 '\" Copyright (c) Steve Landers
 '\" Copyright (c) 2011-2013 Andreas Kupries
 '\"
-.TH "critcl_install_guide" n 3\&.1\&.11 doc "C Runtime In Tcl (CriTcl)"
+.TH "critcl_install_guide" n 3\&.1\&.12 doc "C Runtime In Tcl (CriTcl)"
 .\" The -*- nroff -*- definitions below are for supplemental macros used
 .\" in Tcl/Tk manual entries.
 .\"
@@ -304,6 +304,8 @@ For details see \fBTcl\fR\&.
 .IP [2]
 Various packages from the Tcllib bundle for \fBTcl\fR\&.
 For details see \fBTcllib\fR\&.
+.IP [3]
+A working C compiler and development environment\&.
 .PP
 This list assumes that the machine where Critcl is to be installed is
 essentially clean\&. Of course, if parts of the dependencies listed
@@ -434,6 +436,32 @@ Tcl- and Tklib come with their own installation instructions\&.
 These will not be repeated here\&. If there are problems with their
 directions please file a bug against the Tcllib project at the above
 url, and not CriTcl\&.
+.SS "C COMPILER"
+To actually build packages based on critcl we need a working C
+compiler\&.
+.PP
+How to install such and all the associated header files,
+libraries, etc\&. is heavily platform- and system-dependent, and thus
+outside of the scope of this document\&.
+Note that I am willing to extend this section with links of interest
+to tutorials, howtos and references for the various platforms\&.
+.PP
+The important pieces of information are this:
+.IP [1]
+The path to the C compiler binary must be found in the
+environment variable \fBPATH\fR, for critcl to find it\&.
+.IP [2]
+On Windows(tm) the environment variable \fBLIB\fR must be
+present and contain the paths of the directories holding
+Microsoft's libraries\&. The standard critcl configuration
+for this platform searches these paths to fine-tune its
+settings based on available libraries and compiler version\&.
+.PP
+.PP
+Links of interest:
+.TP
+\fIhttp://www\&.tldp\&.org/HOWTO/HOWTO-INDEX/programming\&.html\fR
+.PP
 .SH "BUILD & INSTALLATION INSTRUCTIONS"
 .SS "BUILD & INSTALLATION (UNIX)"
 This section describes the actions required to install CriTcl on Unix
