@@ -27,10 +27,13 @@ direction, converting from strings to the associated integer values.
 [para] It essentially provides a bi-directional mapping between a C
 enumeration type and a set of strings, one per enumeration value.
 
-[para] This package was written to make declaration and management of
-such mappings easy. It uses a string pool for one of the directions
-to make use of its ability to returned shared literals and conserve
-memory.
+[emph Note] that the C enumeration in question is created by the
+definition. It is not possible to use the symbols of an existing
+enumeration type.
+
+[para] This package was written to make the declaration and management
+of such mappings easy. It uses a string pool for one of the directions,
+using its ability to return shared literals and conserve memory.
 
 [para] Its intended audience are mainly developers wishing to write
 Tcl packages with embedded C code.
@@ -45,17 +48,20 @@ Tcl packages with embedded C code.
 [list_begin definitions]
 [call [cmd ::critcl::enum::def] [arg name] [arg definition]]
 
-This command defines two C functionsfor the conversion between
+This command defines two C functions for the conversion between
 C values and Tcl_Obj'ects, with named derived from [arg name].
 
 [para] The [arg definition] dictionary provides the mapping from the
-C-level symbolic names to the strings themselves.
+specified C-level symbolic names to the strings themselves.
 
 [para] The package generates multiple things (declarations and
 definitions) with names derived from [arg name], which has to be a
 proper C identifier.
 
 [list_begin definitions]
+[def [arg name]_pool_names]
+The C enumeration type containing the specified symbolic names.
+
 [def [arg name]_ToObj]
 The function converting from integer value to Tcl string.
 
