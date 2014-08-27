@@ -1,5 +1,7 @@
 
-package require emap
+package require emap_ex
+
+puts ------------------------------
 
 puts [encode  mix]  ;# 1
 puts [xencode done] ;# 2
@@ -32,3 +34,9 @@ catch {
 catch {
     xdecode 4
 } msg ; puts 4:$msg
+
+puts ------------------------------
+
+catch {
+    xencode MIX
+} msg ; puts MIX:$msg

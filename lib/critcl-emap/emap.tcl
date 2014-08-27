@@ -20,11 +20,30 @@ namespace eval ::critcl::emap {}
 # # ## ### ##### ######## ############# #####################
 ## Implementation -- API: Embed C Code
 
-proc critcl::emap::def {name dict} {
+proc critcl::emap::def {name dict args} {
     # dict: Tcl symbolic name -> (C int value (1))
     #
     # (Ad 1) Can be numeric, or symbolic, as long as it is a C int
     #        expression in the end.
+
+    # args = options. Currently only -nocase for case-insensitive strings on encoding.
+
+    set nocase 0
+    foreach o $args {
+	switch -glob -- $o {
+	    -nocase -
+	    -nocas -
+	    -noca -
+	    -noc -
+	    -no -
+	    -n { set nocase 1 }
+	    -* -
+	    default {
+		return -code error -errorcode {CRITCL EMAP INVALID-OPTION} \
+		    "Expected option -nocase, got \"$o\""
+	    }
+	}
+    }
 
     # For the C level opt array we want the elements sorted alphabetically.
     set symbols [lsort -dict [dict keys $dict]]
@@ -50,6 +69,7 @@ proc critcl::emap::def {name dict} {
 	    set allint 0
 	}
 
+	if {$nocase} { set sym [string tolower $sym] }
 	set map [list @ID@ $id($sym) @SYM@ $sym @VALUE@ $value]
 
 	append init \n[critcl::at::here!][string map $map {
@@ -105,6 +125,22 @@ proc critcl::emap::def {name dict} {
     # III: Generate encoder function: Conversion of Tcl state string
     #      into corresponding state code.
 
+    if {$nocase} {
+	lappend line ""
+	lappend line "/* -nocase :: Due to the duplication the state string is not shared,"
+	lappend line " * allowing us to convert in place. As the string may change"
+	lappend line " * length (shrinking) we have to reset the length after"
+	lappend line " * conversion."
+	lappend line " */"
+	lappend line "state = Tcl_DuplicateObj (state);"
+	lappend line "Tcl_SetObjLength(state, Tcl_UtfToLower (Tcl_GetString (state)));"
+	lappend map @NOCASE_BEGIN@ [join $line "\n\t    "]
+	lappend map @NOCASE_END@   "Tcl_DecrRefCount (state);\n"
+    } else {
+	lappend map @NOCASE_BEGIN@ ""
+	lappend map @NOCASE_END@   ""
+    }
+
     critcl::ccode \n[critcl::at::here!][string map $map {
 	int
 	@NAME@_encode (Tcl_Interp* interp,
@@ -112,10 +148,11 @@ proc critcl::emap::def {name dict} {
 		       int*        result)
 	{
 	    @NAME@_iassoc_data context = @NAME@_iassoc (interp);
-	    int id;
-
-	    if (Tcl_GetIndexFromObj (interp, state, context->c, "@NAME@", 0,
-				     &id) != TCL_OK) {
+	    int id, res;
+	    @NOCASE_BEGIN@
+	    res = Tcl_GetIndexFromObj (interp, state, context->c, "@NAME@", 0, &id);
+	    @NOCASE_END@
+	    if (res != TCL_OK) {
 		Tcl_SetErrorCode (interp, "@UNAME@", "STATE", NULL);
 		return TCL_ERROR;
 	    }

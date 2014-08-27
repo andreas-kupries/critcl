@@ -1,4 +1,4 @@
-# emap.tcl --
+# emap_ex.tcl --
 #
 #	A template demonstrating the handling of emap conversions.
 #
@@ -41,6 +41,7 @@ critcl::emap::def demo {
     mix  STATE_MIX
     done STATE_DONE
 }
+# Add -nocase as last argument for case-insensitive Tcl strings.
 
 critcl::cproc encode {Tcl_Interp* ip Tcl_Obj* state} int {
     int scode;
@@ -71,4 +72,4 @@ critcl::cproc xdecode {Tcl_Interp* ip int state} demo {
 
 # ### ### ### ######### ######### #########
 ## Ready
-package provide emap 1
+package provide emap_ex 1

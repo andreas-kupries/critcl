@@ -43,7 +43,7 @@ Tcl packages with embedded C code.
 [section API]
 
 [list_begin definitions]
-[call [cmd ::critcl::emap::def] [arg name] [arg definition]]
+[call [cmd ::critcl::emap::def] [arg name] [arg definition] [opt [option -nocase]]]
 
 This command defines two C functions for the conversion of the
 [arg name]d state code into a Tcl string, and vice versa.
@@ -66,6 +66,10 @@ is returned. An important thing to know: If all C expressions are
 recognizable as integer numbers and their covered range is not too large
 (at most 50) the package will generate code using direct and fast
 mapping tables instead of using a linear search.
+
+[para] If the option [option -nocase] is specified then the encoder will
+match strings case-insensitively, and the decoder will always return a
+lower-case string, regardless of the string's case in the [arg definition].
 
 [para] The package generates multiple things (declarations and
 definitions) with names derived from [arg name], which has to be a
