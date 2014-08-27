@@ -27,6 +27,8 @@ proc ::critcl::enum::def {name dict} {
     # - dict of strings to convert. Key is the symbolic C name, value
     #   is the string. Numeric C value is in the order of the strings in
     #   the dict, treating it as list for that case.
+    #
+    # dict: C symbolic name -> Tcl string (Tcl symbolic name).
 
     if {![dict size $dict]} {
 	return -code error -errorcode {CRITCL ENUM DEF INVALID} \
