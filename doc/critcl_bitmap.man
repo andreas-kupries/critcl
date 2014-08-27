@@ -1,12 +1,13 @@
 [comment {-*- tcl -*- doctools manpage}]
-[manpage_begin critcl::bitmap n 1]
+[vset bitmap_version 1.0.1]
+[manpage_begin critcl::bitmap n [vset bitmap_version]]
 [include include/module2.inc]
 [keywords singleton {Tcl Interp Association}]
 [keywords bitmask bitset flags]
 [titledesc {CriTcl Utilities: Bitset en- and decoding}]
 [require Tcl 8.4]
 [require critcl [opt 3.1.11]]
-[require critcl::bitmap [opt 1]]
+[require critcl::bitmap [opt [vset bitmap_version]]]
 [description]
 [para]
 [include include/welcome.inc]
@@ -17,14 +18,18 @@ This document is the reference manpage for the
 commands for advanced functionality built on top of both critcl core
 and package [package critcl::iassoc].
 
-
-[para] C level libraries often use bitsets to encode many flags into a
+[para] C level libraries often use bit-sets to encode many flags into a
 single value. Tcl bindings to such libraries now have the task of
-converting a Tcl reresentation of such flags (like a list of strings)
-into such bitsets, and back.
+converting a Tcl representation of such flags (like a list of strings)
+into such bit-sets, and back.
+
+[emph Note] here that the C-level information has to be something which
+already exists. The package does [emph not] create these values. This is
+in contrast to the package [package critcl::enum] which creates an
+enumeration based on the specified symbolic names.
 
 [para] This package was written to make the declaration and management
-of such bitsets and their associated conversions functions easy,
+of such bit-sets and their associated conversions functions easy,
 hiding all attendant complexity from the user.
 
 [para] Its intended audience are mainly developers wishing to write
@@ -41,7 +46,7 @@ Tcl packages with embedded C code.
 [call [cmd ::critcl::bitmap::def] [arg name] [arg definition] [opt [arg exclusions]]]
 
 This command defines two C functions for the conversion of the
-[arg name]d bitset into Tcl lists, and vice versa.
+[arg name]d bit-set into Tcl lists, and vice versa.
 
 The underlying mapping tables are automatically initialized on first
 access, and finalized on interpreter destruction.
@@ -50,8 +55,13 @@ access, and finalized on interpreter destruction.
 Tcl-level symbolic names of the flags to their C expressions (often
 the name of the macro specifying the actual value).
 
-[para] The optional [arg exlusion] list is for the flags/bitsets for
-which conversion from bitset to flag, i.e. decoding makes no
+[emph Note] here that the C-level information has to be something which
+already exists. The package does [emph not] create these values. This is
+in contrast to the package [package critcl::enum] which creates an
+enumeration based on the specified symbolic names.
+
+[para] The optional [arg exlusion] list is for the flags/bit-sets for
+which conversion from bit-set to flag, i.e. decoding makes no
 sense. One case for such, for example, are flags representing a
 combination of other flags.
 
@@ -62,7 +72,7 @@ proper C identifier.
 [list_begin definitions]
 [def [arg name]_encode]
 The function for encoding a Tcl list of strings into the equivalent
-bitset.
+bit-set.
 
 Its signature is
 [para][example_begin]
@@ -73,7 +83,7 @@ int [arg name]_encode (Tcl_Interp* interp, Tcl_Obj* flags, int* result);
 i.e. [const TCL_OK], [const TCL_ERROR], etc.
 
 [def [arg name]_decode]
-The function for decoding a bitset into the equivalent Tcl list of
+The function for decoding a bit-set into the equivalent Tcl list of
 strings.
 
 Its signature is
