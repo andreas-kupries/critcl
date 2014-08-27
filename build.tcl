@@ -20,6 +20,7 @@ set packages {
     {critcl-literals literals.tcl}
     {critcl-enum     enum.tcl}
     {critcl-bitmap   bitmap.tcl}
+    {critcl-emap     emap.tcl}
     {app-critcl      ../critcl/critcl.tcl critcl-app}
     util84
     stubs
