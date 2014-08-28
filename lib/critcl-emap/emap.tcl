@@ -64,7 +64,7 @@ proc critcl::emap::def {name dict args} {
 	if {$allint && [string is integer -strict $value]} {
 	    if {($min eq {}) || ($value < $min)} { set min $value }
 	    if {($max eq {}) || ($value > $max)} { set max $value }
-	    lappend direct($value) $id($sym)
+	    lappend direct($value) $sym
 	} else {
 	    set allint 0
 	}
@@ -183,16 +183,19 @@ proc critcl::emap::def {name dict args} {
 
 	set table {}
 	set hasholes 0
+	set n [string length $max]
 	for {set i $min} {$i <= $max} {incr i} {
 	    if {[info exists direct($i)]} {
-		lappend table [lindex $direct($i) 0]
+		set sym [lindex $direct($i) 0]
+		set code $id($sym)
+		lappend table "$code,\t/* [format %${n}d $i] <=> \"$sym\" */"
 	    } else {
-		lappend table -1
+		lappend table "-1,"
 		set hasholes 1
 	    }
 	}
 
-	lappend map @DIRECT@ [join $table ", "]
+	lappend map @DIRECT@ "\n\t\t    [join $table "\n\t\t    "]"
 	lappend map @SIZE@   [llength $table]
 	lappend map @MIN@    $min
 	lappend map @MAX@    $max
@@ -205,7 +208,8 @@ proc critcl::emap::def {name dict args} {
 	    Tcl_Obj*
 	    @NAME@_decode (Tcl_Interp* interp, int state)
 	    {
-		static const direct [@SIZE@] = {@DIRECT@};
+		static const direct [@SIZE@] = {@DIRECT@
+		};
 
 		char buf [20];
 		int i;
