@@ -269,10 +269,10 @@ proc critcl::emap::def {name dict args} {
 
     critcl::resulttype $name \n[critcl::at::here!][string map $map {
 	/* @NAME@_decode result is 0-refcount */
-	Tcl_Obj* ro = @NAME@_decode (interp, rv);
+	{ Tcl_Obj* ro = @NAME@_decode (interp, rv);
 	if (ro == NULL) { return TCL_ERROR; }
 	Tcl_SetObjResult (interp, ro);
-	return TCL_OK;
+	return TCL_OK; }
     }] int
 }
 
