@@ -34,7 +34,7 @@ test critcl-ccommand-1.0 {ccommand, wrong\#args} -setup {
 } -body {
     critcl::ccommand
 } -cleanup {
-} -returnCodes error -result {wrong # args: should be "critcl::ccommand name anames ..."}
+} -returnCodes error -result {wrong # args: should be "critcl::ccommand name anames ?arg ...?"}
 
 # -------------------------------------------------------------------------
 ## Go through the various knobs we can use to configure the definition and output
