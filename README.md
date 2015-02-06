@@ -67,7 +67,7 @@
 
     ```> package require stackc```
 
-    ```> stackc S```
+    ```> stackc create S```
 
     ```> S push FOO```
 
