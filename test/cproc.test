@@ -32,11 +32,17 @@ testing {
 # -------------------------------------------------------------------------
 ## cproc syntax
 
-test critcl-cproc-1.0 {cproc, wrong\#args} -setup {
-} -body {
+test critcl-cproc-1.0.6 {cproc, wrong\#args} -constraints tcl86plus -body {
     critcl::cproc
-} -cleanup {
 } -returnCodes error -result {wrong # args: should be "critcl::cproc name adefs rtype ?body? ?arg ...?"}
+
+test critcl-cproc-1.0.5 {cproc, wrong\#args} -constraints tcl85 -body {
+    critcl::cproc
+} -returnCodes error -result {wrong # args: should be "critcl::cproc name adefs rtype ?body? ..."}
+
+test critcl-cproc-1.0.4 {cproc, wrong\#args} -constraints tcl84 -body {
+    critcl::cproc
+} -returnCodes error -result {wrong # args: should be "critcl::cproc name adefs rtype ?body? args"}
 
 # -------------------------------------------------------------------------
 ## Go through the various knobs we can use to configure the definition and output
