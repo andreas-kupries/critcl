@@ -36,7 +36,7 @@ test critcl-cproc-1.0 {cproc, wrong\#args} -setup {
 } -body {
     critcl::cproc
 } -cleanup {
-} -returnCodes error -result {wrong # args: should be "critcl::cproc name adefs rtype ?body? ..."}
+} -returnCodes error -result {wrong # args: should be "critcl::cproc name adefs rtype ?body? ?arg ...?"}
 
 # -------------------------------------------------------------------------
 ## Go through the various knobs we can use to configure the definition and output
