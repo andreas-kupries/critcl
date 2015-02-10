@@ -67,4 +67,20 @@ proc G {p s} {
     return 1
 }
 
+tcltest::testConstraint tcl86plus [package vsatisfies [package present Tcl] 8.6]
+tcltest::testConstraint tcl85plus [package vsatisfies [package present Tcl] 8.5]
+tcltest::testConstraint tcl84plus [package vsatisfies [package present Tcl] 8.4]
+
+tcltest::testConstraint tcl85 \
+    [expr {
+	    [tcltest::testConstraint tcl85plus] &&
+	   ![tcltest::testConstraint tcl86plus]
+    }]
+
+tcltest::testConstraint tcl84 \
+    [expr {
+	    [tcltest::testConstraint tcl84plus] &&
+	   ![tcltest::testConstraint tcl85plus]
+    }]
+
 # -------------------------------------------------------------------------
