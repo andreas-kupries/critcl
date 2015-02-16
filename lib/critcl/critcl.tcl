@@ -3241,31 +3241,31 @@ proc ::critcl::ArgumentSupport {type} {
 
 proc ::critcl::ArgumentCType {type} {
     if {[info exists v::actype($type)]} { return $v::actype($type) }
-    return -code error "Unknown argument type $type"
+    return -code error "Unknown argument type \"$type\""
 }
 
 proc ::critcl::ArgumentCTypeB {type} {
     if {[info exists v::actypeb($type)]} { return $v::actypeb($type) }
-    return -code error "Unknown argument type $type"
+    return -code error "Unknown argument type \"$type\""
 }
 
 proc ::critcl::ArgumentConversion {type} {
     if {[info exists v::aconv($type)]} { return $v::aconv($type) }
-    return -code error "Unknown argument type $type"
+    return -code error "Unknown argument type \"$type\""
 }
 
 proc ::critcl::ResultCType {type} {
     if {[info exists v::rctype($type)]} {
 	return $v::rctype($type)
     }
-    return -code error "Unknown result type $type"
+    return -code error "Unknown result type \"$type\""
 }
 
 proc ::critcl::ResultConversion {type} {
     if {[info exists v::rconv($type)]} {
 	return $v::rconv($type)
     }
-    return -code error "Unknown result type $type"
+    return -code error "Unknown result type \"$type\""
 }
 
 # # ## ### ##### ######## ############# #####################
