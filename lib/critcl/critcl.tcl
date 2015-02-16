@@ -4708,6 +4708,10 @@ proc ::critcl::Initialize {} {
 	if (Tcl_GetLongFromObj(interp, @@, &@A) != TCL_OK) return TCL_ERROR;
     }
 
+    argtype wideint {
+	if (Tcl_GetWideIntFromObj(interp, @@, &@A) != TCL_OK) return TCL_ERROR;
+    } Tcl_WideInt Tcl_WideInt
+
     argtype double {
 	if (Tcl_GetDoubleFromObj(interp, @@, &@A) != TCL_OK) return TCL_ERROR;
     }
@@ -4801,6 +4805,11 @@ proc ::critcl::Initialize {} {
 	Tcl_SetObjResult(interp, Tcl_NewLongObj(rv));
 	return TCL_OK;
     }
+
+    resulttype wideint {
+	Tcl_SetObjResult(interp, Tcl_NewWideIntObj(rv));
+	return TCL_OK;
+    } Tcl_WideInt
 
     resulttype double {
 	Tcl_SetObjResult(interp, Tcl_NewDoubleObj(rv));
