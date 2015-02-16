@@ -4774,13 +4774,31 @@ proc ::critcl::Initialize {} {
 	/* Raw pointer in binary Tcl value */
 	@A = (double*) Tcl_GetByteArrayFromObj(@@, NULL);
     }
+
+    # OLD Raw binary string. Length information is _NOT_ propagated
+
     argtype bytearray {
 	/* Raw binary string. Length information is _NOT_ propagated */
 	@A = (char*) Tcl_GetByteArrayFromObj(@@, NULL);
-	Tcl_InvalidateStringRep(@@);
     } char* char*
     argtype rawchar = bytearray
     argtype rawchar* = bytearray
+
+    # NEW Raw binary string _with_ length information.
+
+    argtype bytes {
+	/* Raw binary string _with_ length information */
+	@A.s = (char*) Tcl_GetByteArrayFromObj(@@, &(@A.len));
+	@A.o = @@;
+    } critcl_bytes critcl_bytes
+
+    argtypesupport bytes {
+	typedef struct critcl_bytes {
+	    Tcl_Obj* o;
+	    char*    s;
+	    int      len;
+	} critcl_bytes;
+    }
 
     # Declare the standard result types for cproc.
     # System still has special case code for:
