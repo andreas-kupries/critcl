@@ -373,6 +373,7 @@ proc ::critcl::argcnames {adefs {interp ip}} {
     foreach {t a} $adefs {
 	if {[llength $a] == 2} {
 	    set a [lindex $a 0]
+	    lappend cnames _has_$a
 	}
 	lappend cnames _$a
     }
@@ -396,6 +397,9 @@ proc ::critcl::argcsignature {adefs} {
     foreach {t a} $adefs {
 	if {[llength $a] == 2} {
 	    set a [lindex $a 0]
+	    # Argument to signal if the optional argument was set
+	    # (true) or is the default (false).
+	    lappend cargs "int has_$a"
 	}
 	lappend cargs  "[ArgumentCTypeB $t] $a"
     }
@@ -416,8 +420,10 @@ proc ::critcl::argvardecls {adefs} {
     foreach {t a} $adefs {
 	if {[llength $a] == 2} {
 	    set a [lindex $a 0]
+	    lappend result "[ArgumentCType $t] _$a;\n  int _has_$a = 0;"
+	} else {
+	    lappend result "[ArgumentCType $t] _$a;"
 	}
-	lappend result "[ArgumentCType $t] _$a;"
     }
 
     return $result
@@ -471,7 +477,7 @@ proc ::critcl::argconversion {adefs {n 1}} {
 	    set map [list @@ "ov\[idx_\]" @A _$a]
 	    set code [string map $map [ArgumentConversion $t]]
 
-	    set code "${prefix}  if (oc > $min) \{\n$code\n    idx_++;\n  \} else \{\n    _$a = $default;\n  \}"
+	    set code "${prefix}  if (oc > $min) \{\n$code\n    idx_++;\n    _has_$a = 1;\n  \} else \{\n    _$a = $default;\n  \}"
 	    incr min
 
 	    lappend result "  /* ($t $a, optional, default $default) - - -- --- ----- -------- */"
