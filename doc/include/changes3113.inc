@@ -59,4 +59,11 @@
 	code generated with them before the final value of this
 	setting was known.
 
+[enum]	Fixed issue with handling of namespaced package names in
+	"critcl::iassoc". Equivalent to a bug in "critcl::class" fixed
+	for critcl 3.1.1, critcl::class 1.0.1.
+
+	Note: "literals", "enum", "emap", and "bitmap" do not require
+	a fix as they are all built on top of "iassoc".
+
 [list_end]
