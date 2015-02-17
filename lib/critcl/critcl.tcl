@@ -2138,7 +2138,7 @@ proc ::critcl::showconfig {{fd ""}} {
 	}
 	lappend out $line
     }
-    # Tcl variables
+    # Tcl variables - Combined LengthLongestWord (all), and filtering
     set vars [list]
     set max 0
     foreach idx [array names v::toolchain $v::targetplatform,*] {
@@ -2159,7 +2159,7 @@ proc ::critcl::showconfig {{fd ""}} {
 		# values - e.g. "Windows NT"
 		set val [lindex $val 0]
 	    }
-	    lappend out "    [format %-${max}s $var] $val"
+	    lappend out "    [PadRight $max $var] $val"
 	}
     }
     set out [join $out \n]
@@ -3675,7 +3675,9 @@ proc ::critcl::CollectEmbeddedSources {file destination libfile ininame placestu
 
     # Take the names collected earlier and register them as Tcl
     # commands.
-    foreach name [lsort [GetParam $file functions]] {
+    set names [lsort [GetParam $file functions]]
+    set max   [LengthLongestWord $names]
+    foreach name $names {
 	if {[info exists v::clientdata($name)]} {
 	    set cd $v::clientdata($name)
 	} else {
@@ -3686,7 +3688,7 @@ proc ::critcl::CollectEmbeddedSources {file destination libfile ininame placestu
 	} else {
 	    set dp 0
 	}
-	puts $fd "  Tcl_CreateObjCommand(interp, ns_$name, tcl_$name, $cd, $dp);"
+	puts $fd "  Tcl_CreateObjCommand(interp, [PadRight [expr {$max+4}] ns_$name,] [PadRight [expr {$max+5}] tcl_$name,] $cd, $dp);"
     }
 
     # Complete the trailer and be done.
@@ -4656,6 +4658,21 @@ proc ::critcl::Grep {pattern lines} {
 	lappend r $line
     }
     return $r
+}
+
+proc ::critcl::PadRight {len w} {
+    # <=> Left justified
+    format %-${len}s $w
+}
+
+proc ::critcl::LengthLongestWord {words} {
+    set max 0
+    foreach w $words {
+	set n [string length $w]
+	if {$n <= $max} continue
+	set max $n
+    }
+    return $max
 }
 
 # # ## ### ##### ######## ############# #####################
