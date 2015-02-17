@@ -12,10 +12,11 @@ package provide critcl::class 1.0.6
 # # ## ### ##### ######## ############# #####################
 ## Requirements.
 
-package require Tcl    8.4   ; # Min supported version.
-package require critcl 3.1.6 ; # Need 'meta?' to get the package name.
-                               # Need 'name2c' returning 4 values.
-package require critcl::util ; # Use the package's Get/Put commands.
+package require Tcl    8.4    ; # Min supported version.
+package require critcl 3.1.13 ; # Need 'meta?' to get the package name.
+                                # Need 'name2c' returning 4 values.
+                                # Need 'Deline' helper.
+package require critcl::util  ; # Use the package's Get/Put commands.
 
 namespace eval ::critcl::class {}
 
@@ -313,7 +314,7 @@ proc ::critcl::class::GenerateCode {} {
     set header   [file join [critcl::cache] $hdr]
 
     file mkdir [critcl::cache]
-    set template [Template class.h]
+    set template [critcl::Deline [Template class.h]]
     #puts T=[string length $template]
     critcl::util::Put $header [string map [MakeMap] $template]
 
