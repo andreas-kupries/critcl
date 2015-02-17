@@ -398,7 +398,7 @@ outside of any function or other definition\&.
 .sp
 The command can be used multiple times, each adding another
 segment of C code to insert\&. It is of course possible to not use this
-command at all, for classes not requiring swupporting code\&.
+command at all, for classes not requiring supporting code\&.
 .sp
 The result of the command is the empty string\&.
 .TP
