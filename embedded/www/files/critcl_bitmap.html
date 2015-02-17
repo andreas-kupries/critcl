@@ -100,10 +100,10 @@
    -->
 <body><div class="doctools">
 <hr> [
-  <a href="../toc.html">Table Of Contents</a>
+   <a href="../toc.html">Table Of Contents</a>
 | <a href="../index.html">Keyword Index</a>
-] <hr>
-<h1 class="title">critcl::bitmap(n) 1 doc &quot;C Runtime In Tcl (CriTcl)&quot;</h1>
+ ] <hr>
+<h1 class="title">critcl::bitmap(n) 1.0.1 doc &quot;C Runtime In Tcl (CriTcl)&quot;</h1>
 <div id="name" class="section"><h2><a name="name">Name</a></h2>
 <p>critcl::bitmap - CriTcl Utilities: Bitset en- and decoding</p>
 </div>
@@ -126,7 +126,7 @@
 <ul class="requirements">
 <li>package require <b class="pkgname">Tcl 8.4</b></li>
 <li>package require <b class="pkgname">critcl <span class="opt">?3.1.11?</span></b></li>
-<li>package require <b class="pkgname">critcl::bitmap <span class="opt">?1?</span></b></li>
+<li>package require <b class="pkgname">critcl::bitmap <span class="opt">?1.0.1?</span></b></li>
 </ul>
 <ul class="syntax">
 <li><a href="#1"><b class="cmd">::critcl::bitmap::def</b> <i class="arg">name</i> <i class="arg">definition</i> <span class="opt">?<i class="arg">exclusions</i>?</span></a></li>
@@ -142,12 +142,16 @@ faster.</p>
 <b class="package">critcl::bitmap</b> package. This package provides convenience
 commands for advanced functionality built on top of both critcl core
 and package <b class="package"><a href="critcl_iassoc.html">critcl::iassoc</a></b>.</p>
-<p>C level libraries often use bitsets to encode many flags into a
+<p>C level libraries often use bit-sets to encode many flags into a
 single value. Tcl bindings to such libraries now have the task of
-converting a Tcl reresentation of such flags (like a list of strings)
-into such bitsets, and back.</p>
+converting a Tcl representation of such flags (like a list of strings)
+into such bit-sets, and back.
+<em>Note</em> here that the C-level information has to be something which
+already exists. The package does <em>not</em> create these values. This is
+in contrast to the package <b class="package"><a href="critcl_enum.html">critcl::enum</a></b> which creates an
+enumeration based on the specified symbolic names.</p>
 <p>This package was written to make the declaration and management
-of such bitsets and their associated conversions functions easy,
+of such bit-sets and their associated conversions functions easy,
 hiding all attendant complexity from the user.</p>
 <p>Its intended audience are mainly developers wishing to write
 Tcl packages with embedded C code.</p>
@@ -158,14 +162,18 @@ Tcl packages with embedded C code.</p>
 <dl class="definitions">
 <dt><a name="1"><b class="cmd">::critcl::bitmap::def</b> <i class="arg">name</i> <i class="arg">definition</i> <span class="opt">?<i class="arg">exclusions</i>?</span></a></dt>
 <dd><p>This command defines two C functions for the conversion of the
-<i class="arg">name</i>d bitset into Tcl lists, and vice versa.
+<i class="arg">name</i>d bit-set into Tcl lists, and vice versa.
 The underlying mapping tables are automatically initialized on first
 access, and finalized on interpreter destruction.</p>
 <p>The <i class="arg">definition</i> dictionary provides the mapping from the
 Tcl-level symbolic names of the flags to their C expressions (often
-the name of the macro specifying the actual value).</p>
-<p>The optional <i class="arg">exlusion</i> list is for the flags/bitsets for
-which conversion from bitset to flag, i.e. decoding makes no
+the name of the macro specifying the actual value).
+<em>Note</em> here that the C-level information has to be something which
+already exists. The package does <em>not</em> create these values. This is
+in contrast to the package <b class="package"><a href="critcl_enum.html">critcl::enum</a></b> which creates an
+enumeration based on the specified symbolic names.</p>
+<p>The optional <i class="arg">exlusion</i> list is for the flags/bit-sets for
+which conversion from bit-set to flag, i.e. decoding makes no
 sense. One case for such, for example, are flags representing a
 combination of other flags.</p>
 <p>The package generates multiple things (declarations and
@@ -174,7 +182,7 @@ proper C identifier.</p>
 <dl class="definitions">
 <dt><i class="arg">name</i>_encode</dt>
 <dd><p>The function for encoding a Tcl list of strings into the equivalent
-bitset.
+bit-set.
 Its signature is</p>
 <pre class="example">
 int <i class="arg">name</i>_encode (Tcl_Interp* interp, Tcl_Obj* flags, int* result);
@@ -182,7 +190,7 @@ int <i class="arg">name</i>_encode (Tcl_Interp* interp, Tcl_Obj* flags, int* res
 <p>The return value of the function is a Tcl error code,
 i.e. <b class="const">TCL_OK</b>, <b class="const">TCL_ERROR</b>, etc.</p></dd>
 <dt><i class="arg">name</i>_decode</dt>
-<dd><p>The function for decoding a bitset into the equivalent Tcl list of
+<dd><p>The function for decoding a bit-set into the equivalent Tcl list of
 strings.
 Its signature is</p>
 <pre class="example">

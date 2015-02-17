@@ -285,6 +285,9 @@ doc
 \fBcritcl::class\fR
 \fIfiles/critcl_class\&.n\fR: CriTcl Utilities: C Classes
 .TP
+\fBcritcl::emap\fR
+\fIfiles/critcl_emap\&.n\fR: CriTcl Utilities: Enum en- and decoding
+.TP
 \fBcritcl::enum\fR
 \fIfiles/critcl_enum\&.n\fR: CriTcl Utilities: String/Integer mapping
 .TP

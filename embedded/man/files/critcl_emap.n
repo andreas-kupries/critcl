@@ -1,8 +1,8 @@
 '\"
-'\" Generated from file 'critcl_bitmap\&.man' by tcllib/doctools with format 'nroff'
+'\" Generated from file 'critcl_emap\&.man' by tcllib/doctools with format 'nroff'
 '\" Copyright (c) 2011-2012 Andreas Kupries
 '\"
-.TH "critcl::bitmap" n 1\&.0\&.1 doc "C Runtime In Tcl (CriTcl)"
+.TH "critcl::emap" n 1 doc "C Runtime In Tcl (CriTcl)"
 .\" The -*- nroff -*- definitions below are for supplemental macros used
 .\" in Tcl/Tk manual entries.
 .\"
@@ -272,15 +272,15 @@ Database Class:	\\fB\\$3\\fR
 ..
 .BS
 .SH NAME
-critcl::bitmap \- CriTcl Utilities: Bitset en- and decoding
+critcl::emap \- CriTcl Utilities: Enum en- and decoding
 .SH SYNOPSIS
 package require \fBTcl  8\&.4\fR
 .sp
 package require \fBcritcl  ?3\&.1\&.11?\fR
 .sp
-package require \fBcritcl::bitmap  ?1\&.0\&.1?\fR
+package require \fBcritcl::emap  ?1?\fR
 .sp
-\fB::critcl::bitmap::def\fR \fIname\fR \fIdefinition\fR ?\fIexclusions\fR?
+\fB::critcl::emap::def\fR \fIname\fR \fIdefinition\fR ?\fB-nocase\fR?
 .sp
 .BE
 .SH DESCRIPTION
@@ -291,21 +291,21 @@ embedded within Tcl scripts, for all who wish to make their code go
 faster\&.
 .PP
 This document is the reference manpage for the
-\fBcritcl::bitmap\fR package\&. This package provides convenience
+\fBcritcl::emap\fR package\&. This package provides convenience
 commands for advanced functionality built on top of both critcl core
 and package \fBcritcl::iassoc\fR\&.
 .PP
-C level libraries often use bit-sets to encode many flags into a
-single value\&. Tcl bindings to such libraries now have the task of
-converting a Tcl representation of such flags (like a list of strings)
-into such bit-sets, and back\&.
+C level libraries often use enumerations or integer values to encode
+information, like the state of a system\&. Tcl bindings to such libraries now
+have the task of converting a Tcl representation, i\&.e\&. a string into such
+state, and back\&.
 \fINote\fR here that the C-level information has to be something which
 already exists\&. The package does \fInot\fR create these values\&. This is
 in contrast to the package \fBcritcl::enum\fR which creates an
 enumeration based on the specified symbolic names\&.
 .PP
 This package was written to make the declaration and management
-of such bit-sets and their associated conversions functions easy,
+of such enumerations and their associated conversions functions easy,
 hiding all attendant complexity from the user\&.
 .PP
 Its intended audience are mainly developers wishing to write
@@ -339,24 +339,30 @@ This package resides in the Core Package Layer of CriTcl\&.
 .PP
 .SH API
 .TP
-\fB::critcl::bitmap::def\fR \fIname\fR \fIdefinition\fR ?\fIexclusions\fR?
+\fB::critcl::emap::def\fR \fIname\fR \fIdefinition\fR ?\fB-nocase\fR?
 This command defines two C functions for the conversion of the
-\fIname\fRd bit-set into Tcl lists, and vice versa\&.
+\fIname\fRd state code into a Tcl string, and vice versa\&.
 The underlying mapping tables are automatically initialized on first
 access, and finalized on interpreter destruction\&.
 .sp
 The \fIdefinition\fR dictionary provides the mapping from the
-Tcl-level symbolic names of the flags to their C expressions (often
+Tcl-level symbolic names of the state to their C expressions (often
 the name of the macro specifying the actual value)\&.
 \fINote\fR here that the C-level information has to be something which
 already exists\&. The package does \fInot\fR create these values\&. This is
 in contrast to the package \fBcritcl::enum\fR which creates an
 enumeration based on the specified symbolic names\&.
 .sp
-The optional \fIexlusion\fR list is for the flags/bit-sets for
-which conversion from bit-set to flag, i\&.e\&. decoding makes no
-sense\&. One case for such, for example, are flags representing a
-combination of other flags\&.
+Further note that multiple strings can be mapped to the same C
+expression\&. When converting to Tcl the first string for the mapping
+is returned\&. An important thing to know: If all C expressions are
+recognizable as integer numbers and their covered range is not too large
+(at most 50) the package will generate code using direct and fast
+mapping tables instead of using a linear search\&.
+.sp
+If the option \fB-nocase\fR is specified then the encoder will
+match strings case-insensitively, and the decoder will always return a
+lower-case string, regardless of the string's case in the \fIdefinition\fR\&.
 .sp
 The package generates multiple things (declarations and
 definitions) with names derived from \fIname\fR, which has to be a
@@ -364,14 +370,13 @@ proper C identifier\&.
 .RS
 .TP
 \fIname\fR_encode
-The function for encoding a Tcl list of strings into the equivalent
-bit-set\&.
+The function for encoding a Tcl string into the equivalent state code\&.
 Its signature is
 .sp
 .CS
 
 
-int \fIname\fR_encode (Tcl_Interp* interp, Tcl_Obj* flags, int* result);
+int \fIname\fR_encode (Tcl_Interp* interp, Tcl_Obj* state, int* result);
 
 .CE
 .sp
@@ -379,14 +384,13 @@ The return value of the function is a Tcl error code,
 i\&.e\&. \fBTCL_OK\fR, \fBTCL_ERROR\fR, etc\&.
 .TP
 \fIname\fR_decode
-The function for decoding a bit-set into the equivalent Tcl list of
-strings\&.
+The function for decoding a state code into the equivalent Tcl strings\&.
 Its signature is
 .sp
 .CS
 
 
-Tcl_Obj* \fIname\fR_decode (Tcl_Interp* interp, int flags);
+Tcl_Obj* \fIname\fR_decode (Tcl_Interp* interp, int state);
 
 .CE
 .TP
@@ -408,8 +412,7 @@ for use by \fBcritcl::cproc\fR\&.
 .RE
 .PP
 .SH EXAMPLE
-The example shown below is the specification of the event flags pulled
-from the draft work on a Tcl binding to Linux's inotify APIs\&.
+The example shown below is the \&.\&.\&. TODO
 .CS
 
 
@@ -417,39 +420,18 @@ package require Tcl 8\&.5
 package require critcl 3\&.1\&.11
 
 critcl::buildrequirement {
-    package require critcl::bitmap
+    package require critcl::emap
 }
 
-critcl::bitmap::def tcl_inotify_events {
-    accessed       IN_ACCESS
-    all            IN_ALL_EVENTS
-    attribute      IN_ATTRIB
-    closed         IN_CLOSE
-    closed-nowrite IN_CLOSE_NOWRITE
-    closed-write   IN_CLOSE_WRITE
-    created        IN_CREATE
-    deleted        IN_DELETE
-    deleted-self   IN_DELETE_SELF
-    dir-only       IN_ONLYDIR
-    dont-follow    IN_DONT_FOLLOW
-    modified       IN_MODIFY
-    move           IN_MOVE
-    moved-from     IN_MOVED_FROM
-    moved-self     IN_MOVE_SELF
-    moved-to       IN_MOVED_TO
-    oneshot        IN_ONESHOT
-    open           IN_OPEN
-    overflow       IN_Q_OVERFLOW
-    unmount        IN_UNMOUNT
-} {
-    all closed move oneshot
+critcl::emap::def tcl_\&.\&.\&. {
+    TODO
 }
 
-# Declarations:          tcl_inotify_events\&.h
-# Encoder:      int      tcl_inotify_events_encode (Tcl_Interp* interp, Tcl_Obj* flags, int* result);
-# Decoder:      Tcl_Obj* tcl_inotify_events_decode (Tcl_Interp* interp, int flags);
-# crit arg-type          tcl_inotify_events
-# crit res-type          tcl_inotify_events
+# Declarations:          tcl_\&.\&.\&.\&.h
+# Encoder:      int      tcl_\&.\&.\&._encode (Tcl_Interp* interp, Tcl_Obj* state, int* result);
+# Decoder:      Tcl_Obj* tcl_\&.\&.\&._decode (Tcl_Interp* interp, int state);
+# crit arg-type          tcl_\&.\&.\&.
+# crit res-type          tcl_\&.\&.\&.
 
 .CE
 .SH AUTHORS

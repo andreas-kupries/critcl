@@ -373,6 +373,7 @@ proc ::critcl::argcnames {adefs {interp ip}} {
     foreach {t a} $adefs {
 	if {[llength $a] == 2} {
 	    set a [lindex $a 0]
+	    lappend cnames _has_$a
 	}
 	lappend cnames _$a
     }
@@ -396,6 +397,9 @@ proc ::critcl::argcsignature {adefs} {
     foreach {t a} $adefs {
 	if {[llength $a] == 2} {
 	    set a [lindex $a 0]
+	    # Argument to signal if the optional argument was set
+	    # (true) or is the default (false).
+	    lappend cargs "int has_$a"
 	}
 	lappend cargs  "[ArgumentCTypeB $t] $a"
     }
@@ -416,8 +420,10 @@ proc ::critcl::argvardecls {adefs} {
     foreach {t a} $adefs {
 	if {[llength $a] == 2} {
 	    set a [lindex $a 0]
+	    lappend result "[ArgumentCType $t] _$a;\n  int _has_$a = 0;"
+	} else {
+	    lappend result "[ArgumentCType $t] _$a;"
 	}
-	lappend result "[ArgumentCType $t] _$a;"
     }
 
     return $result
@@ -471,7 +477,7 @@ proc ::critcl::argconversion {adefs {n 1}} {
 	    set map [list @@ "ov\[idx_\]" @A _$a]
 	    set code [string map $map [ArgumentConversion $t]]
 
-	    set code "${prefix}  if (oc > $min) \{\n$code\n    idx_++;\n  \} else \{\n    _$a = $default;\n  \}"
+	    set code "${prefix}  if (oc > $min) \{\n$code\n    idx_++;\n    _has_$a = 1;\n  \} else \{\n    _$a = $default;\n  \}"
 	    incr min
 
 	    lappend result "  /* ($t $a, optional, default $default) - - -- --- ----- -------- */"
@@ -501,7 +507,7 @@ proc ::critcl::argconversion {adefs {n 1}} {
 	}
     }
 
-    return $result
+    return [Deline $result]
 }
 
 proc ::critcl::argtype {name conversion {ctype {}} {ctypeb {}}} {
@@ -755,6 +761,9 @@ proc ::critcl::at::get {} {
 
 proc ::critcl::at::get* {} {
     variable where
+    if {!$::critcl::v::options(lines)} {
+	return {}
+    }
     if {![info exists where]} {
 	return -code error "No location defined"
     }
@@ -2132,7 +2141,7 @@ proc ::critcl::showconfig {{fd ""}} {
 	}
 	lappend out $line
     }
-    # Tcl variables
+    # Tcl variables - Combined LengthLongestWord (all), and filtering
     set vars [list]
     set max 0
     foreach idx [array names v::toolchain $v::targetplatform,*] {
@@ -2153,7 +2162,7 @@ proc ::critcl::showconfig {{fd ""}} {
 		# values - e.g. "Windows NT"
 		set val [lindex $val 0]
 	    }
-	    lappend out "    [format %-${max}s $var] $val"
+	    lappend out "    [PadRight $max $var] $val"
 	}
     }
     set out [join $out \n]
@@ -3228,7 +3237,7 @@ proc ::critcl::EmitShimFooter {rtype} {
     # Convert the returned low-level result from C to Tcl, if required.
     # Return a standard status, if required.
 
-    set code [ResultConversion $rtype]
+    set code [Deline [ResultConversion $rtype]]
     if {$code ne {}} { Emitln $code }
     Emitln \}
     return
@@ -3241,31 +3250,31 @@ proc ::critcl::ArgumentSupport {type} {
 
 proc ::critcl::ArgumentCType {type} {
     if {[info exists v::actype($type)]} { return $v::actype($type) }
-    return -code error "Unknown argument type $type"
+    return -code error "Unknown argument type \"$type\""
 }
 
 proc ::critcl::ArgumentCTypeB {type} {
     if {[info exists v::actypeb($type)]} { return $v::actypeb($type) }
-    return -code error "Unknown argument type $type"
+    return -code error "Unknown argument type \"$type\""
 }
 
 proc ::critcl::ArgumentConversion {type} {
     if {[info exists v::aconv($type)]} { return $v::aconv($type) }
-    return -code error "Unknown argument type $type"
+    return -code error "Unknown argument type \"$type\""
 }
 
 proc ::critcl::ResultCType {type} {
     if {[info exists v::rctype($type)]} {
 	return $v::rctype($type)
     }
-    return -code error "Unknown result type $type"
+    return -code error "Unknown result type \"$type\""
 }
 
 proc ::critcl::ResultConversion {type} {
     if {[info exists v::rconv($type)]} {
 	return $v::rconv($type)
     }
-    return -code error "Unknown result type $type"
+    return -code error "Unknown result type \"$type\""
 }
 
 # # ## ### ##### ######## ############# #####################
@@ -3634,12 +3643,12 @@ proc ::critcl::CollectEmbeddedSources {file destination libfile ininame placestu
 	# itself, build in mode "compile & run".
 	set stubs     [TclDecls     $file]
 	set platstubs [TclPlatDecls $file]
-	puts -nonewline $fd [subst [Cat [Template stubs.c]]]
-	#                    ^=> mintcl, stubs, platstubs
+	puts -nonewline $fd [Deline [subst [Cat [Template stubs.c]]]]
+	#                            ^=> mintcl, stubs, platstubs
     } else {
 	# Declarations only, for linking, in the sub-packages.
-	puts -nonewline $fd [subst [Cat [Template stubs_e.c]]]
-	#                    ^=> mintcl
+	puts -nonewline $fd [Deline [subst [Cat [Template stubs_e.c]]]]
+	#                            ^=> mintcl
     }
 
     if {[UsingTk $file]} {
@@ -3669,7 +3678,9 @@ proc ::critcl::CollectEmbeddedSources {file destination libfile ininame placestu
 
     # Take the names collected earlier and register them as Tcl
     # commands.
-    foreach name [lsort [GetParam $file functions]] {
+    set names [lsort [GetParam $file functions]]
+    set max   [LengthLongestWord $names]
+    foreach name $names {
 	if {[info exists v::clientdata($name)]} {
 	    set cd $v::clientdata($name)
 	} else {
@@ -3680,7 +3691,7 @@ proc ::critcl::CollectEmbeddedSources {file destination libfile ininame placestu
 	} else {
 	    set dp 0
 	}
-	puts $fd "  Tcl_CreateObjCommand(ip, ns_$name, tcl_$name, $cd, $dp);"
+	puts $fd "  Tcl_CreateObjCommand(interp, [PadRight [expr {$max+4}] ns_$name,] [PadRight [expr {$max+5}] tcl_$name,] $cd, $dp);"
     }
 
     # Complete the trailer and be done.
@@ -4413,6 +4424,13 @@ proc ::critcl::BaseOf {f} {
 # # ## ### ##### ######## ############# #####################
 ## Implementation -- Internals - Miscellanea
 
+proc ::critcl::Deline {text} {
+    if {![config lines]} {
+	set text [join [GrepV "\#line*" [split $text \n]] \n]
+    }
+    return $text
+}
+
 proc ::critcl::Separator {} {
     return "/* [string repeat - 70] */"
 }
@@ -4652,6 +4670,30 @@ proc ::critcl::Grep {pattern lines} {
     return $r
 }
 
+proc ::critcl::GrepV {pattern lines} {
+    set r {}
+    foreach line $lines {
+	if {[string match $pattern $line]} continue
+	lappend r $line
+    }
+    return $r
+}
+
+proc ::critcl::PadRight {len w} {
+    # <=> Left justified
+    format %-${len}s $w
+}
+
+proc ::critcl::LengthLongestWord {words} {
+    set max 0
+    foreach w $words {
+	set n [string length $w]
+	if {$n <= $max} continue
+	set max $n
+    }
+    return $max
+}
+
 # # ## ### ##### ######## ############# #####################
 ## Initialization
 
@@ -4707,6 +4749,10 @@ proc ::critcl::Initialize {} {
     argtype long {
 	if (Tcl_GetLongFromObj(interp, @@, &@A) != TCL_OK) return TCL_ERROR;
     }
+
+    argtype wideint {
+	if (Tcl_GetWideIntFromObj(interp, @@, &@A) != TCL_OK) return TCL_ERROR;
+    } Tcl_WideInt Tcl_WideInt
 
     argtype double {
 	if (Tcl_GetDoubleFromObj(interp, @@, &@A) != TCL_OK) return TCL_ERROR;
@@ -4770,13 +4816,31 @@ proc ::critcl::Initialize {} {
 	/* Raw pointer in binary Tcl value */
 	@A = (double*) Tcl_GetByteArrayFromObj(@@, NULL);
     }
+
+    # OLD Raw binary string. Length information is _NOT_ propagated
+
     argtype bytearray {
 	/* Raw binary string. Length information is _NOT_ propagated */
 	@A = (char*) Tcl_GetByteArrayFromObj(@@, NULL);
-	Tcl_InvalidateStringRep(@@);
     } char* char*
     argtype rawchar = bytearray
     argtype rawchar* = bytearray
+
+    # NEW Raw binary string _with_ length information.
+
+    argtype bytes {
+	/* Raw binary string _with_ length information */
+	@A.s = (char*) Tcl_GetByteArrayFromObj(@@, &(@A.len));
+	@A.o = @@;
+    } critcl_bytes critcl_bytes
+
+    argtypesupport bytes {
+	typedef struct critcl_bytes {
+	    Tcl_Obj* o;
+	    char*    s;
+	    int      len;
+	} critcl_bytes;
+    }
 
     # Declare the standard result types for cproc.
     # System still has special case code for:
@@ -4801,6 +4865,11 @@ proc ::critcl::Initialize {} {
 	Tcl_SetObjResult(interp, Tcl_NewLongObj(rv));
 	return TCL_OK;
     }
+
+    resulttype wideint {
+	Tcl_SetObjResult(interp, Tcl_NewWideIntObj(rv));
+	return TCL_OK;
+    } Tcl_WideInt
 
     resulttype double {
 	Tcl_SetObjResult(interp, Tcl_NewDoubleObj(rv));

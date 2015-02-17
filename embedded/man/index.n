@@ -277,12 +277,18 @@ bitmask
 .TP
 \fBfiles/critcl_bitmap\&.n\fR
 critcl::bitmap
+.TP
+\fBfiles/critcl_emap\&.n\fR
+critcl::emap
 .RE
 bitset
 .RS
 .TP
 \fBfiles/critcl_bitmap\&.n\fR
 critcl::bitmap
+.TP
+\fBfiles/critcl_emap\&.n\fR
+critcl::emap
 .RE
 C class
 .RS
@@ -304,6 +310,9 @@ critcl::bitmap
 .TP
 \fBfiles/critcl_class\&.n\fR
 critcl::class
+.TP
+\fBfiles/critcl_emap\&.n\fR
+critcl::emap
 .TP
 \fBfiles/critcl_enum\&.n\fR
 critcl::enum
@@ -368,6 +377,9 @@ critcl::bitmap
 \fBfiles/critcl_class\&.n\fR
 critcl::class
 .TP
+\fBfiles/critcl_emap\&.n\fR
+critcl::emap
+.TP
 \fBfiles/critcl_enum\&.n\fR
 critcl::enum
 .TP
@@ -419,6 +431,9 @@ critcl::bitmap
 \fBfiles/critcl_class\&.n\fR
 critcl::class
 .TP
+\fBfiles/critcl_emap\&.n\fR
+critcl::emap
+.TP
 \fBfiles/critcl_enum\&.n\fR
 critcl::enum
 .TP
@@ -469,6 +484,9 @@ critcl::bitmap
 .TP
 \fBfiles/critcl_class\&.n\fR
 critcl::class
+.TP
+\fBfiles/critcl_emap\&.n\fR
+critcl::emap
 .TP
 \fBfiles/critcl_enum\&.n\fR
 critcl::enum
@@ -527,6 +545,9 @@ critcl::bitmap
 \fBfiles/critcl_class\&.n\fR
 critcl::class
 .TP
+\fBfiles/critcl_emap\&.n\fR
+critcl::emap
+.TP
 \fBfiles/critcl_enum\&.n\fR
 critcl::enum
 .TP
@@ -577,6 +598,9 @@ critcl::bitmap
 .TP
 \fBfiles/critcl_class\&.n\fR
 critcl::class
+.TP
+\fBfiles/critcl_emap\&.n\fR
+critcl::emap
 .TP
 \fBfiles/critcl_enum\&.n\fR
 critcl::enum
@@ -629,6 +653,9 @@ critcl::bitmap
 \fBfiles/critcl_class\&.n\fR
 critcl::class
 .TP
+\fBfiles/critcl_emap\&.n\fR
+critcl::emap
+.TP
 \fBfiles/critcl_enum\&.n\fR
 critcl::enum
 .TP
@@ -670,6 +697,9 @@ flags
 .TP
 \fBfiles/critcl_bitmap\&.n\fR
 critcl::bitmap
+.TP
+\fBfiles/critcl_emap\&.n\fR
+critcl::emap
 .RE
 generate package
 .RS
@@ -685,6 +715,9 @@ critcl::bitmap
 .TP
 \fBfiles/critcl_class\&.n\fR
 critcl::class
+.TP
+\fBfiles/critcl_emap\&.n\fR
+critcl::emap
 .TP
 \fBfiles/critcl_enum\&.n\fR
 critcl::enum
@@ -742,6 +775,9 @@ critcl::bitmap
 .TP
 \fBfiles/critcl_class\&.n\fR
 critcl::class
+.TP
+\fBfiles/critcl_emap\&.n\fR
+critcl::emap
 .TP
 \fBfiles/critcl_enum\&.n\fR
 critcl::enum
@@ -803,6 +839,9 @@ critcl::bitmap
 \fBfiles/critcl_class\&.n\fR
 critcl::class
 .TP
+\fBfiles/critcl_emap\&.n\fR
+critcl::emap
+.TP
 \fBfiles/critcl_enum\&.n\fR
 critcl::enum
 .TP
@@ -854,6 +893,9 @@ critcl::bitmap
 \fBfiles/critcl_class\&.n\fR
 critcl::class
 .TP
+\fBfiles/critcl_emap\&.n\fR
+critcl::emap
+.TP
 \fBfiles/critcl_enum\&.n\fR
 critcl::enum
 .TP
@@ -896,6 +938,9 @@ singleton
 \fBfiles/critcl_bitmap\&.n\fR
 critcl::bitmap
 .TP
+\fBfiles/critcl_emap\&.n\fR
+critcl::emap
+.TP
 \fBfiles/critcl_enum\&.n\fR
 critcl::enum
 .TP
@@ -925,6 +970,9 @@ Tcl Interp Association
 .TP
 \fBfiles/critcl_bitmap\&.n\fR
 critcl::bitmap
+.TP
+\fBfiles/critcl_emap\&.n\fR
+critcl::emap
 .TP
 \fBfiles/critcl_enum\&.n\fR
 critcl::enum

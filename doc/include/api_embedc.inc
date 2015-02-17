@@ -474,6 +474,10 @@ initialization function of the shared library backing the
 [file .critcl] file, and is executed when this library is loaded into
 the interpreter.
 
+[para] This code has access to a variable [var interp] of type
+[const Tcl_Interp*] referencing the Tcl interpreter currently being
+initialized.
+
 [para] The code in [arg externals] on the other hand is placed outside
 and just before the initialization function, making this is a good
 place for any external symbols required by initialization function

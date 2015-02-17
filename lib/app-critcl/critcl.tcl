@@ -739,7 +739,7 @@ proc ::critcl::app::ProcessInput {} {
 	array set r $results
 
 	append v::edecls    "extern Tcl_AppInitProc $r(initname)_Init;\n"
-	append v::initnames "    if ($r(initname)_Init(ip) != TCL_OK) return TCL_ERROR;\n"
+	append v::initnames "    if ($r(initname)_Init(interp) != TCL_OK) return TCL_ERROR;\n"
 	append v::license   [License $f $r(license)]
 
 	lappend v::pkgs  $r(pkgname)

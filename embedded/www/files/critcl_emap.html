@@ -1,6 +1,6 @@
 
 <html><head>
-<title>critcl::literals - C Runtime In Tcl (CriTcl)</title>
+<title>critcl::emap - C Runtime In Tcl (CriTcl)</title>
 <style type="text/css"><!--
     HTML {
 	background: 	#FFFFFF;
@@ -92,20 +92,20 @@
     }
 --></style>
 </head>
-<! -- Generated from file 'critcl_literals.man' by tcllib/doctools with format 'html'
+<! -- Generated from file 'critcl_emap.man' by tcllib/doctools with format 'html'
    -->
 <! -- Copyright &copy; 2011-2012 Andreas Kupries
    -->
-<! -- CVS: $Id$ critcl::literals.n
+<! -- CVS: $Id$ critcl::emap.n
    -->
 <body><div class="doctools">
 <hr> [
    <a href="../toc.html">Table Of Contents</a>
 | <a href="../index.html">Keyword Index</a>
  ] <hr>
-<h1 class="title">critcl::literals(n) 1.1 doc &quot;C Runtime In Tcl (CriTcl)&quot;</h1>
+<h1 class="title">critcl::emap(n) 1 doc &quot;C Runtime In Tcl (CriTcl)&quot;</h1>
 <div id="name" class="section"><h2><a name="name">Name</a></h2>
-<p>critcl::literals - CriTcl Utilities: Constant string pools</p>
+<p>critcl::emap - CriTcl Utilities: Enum en- and decoding</p>
 </div>
 <div id="toc" class="section"><h2><a name="toc">Table Of Contents</a></h2>
 <ul class="toc">
@@ -126,10 +126,10 @@
 <ul class="requirements">
 <li>package require <b class="pkgname">Tcl 8.4</b></li>
 <li>package require <b class="pkgname">critcl <span class="opt">?3.1.11?</span></b></li>
-<li>package require <b class="pkgname">critcl::literals <span class="opt">?1.1?</span></b></li>
+<li>package require <b class="pkgname">critcl::emap <span class="opt">?1?</span></b></li>
 </ul>
 <ul class="syntax">
-<li><a href="#1"><b class="cmd">::critcl::literals::def</b> <i class="arg">name</i> <i class="arg">definition</i></a></li>
+<li><a href="#1"><b class="cmd">::critcl::emap::def</b> <i class="arg">name</i> <i class="arg">definition</i> <span class="opt">?<b class="option">-nocase</b>?</span></a></li>
 </ul>
 </div>
 </div>
@@ -139,17 +139,20 @@ system to build C extension packages for Tcl on the fly, from C code
 embedded within Tcl scripts, for all who wish to make their code go
 faster.</p>
 <p>This document is the reference manpage for the
-<b class="package">critcl::literals</b> package. This package provides convenience
+<b class="package">critcl::emap</b> package. This package provides convenience
 commands for advanced functionality built on top of both critcl core
 and package <b class="package"><a href="critcl_iassoc.html">critcl::iassoc</a></b>.</p>
-<p>Many packages will have a fixed set of string constants
-occuring in one or places. Most of them will be coded to create a new
-string <b class="const">Tcl_Obj*</b> from a C <b class="const">char*</b> every time the constant
-is needed, as this is easy to to, despite the inherent waste of
-memory.</p>
-<p>This package was written to make declaration and management of
-string pools which do not waste memory as easy as the wasteful
-solution, hiding all attendant complexity from the user.</p>
+<p>C level libraries often use enumerations or integer values to encode
+information, like the state of a system. Tcl bindings to such libraries now
+have the task of converting a Tcl representation, i.e. a string into such
+state, and back.
+<em>Note</em> here that the C-level information has to be something which
+already exists. The package does <em>not</em> create these values. This is
+in contrast to the package <b class="package"><a href="critcl_enum.html">critcl::enum</a></b> which creates an
+enumeration based on the specified symbolic names.</p>
+<p>This package was written to make the declaration and management
+of such enumerations and their associated conversions functions easy,
+hiding all attendant complexity from the user.</p>
 <p>Its intended audience are mainly developers wishing to write
 Tcl packages with embedded C code.</p>
 <p>This package resides in the Core Package Layer of CriTcl.</p>
@@ -157,69 +160,77 @@ Tcl packages with embedded C code.</p>
 </div>
 <div id="section2" class="section"><h2><a name="section2">API</a></h2>
 <dl class="definitions">
-<dt><a name="1"><b class="cmd">::critcl::literals::def</b> <i class="arg">name</i> <i class="arg">definition</i></a></dt>
-<dd><p>This command defines a C function with the given <i class="arg">name</i> which
-provides access to a pool of constant strings with a Tcl interpreter.</p>
+<dt><a name="1"><b class="cmd">::critcl::emap::def</b> <i class="arg">name</i> <i class="arg">definition</i> <span class="opt">?<b class="option">-nocase</b>?</span></a></dt>
+<dd><p>This command defines two C functions for the conversion of the
+<i class="arg">name</i>d state code into a Tcl string, and vice versa.
+The underlying mapping tables are automatically initialized on first
+access, and finalized on interpreter destruction.</p>
 <p>The <i class="arg">definition</i> dictionary provides the mapping from the
-C-level symbolic names to the string themselves.</p>
-<p>The new function has two parameters, a <b class="const">Tcl_Interp*</b>
-pointer refering to the interpreter holding the string pool, and a
-code of type &quot;<i class="arg">name</i>_names&quot; (see below), the symbolic name of the
-literal to return. Tcl result of the function is a <b class="const">Tcl_Obj*</b>
-pointer to the requested string constant.</p>
-<p>The underlying string pool is automatically initialized on
-first access, and finalized on interpreter destruction.</p>
+Tcl-level symbolic names of the state to their C expressions (often
+the name of the macro specifying the actual value).
+<em>Note</em> here that the C-level information has to be something which
+already exists. The package does <em>not</em> create these values. This is
+in contrast to the package <b class="package"><a href="critcl_enum.html">critcl::enum</a></b> which creates an
+enumeration based on the specified symbolic names.</p>
+<p>Further note that multiple strings can be mapped to the same C
+expression. When converting to Tcl the first string for the mapping
+is returned. An important thing to know: If all C expressions are
+recognizable as integer numbers and their covered range is not too large
+(at most 50) the package will generate code using direct and fast
+mapping tables instead of using a linear search.</p>
+<p>If the option <b class="option">-nocase</b> is specified then the encoder will
+match strings case-insensitively, and the decoder will always return a
+lower-case string, regardless of the string's case in the <i class="arg">definition</i>.</p>
 <p>The package generates multiple things (declarations and
 definitions) with names derived from <i class="arg">name</i>, which has to be a
 proper C identifier.</p>
 <dl class="definitions">
-<dt><i class="arg">name</i></dt>
-<dd><p>The function providing access to the string pool.
+<dt><i class="arg">name</i>_encode</dt>
+<dd><p>The function for encoding a Tcl string into the equivalent state code.
 Its signature is</p>
 <pre class="example">
-Tcl_Obj* <i class="arg">name</i> (Tcl_Interp* interp, <i class="arg">name</i>_names literal);
+int <i class="arg">name</i>_encode (Tcl_Interp* interp, Tcl_Obj* state, int* result);
+</pre>
+<p>The return value of the function is a Tcl error code,
+i.e. <b class="const">TCL_OK</b>, <b class="const">TCL_ERROR</b>, etc.</p></dd>
+<dt><i class="arg">name</i>_decode</dt>
+<dd><p>The function for decoding a state code into the equivalent Tcl strings.
+Its signature is</p>
+<pre class="example">
+Tcl_Obj* <i class="arg">name</i>_decode (Tcl_Interp* interp, int state);
 </pre>
 </dd>
-<dt><i class="arg">name</i>_names</dt>
-<dd><p>A C enumeration type containing the symbolic names of the strings
-provided by the pool.</p></dd>
 <dt><i class="arg">name</i>.h</dt>
-<dd><p>A header file containing the declarations for the accessor function
-and enumeration type, for use by other parts of the system, if
-necessary.</p>
+<dd><p>A header file containing the declarations for the two conversion
+functions, for use by other parts of the system, if necessary.</p>
 <p>The generated file is stored in a place where it will not
 interfere with the overall system outside of the package, yet also be
 available for easy inclusion by package files (<b class="cmd">csources</b>).</p></dd>
 <dt><i class="arg">name</i></dt>
-<dd><p><em>New in version 1.1</em>:
-At the level of critcl itself the command registers a new result-type
-for <b class="cmd">critcl::cproc</b>, which takes an integer result from the function
-and converts it to the equivalent string in the pool for the script.</p></dd>
+<dd><p>The name of a critcl argument type encapsulating the encoder function
+for use by <b class="cmd">critcl::cproc</b>.</p></dd>
+<dt><i class="arg">name</i></dt>
+<dd><p>The name of a critcl result type encapsulating the decoder function
+for use by <b class="cmd">critcl::cproc</b>.</p></dd>
 </dl></dd>
 </dl>
 </div>
 <div id="section3" class="section"><h2><a name="section3">Example</a></h2>
-<p>The example shown below is the specification of the string pool pulled
-from the draft work on a Tcl binding to Linux's inotify APIs.</p>
+<p>The example shown below is the ... TODO</p>
 <pre class="example">
 package require Tcl 8.5
 package require critcl 3.1.11
 critcl::buildrequirement {
-    package require critcl::literals
+    package require critcl::emap
 }
-critcl::literals::def tcl_inotify_strings {
-    w_create	&quot;create&quot;
-    w_directory	&quot;directory&quot;
-    w_events	&quot;events&quot;
-    w_file	&quot;file&quot;
-    w_handler	&quot;handler&quot;
-    w_remove	&quot;remove&quot;
+critcl::emap::def tcl_... {
+    TODO
 }
-# Declarations: tcl_inotify_strings.h
-# Type:         tcl_inotify_strings_names
-# Accessor:     Tcl_Obj* tcl_inotify_strings (Tcl_Interp*               interp,
-#                                             tcl_inotify_strings_names literal);
-# ResultType:   tcl_inotify_strings
+# Declarations:          tcl_....h
+# Encoder:      int      tcl_..._encode (Tcl_Interp* interp, Tcl_Obj* state, int* result);
+# Decoder:      Tcl_Obj* tcl_..._decode (Tcl_Interp* interp, int state);
+# crit arg-type          tcl_...
+# crit res-type          tcl_...
 </pre>
 </div>
 <div id="section4" class="section"><h2><a name="section4">Authors</a></h2>
@@ -233,7 +244,7 @@ Please also report any ideas for enhancements you may have for either
 package and/or documentation.</p>
 </div>
 <div id="keywords" class="section"><h2><a name="keywords">Keywords</a></h2>
-<p><a href="../index.html#key8">C code</a>, <a href="../index.html#key3">Embedded C Code</a>, <a href="../index.html#key15">Tcl Interp Association</a>, <a href="../index.html#key6">code generator</a>, <a href="../index.html#key0">compile &amp; run</a>, <a href="../index.html#key10">compiler</a>, <a href="../index.html#key1">dynamic code generation</a>, <a href="../index.html#key2">dynamic compilation</a>, <a href="../index.html#key9">generate package</a>, <a href="../index.html#key4">linker</a>, <a href="../index.html#key20">literal pool</a>, <a href="../index.html#key5">on demand compilation</a>, <a href="../index.html#key7">on-the-fly compilation</a>, <a href="../index.html#key13">singleton</a>, <a href="../index.html#key19">string pool</a></p>
+<p><a href="../index.html#key8">C code</a>, <a href="../index.html#key3">Embedded C Code</a>, <a href="../index.html#key15">Tcl Interp Association</a>, <a href="../index.html#key12">bitmask</a>, <a href="../index.html#key11">bitset</a>, <a href="../index.html#key6">code generator</a>, <a href="../index.html#key0">compile &amp; run</a>, <a href="../index.html#key10">compiler</a>, <a href="../index.html#key1">dynamic code generation</a>, <a href="../index.html#key2">dynamic compilation</a>, <a href="../index.html#key14">flags</a>, <a href="../index.html#key9">generate package</a>, <a href="../index.html#key4">linker</a>, <a href="../index.html#key5">on demand compilation</a>, <a href="../index.html#key7">on-the-fly compilation</a>, <a href="../index.html#key13">singleton</a></p>
 </div>
 <div id="category" class="section"><h2><a name="category">Category</a></h2>
 <p>Glueing/Embedded C code</p>

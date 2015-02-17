@@ -11,9 +11,10 @@ package provide critcl::iassoc 1.0.1
 # # ## ### ##### ######## ############# #####################
 ## Requirements.
 
-package require Tcl    8.4   ; # Min supported version.
-package require critcl 3.1   ; # Need 'meta?' to get the package name.
-package require critcl::util ; # Use the package's Get/Put commands.
+package require Tcl    8.4    ; # Min supported version.
+package require critcl 3.1.13 ; # Need 'meta?' to get the package name.
+                                # Need 'Deline' helper.
+package require critcl::util  ; # Use the package's Get/Put commands.
 
 namespace eval ::critcl::iassoc {}
 
@@ -80,7 +81,7 @@ proc ::critcl::iassoc::def {name arguments struct constructor destructor} {
 
     set hdr      ${stem}.h
     set header   [file join [critcl::cache] $hdr]
-    set template [Template iassoc.h]
+    set template [critcl::Deline [Template iassoc.h]]
 
     #puts T=[string length $template]
 

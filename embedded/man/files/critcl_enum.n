@@ -2,7 +2,7 @@
 '\" Generated from file 'critcl_enum\&.man' by tcllib/doctools with format 'nroff'
 '\" Copyright (c) 2011-2012 Andreas Kupries
 '\"
-.TH "critcl::enum" n 1 doc "C Runtime In Tcl (CriTcl)"
+.TH "critcl::enum" n 1\&.0\&.1 doc "C Runtime In Tcl (CriTcl)"
 .\" The -*- nroff -*- definitions below are for supplemental macros used
 .\" in Tcl/Tk manual entries.
 .\"
@@ -278,7 +278,7 @@ package require \fBTcl  8\&.4\fR
 .sp
 package require \fBcritcl  ?3\&.1\&.11?\fR
 .sp
-package require \fBcritcl::enum  ?1?\fR
+package require \fBcritcl::enum  ?1\&.0\&.1?\fR
 .sp
 \fB::critcl::enum::def\fR \fIname\fR \fIdefinition\fR
 .sp
@@ -301,11 +301,13 @@ direction, converting from strings to the associated integer values\&.
 .PP
 It essentially provides a bi-directional mapping between a C
 enumeration type and a set of strings, one per enumeration value\&.
+\fINote\fR that the C enumeration in question is created by the
+definition\&. It is not possible to use the symbols of an existing
+enumeration type\&.
 .PP
-This package was written to make declaration and management of
-such mappings easy\&. It uses a string pool for one of the directions
-to make use of its ability to returned shared literals and conserve
-memory\&.
+This package was written to make the declaration and management
+of such mappings easy\&. It uses a string pool for one of the directions,
+using its ability to return shared literals and conserve memory\&.
 .PP
 Its intended audience are mainly developers wishing to write
 Tcl packages with embedded C code\&.
@@ -339,16 +341,19 @@ This package resides in the Core Package Layer of CriTcl\&.
 .SH API
 .TP
 \fB::critcl::enum::def\fR \fIname\fR \fIdefinition\fR
-This command defines two C functionsfor the conversion between
+This command defines two C functions for the conversion between
 C values and Tcl_Obj'ects, with named derived from \fIname\fR\&.
 .sp
 The \fIdefinition\fR dictionary provides the mapping from the
-C-level symbolic names to the strings themselves\&.
+specified C-level symbolic names to the strings themselves\&.
 .sp
 The package generates multiple things (declarations and
 definitions) with names derived from \fIname\fR, which has to be a
 proper C identifier\&.
 .RS
+.TP
+\fIname\fR_pool_names
+The C enumeration type containing the specified symbolic names\&.
 .TP
 \fIname\fR_ToObj
 The function converting from integer value to Tcl string\&.

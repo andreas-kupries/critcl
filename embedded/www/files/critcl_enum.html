@@ -100,10 +100,10 @@
    -->
 <body><div class="doctools">
 <hr> [
-  <a href="../toc.html">Table Of Contents</a>
+   <a href="../toc.html">Table Of Contents</a>
 | <a href="../index.html">Keyword Index</a>
-] <hr>
-<h1 class="title">critcl::enum(n) 1 doc &quot;C Runtime In Tcl (CriTcl)&quot;</h1>
+ ] <hr>
+<h1 class="title">critcl::enum(n) 1.0.1 doc &quot;C Runtime In Tcl (CriTcl)&quot;</h1>
 <div id="name" class="section"><h2><a name="name">Name</a></h2>
 <p>critcl::enum - CriTcl Utilities: String/Integer mapping</p>
 </div>
@@ -126,7 +126,7 @@
 <ul class="requirements">
 <li>package require <b class="pkgname">Tcl 8.4</b></li>
 <li>package require <b class="pkgname">critcl <span class="opt">?3.1.11?</span></b></li>
-<li>package require <b class="pkgname">critcl::enum <span class="opt">?1?</span></b></li>
+<li>package require <b class="pkgname">critcl::enum <span class="opt">?1.0.1?</span></b></li>
 </ul>
 <ul class="syntax">
 <li><a href="#1"><b class="cmd">::critcl::enum::def</b> <i class="arg">name</i> <i class="arg">definition</i></a></li>
@@ -146,11 +146,13 @@ and package <b class="package"><a href="critcl_literals.html">critcl::literals</
 integer values into Tcl-level strings, but also handles the reverse
 direction, converting from strings to the associated integer values.</p>
 <p>It essentially provides a bi-directional mapping between a C
-enumeration type and a set of strings, one per enumeration value.</p>
-<p>This package was written to make declaration and management of
-such mappings easy. It uses a string pool for one of the directions
-to make use of its ability to returned shared literals and conserve
-memory.</p>
+enumeration type and a set of strings, one per enumeration value.
+<em>Note</em> that the C enumeration in question is created by the
+definition. It is not possible to use the symbols of an existing
+enumeration type.</p>
+<p>This package was written to make the declaration and management
+of such mappings easy. It uses a string pool for one of the directions,
+using its ability to return shared literals and conserve memory.</p>
 <p>Its intended audience are mainly developers wishing to write
 Tcl packages with embedded C code.</p>
 <p>This package resides in the Core Package Layer of CriTcl.</p>
@@ -159,14 +161,16 @@ Tcl packages with embedded C code.</p>
 <div id="section2" class="section"><h2><a name="section2">API</a></h2>
 <dl class="definitions">
 <dt><a name="1"><b class="cmd">::critcl::enum::def</b> <i class="arg">name</i> <i class="arg">definition</i></a></dt>
-<dd><p>This command defines two C functionsfor the conversion between
+<dd><p>This command defines two C functions for the conversion between
 C values and Tcl_Obj'ects, with named derived from <i class="arg">name</i>.</p>
 <p>The <i class="arg">definition</i> dictionary provides the mapping from the
-C-level symbolic names to the strings themselves.</p>
+specified C-level symbolic names to the strings themselves.</p>
 <p>The package generates multiple things (declarations and
 definitions) with names derived from <i class="arg">name</i>, which has to be a
 proper C identifier.</p>
 <dl class="definitions">
+<dt><i class="arg">name</i>_pool_names</dt>
+<dd><p>The C enumeration type containing the specified symbolic names.</p></dd>
 <dt><i class="arg">name</i>_ToObj</dt>
 <dd><p>The function converting from integer value to Tcl string.
 Its signature is</p>
