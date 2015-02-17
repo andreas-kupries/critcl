@@ -3686,7 +3686,7 @@ proc ::critcl::CollectEmbeddedSources {file destination libfile ininame placestu
 	} else {
 	    set dp 0
 	}
-	puts $fd "  Tcl_CreateObjCommand(ip, ns_$name, tcl_$name, $cd, $dp);"
+	puts $fd "  Tcl_CreateObjCommand(interp, ns_$name, tcl_$name, $cd, $dp);"
     }
 
     # Complete the trailer and be done.
