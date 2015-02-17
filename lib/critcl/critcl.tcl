@@ -4424,6 +4424,13 @@ proc ::critcl::BaseOf {f} {
 # # ## ### ##### ######## ############# #####################
 ## Implementation -- Internals - Miscellanea
 
+proc ::critcl::Deline {text} {
+    if {![config lines]} {
+	set text [join [GrepV "\#line*" [split $text \n]] \n]
+    }
+    return $text
+}
+
 proc ::critcl::Separator {} {
     return "/* [string repeat - 70] */"
 }
@@ -4658,6 +4665,15 @@ proc ::critcl::Grep {pattern lines} {
     set r {}
     foreach line $lines {
 	if {![string match $pattern $line]} continue
+	lappend r $line
+    }
+    return $r
+}
+
+proc ::critcl::GrepV {pattern lines} {
+    set r {}
+    foreach line $lines {
+	if {[string match $pattern $line]} continue
 	lappend r $line
     }
     return $r
