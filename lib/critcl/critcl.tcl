@@ -761,6 +761,9 @@ proc ::critcl::at::get {} {
 
 proc ::critcl::at::get* {} {
     variable where
+    if {!$::critcl::v::options(lines)} {
+	return {}
+    }
     if {![info exists where]} {
 	return -code error "No location defined"
     }
