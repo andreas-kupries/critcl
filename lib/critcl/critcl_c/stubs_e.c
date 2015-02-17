@@ -1,5 +1,5 @@
 
-# line 1 "MyInitTclStubs"
+#line 1 "MyInitTclStubs"
 
 #if USE_TCL_STUBS
   static int

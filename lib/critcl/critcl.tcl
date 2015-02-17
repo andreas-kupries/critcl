@@ -507,7 +507,7 @@ proc ::critcl::argconversion {adefs {n 1}} {
 	}
     }
 
-    return $result
+    return [Deline $result]
 }
 
 proc ::critcl::argtype {name conversion {ctype {}} {ctypeb {}}} {
@@ -3237,7 +3237,7 @@ proc ::critcl::EmitShimFooter {rtype} {
     # Convert the returned low-level result from C to Tcl, if required.
     # Return a standard status, if required.
 
-    set code [ResultConversion $rtype]
+    set code [Deline [ResultConversion $rtype]]
     if {$code ne {}} { Emitln $code }
     Emitln \}
     return
@@ -3643,12 +3643,12 @@ proc ::critcl::CollectEmbeddedSources {file destination libfile ininame placestu
 	# itself, build in mode "compile & run".
 	set stubs     [TclDecls     $file]
 	set platstubs [TclPlatDecls $file]
-	puts -nonewline $fd [subst [Cat [Template stubs.c]]]
-	#                    ^=> mintcl, stubs, platstubs
+	puts -nonewline $fd [Deline [subst [Cat [Template stubs.c]]]]
+	#                            ^=> mintcl, stubs, platstubs
     } else {
 	# Declarations only, for linking, in the sub-packages.
-	puts -nonewline $fd [subst [Cat [Template stubs_e.c]]]
-	#                    ^=> mintcl
+	puts -nonewline $fd [Deline [subst [Cat [Template stubs_e.c]]]]
+	#                            ^=> mintcl
     }
 
     if {[UsingTk $file]} {
