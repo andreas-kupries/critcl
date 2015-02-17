@@ -6,7 +6,7 @@
 
 # CriTcl Core.
 
-package provide critcl 3.1.12
+package provide critcl 3.1.13
 
 # # ## ### ##### ######## ############# #####################
 ## Requirements.
@@ -620,7 +620,7 @@ proc ::critcl::cproc {name adefs rtype {body "#"} args} {
 	}
 	default {
 	    # TODO FUTURE: We can handle this, see how cmdr does it
-	    # with thresholds.
+	    # with thresholds, and counting.
 	    error "Unable to handle multiple segments of optional arguments"
 	}
     }
