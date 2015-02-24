@@ -5,6 +5,8 @@
 
 # CriTcl Utility Package for emap en- and decoder.
 # Based on i-assoc.
+#
+# Copyright (c) 2014-2015 Andreas Kupries <andreas_kupries@users.sourceforge.net>
 
 package provide critcl::emap 1
 
