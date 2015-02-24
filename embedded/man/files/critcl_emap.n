@@ -1,6 +1,6 @@
 '\"
 '\" Generated from file 'critcl_emap\&.man' by tcllib/doctools with format 'nroff'
-'\" Copyright (c) 2011-2012 Andreas Kupries
+'\" Copyright (c) 2011-2015 Andreas Kupries
 '\"
 .TH "critcl::emap" n 1 doc "C Runtime In Tcl (CriTcl)"
 .\" The -*- nroff -*- definitions below are for supplemental macros used
@@ -412,7 +412,9 @@ for use by \fBcritcl::cproc\fR\&.
 .RE
 .PP
 .SH EXAMPLE
-The example shown below is the \&.\&.\&. TODO
+The example shown below is the specification for the possible modes of
+entry (normal, no feedback, stars) used by the Tcl binding to the
+linenoise library\&.
 .CS
 
 
@@ -423,15 +425,17 @@ critcl::buildrequirement {
     package require critcl::emap
 }
 
-critcl::emap::def tcl_\&.\&.\&. {
-    TODO
-}
+critcl::emap::def hiddenmode {
+            no  0 n 0 off 0 false 0 0 0
+    all   1 yes 1 y 1 on  1 true  1 1 1
+    stars 2
+} -nocase
 
-# Declarations:          tcl_\&.\&.\&.\&.h
-# Encoder:      int      tcl_\&.\&.\&._encode (Tcl_Interp* interp, Tcl_Obj* state, int* result);
-# Decoder:      Tcl_Obj* tcl_\&.\&.\&._decode (Tcl_Interp* interp, int state);
-# crit arg-type          tcl_\&.\&.\&.
-# crit res-type          tcl_\&.\&.\&.
+# Declarations: hiddenmode\&.h
+# Encoder:      int      hiddenmode_encode (Tcl_Interp* interp, Tcl_Obj* state, int* result);
+# Decoder:      Tcl_Obj* hiddenmode_decode (Tcl_Interp* interp, int state);
+# ResultType:   hiddenmode
+# ArgumentType: hiddenmode
 
 .CE
 .SH AUTHORS
@@ -448,6 +452,6 @@ C code, Embedded C Code, Tcl Interp Association, bitmask, bitset, code generator
 Glueing/Embedded C code
 .SH COPYRIGHT
 .nf
-Copyright (c) 2011-2012 Andreas Kupries
+Copyright (c) 2011-2015 Andreas Kupries
 
 .fi

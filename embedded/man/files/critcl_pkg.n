@@ -2,9 +2,9 @@
 '\" Generated from file 'critcl_pkg\&.man' by tcllib/doctools with format 'nroff'
 '\" Copyright (c) Jean-Claude Wippler
 '\" Copyright (c) Steve Landers
-'\" Copyright (c) 2011-2013 Andreas Kupries
+'\" Copyright (c) 2011-2015 Andreas Kupries
 '\"
-.TH "critcl" n 3\&.1\&.12 doc "C Runtime In Tcl (CriTcl)"
+.TH "critcl" n 3\&.1\&.13 doc "C Runtime In Tcl (CriTcl)"
 .\" The -*- nroff -*- definitions below are for supplemental macros used
 .\" in Tcl/Tk manual entries.
 .\"
@@ -278,7 +278,7 @@ critcl \- Critcl - Package Reference
 .SH SYNOPSIS
 package require \fBTcl  8\&.4\fR
 .sp
-package require \fBcritcl  ?3\&.1\&.12?\fR
+package require \fBcritcl  ?3\&.1\&.13?\fR
 .sp
 package require \fBplatform  ?1\&.0\&.2?\fR
 .sp
@@ -3072,6 +3072,12 @@ Fixed issue #51\&. Disabled the generation of #line directives
 for "critcl::config lines 0" coming from template files, or
 code generated with them before the final value of this
 setting was known\&.
+.IP [13]
+Fixed issue with handling of namespaced package names in
+"critcl::iassoc"\&. Equivalent to a bug in "critcl::class" fixed
+for critcl 3\&.1\&.1, critcl::class 1\&.0\&.1\&.
+Note: "literals", "enum", "emap", and "bitmap" do not require
+a fix as they are all built on top of "iassoc"\&.
 .PP
 .SH "CHANGES FOR VERSION 3\&.1\&.12"
 .IP [1]
@@ -3722,6 +3728,6 @@ Glueing/Embedded C code
 .nf
 Copyright (c) Jean-Claude Wippler
 Copyright (c) Steve Landers
-Copyright (c) 2011-2013 Andreas Kupries
+Copyright (c) 2011-2015 Andreas Kupries
 
 .fi

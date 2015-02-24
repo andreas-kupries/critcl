@@ -94,7 +94,7 @@
 </head>
 <! -- Generated from file 'critcl_emap.man' by tcllib/doctools with format 'html'
    -->
-<! -- Copyright &copy; 2011-2012 Andreas Kupries
+<! -- Copyright &copy; 2011-2015 Andreas Kupries
    -->
 <! -- CVS: $Id$ critcl::emap.n
    -->
@@ -216,21 +216,25 @@ for use by <b class="cmd">critcl::cproc</b>.</p></dd>
 </dl>
 </div>
 <div id="section3" class="section"><h2><a name="section3">Example</a></h2>
-<p>The example shown below is the ... TODO</p>
+<p>The example shown below is the specification for the possible modes of
+entry (normal, no feedback, stars) used by the Tcl binding to the
+linenoise library.</p>
 <pre class="example">
 package require Tcl 8.5
 package require critcl 3.1.11
 critcl::buildrequirement {
     package require critcl::emap
 }
-critcl::emap::def tcl_... {
-    TODO
-}
-# Declarations:          tcl_....h
-# Encoder:      int      tcl_..._encode (Tcl_Interp* interp, Tcl_Obj* state, int* result);
-# Decoder:      Tcl_Obj* tcl_..._decode (Tcl_Interp* interp, int state);
-# crit arg-type          tcl_...
-# crit res-type          tcl_...
+critcl::emap::def hiddenmode {
+            no  0 n 0 off 0 false 0 0 0
+    all   1 yes 1 y 1 on  1 true  1 1 1
+    stars 2
+} -nocase
+# Declarations: hiddenmode.h
+# Encoder:      int      hiddenmode_encode (Tcl_Interp* interp, Tcl_Obj* state, int* result);
+# Decoder:      Tcl_Obj* hiddenmode_decode (Tcl_Interp* interp, int state);
+# ResultType:   hiddenmode
+# ArgumentType: hiddenmode
 </pre>
 </div>
 <div id="section4" class="section"><h2><a name="section4">Authors</a></h2>
@@ -250,6 +254,6 @@ package and/or documentation.</p>
 <p>Glueing/Embedded C code</p>
 </div>
 <div id="copyright" class="section"><h2><a name="copyright">Copyright</a></h2>
-<p>Copyright &copy; 2011-2012 Andreas Kupries</p>
+<p>Copyright &copy; 2011-2015 Andreas Kupries</p>
 </div>
 </div></body></html>

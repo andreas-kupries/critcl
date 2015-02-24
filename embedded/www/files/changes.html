@@ -94,7 +94,7 @@
 </head>
 <! -- Generated from file 'changes.man' by tcllib/doctools with format 'html'
    -->
-<! -- Copyright &copy; Jean-Claude Wippler   -- Copyright &copy; Steve Landers   -- Copyright &copy; 2011-2013 Andreas Kupries
+<! -- Copyright &copy; Jean-Claude Wippler   -- Copyright &copy; Steve Landers   -- Copyright &copy; 2011-2015 Andreas Kupries
    -->
 <! -- CVS: $Id$ critcl_changes.n
    -->
@@ -103,7 +103,7 @@
    <a href="../toc.html">Table Of Contents</a>
 | <a href="../index.html">Keyword Index</a>
  ] <hr>
-<h1 class="title">critcl_changes(n) 3.1.12 doc &quot;C Runtime In Tcl (CriTcl)&quot;</h1>
+<h1 class="title">critcl_changes(n) 3.1.13 doc &quot;C Runtime In Tcl (CriTcl)&quot;</h1>
 <div id="name" class="section"><h2><a name="name">Name</a></h2>
 <p>critcl_changes - CriTcl Changes</p>
 </div>
@@ -195,6 +195,11 @@ underwent from version to version.</p>
 	for &quot;critcl::config lines 0&quot; coming from template files, or
 	code generated with them before the final value of this
 	setting was known.</p></li>
+<li><p>Fixed issue with handling of namespaced package names in
+	&quot;critcl::iassoc&quot;. Equivalent to a bug in &quot;critcl::class&quot; fixed
+	for critcl 3.1.1, critcl::class 1.0.1.
+	Note: &quot;literals&quot;, &quot;enum&quot;, &quot;emap&quot;, and &quot;bitmap&quot; do not require
+	a fix as they are all built on top of &quot;iassoc&quot;.</p></li>
 </ol>
 </div>
 <div id="section3" class="section"><h2><a name="section3">Changes for version 3.1.12</a></h2>
@@ -743,6 +748,6 @@ at <a href="https://github.com/andreas-kupries/critcl/issues">https://github.com
 <div id="copyright" class="section"><h2><a name="copyright">Copyright</a></h2>
 <p>Copyright &copy; Jean-Claude Wippler<br>
 Copyright &copy; Steve Landers<br>
-Copyright &copy; 2011-2013 Andreas Kupries</p>
+Copyright &copy; 2011-2015 Andreas Kupries</p>
 </div>
 </div></body></html>
