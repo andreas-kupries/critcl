@@ -1,0 +1,91 @@
+=======================================================================
+The fixes have to support only mode "compile & run".
+
+The precompile mode should continue to report on additional
+definitions found after building the package.
+
+We are only interested in adding more definitions, not in changes to
+existing definitions.
+
+=======================================================================
+The basic scenario to support is, as far as I can tell:
+
+(1) Edit a file foo.tcl with critcl command/proc definitions (A).
+
+(2) Start an interactive tclsh
+    (a) "source foo.tcl"
+    (b) Run a command/procedure (A) defined by foo.tcl
+        This implicitly compiles everything known from foo.tcl).
+
+(3) Edit foo.tcl, add more command/proc definitions (B).
+
+(4) In the still-running tclsh of step (2):
+    (a) For a second time "source foo.tcl".
+    (b) Run the new definition (B).
+        This recompiles foo.tcl before executing B.
+
+=======================================================================
+Note: 
+    Step 4a reads not only the new definitions, but the the already
+    existing ones as well. And step 4b will recompile these also.
+
+    In principle it is possible to change the existing definitions in
+    step 3, and have these changes built into the new binary,
+    overwriting the old definitions.
+
+    If that is considered bad then critcl must keep enough information
+    in the memory of the active tclsh to detect changes to existing
+    definitions during 4b.
+
+Note:
+    critcl stores state (information about definitions, compile stuff)
+    on a per-file basis, i.e. state for foo.tcl and bar.tcl are
+    separate.
+
+    Putting new definitions for foo.tcl into a separate file foo1.tcl
+    should always be possible, as long as the new file has proper
+    access to relevant type definitions at _compile_time_. Like
+    external shared header files.
+
+    Without such adding definitions is restricted to the same file,
+    i.e. the scenario outlined above.
+
+    And changes to data structures and existing definitions are then a
+    bad idea, the C pieces already in memory will not match the
+    changed things. So, detection of changes to previous definitions
+    is likely a must-have to properly support this scenario. No sure
+    how strong.  A simple reordering should be fine, as long as the
+    result still compiles.
+
+Note:
+    All this stuff is something we do not need for precompile.
+
+    => This should be in internal hook commands the precompile mode
+       can modify, i.e. replace with no-ops, etc.
+
+Note:
+    The proposed critcl::reset, as is, has the following failure
+    modes:
+
+    (i)	As proposed the command must be run between steps 3 and 4a.
+	If that is forgotten the current "AbortWhenCalledAfterBuild"
+	will trap.
+
+    (ii) Inappropriate use of critcl::reset can cause loss of data
+	 when working with multiple critcl files. Example:
+
+	 - Edit file foo.tcl, package foo.
+	 - Edit file bar.tcl, package bar, independent of foo
+	 - source foo.tcl, bar.tcl into a tclsh
+	 - Run a command from foo, compiling foo.
+	 - Edit foo.tcl
+	 - critcl::reset
+	 - Re-source foo.tcl
+	 - Run the new command from foo, compiling foo
+	 - Run a command from bar.
+	   - Tries to compile bar.
+	   - Find no data for bar, squashed by the critcl::reset.
+	   - FAIL
+
+	 Because the critcl::reset has squashed all the definitions
+	 from bar.tcl.
