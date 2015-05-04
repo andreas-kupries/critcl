@@ -89,3 +89,88 @@ Note:
 
 	 Because the critcl::reset has squashed all the definitions
 	 from bar.tcl.
+
+========================================================================
+Files for testing the changes
+
+    foo1.tcl - Base file.
+    foo2.tcl - foo1 + New definition.                 Accept.
+    foo3.tcl - foo2, and changed ccode.               REJECT.
+    foo4.tcl - foo2, and changed existing definition. REJECT.
+
+foo1 -> foo2 is the scenario above we want to get working.
+
+foo1 -> foo3 and
+foo1 -> foo4 on the other hand are the cases where changes to the
+existing declaratations of the file should be caught and cause the
+reload to be rejected.
+
+foo3 is the more difficult case because ccode blocks are not named. We
+can only infer a possible change from an existing block going missing
+and some new block appearing. It requires us to detect the beginning
+of a reload, so that we can mark blocks as lost, and the end as well,
+to check for still-marked blocks, for these are lost. During the
+reload ccode blocks are either added as new, or found to exist already
+and thus their lost-flag reset.
+
+Note further, a reload of a file before it got compiled should simply
+replace the entire set of declarations.
+
+And a rejected reload should not change the internal data structures
+at all, so that the next reload, after corrections can still suceed.
+
+
+========================================================================
+Action items:
+
+- Add Hooks for
+  (hs) Handle start 'source'ing a file (again)
+  (he) Handle end of 'source'ing a file (again)
+  (hd) Handle any decl after build.
+  (hc) Handle post-compile activity.
+  (h*) Handle pre/post-decl activity.
+
+  - Precompile:
+    hs:	no op
+
+    he:	no op
+
+    hd:	AbortWhenCalledAfterBuild
+
+    hc:	Drop decls from memory after build, only keep main done flag
+
+    h*:	no op
+
+  - Compile & run:
+    hs:	File not compiled at all => Drop existing decls. Full replace.
+        Else mark (unnamed) ccode for lost-check.
+
+    he:	Perform ccode lost-check, abort on lost ccode, rollback
+	Advanced: Find most similar (content, location) new ccode?
+		  Better/extended reporting?
+	Allow lost ccode not marked as compiled.
+	Allow lost cproc/cmd not marked as compiled.
+
+    hd:	no op
+
+    hc:	Keep decls (no op), per-decl compile marker set
+
+    h*: Generate and store decl signature/hash,
+	Compare if known.
+	    Abort on changes. Rollback.
+	    However, allow changed cproc/cmd not marked as compiled.
+	Add unknown.
+
+  - Rollback:
+    Delete all decls which are not marked as compiled.
+
+- Data structure changes
+  - Per file
+    - Marker is-compiled (Might already have it)
+  - Per decl in file (named, unnamed)
+    - Marker is-compiled
+    - Marker is-lost
+    - Hash value (signature) for change detection
+
+- Document the internal data structures
+  => DevGuide
