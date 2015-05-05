@@ -3519,7 +3519,7 @@ proc ::critcl::at::Where {leadoffset level file} {
     #puts "XXX-WHERE-($leadoffset $level $file)"
     #set ::errorInfo {}
     if {[catch {
-	#SHOWFRAMES $level 0
+	#::critcl::msg [SHOWFRAMES $level 0]
 	array set loc [info frame $level]
 	#puts XXX-TYPE-$loc(type)
     }]} {
@@ -3592,17 +3592,18 @@ proc ::critcl::at::Format {loc} {
 }
 
 proc ::critcl::at::SHOWFRAMES {level {all 1}} {
+    set lines {}
     set n [info frame]
     set i 0
     set id 1
     while {$n} {
-	::critcl::msg "[expr {$level == $id ? "**" : "  "}] frame [format %3d $id]: [info frame $i]"
+	lappend lines "[expr {$level == $id ? "**" : "  "}] frame [format %3d $id]: [info frame $i]"
 	::incr i -1
 	::incr id -1
 	::incr n -1
 	if {($level > $id) && !$all} break
     }
-    return
+    return [join $lines \n]
 }
  
 # # ## ### ##### ######## ############# #####################

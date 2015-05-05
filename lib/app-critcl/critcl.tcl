@@ -116,7 +116,12 @@ proc ::critcl::HandleDeclAfterBuild {} {
 	    set cloc " ([array get loc])"
 	}
     } ;#else { set cloc " ($msg)" }
-    error "[lindex [info level -1] 0]$cloc: Illegal attempt to define C code in [This] after it was built."
+
+    append err [lindex [info level -1] 0]
+    append err $cloc
+    append err ": Illegal attempt to define C code in [This] after it was built."
+    append err \n [at::SHOWFRAMES] 
+    error $err
 }
 
 # # ## ### ##### ######## ############# #####################
