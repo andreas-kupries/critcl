@@ -171,7 +171,7 @@ proc ::critcl::Lines {text} {
 
 proc ::critcl::ccode {text} {
     set file [SkipIgnored [This]]
-    AbortWhenCalledAfterBuild
+    HandleDeclAfterBuild
     set digest [UUID.extend $file .ccode $text]
 
     set block {}
@@ -188,7 +188,7 @@ proc ::critcl::ccode {text} {
 
 proc ::critcl::ccommand {name anames args} {
     SkipIgnored [set file [This]]
-    AbortWhenCalledAfterBuild
+    HandleDeclAfterBuild
 
     # Basic key for the clientdata and delproc arrays.
     set cname $name[UUID.serial $file]
@@ -267,7 +267,7 @@ proc ::critcl::ccommand {name anames args} {
 
 proc ::critcl::cdata {name data} {
     SkipIgnored [This]
-    AbortWhenCalledAfterBuild
+    HandleDeclAfterBuild
     binary scan $data c* bytes ;# split as bytes, not (unicode) chars
 
     set inittext ""
@@ -294,7 +294,7 @@ proc ::critcl::cdata {name data} {
 
 proc ::critcl::cdefines {defines {namespace "::"}} {
     set file [SkipIgnored [This]]
-    AbortWhenCalledAfterBuild
+    HandleDeclAfterBuild
     set digest [UUID.extend $file .cdefines [list $defines $namespace]]
 
     dict update v::code($file) config c {
@@ -594,7 +594,7 @@ proc ::critcl::resulttype {name conversion {ctype {}}} {
 
 proc ::critcl::cproc {name adefs rtype {body "#"} args} {
     SkipIgnored [set file [This]]
-    AbortWhenCalledAfterBuild
+    HandleDeclAfterBuild
 
     set acname 0
     set passcd 0
@@ -680,7 +680,7 @@ proc ::critcl::cproc {name adefs rtype {body "#"} args} {
 
 proc ::critcl::cinit {text edecls} {
     set file [SkipIgnored [set file [This]]]
-    AbortWhenCalledAfterBuild
+    HandleDeclAfterBuild
 
     set digesta [UUID.extend $file .cinit.f $text]
     set digestb [UUID.extend $file .cinit.e $edecls]
@@ -892,7 +892,7 @@ proc ::critcl::source {path} {
     # i.e. [This]. Enables the factorization of a large critcl
     # file into smaller, easier to read pieces.
     SkipIgnored [set file [This]]
-    AbortWhenCalledAfterBuild
+    HandleDeclAfterBuild
 
     msg -nonewline " (importing $path)"
 
@@ -945,31 +945,31 @@ proc ::critcl::owns {args} {}
 
 proc ::critcl::cheaders {args} {
     SkipIgnored [This]
-    AbortWhenCalledAfterBuild
+    HandleDeclAfterBuild
     return [SetParam cheaders $args]
 }
 
 proc ::critcl::csources {args} {
     SkipIgnored [This]
-    AbortWhenCalledAfterBuild
+    HandleDeclAfterBuild
     return [SetParam csources $args 1 1]
 }
 
 proc ::critcl::clibraries {args} {
     SkipIgnored [This]
-    AbortWhenCalledAfterBuild
+    HandleDeclAfterBuild
     return [SetParam clibraries $args]
 }
 
 proc ::critcl::cobjects {args} {
     SkipIgnored [This]
-    AbortWhenCalledAfterBuild
+    HandleDeclAfterBuild
     return [SetParam cobjects $args]
 }
 
 proc ::critcl::tsources {args} {
     set file [SkipIgnored [This]]
-    AbortWhenCalledAfterBuild
+    HandleDeclAfterBuild
     # This, 'license', 'meta?' and 'meta' are the only places where we
     # are not extending the UUID. Because the companion Tcl sources
     # (count, order, and content) have no bearing on the binary at
@@ -989,7 +989,7 @@ proc ::critcl::tsources {args} {
 
 proc ::critcl::cflags {args} {
     set file [SkipIgnored [This]]
-    AbortWhenCalledAfterBuild
+    HandleDeclAfterBuild
     if {![llength $args]} return
 
     UUID.extend $file .cflags $args
@@ -1003,7 +1003,7 @@ proc ::critcl::cflags {args} {
 
 proc ::critcl::ldflags {args} {
     set file [SkipIgnored [This]]
-    AbortWhenCalledAfterBuild
+    HandleDeclAfterBuild
     if {![llength $args]} return
 
     UUID.extend $file .ldflags $args
@@ -1020,7 +1020,7 @@ proc ::critcl::ldflags {args} {
 
 proc ::critcl::framework {args} {
     SkipIgnored [This]
-    AbortWhenCalledAfterBuild
+    HandleDeclAfterBuild
 
     # Check if we are building for OSX and ignore the command if we
     # are not. Our usage of "actualtarget" means that we allow for a
@@ -1041,7 +1041,7 @@ proc ::critcl::framework {args} {
 
 proc ::critcl::tcl {version} {
     set file [SkipIgnored [This]]
-    AbortWhenCalledAfterBuild
+    HandleDeclAfterBuild
 
     UUID.extend $file .mintcl $version
     dict set v::code($file) config mintcl $version
@@ -1056,7 +1056,7 @@ proc ::critcl::tcl {version} {
 
 proc ::critcl::tk {} {
     set file [SkipIgnored [This]]
-    AbortWhenCalledAfterBuild
+    HandleDeclAfterBuild
 
     UUID.extend $file .tk 1
     dict set v::code($file) config tk 1
@@ -1073,7 +1073,7 @@ proc ::critcl::tk {} {
 # redundant when TIP #239 is widely available
 proc ::critcl::preload {args} {
     set file [SkipIgnored [This]]
-    AbortWhenCalledAfterBuild
+    HandleDeclAfterBuild
     if {![llength $args]} return
 
     UUID.extend $file .preload $args
@@ -1087,7 +1087,7 @@ proc ::critcl::preload {args} {
 
 proc ::critcl::license {who args} {
     set file [SkipIgnored [This]]
-    AbortWhenCalledAfterBuild
+    HandleDeclAfterBuild
 
     set who [string trim $who]
     if {$who ne ""} {
@@ -1134,7 +1134,7 @@ proc ::critcl::LicenseText {words} {
 
 proc ::critcl::description {text} {
     set file [SkipIgnored [This]]
-    AbortWhenCalledAfterBuild
+    HandleDeclAfterBuild
     InitializeFile $file
 
     ImetaSet $file description [Text2Words $text]
@@ -1143,7 +1143,7 @@ proc ::critcl::description {text} {
 
 proc ::critcl::summary {text} {
     set file [SkipIgnored [This]]
-    AbortWhenCalledAfterBuild
+    HandleDeclAfterBuild
     InitializeFile $file
 
     ImetaSet $file summary [Text2Words $text]
@@ -1152,7 +1152,7 @@ proc ::critcl::summary {text} {
 
 proc ::critcl::subject {args} {
     set file [SkipIgnored [This]]
-    AbortWhenCalledAfterBuild
+    HandleDeclAfterBuild
     InitializeFile $file
 
     ImetaAdd $file subject $args
@@ -1161,7 +1161,7 @@ proc ::critcl::subject {args} {
 
 proc ::critcl::meta {key args} {
     set file [SkipIgnored [This]]
-    AbortWhenCalledAfterBuild
+    HandleDeclAfterBuild
 
     # This, 'meta?', 'license', and 'tsources' are the only places
     # where we are not extending the UUID. Because the meta data has
@@ -1178,7 +1178,7 @@ proc ::critcl::meta {key args} {
 
 proc ::critcl::meta? {key} {
     set file [SkipIgnored [This]]
-    AbortWhenCalledAfterBuild
+    HandleDeclAfterBuild
 
     # This, 'meta', 'license', and 'tsources' are the only places
     # where we are not extending the UUID. Because the meta data has
@@ -1256,7 +1256,7 @@ proc ::critcl::GetMeta {file} {
 
 proc ::critcl::userconfig {cmd args} {
     set file [SkipIgnored [This]]
-    AbortWhenCalledAfterBuild
+    HandleDeclAfterBuild
     InitializeFile $file
 
     if {![llength [info commands ::critcl::UC$cmd]]} {
@@ -1361,7 +1361,7 @@ proc ::critcl::UcDefault {otype} {
 
 proc ::critcl::api {cmd args} {
     set file [SkipIgnored [This]]
-    AbortWhenCalledAfterBuild
+    HandleDeclAfterBuild
 
     if {![llength [info commands ::critcl::API$cmd]]} {
 	return -code error "Unknown method \"$cmd\""
@@ -1668,7 +1668,7 @@ proc ::critcl::API_setup_export {file} {
 
 proc ::critcl::check {args} {
     set file [SkipIgnored [This] 0]
-    AbortWhenCalledAfterBuild
+    HandleDeclAfterBuild
 
     switch -exact -- [llength $args] {
 	1 {
@@ -1708,7 +1708,7 @@ proc ::critcl::check {args} {
 
 proc ::critcl::checklink {args} {
     set file [SkipIgnored [This] 0]
-    AbortWhenCalledAfterBuild
+    HandleDeclAfterBuild
 
     switch -exact -- [llength $args] {
 	1 {
@@ -1774,13 +1774,13 @@ proc ::critcl::checklink {args} {
 
 proc ::critcl::compiled {} {
     SkipIgnored [This] 1
-    AbortWhenCalledAfterBuild
+    HandleDeclAfterBuild
     return 0
 }
 
 proc ::critcl::compiling {} {
     SkipIgnored [This] 0
-    AbortWhenCalledAfterBuild
+    HandleDeclAfterBuild
     # Check that we can indeed run a compiler
     # Should only need to do this if we have to compile the code?
     if {[auto_execok [lindex [getconfigvalue compile] 0]] eq ""} {
@@ -2412,7 +2412,7 @@ proc ::critcl::cbuild {file {load 1}} {
 	# Generate the main C file
 	CollectEmbeddedSources $file $base.c $object $initname $placestubs
 
-	# Set the marker for critcl::done and its user, AbortWhenCalledAfterBuild.
+	# Set the marker for critcl::done and its user, HandleDeclAfterBuild.
 	dict set v::code($file) result closed mark
 
 	# Compile main file
@@ -4233,9 +4233,9 @@ proc ::critcl::Load {f} {
     return
 }
 
-proc ::critcl::AbortWhenCalledAfterBuild {} {
-    # Clear existing build results for the file, make way for new
-    # declarations.
+proc ::critcl::HandleDeclAfterBuild {} {
+    # Hook default, mode "compile & run". Clear existing build results
+    # for the file, make way for new declarations.
 
     set fx [This]
     if {[info exists v::code($fx)] &&
@@ -4243,19 +4243,6 @@ proc ::critcl::AbortWhenCalledAfterBuild {} {
 	dict unset v::code($fx) result
     }
     return
-
-    if {![done]} return
-    set cloc {}
-    if {![catch {
-	array set loc [info frame -2]
-    } msg]} {
-	if {$loc(type) eq "source"} {
-	    set cloc "@$loc(file):$loc(line)"
-	} else {
-	    set cloc " ([array get loc])"
-	}
-    } ;#else { set cloc " ($msg)" }
-    error "[lindex [info level -1] 0]$cloc: Illegal attempt to define C code in [This] after it was built."
 }
 
 # XXX Refactor to avoid duplication of the memoization code.
