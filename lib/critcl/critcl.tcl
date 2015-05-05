@@ -4234,6 +4234,16 @@ proc ::critcl::Load {f} {
 }
 
 proc ::critcl::AbortWhenCalledAfterBuild {} {
+    # Clear existing build results for the file, make way for new
+    # declarations.
+
+    set fx [This]
+    if {[info exists v::code($fx)] &&
+	[dict exists $v::code($fx) result]} {
+	dict unset v::code($fx) result
+    }
+    return
+
     if {![done]} return
     set cloc {}
     if {![catch {
