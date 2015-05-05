@@ -6,7 +6,7 @@
 # CriTcl Utility Commands. Specification of a C function and structure
 # associated with an interpreter made easy.
 
-package provide critcl::iassoc 1.0.1
+package provide critcl::iassoc 1.0.2
 
 # # ## ### ##### ######## ############# #####################
 ## Requirements.
@@ -31,7 +31,6 @@ proc ::critcl::iassoc::def {name arguments struct constructor destructor} {
     set constructor $cloc$constructor
     set destructor  $dloc$destructor
 
-
     # Arguments:
     # - name of the C function which will provide access to the
     #   structure. This name, with a fixed prefix is also used to
@@ -47,14 +46,22 @@ proc ::critcl::iassoc::def {name arguments struct constructor destructor} {
 
     # Pull the package we are working on out of the system.
 
-    set package [critcl::meta? name]
+    set package  [critcl::meta? name]
+    set qpackage [expr {[string match ::* $package] 
+			? "$package"
+			: "::$package"}]
+    lassign [uplevel 1 [list ::critcl::name2c $qpackage]] pns pcns package cpackage
 
+    #puts "%%% pNS  |$pns|"
     #puts "%%% Pkg  |$package|"
+    #puts "%%% pCNS |$pcns|"
+    #puts "%%% cPkg |$cpackage|"
+
     #puts "%%% Name |$name|"
 
     #puts "@@@ <<$data>>"
 
-    set stem  ${package}_iassoc_${name}
+    set stem  ${pcns}${cpackage}_iassoc_${name}
     set type  ${name}_data
     set label critcl::iassoc/p=$package/a=$name
 

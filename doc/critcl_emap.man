@@ -117,7 +117,9 @@ for use by [cmd critcl::cproc].
 [comment {===================================================================}]
 [section Example]
 
-The example shown below is the ... TODO 
+The example shown below is the specification for the possible modes of
+entry (normal, no feedback, stars) used by the Tcl binding to the
+linenoise library.
 
 [example {
 package require Tcl 8.5
@@ -127,15 +129,17 @@ critcl::buildrequirement {
     package require critcl::emap
 }
 
-critcl::emap::def tcl_... {
-    TODO
-}
+critcl::emap::def hiddenmode {
+            no  0 n 0 off 0 false 0 0 0
+    all   1 yes 1 y 1 on  1 true  1 1 1
+    stars 2
+} -nocase
 
-# Declarations:          tcl_....h
-# Encoder:      int      tcl_..._encode (Tcl_Interp* interp, Tcl_Obj* state, int* result);
-# Decoder:      Tcl_Obj* tcl_..._decode (Tcl_Interp* interp, int state);
-# crit arg-type          tcl_...
-# crit res-type          tcl_...
+# Declarations: hiddenmode.h
+# Encoder:      int      hiddenmode_encode (Tcl_Interp* interp, Tcl_Obj* state, int* result);
+# Decoder:      Tcl_Obj* hiddenmode_decode (Tcl_Interp* interp, int state);
+# ResultType:   hiddenmode
+# ArgumentType: hiddenmode
 }]
 
 [comment {===================================================================}]
