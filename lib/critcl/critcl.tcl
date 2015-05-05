@@ -4620,14 +4620,14 @@ proc ::critcl::Here {} {
 }
 
 proc ::critcl::TclDecls {file} {
-    return [TclDef $file tclDecls.h tclStubsPtr]
+    return [TclDef $file tclDecls.h     tclStubsPtr    {tclStubsPtr    }]
 }
 
 proc ::critcl::TclPlatDecls {file} {
-    return [TclDef $file tclPlatDecls.h tclPlatStubsPtr]
+    return [TclDef $file tclPlatDecls.h tclPlatStubsPtr tclPlatStubsPtr]
 }
 
-proc ::critcl::TclDef {file hdr var} {
+proc ::critcl::TclDef {file hdr var varlabel} {
     #puts F|$file
     set hdr [TclHeader $file $hdr]
 
@@ -4658,7 +4658,7 @@ proc ::critcl::TclDef {file hdr var} {
     }
 
     set def [string map {extern {}} [lindex $vardecl 0]]
-    msg " ($var => $def)"
+    msg " ($varlabel => $def)"
     return $def
 }
 
