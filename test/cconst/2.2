@@ -1,0 +1,20 @@
+/* ---------------------------------------------------------------------- */
+
+#define ns__alpha0 "::alpha"
+
+static int
+tcl__alpha0(ClientData cd, Tcl_Interp *interp, int oc, Tcl_Obj *CONST ov[])
+{
+  int rv;
+  if (oc != 1) {
+    Tcl_WrongNumArgs(interp, 1, ov, NULL);
+    return TCL_ERROR;
+  }
+
+  /* Const - - -- --- ----- -------- */
+  rv = foo();
+
+#line 4903 "critcl.tcl"
+	Tcl_SetObjResult(interp, Tcl_NewIntObj(rv));
+	return TCL_OK;
+}
