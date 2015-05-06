@@ -33,9 +33,8 @@ package require cmdline
 namespace eval ::critcl::app {}
 
 # # ## ### ##### ######## ############# #####################
-
-# Intercept 'package' calls.
-
+## Intercept 'package' calls.
+#
 # This code is present to handle the possibility of building multiple
 # different versions of the same package, or of different packages
 # having dependencies on different versions of a 3rd party
@@ -97,6 +96,32 @@ proc ::critcl::msg {args} {
 	}
     }
     return
+}
+
+# # ## ### ##### ######## ############# #####################
+##
+# Rewrite the hook handling declarations found after the build.
+# The default of clearing state for a new build is not the right
+# thing to do in mode "precompile". Here we want to see an ERROR.
+
+proc ::critcl::HandleDeclAfterBuild {} {
+    if {![done]} return
+    set cloc {}
+    if {![catch {
+	array set loc [info frame -2]
+    } msg]} {
+	if {$loc(type) eq "source"} {
+	    set cloc "@$loc(file):$loc(line)"
+	} else {
+	    set cloc " ([array get loc])"
+	}
+    } ;#else { set cloc " ($msg)" }
+
+    append err [lindex [info level -1] 0]
+    append err $cloc
+    append err ": Illegal attempt to define C code in [This] after it was built."
+    append err \n [at::SHOWFRAMES] 
+    error $err
 }
 
 # # ## ### ##### ######## ############# #####################
