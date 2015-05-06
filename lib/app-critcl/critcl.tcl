@@ -100,7 +100,7 @@ proc ::critcl::msg {args} {
 
 # # ## ### ##### ######## ############# #####################
 ##
-# Rewrite the hook handling declsrations found after the build.
+# Rewrite the hook handling declarations found after the build.
 # The default of clearing state for a new build is not the right
 # thing to do in mode "precompile". Here we want to see an ERROR.
 
