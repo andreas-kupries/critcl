@@ -107,10 +107,34 @@ aforementioned flexibility is a higher complexity seen by the user.
 [comment ---------------------------------------------------------------------]
 [call [cmd ::critcl::cdata] [arg tclname] [arg data]]
 
-This command a new Tcl command named [arg tclname] which returns
+This command creates a new Tcl command named [arg tclname] which returns
 [arg data] as a ByteArray result.
 
 [para] The result of [cmd critcl::cdata] itself is the empty string.
+
+[comment ---------------------------------------------------------------------]
+[call [cmd ::critcl::cconst] [arg tclname] [arg resulttype] [arg value]]
+
+This command creates a new Tcl command named [arg tclname] which returns
+the constant [arg value] as its result, with Tcl type [arg resulttype].
+
+[para] The result of [cmd critcl::cconst] itself is the empty string.
+
+[para] The command is similar to [cmd critcl::cdata] in that it returns a
+constant value. Contrary to [cmd critcl::cdata] however it is not restricted
+to ByteArray results, but accepts all result-types known to [cmd critcl::cproc].
+Its semantics are actually equivalent to
+
+[example {
+    cproc $tclname {} $resulttype "return $value ;"
+}]
+
+[para] Contrary to [cmd critcl::cproc] however it is internally optimized to
+avoid generating a superfluous C function.
+
+[para] Note that nothing prevents the user from using a C define for the
+[arg value]. Any visible C function is actually also allowed, as long as
+it does not take arguments.
 
 [comment ---------------------------------------------------------------------]
 [call [cmd ::critcl::cdefines] [arg definitions] [opt [arg namespace]]]

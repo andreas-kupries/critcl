@@ -1,13 +1,9 @@
 /* ---------------------------------------------------------------------- */
 
-#define ns__aproc0 "::aproc"
-static int c__aproc0()
-{
-
-}
+#define ns__alpha0 "::alpha"
 
 static int
-tcl__aproc0(ClientData cd, Tcl_Interp *interp, int oc, Tcl_Obj *CONST ov[])
+tcl__alpha0(ClientData cd, Tcl_Interp *interp, int oc, Tcl_Obj *CONST ov[])
 {
   int rv;
   if (oc != 1) {
@@ -15,9 +11,10 @@ tcl__aproc0(ClientData cd, Tcl_Interp *interp, int oc, Tcl_Obj *CONST ov[])
     return TCL_ERROR;
   }
 
-  /* Call - - -- --- ----- -------- */
-  rv = c__aproc0();
+  /* Const - - -- --- ----- -------- */
+  rv = foo();
 
+#line 4903 "critcl.tcl"
 	Tcl_SetObjResult(interp, Tcl_NewIntObj(rv));
 	return TCL_OK;
 }
