@@ -7,8 +7,6 @@
  *
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
- *
- * RCS: @(#) $Id: tkDecls.h,v 1.30.4.1 2010/02/07 23:24:13 nijtmans Exp $
  */
 
 #ifndef _TKDECLS
@@ -26,6 +24,10 @@
  */
 
 /* !BEGIN!: Do not edit below this line. */
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 /*
  * Exported function declarations:
@@ -1676,6 +1678,12 @@ EXTERN void		Tk_CreateOldImageType(Tk_ImageType *typePtr);
 EXTERN void		Tk_CreateOldPhotoImageFormat(
 				Tk_PhotoImageFormat *formatPtr);
 #endif
+/* Slot 274 is reserved */
+#ifndef TkUnusedStubEntry_TCL_DECLARED
+#define TkUnusedStubEntry_TCL_DECLARED
+/* 275 */
+EXTERN void		TkUnusedStubEntry(void);
+#endif
 
 typedef struct TkStubHooks {
     struct TkPlatStubs *tkPlatStubs;
@@ -1906,8 +1914,8 @@ typedef struct TkStubs {
     void (*tk_InitConsoleChannels) (Tcl_Interp *interp); /* 215 */
     int (*tk_CreateConsoleWindow) (Tcl_Interp *interp); /* 216 */
     void (*tk_CreateSmoothMethod) (Tcl_Interp *interp, Tk_SmoothMethod *method); /* 217 */
-    void *reserved218;
-    void *reserved219;
+    VOID *reserved218;
+    VOID *reserved219;
     int (*tk_GetDash) (Tcl_Interp *interp, CONST char *value, Tk_Dash *dash); /* 220 */
     void (*tk_CreateOutline) (Tk_Outline *outline); /* 221 */
     void (*tk_DeleteOutline) (Display *display, Tk_Outline *outline); /* 222 */
@@ -1962,12 +1970,12 @@ typedef struct TkStubs {
     Tcl_Interp * (*tk_Interp) (Tk_Window tkwin); /* 271 */
     void (*tk_CreateOldImageType) (Tk_ImageType *typePtr); /* 272 */
     void (*tk_CreateOldPhotoImageFormat) (Tk_PhotoImageFormat *formatPtr); /* 273 */
+    VOID *reserved274;
+    void (*tkUnusedStubEntry) (void); /* 275 */
 } TkStubs;
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-extern const TkStubs *tkStubsPtr;
+extern TkStubs *tkStubsPtr;
+
 #ifdef __cplusplus
 }
 #endif
@@ -3068,6 +3076,11 @@ extern const TkStubs *tkStubsPtr;
 #define Tk_CreateOldPhotoImageFormat \
 	(tkStubsPtr->tk_CreateOldPhotoImageFormat) /* 273 */
 #endif
+/* Slot 274 is reserved */
+#ifndef TkUnusedStubEntry
+#define TkUnusedStubEntry \
+	(tkStubsPtr->tkUnusedStubEntry) /* 275 */
+#endif
 
 #endif /* defined(USE_TK_STUBS) && !defined(USE_TK_STUB_PROCS) */
 
@@ -3075,6 +3088,8 @@ extern const TkStubs *tkStubsPtr;
 
 #undef TCL_STORAGE_CLASS
 #define TCL_STORAGE_CLASS DLLIMPORT
+
+#undef TkUnusedStubEntry
 
 #endif /* _TKDECLS */
 

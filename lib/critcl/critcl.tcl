@@ -592,6 +592,41 @@ proc ::critcl::resulttype {name conversion {ctype {}}} {
     return
 }
 
+proc ::critcl::cconst {name rtype rvalue} {
+    # The semantics are equivalent to
+    #
+    #   cproc $name {} $rtype { return $rvalue ; }
+    #
+    # The main feature of this new command is the knowledge of a
+    # constant return value, which allows the optimization of the
+    # generated code. Only the shim is emitted, with the return value
+    # in place. No need for a lower-level C function containing a
+    # funciton body.
+
+    SkipIgnored [set file [This]]
+    AbortWhenCalledAfterBuild
+
+    # A void result does not make sense for constants.
+    if {$rtype eq "void"} {
+	error "Constants cannot be of type \"void\""
+    }
+
+    lassign [BeginCommand public $name $rtype $rvalue] ns cns name cname
+    set wname tcl_$cns$cname
+    set cname c_$cns$cname
+
+    # Construct the shim handling the conversion between Tcl and C
+    # realms.
+
+    EmitShimHeader         $wname
+    EmitShimVariables      {} $rtype
+    EmitWrongArgsCheck     {} 0
+    EmitConst              $rtype $rvalue
+    EmitShimFooter         $rtype
+    EndCommand
+    return
+}
+
 proc ::critcl::cproc {name adefs rtype {body "#"} args} {
     SkipIgnored [set file [This]]
     HandleDeclAfterBuild
@@ -3140,7 +3175,6 @@ proc ::critcl::scan::critcl::userconfig {cmd args} {
 ## Implementation -- Internals - cproc conversion helpers.
 
 proc ::critcl::EmitShimHeader {wname} {
-
     # Function head
     set ca "(ClientData cd, Tcl_Interp *interp, int oc, Tcl_Obj *CONST ov\[])"
     Emitln
@@ -3229,6 +3263,17 @@ proc ::critcl::EmitCall {cname cnames rtype} {
     Emit "  "
     if {$rtype ne "void"} { Emit "rv = " }
     Emitln "${cname}([join $cnames {, }]);"
+    Emitln
+    return
+}
+
+proc ::critcl::EmitConst {rtype rvalue} {
+    # Assign the constant directly to the shim's result variable.
+
+    Emitln  "  /* Const - - -- --- ----- -------- */"
+    Emit "  "
+    if {$rtype ne "void"} { Emit "rv = " }
+    Emitln "${rvalue};"
     Emitln
     return
 }
@@ -4617,14 +4662,14 @@ proc ::critcl::Here {} {
 }
 
 proc ::critcl::TclDecls {file} {
-    return [TclDef $file tclDecls.h tclStubsPtr]
+    return [TclDef $file tclDecls.h     tclStubsPtr    {tclStubsPtr    }]
 }
 
 proc ::critcl::TclPlatDecls {file} {
-    return [TclDef $file tclPlatDecls.h tclPlatStubsPtr]
+    return [TclDef $file tclPlatDecls.h tclPlatStubsPtr tclPlatStubsPtr]
 }
 
-proc ::critcl::TclDef {file hdr var} {
+proc ::critcl::TclDef {file hdr var varlabel} {
     #puts F|$file
     set hdr [TclHeader $file $hdr]
 
@@ -4655,7 +4700,7 @@ proc ::critcl::TclDef {file hdr var} {
     }
 
     set def [string map {extern {}} [lindex $vardecl 0]]
-    msg " ($var => $def)"
+    msg " ($varlabel => $def)"
     return $def
 }
 
