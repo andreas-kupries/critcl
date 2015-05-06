@@ -3564,7 +3564,7 @@ proc ::critcl::at::Where {leadoffset level file} {
     #puts "XXX-WHERE-($leadoffset $level $file)"
     #set ::errorInfo {}
     if {[catch {
-	#SHOWFRAMES $level 0
+	#::critcl::msg [SHOWFRAMES $level 0]
 	array set loc [info frame $level]
 	#puts XXX-TYPE-$loc(type)
     }]} {
@@ -3637,17 +3637,18 @@ proc ::critcl::at::Format {loc} {
 }
 
 proc ::critcl::at::SHOWFRAMES {level {all 1}} {
+    set lines {}
     set n [info frame]
     set i 0
     set id 1
     while {$n} {
-	::critcl::msg "[expr {$level == $id ? "**" : "  "}] frame [format %3d $id]: [info frame $i]"
+	lappend lines "[expr {$level == $id ? "**" : "  "}] frame [format %3d $id]: [info frame $i]"
 	::incr i -1
 	::incr id -1
 	::incr n -1
 	if {($level > $id) && !$all} break
     }
-    return
+    return [join $lines \n]
 }
  
 # # ## ### ##### ######## ############# #####################
@@ -4290,7 +4291,7 @@ proc ::critcl::AbortWhenCalledAfterBuild {} {
 	    set cloc " ([array get loc])"
 	}
     } ;#else { set cloc " ($msg)" }
-    error "[lindex [info level -1] 0]$cloc: Illegal attempt to define C code in [This] after it was built."
+    error "[lindex [info level -1] 0]$cloc: Illegal attempt to define C code in [This] after it was built.\n[at::SHOWFRAMES]"
 }
 
 # XXX Refactor to avoid duplication of the memoization code.
@@ -4664,14 +4665,14 @@ proc ::critcl::Here {} {
 }
 
 proc ::critcl::TclDecls {file} {
-    return [TclDef $file tclDecls.h tclStubsPtr]
+    return [TclDef $file tclDecls.h     tclStubsPtr    {tclStubsPtr    }]
 }
 
 proc ::critcl::TclPlatDecls {file} {
-    return [TclDef $file tclPlatDecls.h tclPlatStubsPtr]
+    return [TclDef $file tclPlatDecls.h tclPlatStubsPtr tclPlatStubsPtr]
 }
 
-proc ::critcl::TclDef {file hdr var} {
+proc ::critcl::TclDef {file hdr var varlabel} {
     #puts F|$file
     set hdr [TclHeader $file $hdr]
 
@@ -4702,7 +4703,7 @@ proc ::critcl::TclDef {file hdr var} {
     }
 
     set def [string map {extern {}} [lindex $vardecl 0]]
-    msg " ($var => $def)"
+    msg " ($varlabel => $def)"
     return $def
 }
 

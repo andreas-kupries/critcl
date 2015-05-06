@@ -5,7 +5,7 @@
 
 # CriTcl Utility Commands.
 
-package provide critcl::util 1
+package provide critcl::util 1.1
 
 # # ## ### ##### ######## ############# #####################
 ## Requirements.
@@ -22,6 +22,30 @@ namespace eval ::critcl::util {}
 
 # # ## ### ##### ######## ############# #####################
 ## Implementation -- API: Embed C Code
+
+proc ::critcl::util::locate {label paths {cmd {}}} {
+    # Locate a file across set of paths.
+    # Relative paths are to "::critcl::Here".
+    # Paths are run through subst for dynamic construction.
+    # A command prefix can be specified, to further check/process each found path.
+    # Result is the found path, as coming from the paths argument.
+    # Should go into cheader or similar command.
+    # Failure to find is reported via critcl::error
+
+    foreach path $paths {
+	if {[file pathtype $path] eq "relative"} {
+	    set fullpath [file normalize [file join [critcl::Here] $path]]
+	} else {
+	    set fullpath $path
+	}
+	if {![file exists $fullpath]} continue
+	if {[llength $cmd] && ![uplevel 1 [linsert $cmd end $fullpath]]} continue
+	critcl::msg "${label}: $path"
+	return $path
+    }
+    critcl::error "${label}: not found, searched [linsert [join $paths {, }] end-1 and]"
+    return
+}
 
 proc ::critcl::util::checkfun {name {label {}}} {
     variable cftemplate
@@ -121,7 +145,7 @@ namespace eval ::critcl::util {
 ## Export API
 
 namespace eval ::critcl::util {
-    namespace export checkfun def undef
+    namespace export checkfun def undef locate
     catch { namespace ensemble create }
 }
 
