@@ -1,6 +1,10 @@
 [section {Changes for version 3.1.14}]
 [list_begin enumerated]
 
+[enum]  Fixed issue #53. Clarified the documentation of commands
+        [cmd critcl::load] and [cmd critcl::failed] with regard
+        to their results and the throwing of errors (does not happen).
+
 [enum]  Fixed issue #48. Modified mode "compile & run" to allow new
         declarations in a file, after it was build, instead of
         erroring out. The new decls are build when needed. Mode
