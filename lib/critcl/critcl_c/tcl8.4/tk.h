@@ -11,8 +11,6 @@
  *
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
- *
- * RCS: @(#) $Id: tk.h,v 1.74.2.24 2009/04/09 15:57:52 dgp Exp $
  */
 
 #ifndef _TK
@@ -55,16 +53,15 @@ extern "C" {
 #define TK_MAJOR_VERSION   8
 #define TK_MINOR_VERSION   4
 #define TK_RELEASE_LEVEL   TCL_FINAL_RELEASE
-#define TK_RELEASE_SERIAL  19
+#define TK_RELEASE_SERIAL  20
 
 #define TK_VERSION	"8.4"
-#define TK_PATCH_LEVEL	"8.4.19"
+#define TK_PATCH_LEVEL	"8.4.20"
 
 /* 
  * A special definition used to allow this header file to be included
- * from windows or mac resource files so that they can obtain version
- * information.  RC_INVOKED is defined by default by the windows RC tool
- * and manually set for macintosh.
+ * from windows resource files so that they can obtain version
+ * information.  RC_INVOKED is defined by default by the windows RC tool.
  *
  * Resource compilers don't like all the C stuff, like typedefs and
  * procedure declarations, that occur below, so block them out.
@@ -73,10 +70,7 @@ extern "C" {
 #ifndef RC_INVOKED
     
 #ifndef _XLIB_H
-#   if defined (MAC_TCL)
-#	include <Xlib.h>
-#	include <X.h>
-#   elif defined(MAC_OSX_TK)
+#   if defined(MAC_OSX_TK)
 #	include <X11/Xlib.h>
 #	include <X11/X.h>
 #   else
@@ -655,6 +649,10 @@ typedef struct Tk_GeomMgr {
  * the most information to the user.  The only difference is the changing
  * of the detail field for a virtual event so that it holds the name of the
  * virtual event being triggered.
+ *
+ * When using this structure, if you want your code to work correctly
+ * in Tk 8.5 as well, you should ensure that you zero out all the
+ * fields first using memset() or bzero().
  */
 
 typedef struct {
@@ -671,6 +669,7 @@ typedef struct {
     unsigned int state;	    /* key or button mask */
     Tk_Uid name;	    /* Name of virtual event. */
     Bool same_screen;	    /* same screen flag */
+    Tcl_Obj *user_data;		/* not used in Tk 8.4 */
 } XVirtualEvent;
 
 typedef struct {

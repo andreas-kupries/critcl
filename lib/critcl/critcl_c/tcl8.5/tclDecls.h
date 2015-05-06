@@ -7,8 +7,6 @@
  *
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
- *
- * RCS: @(#) $Id: tclDecls.h,v 1.130.2.2 2010/02/07 22:16:54 nijtmans Exp $
  */
 
 #ifndef _TCLDECLS
@@ -80,7 +78,7 @@ EXTERN char *		Tcl_DbCkalloc(unsigned int size, CONST char *file,
 #ifndef Tcl_DbCkfree_TCL_DECLARED
 #define Tcl_DbCkfree_TCL_DECLARED
 /* 7 */
-EXTERN int		Tcl_DbCkfree(char *ptr, CONST char *file, int line);
+EXTERN void		Tcl_DbCkfree(char *ptr, CONST char *file, int line);
 #endif
 #ifndef Tcl_DbCkrealloc_TCL_DECLARED
 #define Tcl_DbCkrealloc_TCL_DECLARED
@@ -1314,12 +1312,12 @@ EXTERN void		Tcl_ResetResult(Tcl_Interp *interp);
 #ifndef Tcl_ScanElement_TCL_DECLARED
 #define Tcl_ScanElement_TCL_DECLARED
 /* 218 */
-EXTERN int		Tcl_ScanElement(CONST char *str, int *flagPtr);
+EXTERN int		Tcl_ScanElement(CONST char *src, int *flagPtr);
 #endif
 #ifndef Tcl_ScanCountedElement_TCL_DECLARED
 #define Tcl_ScanCountedElement_TCL_DECLARED
 /* 219 */
-EXTERN int		Tcl_ScanCountedElement(CONST char *str, int length,
+EXTERN int		Tcl_ScanCountedElement(CONST char *src, int length,
 				int *flagPtr);
 #endif
 #ifndef Tcl_SeekOld_TCL_DECLARED
@@ -3410,6 +3408,61 @@ EXTERN Tcl_Obj *	Tcl_ObjPrintf(CONST char *format, ...);
 EXTERN void		Tcl_AppendPrintfToObj(Tcl_Obj *objPtr,
 				CONST char *format, ...);
 #endif
+/* Slot 580 is reserved */
+/* Slot 581 is reserved */
+/* Slot 582 is reserved */
+/* Slot 583 is reserved */
+/* Slot 584 is reserved */
+/* Slot 585 is reserved */
+/* Slot 586 is reserved */
+/* Slot 587 is reserved */
+/* Slot 588 is reserved */
+/* Slot 589 is reserved */
+/* Slot 590 is reserved */
+/* Slot 591 is reserved */
+/* Slot 592 is reserved */
+/* Slot 593 is reserved */
+/* Slot 594 is reserved */
+/* Slot 595 is reserved */
+/* Slot 596 is reserved */
+/* Slot 597 is reserved */
+/* Slot 598 is reserved */
+/* Slot 599 is reserved */
+/* Slot 600 is reserved */
+/* Slot 601 is reserved */
+/* Slot 602 is reserved */
+/* Slot 603 is reserved */
+/* Slot 604 is reserved */
+/* Slot 605 is reserved */
+/* Slot 606 is reserved */
+/* Slot 607 is reserved */
+/* Slot 608 is reserved */
+/* Slot 609 is reserved */
+/* Slot 610 is reserved */
+/* Slot 611 is reserved */
+/* Slot 612 is reserved */
+/* Slot 613 is reserved */
+/* Slot 614 is reserved */
+/* Slot 615 is reserved */
+/* Slot 616 is reserved */
+/* Slot 617 is reserved */
+/* Slot 618 is reserved */
+/* Slot 619 is reserved */
+/* Slot 620 is reserved */
+/* Slot 621 is reserved */
+/* Slot 622 is reserved */
+/* Slot 623 is reserved */
+/* Slot 624 is reserved */
+/* Slot 625 is reserved */
+/* Slot 626 is reserved */
+/* Slot 627 is reserved */
+/* Slot 628 is reserved */
+/* Slot 629 is reserved */
+#ifndef TclUnusedStubEntry_TCL_DECLARED
+#define TclUnusedStubEntry_TCL_DECLARED
+/* 630 */
+EXTERN void		TclUnusedStubEntry(void);
+#endif
 
 typedef struct TclStubHooks {
     struct TclPlatStubs *tclPlatStubs;
@@ -3428,13 +3481,13 @@ typedef struct TclStubs {
     void (*tcl_Free) (char *ptr); /* 4 */
     char * (*tcl_Realloc) (char *ptr, unsigned int size); /* 5 */
     char * (*tcl_DbCkalloc) (unsigned int size, CONST char *file, int line); /* 6 */
-    int (*tcl_DbCkfree) (char *ptr, CONST char *file, int line); /* 7 */
+    void (*tcl_DbCkfree) (char *ptr, CONST char *file, int line); /* 7 */
     char * (*tcl_DbCkrealloc) (char *ptr, unsigned int size, CONST char *file, int line); /* 8 */
 #if !defined(__WIN32__) && !defined(MAC_OSX_TCL) /* UNIX */
     void (*tcl_CreateFileHandler) (int fd, int mask, Tcl_FileProc *proc, ClientData clientData); /* 9 */
 #endif /* UNIX */
-#ifdef __WIN32__ /* WIN */
-    void *reserved9;
+#if defined(__WIN32__) /* WIN */
+    VOID *reserved9;
 #endif /* WIN */
 #ifdef MAC_OSX_TCL /* MACOSX */
     void (*tcl_CreateFileHandler) (int fd, int mask, Tcl_FileProc *proc, ClientData clientData); /* 9 */
@@ -3442,8 +3495,8 @@ typedef struct TclStubs {
 #if !defined(__WIN32__) && !defined(MAC_OSX_TCL) /* UNIX */
     void (*tcl_DeleteFileHandler) (int fd); /* 10 */
 #endif /* UNIX */
-#ifdef __WIN32__ /* WIN */
-    void *reserved10;
+#if defined(__WIN32__) /* WIN */
+    VOID *reserved10;
 #endif /* WIN */
 #ifdef MAC_OSX_TCL /* MACOSX */
     void (*tcl_DeleteFileHandler) (int fd); /* 10 */
@@ -3607,8 +3660,8 @@ typedef struct TclStubs {
 #if !defined(__WIN32__) && !defined(MAC_OSX_TCL) /* UNIX */
     int (*tcl_GetOpenFile) (Tcl_Interp *interp, CONST char *chanID, int forWriting, int checkUsage, ClientData *filePtr); /* 167 */
 #endif /* UNIX */
-#ifdef __WIN32__ /* WIN */
-    void *reserved167;
+#if defined(__WIN32__) /* WIN */
+    VOID *reserved167;
 #endif /* WIN */
 #ifdef MAC_OSX_TCL /* MACOSX */
     int (*tcl_GetOpenFile) (Tcl_Interp *interp, CONST char *chanID, int forWriting, int checkUsage, ClientData *filePtr); /* 167 */
@@ -3633,7 +3686,7 @@ typedef struct TclStubs {
     int (*tcl_IsSafe) (Tcl_Interp *interp); /* 185 */
     char * (*tcl_JoinPath) (int argc, CONST84 char *CONST *argv, Tcl_DString *resultPtr); /* 186 */
     int (*tcl_LinkVar) (Tcl_Interp *interp, CONST char *varName, char *addr, int type); /* 187 */
-    void *reserved188;
+    VOID *reserved188;
     Tcl_Channel (*tcl_MakeFileChannel) (ClientData handle, int mode); /* 189 */
     int (*tcl_MakeSafe) (Tcl_Interp *interp); /* 190 */
     Tcl_Channel (*tcl_MakeTcpClientChannel) (ClientData tcpSocket); /* 191 */
@@ -3663,8 +3716,8 @@ typedef struct TclStubs {
     void (*tcl_RegExpRange) (Tcl_RegExp regexp, int index, CONST84 char **startPtr, CONST84 char **endPtr); /* 215 */
     void (*tcl_Release) (ClientData clientData); /* 216 */
     void (*tcl_ResetResult) (Tcl_Interp *interp); /* 217 */
-    int (*tcl_ScanElement) (CONST char *str, int *flagPtr); /* 218 */
-    int (*tcl_ScanCountedElement) (CONST char *str, int length, int *flagPtr); /* 219 */
+    int (*tcl_ScanElement) (CONST char *src, int *flagPtr); /* 218 */
+    int (*tcl_ScanCountedElement) (CONST char *src, int length, int *flagPtr); /* 219 */
     int (*tcl_SeekOld) (Tcl_Channel chan, int offset, int mode); /* 220 */
     int (*tcl_ServiceAll) (void); /* 221 */
     int (*tcl_ServiceEvent) (int flags); /* 222 */
@@ -3730,7 +3783,7 @@ typedef struct TclStubs {
     int (*tcl_UnstackChannel) (Tcl_Interp *interp, Tcl_Channel chan); /* 282 */
     Tcl_Channel (*tcl_GetStackedChannel) (Tcl_Channel chan); /* 283 */
     void (*tcl_SetMainLoop) (Tcl_MainLoopProc *proc); /* 284 */
-    void *reserved285;
+    VOID *reserved285;
     void (*tcl_AppendObjToObj) (Tcl_Obj *objPtr, Tcl_Obj *appendObjPtr); /* 286 */
     Tcl_Encoding (*tcl_CreateEncoding) (CONST Tcl_EncodingType *typePtr); /* 287 */
     void (*tcl_CreateThreadExitHandler) (Tcl_ExitProc *proc, ClientData clientData); /* 288 */
@@ -4025,12 +4078,63 @@ typedef struct TclStubs {
     int (*tcl_AppendFormatToObj) (Tcl_Interp *interp, Tcl_Obj *objPtr, CONST char *format, int objc, Tcl_Obj *CONST objv[]); /* 577 */
     Tcl_Obj * (*tcl_ObjPrintf) (CONST char *format, ...); /* 578 */
     void (*tcl_AppendPrintfToObj) (Tcl_Obj *objPtr, CONST char *format, ...); /* 579 */
+    VOID *reserved580;
+    VOID *reserved581;
+    VOID *reserved582;
+    VOID *reserved583;
+    VOID *reserved584;
+    VOID *reserved585;
+    VOID *reserved586;
+    VOID *reserved587;
+    VOID *reserved588;
+    VOID *reserved589;
+    VOID *reserved590;
+    VOID *reserved591;
+    VOID *reserved592;
+    VOID *reserved593;
+    VOID *reserved594;
+    VOID *reserved595;
+    VOID *reserved596;
+    VOID *reserved597;
+    VOID *reserved598;
+    VOID *reserved599;
+    VOID *reserved600;
+    VOID *reserved601;
+    VOID *reserved602;
+    VOID *reserved603;
+    VOID *reserved604;
+    VOID *reserved605;
+    VOID *reserved606;
+    VOID *reserved607;
+    VOID *reserved608;
+    VOID *reserved609;
+    VOID *reserved610;
+    VOID *reserved611;
+    VOID *reserved612;
+    VOID *reserved613;
+    VOID *reserved614;
+    VOID *reserved615;
+    VOID *reserved616;
+    VOID *reserved617;
+    VOID *reserved618;
+    VOID *reserved619;
+    VOID *reserved620;
+    VOID *reserved621;
+    VOID *reserved622;
+    VOID *reserved623;
+    VOID *reserved624;
+    VOID *reserved625;
+    VOID *reserved626;
+    VOID *reserved627;
+    VOID *reserved628;
+    VOID *reserved629;
+    void (*tclUnusedStubEntry) (void); /* 630 */
 } TclStubs;
 
 #ifdef __cplusplus
 extern "C" {
 #endif
-extern const TclStubs *tclStubsPtr;
+extern TclStubs *tclStubsPtr;
 #ifdef __cplusplus
 }
 #endif
@@ -6379,13 +6483,81 @@ extern const TclStubs *tclStubsPtr;
 #define Tcl_AppendPrintfToObj \
 	(tclStubsPtr->tcl_AppendPrintfToObj) /* 579 */
 #endif
+/* Slot 580 is reserved */
+/* Slot 581 is reserved */
+/* Slot 582 is reserved */
+/* Slot 583 is reserved */
+/* Slot 584 is reserved */
+/* Slot 585 is reserved */
+/* Slot 586 is reserved */
+/* Slot 587 is reserved */
+/* Slot 588 is reserved */
+/* Slot 589 is reserved */
+/* Slot 590 is reserved */
+/* Slot 591 is reserved */
+/* Slot 592 is reserved */
+/* Slot 593 is reserved */
+/* Slot 594 is reserved */
+/* Slot 595 is reserved */
+/* Slot 596 is reserved */
+/* Slot 597 is reserved */
+/* Slot 598 is reserved */
+/* Slot 599 is reserved */
+/* Slot 600 is reserved */
+/* Slot 601 is reserved */
+/* Slot 602 is reserved */
+/* Slot 603 is reserved */
+/* Slot 604 is reserved */
+/* Slot 605 is reserved */
+/* Slot 606 is reserved */
+/* Slot 607 is reserved */
+/* Slot 608 is reserved */
+/* Slot 609 is reserved */
+/* Slot 610 is reserved */
+/* Slot 611 is reserved */
+/* Slot 612 is reserved */
+/* Slot 613 is reserved */
+/* Slot 614 is reserved */
+/* Slot 615 is reserved */
+/* Slot 616 is reserved */
+/* Slot 617 is reserved */
+/* Slot 618 is reserved */
+/* Slot 619 is reserved */
+/* Slot 620 is reserved */
+/* Slot 621 is reserved */
+/* Slot 622 is reserved */
+/* Slot 623 is reserved */
+/* Slot 624 is reserved */
+/* Slot 625 is reserved */
+/* Slot 626 is reserved */
+/* Slot 627 is reserved */
+/* Slot 628 is reserved */
+/* Slot 629 is reserved */
+#ifndef TclUnusedStubEntry
+#define TclUnusedStubEntry \
+	(tclStubsPtr->tclUnusedStubEntry) /* 630 */
+#endif
 
 #endif /* defined(USE_TCL_STUBS) && !defined(USE_TCL_STUB_PROCS) */
 
 /* !END!: Do not edit above this line. */
 
+#undef TclUnusedStubEntry
+
 #undef TCL_STORAGE_CLASS
 #define TCL_STORAGE_CLASS DLLIMPORT
+
+/*
+ * Deprecated Tcl procedures:
+ */
+#if defined(USE_TCL_STUBS) && !defined(USE_TCL_STUB_PROCS)
+#   undef Tcl_EvalObj
+#   define Tcl_EvalObj(interp,objPtr) \
+	Tcl_EvalObjEx((interp),(objPtr),0)
+#   undef Tcl_GlobalEvalObj
+#   define Tcl_GlobalEvalObj(interp,objPtr) \
+	Tcl_EvalObjEx((interp),(objPtr),TCL_EVAL_GLOBAL)
+#endif
 
 #endif /* _TCLDECLS */
 
