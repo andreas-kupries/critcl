@@ -1,0 +1,67 @@
+# -*- tcl -*-
+# -------------------------------------------------------------------------
+# critcl_cache.test
+# -------------------------------------------------------------------------
+
+source [file join \
+            [file dirname [file join [pwd] [info script]]] \
+            testutilities.tcl]
+
+testsNeedTcl     8.4
+testsNeedTcltest 2
+
+support {
+    useLocal lib/util84/lassign.tcl  lassign84
+    useLocal lib/util84/dict.tcl     dict84
+
+    useLocal lib/stubs/container.tcl stubs::container
+    useLocal lib/stubs/reader.tcl    stubs::reader
+    useLocal lib/stubs/genframe.tcl  stubs::gen
+
+    # Helper procedures
+    useLocalFile test/support.tcl
+}
+testing {
+    useLocal lib/critcl/critcl.tcl critcl
+
+    overrides
+}
+
+# -------------------------------------------------------------------------
+## cache syntax
+
+test critcl-cache-1.0.6 {cache, wrong\#args, too many} -constraints tcl86plus -body {
+    critcl::cache C X
+} -returnCodes error -result {wrong # args: should be "critcl::cache ?dir?"}
+
+test critcl-cache-1.0.5 {cache, wrong\#args, too many} -constraints tcl85 -body {
+    critcl::cache C X
+} -returnCodes error -result {wrong # args: should be "critcl::cache ?dir?"}
+
+test critcl-cache-1.0.4 {cache, wrong\#args, too many} -constraints tcl84 -body {
+    critcl::cache C X
+} -returnCodes error -result {wrong # args: should be "critcl::cache ?dir?"}
+
+# -------------------------------------------------------------------------
+##
+
+test critcl-cache-2.0 {cache, default, home directory} -body {
+    critcl::cache
+} -match glob -result $::env(HOME)/.critcl/*
+
+test critcl-cache-2.1 {cache, redirecting cache} -setup {
+    set here [critcl::cache]
+} -body {
+    critcl::cache ~/FOO
+} -cleanup {
+    critcl::cache $here
+    unset here
+} -match glob -result $::env(HOME)/FOO
+
+# -------------------------------------------------------------------------
+testsuiteCleanup
+
+# Local variables:
+# mode: tcl
+# indent-tabs-mode: nil
+# End:

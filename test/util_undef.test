@@ -1,0 +1,68 @@
+# -*- tcl -*-
+# -------------------------------------------------------------------------
+# critcl_util_undef.test
+# -------------------------------------------------------------------------
+
+source [file join \
+            [file dirname [file join [pwd] [info script]]] \
+            testutilities.tcl]
+
+testsNeedTcl     8.4
+testsNeedTcltest 2
+
+support {
+    useLocal lib/util84/lassign.tcl  lassign84
+    useLocal lib/util84/dict.tcl     dict84
+
+    useLocal lib/stubs/container.tcl stubs::container
+    useLocal lib/stubs/reader.tcl    stubs::reader
+    useLocal lib/stubs/genframe.tcl  stubs::gen
+
+    useLocal lib/critcl/critcl.tcl critcl
+
+    # Helper procedures
+    useLocalFile test/support.tcl
+}
+testing {
+    useLocal lib/critcl-util/util.tcl critcl::util
+    overrides
+}
+
+# -------------------------------------------------------------------------
+## util::undef syntax
+
+test critcl-util-undef-1.0 {util-undef, wrong\#args, not enough} -body {
+    critcl::util::undef
+} -returnCodes error -result {wrong # args: should be "critcl::util::undef configfile define"}
+
+test critcl-util-undef-1.1 {util-undef, wrong\#args, not enough} -body {
+    critcl::util::undef C
+} -returnCodes error -result {wrong # args: should be "critcl::util::undef configfile define"}
+
+test critcl-util-undef-1.2 {util-undef, wrong\#args, too many} -body {
+    critcl::util::undef C D X
+} -returnCodes error -result {wrong # args: should be "critcl::util::undef configfile define"}
+
+# -------------------------------------------------------------------------
+##
+
+test critcl-util-undef-2.0 {util-undef} -setup {
+    set here [critcl::cache]
+    file mkdir    ~/.critcl-tests-[pid]
+    critcl::cache ~/.critcl-tests-[pid]
+} -body {
+    critcl::util::undef C foo
+    inspect C
+} -cleanup {
+    critcl::cache $here
+    unset here
+    file delete -force ~/.critcl-tests-[pid]
+} -result [viewFile [localPath test/util/undef-2.0]]
+
+# -------------------------------------------------------------------------
+testsuiteCleanup
+
+# Local variables:
+# mode: tcl
+# indent-tabs-mode: nil
+# End:

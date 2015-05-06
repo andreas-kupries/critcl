@@ -3,10 +3,15 @@
 # the .test siblings of this file.
 
 foreach t [lsort -dict [glob -directory [file dirname [file normalize [info script]]] *.test]] {
-    puts "___ $t _ _ __ ___ _____"
+    puts ""
+    puts "_ _ __ ___ _____ ________ _____________ _____________________ *** [file tail $t] ***"
     if {[catch {
 	source $t
     }]} {
 	puts $::errorInfo
     }
 }
+
+puts ""
+puts "_ _ __ ___ _____ ________ _____________ _____________________"
+puts ""
