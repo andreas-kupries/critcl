@@ -3080,7 +3080,7 @@ proc ::critcl::scan::critcl::license {who args} {
     variable ::critcl::scan::capture
     dict set capture org $who
 
-    print "\tOrganization: $who"
+    ::critcl::print "\tOrganization: $who"
 
     # Meta data.
     set elicense [::critcl::LicenseText $args]
