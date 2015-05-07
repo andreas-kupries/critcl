@@ -68,10 +68,15 @@ PKG_TCL_SOURCES = @@PFILES@@
 #========================================================================
 
 all:
-doc:
+	@echo %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+	@echo Please run '"make install"' to build and install the package.
+	@echo Critcl has no separate build-step.
 
-install: all
-	echo %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% ; \
+doc:
+	@echo No documentation to build.
+
+install:
+	@echo %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% ; \
 	cat $(top_builddir)/Config | grep -v '^#' ; \
 	echo %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% ; \
 	rm -rf $(top_builddir)/results-tea ; \
@@ -80,9 +85,9 @@ install: all
 		-I $(exec_prefix)/include \
 		-I $(includedir)@@APIUSE@@ \
 		@@UCONFIGUSE@@ \
-		-keep -cache $(top_builddir)/results-tea \
+		-keep       -cache  $(top_builddir)/results-tea \
 		-target TEA -config $(top_builddir)/Config \
-		-libdir $(DESTDIR)$(libdir) \
+		-libdir     $(DESTDIR)$(libdir) \
 		-includedir $(DESTDIR)$(includedir) \
 		-pkg $(PACKAGE)$(VERSION) \
 		$(PKG_TCL_SOURCES) ; \
@@ -90,15 +95,15 @@ install: all
 	cat $(top_builddir)/results-tea/*.log
 	echo %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% ; \
 
-install-auto: all show-auto
-	rm -rf $(top_builddir)/results-auto ; \
+install-auto: show-auto
+	@rm -rf $(top_builddir)/results-auto ; \
 	$(TCLSH_PROG) $(CRITCL) \
 		-I $(prefix)/include \
 		-I $(exec_prefix)/include \
 		-I $(includedir)@@APIUSE@@ \
 		@@UCONFIGUSE@@ \
 		-keep -cache $(top_builddir)/results-auto \
-		-libdir $(DESTDIR)$(libdir) \
+		-libdir     $(DESTDIR)$(libdir) \
 		-includedir $(DESTDIR)$(includedir) \
 		-pkg $(PACKAGE)$(VERSION) \
 		$(PKG_TCL_SOURCES) ; \
@@ -107,16 +112,17 @@ install-auto: all show-auto
 	echo %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% ; \
 
 install-doc:
+	@echo No documentation to install.
 
 show:
-	$(TCLSH_PROG) $(CRITCL) \
+	@$(TCLSH_PROG) $(CRITCL) \
 		-keep -cache $(top_builddir)/results-tea \
 		-target TEA -config $(top_builddir)/Config \
 		-libdir $(DESTDIR)$(libdir) \
 		-pkg -show
 
 show-auto:
-	$(TCLSH_PROG) $(CRITCL) \
+	@$(TCLSH_PROG) $(CRITCL) \
 		-keep -cache $(top_builddir)/results-auto \
 		-libdir $(DESTDIR)$(libdir) \
 		-pkg -show

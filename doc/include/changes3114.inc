@@ -1,7 +1,11 @@
 [section {Changes for version 3.1.14}]
 [list_begin enumerated]
 
-[enum]  Accepted request implied in issue #53. Unconditionally save
+[enum]  Fixed issue #36. Added message to target [const all] of the
+        Makefile generated for TEA mode. Additionally tweaked other
+        parts of the output to be less noisy.
+
+[enum]  Accepted request implied in issue #54. Unconditionally save
         the compiler/linker build log into key [const log] of the
         dictionary returned by [cmd cresults].
 
