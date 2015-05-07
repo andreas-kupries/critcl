@@ -2437,6 +2437,8 @@ proc ::critcl::cbuild {file {load 1}} {
     dict set v::code($file) result tsources   [GetParam $file tsources]
     dict set v::code($file) result mintcl     [MinTclVersion $file]
 
+    set msgs {}
+
     if {$v::options(force) || ![file exists $shlib]} {
 	LogOpen $file
 	set base   [BaseOf              $file]
@@ -2485,11 +2487,11 @@ proc ::critcl::cbuild {file {load 1}} {
 	dict set v::code($file) result warnings [CheckForWarnings $msgs]
     }
 
+    dict set v::code($file) result log $msgs
+
     if {$v::failed} {
 	if {!$buildforpackage} {
 	    print stderr "$msgs\ncritcl build failed ($file)"
-	} else {
-	    dict set v::code($file) result log $msgs
 	}
     } elseif {$load && !$buildforpackage} {
 	Load $file

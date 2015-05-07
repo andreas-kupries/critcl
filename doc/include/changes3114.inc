@@ -1,6 +1,10 @@
 [section {Changes for version 3.1.14}]
 [list_begin enumerated]
 
+[enum]  Accepted request implied in issue #53. Unconditionally save
+        the compiler/linker build log into key [const log] of the
+        dictionary returned by [cmd cresults].
+
 [enum]  Fixed issue #53. Clarified the documentation of commands
         [cmd critcl::load] and [cmd critcl::failed] with regard
         to their results and the throwing of errors (does not happen).
