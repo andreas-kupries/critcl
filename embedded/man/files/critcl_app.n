@@ -720,6 +720,40 @@ targets\&. The result of such a merge would look like:
 .CE
 .PP
 The latest changes are found at the top\&.
+.SH "CHANGES FOR VERSION 3\&.1\&.14"
+.IP [1]
+Fixed issue #36\&. Added message to target \fBall\fR of the
+Makefile generated for TEA mode\&. Additionally tweaked other
+parts of the output to be less noisy\&.
+.IP [2]
+Accepted request implied in issue #54\&. Unconditionally save
+the compiler/linker build log into key \fBlog\fR of the
+dictionary returned by \fBcresults\fR\&.
+.IP [3]
+Fixed issue #53\&. Clarified the documentation of commands
+\fBcritcl::load\fR and \fBcritcl::failed\fR with regard
+to their results and the throwing of errors (does not happen)\&.
+.IP [4]
+Fixed issue #48\&. Modified mode "compile & run" to allow new
+declarations in a file, after it was build, instead of
+erroring out\&. The new decls are build when needed\&. Mode
+"precompile" is unchanged and will continue to trap the
+situation\&.
+.IP [5]
+Fixed issue #52\&. Updated the local Tcl/Tk headers to
+8\&.4\&.20, 8\&.5\&.13, and 8\&.6\&.4\&.
+.IP [6]
+Fixed issue #45\&. New feature command \fBcritcl::cconst\fR\&.
+.IP [7]
+\fBcritcl::util\fR: New command \fBlocate\fR to find a
+file across a set of paths, and report an error when not
+found\&. This is for use in autoconf-like header-searches and
+similar configuration tests\&.
+.IP [8]
+Modified 'AbortWhenCalledAfterBuild' to dump the entire stack
+(info frame!)\&. This should make it easier to determine the
+location of the troubling declaration\&.
+.PP
 .SH "CHANGES FOR VERSION 3\&.1\&.13"
 .IP [1]
 Merged PR #43\&. Fixed bug loading adjunct Tcl sources\&.

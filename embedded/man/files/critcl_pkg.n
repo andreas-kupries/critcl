@@ -292,6 +292,8 @@ package require \fBmd5  ?2?\fR
 .sp
 \fB::critcl::cdata\fR \fItclname\fR \fIdata\fR
 .sp
+\fB::critcl::cconst\fR \fItclname\fR \fIresulttype\fR \fIvalue\fR
+.sp
 \fB::critcl::cdefines\fR \fIdefinitions\fR ?\fInamespace\fR?
 .sp
 \fB::critcl::cproc\fR \fIname\fR \fIarguments\fR \fIresulttype\fR \fIbody\fR ?\fIoption\fR \fIvalue\fR\&.\&.\&.?
@@ -625,10 +627,34 @@ the writer to do all of this on their own\&. I\&.e\&. the cost of the
 aforementioned flexibility is a higher complexity seen by the user\&.
 .TP
 \fB::critcl::cdata\fR \fItclname\fR \fIdata\fR
-This command a new Tcl command named \fItclname\fR which returns
+This command creates a new Tcl command named \fItclname\fR which returns
 \fIdata\fR as a ByteArray result\&.
 .sp
 The result of \fBcritcl::cdata\fR itself is the empty string\&.
+.TP
+\fB::critcl::cconst\fR \fItclname\fR \fIresulttype\fR \fIvalue\fR
+This command creates a new Tcl command named \fItclname\fR which returns
+the constant \fIvalue\fR as its result, with Tcl type \fIresulttype\fR\&.
+.sp
+The result of \fBcritcl::cconst\fR itself is the empty string\&.
+.sp
+The command is similar to \fBcritcl::cdata\fR in that it returns a
+constant value\&. Contrary to \fBcritcl::cdata\fR however it is not restricted
+to ByteArray results, but accepts all result-types known to \fBcritcl::cproc\fR\&.
+Its semantics are actually equivalent to
+.CS
+
+
+    cproc $tclname {} $resulttype "return $value ;"
+
+.CE
+.sp
+Contrary to \fBcritcl::cproc\fR however it is internally optimized to
+avoid generating a superfluous C function\&.
+.sp
+Note that nothing prevents the user from using a C define for the
+\fIvalue\fR\&. Any visible C function is actually also allowed, as long as
+it does not take arguments\&.
 .TP
 \fB::critcl::cdefines\fR \fIdefinitions\fR ?\fInamespace\fR?
 This command creates Tcl variables in the specified \fInamespace\fR
@@ -1577,18 +1603,20 @@ See also section \fBModes Of Operation/Use\fR\&.
 .TP
 \fB::critcl::failed\fR
 This command returns a boolean value\&. It returns \fBtrue\fR if
-critcl has failed to build the package\&. As part of this it forces the
-building of the package, but not its loading\&. Note that it will
-attempt to build the package only on the first call; future calls for
-the same package will return a cached result\&.
+critcl has failed to build the package, and \fBfalse\fR otherwise,
+i\&.e\&. success\&. As part of this it forces the building of the package,
+but not its loading\&. Note that it will attempt to build the package
+only on the first call; future calls for the same package will return
+a cached result\&.
 .sp
 This enables a critcl-based package to check itself for
-availability and throw an error if it could not be built\&.
+availability and throw an error if it could not be built\&. \fINote\fR
+that the command does \fInot\fR throw such an error itself\&.
 .sp
-\fINote\fR that this command is only useful from within in a
-"\fI\&.critcl\fR" file\&. The result is managed on a per-file basis, like
-is done for the commands embedding C code and controlling the
-behaviour of compiler and linker\&.
+\fINote\fR further that this command is only useful from
+within in a "\fI\&.critcl\fR" file\&. The result is managed on a per-file
+basis, like is done for the commands embedding C code and controlling
+the behaviour of compiler and linker\&.
 .TP
 \fB::critcl::load\fR
 This command is like \fBcritcl::failed\fR, except that it also forces
@@ -1596,17 +1624,19 @@ the loading of the generated shared library, if it was built, and that
 its result has reversed sense\&.
 .sp
 It returns \fBtrue\fR if critcl succeeded in building and
-loading the package\&.
+loading the package, and \fBfalse\fR otherwise, i\&.e\&. build- or
+load-failure\&.
 .sp
 This enables a critcl-based package to to not only check itself
 for availability and throw an error if it could not be built, but also
 force an immediate load, circumventing the default behaviour, which is
-lazy\&. See also section \fBRuntime Behaviour\fR\&.
+lazy\&. See also section \fBRuntime Behaviour\fR\&. \fINote\fR that
+the command does \fInot\fR throw any error itself\&.
 .sp
-\fINote\fR that this command is only useful from within in a
-"\fI\&.critcl\fR" file\&. The result is managed on a per-file basis, like
-is done for the commands embedding C code and controlling the
-behaviour of compiler and linker\&.
+\fINote\fR further that this command is only useful from
+within in a "\fI\&.critcl\fR" file\&. The result is managed on a per-file
+basis, like is done for the commands embedding C code and controlling
+the behaviour of compiler and linker\&.
 .PP
 .SS "BUILD MANAGEMENT"
 The package provides a single command for the management of global
@@ -1801,8 +1831,7 @@ The list of companion "\fI\&.tcl\fR" files to source for the package in
 the "\fI\&.critcl\fR" \fIfile\fR to run successfully\&.
 .TP
 \fBlog\fR
-The build log in case of failure, and \fB::critcl::buildforpackage\fR
-having signaled the build of a package\&. Otherwise the empty string\&.
+The build log generated by the compiler/linker\&.
 .RE
 .TP
 \fB::critcl::crosscheck\fR
@@ -3017,6 +3046,40 @@ into a separate document\&. Please see section "Embedding C" in the
 document about \fIUsing CriTcl\fR\&.
 .PP
 The latest changes are found at the top\&.
+.SH "CHANGES FOR VERSION 3\&.1\&.14"
+.IP [1]
+Fixed issue #36\&. Added message to target \fBall\fR of the
+Makefile generated for TEA mode\&. Additionally tweaked other
+parts of the output to be less noisy\&.
+.IP [2]
+Accepted request implied in issue #54\&. Unconditionally save
+the compiler/linker build log into key \fBlog\fR of the
+dictionary returned by \fBcresults\fR\&.
+.IP [3]
+Fixed issue #53\&. Clarified the documentation of commands
+\fBcritcl::load\fR and \fBcritcl::failed\fR with regard
+to their results and the throwing of errors (does not happen)\&.
+.IP [4]
+Fixed issue #48\&. Modified mode "compile & run" to allow new
+declarations in a file, after it was build, instead of
+erroring out\&. The new decls are build when needed\&. Mode
+"precompile" is unchanged and will continue to trap the
+situation\&.
+.IP [5]
+Fixed issue #52\&. Updated the local Tcl/Tk headers to
+8\&.4\&.20, 8\&.5\&.13, and 8\&.6\&.4\&.
+.IP [6]
+Fixed issue #45\&. New feature command \fBcritcl::cconst\fR\&.
+.IP [7]
+\fBcritcl::util\fR: New command \fBlocate\fR to find a
+file across a set of paths, and report an error when not
+found\&. This is for use in autoconf-like header-searches and
+similar configuration tests\&.
+.IP [8]
+Modified 'AbortWhenCalledAfterBuild' to dump the entire stack
+(info frame!)\&. This should make it easier to determine the
+location of the troubling declaration\&.
+.PP
 .SH "CHANGES FOR VERSION 3\&.1\&.13"
 .IP [1]
 Merged PR #43\&. Fixed bug loading adjunct Tcl sources\&.

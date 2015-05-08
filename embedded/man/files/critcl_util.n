@@ -282,6 +282,12 @@ package require \fBcritcl::util  ?1?\fR
 .sp
 \fB::critcl::util::checkfun\fR \fIname\fR ?\fIlabel\fR?
 .sp
+\fB::critcl::util::def\fR \fIpath\fR \fIdefine\fR ?\fIvalue\fR?
+.sp
+\fB::critcl::util::locate\fR \fIpath\fR \fIdefine\fR
+.sp
+\fB::critcl::util::locate\fR \fIlabel\fR \fIpaths\fR ?\fIcmd\fR?
+.sp
 .BE
 .SH DESCRIPTION
 .PP
@@ -328,6 +334,45 @@ This package resides in the Core Package Layer of CriTcl\&.
 This command checks the build-time environment for the existence of
 the C function \fIname\fR\&.
 It returns \fBtrue\fR on success, and \fBfalse\fR otherwise\&.
+.TP
+\fB::critcl::util::def\fR \fIpath\fR \fIdefine\fR ?\fIvalue\fR?
+This command extends the specified configuration file \fIpath\fR with a
+\fB#define\fR directive for the named \fIdefine\fR\&. If the \fIvalue\fR
+is not specified it will default to \fB1\fR\&.
+.sp
+The result of the command is an empty string\&.
+.sp
+Note that the configuration file is maintained in the \fBcritcl::cache\fR
+directory\&.
+.TP
+\fB::critcl::util::locate\fR \fIpath\fR \fIdefine\fR
+This command extends the specified configuration file \fIpath\fR with an
+\fB#undef\fR directive for the named \fIdefine\fR\&.
+.sp
+The result of the command is an empty string\&.
+.sp
+Note that the configuration file is maintained in the \fBcritcl::cache\fR
+directory\&.
+.TP
+\fB::critcl::util::locate\fR \fIlabel\fR \fIpaths\fR ?\fIcmd\fR?
+This command checks the build-time environment for the existence of a file
+in a set of possible \fIpaths\fR\&.
+.sp
+If the option \fIcmd\fR prefix is specified it will be called with
+the full path of a found file as its only argument to perform further checks\&.
+A return value of \fBfalse\fR will reject the path and continue the search\&.
+.sp
+The return value of the command is the found path, as listed in
+\fIpaths\fR\&. As a side effect the command will also print the found path,
+prefixed with the \fIlabel\fR, using \fBcritcl::msg\fR\&.
+.sp
+Failure to find the path is reported via \fBcritcl::error\fR, and a
+possible empty string as the result, if \fBcritcl::error\fR does not
+terminate execution\&.
+.sp
+Relative paths are allowed as elements of \fIpaths\fR, and are
+normalized relative to the directory containing the currently handled
+critcl file\&.
 .PP
 .SH AUTHORS
 Andreas Kupries
