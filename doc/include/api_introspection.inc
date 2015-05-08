@@ -111,7 +111,7 @@ only on the first call; future calls for the same package will return
 a cached result.
 
 [para] This enables a critcl-based package to check itself for
-availability and throw an error if it could not be built. [emp Note]
+availability and throw an error if it could not be built. [emph Note]
 that the command does [emph not] throw such an error itself.
 
 [para] [emph Note] further that this command is only useful from
