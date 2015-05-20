@@ -2437,6 +2437,7 @@ proc ::critcl::cbuild {file {load 1}} {
     dict set v::code($file) result tsources   [GetParam $file tsources]
     dict set v::code($file) result mintcl     [MinTclVersion $file]
 
+    set emsg {}
     set msgs {}
 
     if {$v::options(force) || ![file exists $shlib]} {
@@ -2482,12 +2483,13 @@ proc ::critcl::cbuild {file {load 1}} {
 	    Link $file
 	}
 
-	set msgs [LogClose]
+	lassign [LogClose] msgs emsg
 
-	dict set v::code($file) result warnings [CheckForWarnings $msgs]
+	dict set v::code($file) result warnings [CheckForWarnings $emsg]
     }
 
     dict set v::code($file) result log $msgs
+    dict set v::code($file) result exl $emsg
 
     if {$v::failed} {
 	if {!$buildforpackage} {
@@ -4388,10 +4390,18 @@ proc ::critcl::PkgInit {file} {
 # # ## ### ##### ######## ############# #####################
 ## Implementation -- Internals - Access to the log file
 
-proc ::critcl::LogOpen {file} {
+proc ::critcl::LogFile {} {
     file mkdir $v::cache
+    return [file join $v::cache [pid].log]
+}
 
-    set   v::logfile [file join $v::cache [pid].log]
+proc ::critcl::LogFileExec {} {
+    file mkdir $v::cache
+    return [file join $v::cache [pid]_exec.log]
+}
+
+proc ::critcl::LogOpen {file} {
+    set   v::logfile [LogFile]
     set   v::log     [open $v::logfile w]
     puts $v::log "\n[clock format [clock seconds]] - $file"
     return
@@ -4419,11 +4429,14 @@ proc ::critcl::LogClose {} {
 
     close $v::log
     set msgs [Cat $v::logfile]
+    set emsg [Cat ${v::logfile}_]
+
     AppendCache $v::prefix.log $msgs
 
-    file delete -force $v::logfile
+    file delete -force $v::logfile ${v::logfile}_
     unset v::log v::logfile
-    return $msgs
+
+    return [list $msgs $emsg]
 }
 
 # # ## ### ##### ######## ############# #####################
@@ -4583,14 +4596,26 @@ proc ::critcl::ExecWithLogging {cmdline okmsg errmsg} {
     LogCmdline $cmdline
 
     # Extend the command, redirect all of its output (stdout and
-    # stderr) into the current log.
-    lappend cmdline >&@ $v::log
+    # stderr) into a temp log.
+    set elogfile [LogFileExec]
+    set elog     [open $elogfile w]
 
-    interp transfer {} $v::log $run
+    lappend cmdline >&@ $elog
+    interp transfer {}  $elog $run
 
     set ok [Exec $cmdline]
 
-    interp transfer $run $v::log {}
+    interp transfer $run $elog {}
+    close $elog
+
+    # Put the command output into the main log ...
+    set  msgs [Cat $elogfile]
+    Log $msgs
+
+    # ... as well as into a separate execution log.
+    Append ${v::logfile}_ $msgs
+
+    file delete -force $elogfile
 
     if {$ok} {
 	Log [uplevel 1 [list subst $okmsg]]

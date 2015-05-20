@@ -7,7 +7,9 @@
 
 [enum]  Accepted request implied in issue #54. Unconditionally save
         the compiler/linker build log into key [const log] of the
-        dictionary returned by [cmd cresults].
+        dictionary returned by [cmd cresults], and save a copy of only
+        the execution output in the new key [const exl] ("execution
+        log").
 
 [enum]  Fixed issue #53. Clarified the documentation of commands
         [cmd critcl::load] and [cmd critcl::failed] with regard

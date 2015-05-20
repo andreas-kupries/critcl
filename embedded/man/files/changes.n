@@ -294,7 +294,9 @@ parts of the output to be less noisy\&.
 .IP [2]
 Accepted request implied in issue #54\&. Unconditionally save
 the compiler/linker build log into key \fBlog\fR of the
-dictionary returned by \fBcresults\fR\&.
+dictionary returned by \fBcresults\fR, and save a copy of only
+the execution output in the new key \fBexl\fR ("execution
+log")\&.
 .IP [3]
 Fixed issue #53\&. Clarified the documentation of commands
 \fBcritcl::load\fR and \fBcritcl::failed\fR with regard
