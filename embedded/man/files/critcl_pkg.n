@@ -4,7 +4,7 @@
 '\" Copyright (c) Steve Landers
 '\" Copyright (c) 2011-2015 Andreas Kupries
 '\"
-.TH "critcl" n 3\&.1\&.13 doc "C Runtime In Tcl (CriTcl)"
+.TH "critcl" n 3\&.1\&.15 doc "C Runtime In Tcl (CriTcl)"
 .\" The -*- nroff -*- definitions below are for supplemental macros used
 .\" in Tcl/Tk manual entries.
 .\"
@@ -278,7 +278,7 @@ critcl \- Critcl - Package Reference
 .SH SYNOPSIS
 package require \fBTcl  8\&.4\fR
 .sp
-package require \fBcritcl  ?3\&.1\&.13?\fR
+package require \fBcritcl  ?3\&.1\&.15?\fR
 .sp
 package require \fBplatform  ?1\&.0\&.2?\fR
 .sp
@@ -3051,6 +3051,10 @@ into a separate document\&. Please see section "Embedding C" in the
 document about \fIUsing CriTcl\fR\&.
 .PP
 The latest changes are found at the top\&.
+.SH "CHANGES FOR VERSION 3\&.1\&.15"
+.IP [1]
+Fixed version number bogosity with \fB3\&.1\&.14\fR\&.
+.PP
 .SH "CHANGES FOR VERSION 3\&.1\&.14"
 .IP [1]
 Fixed issue #36\&. Added message to target \fBall\fR of the
