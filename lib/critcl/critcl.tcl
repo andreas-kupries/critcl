@@ -570,7 +570,7 @@ proc ::critcl::argtypesupport {name code} {
     return
 }
 
-proc ::critcl::has-argtype {name} {
+proc ::critcl::has-resulttype {name} {
     variable v::rconv
     return [info exists rconv($name)]
 }
