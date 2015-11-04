@@ -510,6 +510,11 @@ proc ::critcl::argconversion {adefs {n 1}} {
     return [Deline $result]
 }
 
+proc ::critcl::has-argtype {name} {
+    variable v::aconv
+    return [info exists aconv($name)]
+}
+
 proc ::critcl::argtype {name conversion {ctype {}} {ctypeb {}}} {
     variable v::actype
     variable v::actypeb
@@ -563,6 +568,11 @@ proc ::critcl::argtypesupport {name code} {
 
     set acsup($name) [join $lines \n]\n
     return
+}
+
+proc ::critcl::has-argtype {name} {
+    variable v::rconv
+    return [info exists rconv($name)]
 }
 
 proc ::critcl::resulttype {name conversion {ctype {}}} {

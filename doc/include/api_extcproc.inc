@@ -11,6 +11,14 @@ define their own custom types.
 [list_begin definitions]
 
 [comment {- - -- --- ----- -------- ------------- ---------------------}]
+[call [cmd ::critcl::has-resulttype] [arg name]]
+
+This command tests if the named result-type is known or not.
+
+It returns a boolean value, [const true] if the type is known and
+[const false] otherwise.
+
+[comment {- - -- --- ----- -------- ------------- ---------------------}]
 [call [cmd ::critcl::resulttype] [arg name] [arg body] [opt [arg ctype]]]
 
 This command defines the result type [arg name], and associates it
@@ -62,6 +70,15 @@ As examples here are the definitions of two standard result types:
 This form of the [cmd resulttype] command declares [arg name] as an
 alias of result type [arg origname], which has to be defined
 already. If this is not the case an error is thrown.
+
+
+[comment {- - -- --- ----- -------- ------------- ---------------------}]
+[call [cmd ::critcl::has-argtype] [arg name]]
+
+This command tests if the named argument-type is known or not.
+
+It returns a boolean value, [const true] if the type is known and
+[const false] otherwise.
 
 [comment {- - -- --- ----- -------- ------------- ---------------------}]
 [call [cmd ::critcl::argtype] [arg name] [arg body] [opt [arg ctype]] [opt [arg ctypefun]]]
