@@ -3287,7 +3287,10 @@ proc ::critcl::EmitShimFooter {rtype} {
     # Return a standard status, if required.
 
     set code [Deline [ResultConversion $rtype]]
-    if {$code ne {}} { Emitln $code }
+    if {$code ne {}} {
+	Emitln "  /* ($rtype return) - - -- --- ----- -------- */"
+	Emitln $code
+    }
     Emitln \}
     return
 }
