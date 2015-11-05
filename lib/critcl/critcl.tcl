@@ -381,19 +381,18 @@ proc ::critcl::ArgsInprocess {adefs} {
 	    lappend cnames   _has_$name
 	    # Argument to signal if the optional argument was set
 	    # (true) or is the default (false).
-	    lappend csig     "int has_$a"
-	    lappend vardecls "int _has_$a = 0;"
+	    lappend csig     "int has_$name"
+	    lappend vardecls "int _has_$name = 0;"
 
 	} else {
 	    lappend tsig $name
 	    incr max
 	    incr min
 	    lappend optional 0
-	    lappend csig  "[ArgumentCTypeB $t] $a"
 	}
 
-	lappend csig     "[ArgumentCTypeB $t] $a"
-	lappend vardecls "[ArgumentCType  $t] _$a;"
+	lappend csig     "[ArgumentCTypeB $t] $name"
+	lappend vardecls "[ArgumentCType  $t] _$name;"
 
 	lappend names  $name
 	lappend cnames _$name
@@ -418,6 +417,7 @@ proc ::critcl::ArgsInprocess {adefs} {
     dict set db max         $max
     dict set db tsignature  $tsig
     dict set db names       $names
+    dict set db cnames      $cnames
     dict set db optional    $optional
     dict set db defaults    $defaults
     dict set db varargs     $varargs
@@ -753,7 +753,7 @@ proc ::critcl::cconst {name rtype rvalue} {
     # realms.
 
     EmitShimHeader         $wname
-    EmitShimVariables      {} $rtype
+    EmitShimVariables      {vardecls {} hasoptional 0} $rtype
     EmitWrongArgsCheck     {} 0
     EmitConst              $rtype $rvalue
     EmitShimFooter         $rtype
@@ -780,7 +780,9 @@ proc ::critcl::cproc {name adefs rtype {body "#"} args} {
         set args [lrange $args 2 end]
     }
 
-    switch -regexp -- [join [argoptional $adefs] {}] {
+    set adb [ArgsInprocess $adefs]
+
+    switch -regexp -- [join [dict get $adb optional] {}] {
 	^0*$ -
 	^0*1+0*$ {
 	    # no optional arguments, or a single optional block at the
@@ -806,9 +808,9 @@ proc ::critcl::cproc {name adefs rtype {body "#"} args} {
 	set cname c_$cns$cname
     }
 
-    set names  [argnames      $adefs]
-    set cargs  [argcsignature $adefs]
-    set cnames [argcnames     $adefs]
+    set names  [dict get $adb names]
+    set cargs  [dict get $adb csignature]
+    set cnames [dict get $adb cnames]
 
     if {$passcd} {
 	set cargs  [linsert $cargs 0 {ClientData clientdata}]
@@ -838,7 +840,7 @@ proc ::critcl::cproc {name adefs rtype {body "#"} args} {
     # realms.
 
     EmitShimHeader         $wname
-    EmitShimVariables      $adefs $rtype
+    EmitShimVariables      $adb $rtype
     EmitWrongArgsCheck     $adefs $aoffset
     EmitArgumentConversion $adefs $aoffset
     EmitCall               $cname $cnames $rtype
@@ -3322,13 +3324,11 @@ proc ::critcl::EmitShimHeader {wname} {
     return
 }
 
-proc ::critcl::EmitShimVariables {adefs rtype} {
-    set opt 0
-    foreach d [argvardecls $adefs] o [argoptional $adefs] {
+proc ::critcl::EmitShimVariables {adb rtype} {
+    foreach d [dict get $adb vardecls] {
 	Emitln "  $d"
-	if {$o} {set opt 1}
     }
-    if {$opt} { Emitln "  int idx_;" }
+    if {[dict get $adb hasoptional]} { Emitln "  int idx_;" }
 
     # Result variable, source for the C -> Tcl conversion.
     if {$rtype ne "void"} { Emit "  [ResultCType $rtype] rv;" }
