@@ -407,12 +407,38 @@ proc ::critcl::ArgsInprocess {adefs} {
 	set tsig \"$tsig\"
     }
 
-    # TODO: Create a wrong#args check based on the min and max.
-    # Note: This may be modified by an offset (of prefix arguments).
-    ##
+    # Generate code for wrong#args checking, based on the collected
+    # min/max information. Cases to consider:
+    #
+    # a. max == Inf && min == 0   <=> All argc allowed.
+    # b. max == Inf && min  > 0   <=> Fail argc < min.
+    # c. max  < Inf && min == max <=> Fail argc != min.
+    # d. max  < Inf && min  < max <=> Fail argc < min || max < argc
+
+    if {$max == Inf} {
+	# a, b
+	if {!$min} {
+	    # a: nothing to check.
+	    set wacondition {}
+	} else {
+	    # b: argc < min
+	    set wacondition {oc < MIN_ARGS}
+	}
+    } else {
+	# c, d
+	if {$min == $max} {
+	    # c: argc != min
+	    set wacondition {oc != MIN_ARGS}
+	} else {
+	    # d: argc < min || max < argc
+	    set wacondition {(oc < MIN_ARGS) || (MAX_ARGS < oc)}
+	}
+    }
+
     # TODO: Generate conversion code for arguments, take
     #       min/max/optional into account.
 
+    dict set db wacondition $wacondition
     dict set db min         $min
     dict set db max         $max
     dict set db tsignature  $tsig
@@ -426,6 +452,7 @@ proc ::critcl::ArgsInprocess {adefs} {
     dict set db support     $support
     dict set db hasoptional $hasopt
 
+    #array set __ $db ; parray __
     return $db
 }
 
@@ -752,9 +779,11 @@ proc ::critcl::cconst {name rtype rvalue} {
     # Construct the shim handling the conversion between Tcl and C
     # realms.
 
+    set adb [ArgsInprocess {}]
+
     EmitShimHeader         $wname
-    EmitShimVariables      {vardecls {} hasoptional 0} $rtype
-    EmitWrongArgsCheck     {} 0
+    EmitShimVariables      $adb $rtype
+    EmitWrongArgsCheck     $adb 0
     EmitConst              $rtype $rvalue
     EmitShimFooter         $rtype
     EndCommand
@@ -841,7 +870,7 @@ proc ::critcl::cproc {name adefs rtype {body "#"} args} {
 
     EmitShimHeader         $wname
     EmitShimVariables      $adb $rtype
-    EmitWrongArgsCheck     $adefs $aoffset
+    EmitWrongArgsCheck     $adb $aoffset
     EmitArgumentConversion $adefs $aoffset
     EmitCall               $cname $cnames $rtype
     EmitShimFooter         $rtype
@@ -3335,51 +3364,35 @@ proc ::critcl::EmitShimVariables {adb rtype} {
     return
 }
 
-proc ::critcl::EmitWrongArgsCheck {adefs offset} {
+proc ::critcl::EmitWrongArgsCheck {adb offset} {
     # Code checking for the correct count of arguments, and generating
     # the proper error if not.
 
-    # A 1st argument matching "Tcl_Interp*" does not count as a user
-    # visible command argument.
-    if {[lindex $adefs 0] eq "Tcl_Interp*"} {
-	set adefs [lrange $adefs 2 end]
-    }
+    set wac [dict get $adb wacondition]
+    if {$wac eq {}} return
 
-    set min 0 ; # count all non-optional argument. min required.
-    set max 0 ; # count all arguments. max allowed.
-    set names {}
-    foreach {t a} $adefs {
-	incr max
-	if {[llength $a] == 1} {
-	    incr min
-	    lappend names $a
-	} else {
-	    lappend names ?[lindex $a 0]?
-	}
-    }
+    # Have a check, put the pieces together.
 
-    incr min
-    incr max
-    incr min $offset
-    incr max $offset
+    set tsig [dict get $adb tsignature]
+    set min  [dict get $adb min]
+    set max  [dict get $adb max]
 
-    set keep 1
+    set  keep 1
     incr keep $offset
 
-    set  names [join $names { }]
-    if {$names eq {}} {
-	set names NULL
-    } else {
-	set names \"$names\"
+    incr offset ;# Count the command name.
+    incr min $offset
+    if {$max != Inf} {
+	incr max $offset
     }
 
+    lappend map MIN_ARGS $min
+    lappend map MAX_ARGS $max
+    set wac [string map $map $wac]
+
     Emitln ""
-    if {$min == $max} {
-	Emitln "  if (oc != $min) \{"
-    } else {
-	Emitln "  if ((oc < $min) || ($max < oc)) \{"
-    }
-    Emitln "    Tcl_WrongNumArgs(interp, $keep, ov, $names);"
+    Emitln "  if ($wac) \{"
+    Emitln "    Tcl_WrongNumArgs(interp, $keep, ov, $tsig);"
     Emitln "    return TCL_ERROR;"
     Emitln "  \}"
     Emitln ""
