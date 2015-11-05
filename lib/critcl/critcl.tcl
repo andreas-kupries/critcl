@@ -4541,6 +4541,8 @@ proc ::critcl::LogOpen {file} {
     set   v::logfile [LogFile]
     set   v::log     [open $v::logfile w]
     puts $v::log "\n[clock format [clock seconds]] - $file"
+    # Create secondary file as well, leave empty, may not be used.
+    close [open ${v::logfile}_ w]
     return
 }
 
