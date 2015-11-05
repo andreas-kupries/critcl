@@ -738,7 +738,7 @@ proc ::critcl::cconst {name rtype rvalue} {
     # funciton body.
 
     SkipIgnored [set file [This]]
-    AbortWhenCalledAfterBuild
+    HandleDeclAfterBuild
 
     # A void result does not make sense for constants.
     if {$rtype eq "void"} {
