@@ -305,6 +305,130 @@ proc ::critcl::cdefines {defines {namespace "::"}} {
     return
 }
 
+
+proc ::critcl::ArgsInprocess {adefs} {
+    # Convert the regular arg spec from the API into a dictionary
+    # containing all the derived data we need in the various places of
+    # the cproc implementation.
+
+    set db {}
+
+    set names    {} ; # list of raw argument names
+    set cnames   {} ; # list of C var names for the arguments.
+    set optional {} ; # list of flags signaling optional args
+    set varargs  no ; # flag signaling 'args' collector.
+    set defaults {} ; # list of default values, collected only
+                      # for the optional args.
+    set csig     {} ; # C signature of backend function.
+    set tsig     {} ; # Tcl signature for frontend command.
+    set vardecls {} ; # C variables for arg conversion in the shim.
+    set support  {} ; # Conversion support code for arguments.
+    set has      {} ; # Types for which we have emitted the support
+                      # code already.
+    set hasopt   no ; # Overall flag - Have optionals ...
+    set min      0  ; # Count required args - minimal needed.
+    set max      0  ; # Count all args      - maximal allowed.
+
+    # A 1st argument matching "Tcl_Interp*" does not count as a user
+    # visible command argument.
+    if {[lindex $adefs 0] eq "Tcl_Interp*"} {
+	set adefs [lrange $adefs 2 end]
+	lappend csig [lrange $adefs 0 1]
+    }
+
+    # todo: integrate argconversion
+
+    set last [expr {[llength $adefs]-1}]
+    set current 0
+    foreach {t a} $adefs {
+	# t = type
+	# a = name | {name default}
+
+	# Base type support
+	if {![dict exists has $t]} {
+	    dict set has $t .
+	    lappend support "[ArgumentSupport $t]"
+	}
+
+	lassign $a name defaultvalue
+	set hasdefault [expr {[llength $a] == 2}]
+
+	# Cases to consider:
+	# 1. 'args' as the last argument, without a default.
+	# 2. Any argument with a default value.
+	# 3. Any argument.
+
+	if {($current == $last) && ($name eq "args") && !$hasdefault} {
+	    lappend optional 0
+	    lappend tsig ?${name}...?
+	    set varargs yes
+	    set max     Inf ; # No limit on the number of args.
+
+	    # TODO: Dynamically create an arg-type for "list of T".
+	    # set t [MakeListTypeFor $t]
+	    # List support.
+	    if {![dict exists has $t]} {
+		dict set has $t .
+		lappend support "[ArgumentSupport $t]"
+	    }
+
+	} elseif {$hasdefault} {
+	    incr max
+	    set hasopt yes
+	    lappend tsig ?${name}?
+	    lappend optional 1
+	    lappend defaults $defaultvalue
+	    lappend cnames   _has_$name
+	    # Argument to signal if the optional argument was set
+	    # (true) or is the default (false).
+	    lappend csig     "int has_$a"
+	    lappend vardecls "int _has_$a = 0;"
+
+	} else {
+	    lappend tsig $name
+	    incr max
+	    incr min
+	    lappend optional 0
+	    lappend csig  "[ArgumentCTypeB $t] $a"
+	}
+
+	lappend csig     "[ArgumentCTypeB $t] $a"
+	lappend vardecls "[ArgumentCType  $t] _$a;"
+
+	lappend names  $name
+	lappend cnames _$name
+
+	incr current
+    }
+
+    set tsig [join $tsig { }]
+    if {$tsig eq {}} {
+	set tsig NULL
+    } else {
+	set tsig \"$tsig\"
+    }
+
+    # TODO: Create a wrong#args check based on the min and max.
+    # Note: This may be modified by an offset (of prefix arguments).
+    ##
+    # TODO: Generate conversion code for arguments, take
+    #       min/max/optional into account.
+
+    dict set db min         $min
+    dict set db max         $max
+    dict set db tsignature  $tsig
+    dict set db names       $names
+    dict set db optional    $optional
+    dict set db defaults    $defaults
+    dict set db varargs     $varargs
+    dict set db csignature  $csig
+    dict set db vardecls    $vardecls
+    dict set db support     $support
+    dict set db hasoptional $hasopt
+
+    return $db
+}
+
 proc ::critcl::argoptional {adefs} {
     set optional {}
 
