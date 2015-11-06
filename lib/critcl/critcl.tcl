@@ -305,8 +305,65 @@ proc ::critcl::cdefines {defines {namespace "::"}} {
     return
 }
 
+proc ::critcl::MakeVariadicTypeFor {type} {
+    # TODO: type == Tcl_Obj* warrants special treatment ... We can use
+    # argtype 'list', with modified conversion/collection of the arguments.
 
-proc ::critcl::ArgsInprocess {adefs} {
+    set ltype variadic_$type
+    if {![has-argtype $ltype]} {
+	# Generate a type representing a list/array of <type>
+	# elements, plus conversion code. Similar to the 'list' type,
+	# except for custom C type, and conversion assumes variadic,
+	# not single argument.
+
+	lappend one @@  src
+	lappend one &@A dst
+	lappend one @A  *dst
+	lappend one @A. dst->
+	lappend map @1conv@ [Deline [string map $one [ArgumentConversion $type]]]
+
+	lappend map @type@  [ArgumentCType $type]
+	lappend map @ltype@ $ltype
+
+	argtype $ltype [string map $map {
+	    int src, dst, leftovers = @C;
+	    @A.c = leftovers;
+	    @A.v = (@type@*) ((!leftovers) ? 0 : ckalloc (leftovers * sizeof (@type@)));
+	    for (src = @I, dst = 0; leftovers > 0; dst++, src++, leftovers--) {
+	       if (_critcl_variadic_@type@_item (interp, ov[src], &(@A.v[dst])) != TCL_OK) {
+		   ckfree ((char*) @A.v); /* Cleanup partial work */
+		   return TCL_ERROR;
+	       }
+	    }
+	}] critcl_$ltype critcl_$ltype
+
+	argtypesupport $ltype [string map $map {
+	    /* NOTE: Array 'v' allocated on the heap. The argument
+	    // release code is used to free it after the worker
+	    // function returned. Depending on type and what is done
+	    // by the worker it may have to make copies of the data.
+	    */
+
+	    typedef struct critcl_@ltype@ {
+		int     c; /* Element count */
+		@type@* v; /* Allocated array of the elements */
+	    } critcl_@ltype@;
+
+	    static int
+	    _critcl_variadic_@type@_item (Tcl_Interp* interp, Tcl_Obj* src, @type@* dst) {
+		@1conv@
+		return TCL_OK;
+	    }
+	}]
+
+	argtyperelease $ltype [string map $map {
+	    if (@A.c) { ckfree ((char*) @A.v); }
+	}]
+    }
+    return $ltype
+}
+
+proc ::critcl::ArgsInprocess {adefs skip} {
     # Convert the regular arg spec from the API into a dictionary
     # containing all the derived data we need in the various places of
     # the cproc implementation.
@@ -315,12 +372,13 @@ proc ::critcl::ArgsInprocess {adefs} {
 
     set names    {} ; # list of raw argument names
     set cnames   {} ; # list of C var names for the arguments.
-    set optional {} ; # list of flags signaling optional args
+    set optional {} ; # list of flags signaling optional args.
+    set variadic {} ; # list of flags signaling variadic args.
+    set islast   {} ; # list of flags signaling the last arg.
     set varargs  no ; # flag signaling 'args' collector.
-    set defaults {} ; # list of default values, collected only
-                      # for the optional args.
-    set csig     {} ; # C signature of backend function.
-    set tsig     {} ; # Tcl signature for frontend command.
+    set defaults {} ; # list of default values.
+    set csig     {} ; # C signature of worker function.
+    set tsig     {} ; # Tcl signature for frontend/shim command.
     set vardecls {} ; # C variables for arg conversion in the shim.
     set support  {} ; # Conversion support code for arguments.
     set has      {} ; # Types for which we have emitted the support
@@ -328,6 +386,9 @@ proc ::critcl::ArgsInprocess {adefs} {
     set hasopt   no ; # Overall flag - Have optionals ...
     set min      0  ; # Count required args - minimal needed.
     set max      0  ; # Count all args      - maximal allowed.
+    set aconv    {} ; # list of the basic argument conversions.
+    set achdr    {} ; # list of arg conversion annotations.
+    set arel     {} ; # List of arg release code fragments, for those which have them.
 
     # A 1st argument matching "Tcl_Interp*" does not count as a user
     # visible command argument.
@@ -336,10 +397,9 @@ proc ::critcl::ArgsInprocess {adefs} {
 	lappend csig [lrange $adefs 0 1]
     }
 
-    # todo: integrate argconversion
-
-    set last [expr {[llength $adefs]-1}]
+    set last [expr {[llength $adefs]/2-1}]
     set current 0
+
     foreach {t a} $adefs {
 	# t = type
 	# a = name | {name default}
@@ -353,19 +413,24 @@ proc ::critcl::ArgsInprocess {adefs} {
 	lassign $a name defaultvalue
 	set hasdefault [expr {[llength $a] == 2}]
 
+	lappend islast [expr {$current == $last}]
+
 	# Cases to consider:
 	# 1. 'args' as the last argument, without a default.
 	# 2. Any argument with a default value.
 	# 3. Any argument.
 
 	if {($current == $last) && ($name eq "args") && !$hasdefault} {
+	    set hdr  "  /* ($t $name, ...) - - -- --- ----- -------- */"
 	    lappend optional 0
+	    lappend variadic 1
+	    lappend defaults n/a
 	    lappend tsig ?${name}...?
 	    set varargs yes
 	    set max     Inf ; # No limit on the number of args.
 
-	    # TODO: Dynamically create an arg-type for "list of T".
-	    # set t [MakeListTypeFor $t]
+	    # Dynamically create an arg-type for "variadic list of T".
+	    set t [MakeVariadicTypeFor $t]
 	    # List support.
 	    if {![dict exists has $t]} {
 		dict set has $t .
@@ -375,8 +440,10 @@ proc ::critcl::ArgsInprocess {adefs} {
 	} elseif {$hasdefault} {
 	    incr max
 	    set hasopt yes
+	    set hdr  "  /* ($t $name, optional, default $defaultvalue) - - -- --- ----- -------- */"
 	    lappend tsig ?${name}?
 	    lappend optional 1
+	    lappend variadic 0
 	    lappend defaults $defaultvalue
 	    lappend cnames   _has_$name
 	    # Argument to signal if the optional argument was set
@@ -385,19 +452,51 @@ proc ::critcl::ArgsInprocess {adefs} {
 	    lappend vardecls "int _has_$name = 0;"
 
 	} else {
+	    set hdr  "  /* ($t $name) - - -- --- ----- -------- */"
 	    lappend tsig $name
 	    incr max
 	    incr min
 	    lappend optional 0
+	    lappend variadic 0
+	    lappend defaults n/a
 	}
 
+        lappend achdr    $hdr
 	lappend csig     "[ArgumentCTypeB $t] $name"
 	lappend vardecls "[ArgumentCType  $t] _$name;"
 
 	lappend names  $name
 	lappend cnames _$name
+	lappend aconv  [ArgumentConversion $t]
+
+        set rel [ArgumentRelease $t]
+        if {$rel ne {}} {
+	    set rel [string map [list @A _$name] $rel]
+	    set hdr [string map {( {(Release: }} $hdr]
+	    lappend arel "$hdr$rel"
+	}
 
 	incr current
+    }
+
+    set thresholds {}
+    if {$hasopt} {
+	# Compute thresholds for optional arguments. The threshold T
+	# of an optional argument A is the number of required
+	# arguments _after_ A. If during arg processing more than T
+	# arguments are left then A can take the current word,
+	# otherwise A is left to its default. We compute them from the
+	# end.
+	set t 0 
+	foreach o [lreverse $optional] {
+	    if {$o} {
+		lappend thresholds $t
+	    } else {
+		lappend thresholds -
+		incr t
+	    }
+	}
+	set thresholds [lreverse $thresholds]
     }
 
     set tsig [join $tsig { }]
@@ -435,9 +534,136 @@ proc ::critcl::ArgsInprocess {adefs} {
 	}
     }
 
-    # TODO: Generate conversion code for arguments, take
-    #       min/max/optional into account.
+    # Generate conversion code for arguments. Use the threshold
+    # information to handle optional arguments at all positions.
+    # The code is executed after the wrong#args check.
+    # That means we have at least 'min' arguments, enough to fill
+    # all the required parameters.
 
+    set map {}
+    set conv   {}
+    set opt    no
+    set idx    $skip
+    set    prefix   "  idx_  = $idx;" ; # Start at skip offset!
+    append prefix "\n  argc_ = oc - $idx;"
+    foreach \
+	name $names \
+	t $thresholds \
+	o $optional \
+	v $variadic \
+	l $islast   \
+	h $achdr \
+	c $aconv \
+	d $defaults {
+
+	# Things to consider:
+	# 1. Required variables at the beginning.
+	#    We can access these using fixed indices.
+	# 2. Any other variable require access using a dynamic index
+	#    (idx_). During (1) we maintain the code initializing
+	#    this.
+
+	set useindex [expr {!$l}] ;# last arg => no need for idx/argc updates
+
+	if {$v} {
+	    # Variadic argument. Can only be last.
+	    # opt  => dynamic access at idx_..., collect argc_
+	    # !opt => static access at $idx ..., collect oc-$idx
+
+	    unset   map
+	    lappend map @A _$name
+	    if {$opt} {
+		lappend map @I idx_ @C argc_
+	    } else {
+		lappend map @I $idx @C (oc-$idx)
+	    }
+
+	    set c   [string map $map $c]
+
+	    lappend conv $h
+	    lappend conv $c
+	    lappend conv {}
+	    lappend conv {}
+	    break
+	}
+
+	if {$o} {
+	    # Optional argument. Anywhere. Check threshold.
+
+	    unset   map
+	    lappend map @@ "ov\[idx_\]"
+	    lappend map @A _$name
+
+	    set c   [string map $map $c]
+
+	    if {$prefix ne {}} { lappend conv $prefix\n }
+	    lappend conv $h
+	    lappend conv "  if (argc_ > $t) \{"
+	    lappend conv $c
+	    if {$useindex} {
+		lappend conv "    idx_++;"
+		lappend conv "    argc_--;"
+	    }
+	    lappend conv "    _has_$name = 1;"
+	    lappend conv "  \} else \{"
+	    lappend conv "    _$name = $d;"
+	    lappend conv "  \}"
+	    lappend conv {}
+	    lappend conv {}
+
+	    set prefix {}
+	    set opt    yes
+	    continue
+	}
+
+	if {$opt} {
+	    # Required argument, after one or more optional arguments
+	    # were processed. Access to current word is dynamic.
+
+	    unset   map
+	    lappend map @@ "ov\[idx_\]"
+	    lappend map @A _$name
+
+	    set c   [string map $map $c]
+
+	    lappend conv $h
+	    lappend conv $c
+	    lappend conv {}
+	    if {$useindex} {
+		lappend conv "  idx_++;"
+		lappend conv "  argc_--;"
+	    }
+	    lappend conv {}
+	    lappend conv {}
+	    continue
+	}
+
+	# Required argument. No optionals processed yet. Access to
+	# current word is via static index.
+
+        unset   map
+	lappend map @@ "ov\[$idx\]"
+        lappend map @A _$name
+
+	set c   [string map $map $c]
+
+	lappend conv $h
+	lappend conv $c
+	lappend conv {}
+	lappend conv {}
+
+	incr idx
+	set    prefix   "  idx_  = $idx;"
+	append prefix "\n  argc_ = oc - $idx;"
+    }
+    set conv [Deline [join $conv \n]]
+
+    # Save results ...
+
+    dict set db skip        $skip
+    dict set db aconv       $conv
+    dict set db arelease    $arel
+    dict set db thresholds  $thresholds
     dict set db wacondition $wacondition
     dict set db min         $min
     dict set db max         $max
@@ -445,6 +671,8 @@ proc ::critcl::ArgsInprocess {adefs} {
     dict set db names       $names
     dict set db cnames      $cnames
     dict set db optional    $optional
+    dict set db variadic    $variadic
+    dict set db islast      $islast
     dict set db defaults    $defaults
     dict set db varargs     $varargs
     dict set db csignature  $csig
@@ -452,7 +680,9 @@ proc ::critcl::ArgsInprocess {adefs} {
     dict set db support     $support
     dict set db hasoptional $hasopt
 
+    #puts ___________________________________________________________|$adefs
     #array set __ $db ; parray __
+    #puts _______________________________________________________________\n
     return $db
 }
 
@@ -666,10 +896,21 @@ proc ::critcl::has-argtype {name} {
     return [info exists aconv($name)]
 }
 
+proc ::critcl::argtype-def {name} {
+    lappend def [ArgumentCType      $name]
+    lappend def [ArgumentCTypeB     $name]
+    lappend def [ArgumentConversion $name]
+    lappend def [ArgumentRelease    $name]
+    lappend def [ArgumentSupport    $name]
+    return $def
+}
+
 proc ::critcl::argtype {name conversion {ctype {}} {ctypeb {}}} {
     variable v::actype
     variable v::actypeb
     variable v::aconv
+    variable v::acrel
+    variable v::acsup
 
     # ctype  Type of variable holding the argument.
     # ctypeb Type of formal C function argument.
@@ -683,6 +924,17 @@ proc ::critcl::argtype {name conversion {ctype {}} {ctypeb {}}} {
 	if {![info exists aconv($ctype)]} {
 	    return -code error "Unable to alias unknown type '$ctype'."
 	}
+
+	# Do not forget to copy support and release code, if present.
+	if {[info exists acsup($ctype)]} {
+	    #puts COPY/S:$ctype
+	    set acsup($name) $acsup($ctype)
+	}
+	if {[info exists acrel($ctype)]} {
+	    #puts COPY/R:$ctype
+	    set acrel($name) $acrel($ctype)
+	}
+
 	set conversion $aconv($ctype) 
 	set ctypeb     $actypeb($ctype)
 	set ctype      $actype($ctype)
@@ -696,8 +948,8 @@ proc ::critcl::argtype {name conversion {ctype {}} {ctypeb {}}} {
     if {$ctypeb eq {}} {
 	set ctypeb $name
     }
-    set aconv($name)  $conversion
-    set actype($name) $ctype
+    set aconv($name)   $conversion
+    set actype($name)  $ctype
     set actypeb($name) $ctypeb
     return
 }
@@ -712,12 +964,28 @@ proc ::critcl::argtypesupport {name code} {
 	return -code error "Illegal duplicate support of '$name'."
     }
 
-    lappend lines "#ifndef CRITCL_$name"
-    lappend lines "#define CRITCL_$name"
+    set cname $name ; # Handle non-identifier chars!
+
+    lappend lines "#ifndef CRITCL_$cname"
+    lappend lines "#define CRITCL_$cname"
     lappend lines $code
-    lappend lines "#endif"
+    lappend lines "#endif /* CRITCL_$cname _________ */"
 
     set acsup($name) [join $lines \n]\n
+    return
+}
+
+proc ::critcl::argtyperelease {name code} {
+    variable v::aconv
+    variable v::acrel
+    if {![info exists aconv($name)]} {
+	return -code error "No definition for '$name'."
+    }
+    if {[info exists acrel($name)]} {
+	return -code error "Illegal duplicate release of '$name'."
+    }
+
+    set acrel($name) $code
     return
 }
 
@@ -779,13 +1047,13 @@ proc ::critcl::cconst {name rtype rvalue} {
     # Construct the shim handling the conversion between Tcl and C
     # realms.
 
-    set adb [ArgsInprocess {}]
+    set adb [ArgsInprocess {} 1]
 
     EmitShimHeader         $wname
     EmitShimVariables      $adb $rtype
-    EmitWrongArgsCheck     $adb 0
+    EmitWrongArgsCheck     $adb
     EmitConst              $rtype $rvalue
-    EmitShimFooter         $rtype
+    EmitShimFooter         $adb $rtype
     EndCommand
     return
 }
@@ -809,21 +1077,8 @@ proc ::critcl::cproc {name adefs rtype {body "#"} args} {
         set args [lrange $args 2 end]
     }
 
-    set adb [ArgsInprocess $adefs]
-
-    switch -regexp -- [join [dict get $adb optional] {}] {
-	^0*$ -
-	^0*1+0*$ {
-	    # no optional arguments, or a single optional block at the
-	    # beginning, middle, or end of the argument list is what
-	    # we are able to handle.
-	}
-	default {
-	    # TODO FUTURE: We can handle this, see how cmdr does it
-	    # with thresholds, and counting.
-	    error "Unable to handle multiple segments of optional arguments"
-	}
-    }
+    incr aoffset ; # always include the command name.
+    set adb [ArgsInprocess $adefs $aoffset]
 
     if {$acname} {
 	BeginCommand static $name $adefs $rtype $body
@@ -846,7 +1101,9 @@ proc ::critcl::cproc {name adefs rtype {body "#"} args} {
 	set cnames [linsert $cnames 0 cd]
     }
 
-    Emit [join [argsupport $adefs] \n]
+    # Support code for argument conversions (i.e. structures, helper
+    # functions, etc. ...)
+    EmitSupport $adb
 
     # Emit either the low-level function, or, if it wasn't defined
     # here, a reference to the shim we can use.
@@ -870,10 +1127,10 @@ proc ::critcl::cproc {name adefs rtype {body "#"} args} {
 
     EmitShimHeader         $wname
     EmitShimVariables      $adb $rtype
-    EmitWrongArgsCheck     $adb $aoffset
-    EmitArgumentConversion $adefs $aoffset
+    EmitWrongArgsCheck     $adb
+    Emit [dict get $adb aconv]
     EmitCall               $cname $cnames $rtype
-    EmitShimFooter         $rtype
+    EmitShimFooter         $adb $rtype
     EndCommand
     return
 }
@@ -3357,14 +3614,17 @@ proc ::critcl::EmitShimVariables {adb rtype} {
     foreach d [dict get $adb vardecls] {
 	Emitln "  $d"
     }
-    if {[dict get $adb hasoptional]} { Emitln "  int idx_;" }
+    if {[dict get $adb hasoptional]} {
+	Emitln "  int idx_;"
+	Emitln "  int argc_;"
+    }
 
     # Result variable, source for the C -> Tcl conversion.
     if {$rtype ne "void"} { Emit "  [ResultCType $rtype] rv;" }
     return
 }
 
-proc ::critcl::EmitWrongArgsCheck {adb offset} {
+proc ::critcl::EmitWrongArgsCheck {adb} {
     # Code checking for the correct count of arguments, and generating
     # the proper error if not.
 
@@ -3373,14 +3633,11 @@ proc ::critcl::EmitWrongArgsCheck {adb offset} {
 
     # Have a check, put the pieces together.
 
-    set tsig [dict get $adb tsignature]
-    set min  [dict get $adb min]
-    set max  [dict get $adb max]
+    set offset [dict get $adb skip]
+    set tsig   [dict get $adb tsignature]
+    set min    [dict get $adb min]
+    set max    [dict get $adb max]
 
-    set  keep 1
-    incr keep $offset
-
-    incr offset ;# Count the command name.
     incr min $offset
     if {$max != Inf} {
 	incr max $offset
@@ -3392,18 +3649,18 @@ proc ::critcl::EmitWrongArgsCheck {adb offset} {
 
     Emitln ""
     Emitln "  if ($wac) \{"
-    Emitln "    Tcl_WrongNumArgs(interp, $keep, ov, $tsig);"
+    Emitln "    Tcl_WrongNumArgs(interp, $offset, ov, $tsig);"
     Emitln "    return TCL_ERROR;"
     Emitln "  \}"
     Emitln ""
     return
 }
 
-proc ::critcl::EmitArgumentConversion {adefs offset} {
-    incr offset
-    foreach c [argconversion $adefs $offset] {
-	Emitln $c
-    }
+proc ::critcl::EmitSupport {adb} {
+    set s [dict get $adb support]
+    if {![llength $s]} return
+    if {[join $s {}] eq {}} return
+    Emit [join $s \n]\n
     return
 }
 
@@ -3429,7 +3686,13 @@ proc ::critcl::EmitConst {rtype rvalue} {
     return
 }
 
-proc ::critcl::EmitShimFooter {rtype} {
+proc ::critcl::EmitShimFooter {adb rtype} {
+    # Run release code for arguments which allocated temp memory.
+    set arelease [dict get $adb arelease]
+    if {[llength $arelease]} {
+	Emit "[join $arelease "\n  "]\n"
+    }
+
     # Convert the returned low-level result from C to Tcl, if required.
     # Return a standard status, if required.
 
@@ -3444,6 +3707,11 @@ proc ::critcl::EmitShimFooter {rtype} {
 
 proc ::critcl::ArgumentSupport {type} {
     if {[info exists v::acsup($type)]} { return $v::acsup($type) }
+    return {}
+}
+
+proc ::critcl::ArgumentRelease {type} {
+    if {[info exists v::acrel($type)]} { return $v::acrel($type) }
     return {}
 }
 
@@ -5019,6 +5287,25 @@ proc ::critcl::Initialize {} {
 	@A = @@;
     }
     argtype object = Tcl_Obj*
+
+    # Predefined variadic type for the special Tcl_Obj*.
+    # - No actual conversion, nor allocation, copying, release needed.
+    # - Just point into and reuse the incoming objv[] array.
+    # This shortcuts the operation of 'MakeVariadicTypeFor'.
+
+    argtype variadic_object {
+	@A.c = @C;
+	@A.v = &ov[@I];
+    } critcl_variadic_object critcl_variadic_object
+
+    argtypesupport variadic_object {
+	typedef struct critcl_variadic_object {
+	    int             c;
+	    Tcl_Obj* const* v;
+	} critcl_variadic_object;
+    }
+
+    argtype variadic_Tcl_Obj* = variadic_object
 
     ## The next set of argument types looks to be very broken. We are
     ## keeping them for now, but declare them as DEPRECATED. Their

@@ -83,18 +83,85 @@ test critcl-cproc-2.7 {cproc, optional int argument} -body {
     } void {}
 } -result [viewFile [localPath test/cproc/2.7]]
 
-test critcl-cproc-2.8 {cproc, optional args, separate blocks, not allowed (yet)} -body {
+test critcl-cproc-2.8 {cproc, optional args, freely mixed} -body {
     get critcl::cproc aproc {
         int {x -1}
         int y
         int {z -1}
     } void {}
-} -returnCodes error -result {Unable to handle multiple segments of optional arguments}
-
+} -result [viewFile [localPath test/cproc/2.8]]
 
 test critcl-cproc-2.9 {cproc, int result} -body {
     get critcl::cproc aproc {} int {}
 } -result [viewFile [localPath test/cproc/2.9]]
+
+test critcl-cproc-2.10 {cproc, optional args} -body {
+    get critcl::cproc aproc {
+        int {x -1}
+        int y
+        int z
+    } void {}
+} -result [viewFile [localPath test/cproc/2.10]]
+
+test critcl-cproc-2.11 {cproc, optional args} -body {
+    get critcl::cproc aproc {
+        int x
+        int y
+        int {z -1}
+    } void {}
+} -result [viewFile [localPath test/cproc/2.11]]
+
+test critcl-cproc-2.12 {cproc, optional args} -body {
+    get critcl::cproc aproc {
+        int x
+        int {y -1}
+        int z
+    } void {}
+} -result [viewFile [localPath test/cproc/2.12]]
+
+test critcl-cproc-2.13 {cproc, variadic int argument} -body {
+    get critcl::cproc aproc {
+        int args
+    } void {}
+} -result [viewFile [localPath test/cproc/2.13]]
+
+test critcl-cproc-2.14 {cproc, variadic Tcl_Obj* argument} -body {
+    get critcl::cproc aproc {
+        object args
+    } void {}
+} -result [viewFile [localPath test/cproc/2.14]]
+
+test critcl-cproc-2.15 {cproc, variadic int argument, required in front} -body {
+    get critcl::cproc aproc {
+        int x
+        int y
+        int args
+    } void {}
+} -result [viewFile [localPath test/cproc/2.15]]
+
+test critcl-cproc-2.16 {cproc, variadic int argument, optional in front} -body {
+    get critcl::cproc aproc {
+        int {x -1}
+        int {y -1}
+        int args
+    } void {}
+} -result [viewFile [localPath test/cproc/2.16]]
+
+test critcl-cproc-2.17 {cproc, variadic int argument, mix required/optional in front} -body {
+    get critcl::cproc aproc {
+        int x
+        int {y -1}
+        int args
+    } void {}
+} -result [viewFile [localPath test/cproc/2.17]]
+
+test critcl-cproc-2.18 {cproc, variadic int argument, mix optional/required in front} -body {
+    get critcl::cproc aproc {
+        int {x -1}
+        int y
+        int args
+    } void {}
+} -result [viewFile [localPath test/cproc/2.18]]
 
 # -------------------------------------------------------------------------
 ## XXX TODO one to multiple arguments

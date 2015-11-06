@@ -12,18 +12,20 @@ tcl__aproc0(ClientData cd, Tcl_Interp *interp, int oc, Tcl_Obj *CONST ov[])
   int _has_anargument = 0;
   int _anargument;
   int idx_;
+  int argc_;
 
   if ((oc < 1) || (2 < oc)) {
     Tcl_WrongNumArgs(interp, 1, ov, "?anargument?");
     return TCL_ERROR;
   }
 
+  idx_  = 1;
+  argc_ = oc - 1;
+
   /* (int anargument, optional, default -1) - - -- --- ----- -------- */
-    idx_ = 1;
-  if (oc > 1) {
+  if (argc_ > 0) {
 	{
 	if (Tcl_GetIntFromObj(interp, ov[idx_], &_anargument) != TCL_OK) return TCL_ERROR; }
-    idx_++;
     _has_anargument = 1;
   } else {
     _anargument = -1;
