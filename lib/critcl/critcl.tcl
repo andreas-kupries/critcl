@@ -391,10 +391,12 @@ proc ::critcl::ArgsInprocess {adefs skip} {
     set arel     {} ; # List of arg release code fragments, for those which have them.
 
     # A 1st argument matching "Tcl_Interp*" does not count as a user
-    # visible command argument.
+    # visible command argument. But appears in both signature and
+    # actual list of arguments.
     if {[lindex $adefs 0] eq "Tcl_Interp*"} {
+	lappend csig   [lrange $adefs 0 1]
+	lappend cnames [lindex $adefs 1]
 	set adefs [lrange $adefs 2 end]
-	lappend csig [lrange $adefs 0 1]
     }
 
     set last [expr {[llength $adefs]/2-1}]
