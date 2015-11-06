@@ -4,7 +4,7 @@
 '\" Copyright (c) Steve Landers
 '\" Copyright (c) 2011-2015 Andreas Kupries
 '\"
-.TH "critcl_introduction" n 3\&.1\&.15 doc "C Runtime In Tcl (CriTcl)"
+.TH "critcl_introduction" n 3\&.1\&.16 doc "C Runtime In Tcl (CriTcl)"
 .\" The -*- nroff -*- definitions below are for supplemental macros used
 .\" in Tcl/Tk manual entries.
 .\"
@@ -461,6 +461,35 @@ overall picture shown by the large examples mentioned in the previous
 paragraph\&.
 .PP
 The latest changes are found at the top\&.
+.SH "CHANGES FOR VERSION 3\&.1\&.16"
+.IP [1]
+New feature\&. Extended \fBcritcl::cproc\fR's argument handling
+to allow arbitrary mixing of required and optional arguments\&.
+.IP [2]
+New feature\&.
+\fIPotential Incompatibility\fR\&.
+.sp
+Extended \fBcritcl::cproc\fR's argument handling to treat an
+argument \fBargs\fR as variadic if it is the last argument of
+the procedure\&.
+.IP [3]
+New feature\&. Added two introspection commands,
+\fBcritcl::has-argtype\fR and \fBcritcl::has-resulttype\fR\&.
+These enable a user to test if a specific (named) type
+conversion is implemented or not\&.
+.IP [4]
+Bugfix: Fixed problem with the implementation of issue #54 (See
+3\&.1\&.14)\&. Always create the secondary log file\&. Otherwise
+end-of-log handling may break, unconditionally assuming its
+existence\&.
+.IP [5]
+Bugfix: Fixed problem with the internal change to the hook
+\fBHandleDeclAfterBuild\fR\&. Corrected the forgotten
+\fBcritcl::cconst\fR\&.
+.IP [6]
+Cosmetic: Added comment holding the name of the result type when
+emitting result conversions\&.
+.PP
 .SH "CHANGES FOR VERSION 3\&.1\&.15"
 .IP [1]
 Fixed version number bogosity with \fB3\&.1\&.14\fR\&.
