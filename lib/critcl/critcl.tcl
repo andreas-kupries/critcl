@@ -395,7 +395,7 @@ proc ::critcl::ArgsInprocess {adefs skip} {
     # actual list of arguments.
     if {[lindex $adefs 0] eq "Tcl_Interp*"} {
 	lappend csig   [lrange $adefs 0 1]
-	lappend cnames [lindex $adefs 1]
+	lappend cnames interp;#Fixed name for cproc[lindex $adefs 1]
 	set adefs [lrange $adefs 2 end]
     }
 
