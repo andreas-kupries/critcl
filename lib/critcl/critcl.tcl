@@ -4936,7 +4936,9 @@ proc ::critcl::Cat {path} {
     # Easier to write our own copy than requiring fileutil and then
     # using fileutil::cat.
 
-    set fd [open $path r]
+    if {[catch {set fd [open $path r]} err]} {
+	return
+    }
     set data [read $fd]
     close $fd
     return $data
