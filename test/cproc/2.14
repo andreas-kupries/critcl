@@ -6,8 +6,8 @@
 #define CRITCL_variadic_object
 
 	typedef struct critcl_variadic_object {
-	    int       c;
-	    Tcl_Obj** v;
+	    int             c;
+	    Tcl_Obj* const* v;
 	} critcl_variadic_object;
     
 #endif /* CRITCL_variadic_object _________ */

@@ -37,7 +37,7 @@ tcl__aproc0(ClientData cd, Tcl_Interp *interp, int oc, Tcl_Obj *CONST ov[])
     argc_--;
     _has_y = 1;
   } else {
-    _y = ;
+    _y = -1;
   }
 
 

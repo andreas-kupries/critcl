@@ -40,7 +40,7 @@ tcl__aproc0(ClientData cd, Tcl_Interp *interp, int oc, Tcl_Obj *CONST ov[])
 	if (Tcl_GetIntFromObj(interp, ov[idx_], &_z) != TCL_OK) return TCL_ERROR; }
     _has_z = 1;
   } else {
-    _z = ;
+    _z = -1;
   }
 
   /* Call - - -- --- ----- -------- */
