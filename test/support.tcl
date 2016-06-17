@@ -1,6 +1,24 @@
 ## -*- tcl -*-
 # -------------------------------------------------------------------------
 
+proc do {suite} {
+    uplevel 1 [list source [file join [file dirname [info script]] suites ${suite}.tcl]]
+}
+
+proc traced {script} {
+    # Activate trace injection. Run a dummy cproc, in a collection
+    # environment, to get the once-only generated code out of the way.
+    critcl::config trace 1
+    critcl::collect { critcl::cproc __ {} void {}}
+
+    set code [catch {uplevel 1 $script} res]
+
+    # Stop tracing code injection for the files coming after this one
+    critcl::config trace 0
+
+    return -code $code $res
+}
+
 proc get {args} {
     set t [string trim [critcl::collect $args]]
     #regsub -all -- {#line \d+ } $t {#line XX } t
