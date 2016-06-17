@@ -15,6 +15,7 @@ proc main {} {
 set packages {
     {critcl          critcl.tcl}
     {critcl-util     util.tcl}
+    {critcl-cutil    cutil.tcl}
     {critcl-class    class.tcl}
     {critcl-iassoc   iassoc.tcl}
     {critcl-literals literals.tcl}
