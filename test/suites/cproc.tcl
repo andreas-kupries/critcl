@@ -10,6 +10,7 @@
 # -------------------------------------------------------------------------
 # Parameter validation
 
+global suffix
 if {![info exists suffix]} {
     error "Missing parameter 'suffix'. Please define as either empty string, or '-trace'"
 } elseif {($suffix ne "") && ($suffix ne "-trace")} {
@@ -34,9 +35,6 @@ support {
     useLocal lib/stubs/reader.tcl       stubs::reader
     useLocal lib/stubs/genframe.tcl     stubs::gen
 
-    useLocal lib/critcl-cutil/cutil.tcl critcl::cutil
-
-    # Test helper commands
     useLocalFile test/support.tcl
 }
 testing {
@@ -45,6 +43,7 @@ testing {
     # Note: The next command does not influence the standard argument-
     # and result-types.
     critcl::config lines 0
+    on-traced-on
 }
 
 # -------------------------------------------------------------------------

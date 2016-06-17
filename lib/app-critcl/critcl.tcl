@@ -264,6 +264,12 @@ proc ::critcl::app::Cmdline {argv} {
 		#critcl::config lines 0
 		set v::keep 1
 	    }
+	    trace-commands {
+		critcl::config trace 1
+	    }
+	    trace {
+		critcl::cflags -DCRITCL_TRACER
+	    }
 	    help       { incr help }
 	    libdir     {
 		set v::libdir $arg

@@ -226,10 +226,12 @@ proc ::critcl::ccommand {name anames args} {
 	set cns   {}
 	set key   $cname
 	set wname $name
+	set traceref \"$name\"
     } else {
 	lassign [BeginCommand public $name $anames $args] ns cns name cname
 	set key   [string map {:: _} $ns$cname]
 	set wname tcl_$cns$cname
+	set traceref   ns_$cns$cname
     }
 
     # XXX clientdata/delproc, either note clashes, or keep information per-file.
@@ -248,7 +250,14 @@ proc ::critcl::ccommand {name anames args} {
 
 	set ca "(ClientData $cd, Tcl_Interp *$ip, int $oc, Tcl_Obj *CONST $ov\[])"
 
-	Emitln "static int $wname$ca"
+	if {$v::options(trace)} {
+	    # For ccommand tracing we will emit a shim after the implementation.
+	    # Give the implementation a different name.
+	    Emitln "static int\n${wname}_actual$ca"
+	} else {
+	    Emitln "static int\n$wname$ca"
+	}
+
 	Emit   \{\n
 	lassign [HeaderLines $body] leadoffset body
 	if {$v::options(lines)} {
@@ -256,6 +265,19 @@ proc ::critcl::ccommand {name anames args} {
 	}
 	Emit   $body
 	Emitln \n\}
+
+	if {$v::options(trace)} {
+	    # Now emit the shim for ccommand tracing. It just calls
+	    # the actual implementation and puts the tracing code
+	    # around that.
+	    Emitln "\nstatic int\n$wname$ca"
+	    Emitln \{
+	    Emitln "  int _rv;"
+	    Emitln "  TRACE_ARGS ($traceref, $oc, $ov);"
+	    Emitln "  _rv = ${wname}_actual ($cd, $ip, $oc, $ov);"
+	    Emitln "  TRACE_RESULT ($ip, _rv);"
+	    Emitln \}
+	}
     } else {
 	# if no body is specified, then $anames is alias for the real cmd proc
 	Emitln "#define $wname $anames"
@@ -306,14 +328,16 @@ proc ::critcl::cdefines {defines {namespace "::"}} {
 }
 
 proc ::critcl::MakeVariadicTypeFor {type} {
-    # TODO: type == Tcl_Obj* warrants special treatment ... We can use
-    # argtype 'list', with modified conversion/collection of the arguments.
+    # Note: The type "Tcl_Obj*" required special treatment and is
+    # directly defined as a builtin, see 'Initialize'. The has-argtype
+    # check below will prevent us from trying to create something
+    # generic, and wrong.
 
     set ltype variadic_$type
     if {![has-argtype $ltype]} {
 	# Generate a type representing a list/array of <type>
 	# elements, plus conversion code. Similar to the 'list' type,
-	# except for custom C type, and conversion assumes variadic,
+	# except for custom C types, and conversion assumes variadic,
 	# not single argument.
 
 	lappend one @@  src
@@ -338,7 +362,7 @@ proc ::critcl::MakeVariadicTypeFor {type} {
 	}] critcl_$ltype critcl_$ltype
 
 	argtypesupport $ltype [string map $map {
-	    /* NOTE: Array 'v' allocated on the heap. The argument
+	    /* NOTE: Array 'v' is allocated on the heap. The argument
 	    // release code is used to free it after the worker
 	    // function returned. Depending on type and what is done
 	    // by the worker it may have to make copies of the data.
@@ -382,7 +406,7 @@ proc ::critcl::ArgsInprocess {adefs skip} {
     set vardecls {} ; # C variables for arg conversion in the shim.
     set support  {} ; # Conversion support code for arguments.
     set has      {} ; # Types for which we have emitted the support
-                      # code already.
+                      # code already. (dict: type -> '.' (presence))
     set hasopt   no ; # Overall flag - Have optionals ...
     set min      0  ; # Count required args - minimal needed.
     set max      0  ; # Count all args      - maximal allowed.
@@ -469,7 +493,7 @@ proc ::critcl::ArgsInprocess {adefs skip} {
 
 	lappend names  $name
 	lappend cnames _$name
-	lappend aconv  [ArgumentConversion $t]
+	lappend aconv  [TraceReturns "\"$t\" argument" [ArgumentConversion $t]]
 
         set rel [ArgumentRelease $t]
         if {$rel ne {}} {
@@ -1043,8 +1067,9 @@ proc ::critcl::cconst {name rtype rvalue} {
     }
 
     lassign [BeginCommand public $name $rtype $rvalue] ns cns name cname
-    set wname tcl_$cns$cname
-    set cname c_$cns$cname
+    set traceref ns_$cns$cname
+    set wname    tcl_$cns$cname
+    set cname    c_$cns$cname
 
     # Construct the shim handling the conversion between Tcl and C
     # realms.
@@ -1053,6 +1078,7 @@ proc ::critcl::cconst {name rtype rvalue} {
 
     EmitShimHeader         $wname
     EmitShimVariables      $adb $rtype
+    EmitArgTracing         $traceref
     EmitWrongArgsCheck     $adb
     EmitConst              $rtype $rvalue
     EmitShimFooter         $adb $rtype
@@ -1060,9 +1086,21 @@ proc ::critcl::cconst {name rtype rvalue} {
     return
 }
 
+proc ::critcl::CheckForTracing {} {
+    if {!$v::options(trace)} return
+    if {[info exists ::critcl::v::__trace__]} return
+
+    package require critcl::cutil
+    ::critcl::cutil::tracer
+    cflags -DCRITCL_TRACER
+    set ::critcl::v::__trace__ marker ;# See above
+    return
+}
+
 proc ::critcl::cproc {name adefs rtype {body "#"} args} {
     SkipIgnored [set file [This]]
     HandleDeclAfterBuild
+    CheckForTracing
 
     set acname 0
     set passcd 0
@@ -1088,10 +1126,12 @@ proc ::critcl::cproc {name adefs rtype {body "#"} args} {
 	set cns {}
 	set wname $name
 	set cname c_$name
+	set traceref \"$name\"
     } else {
 	lassign [BeginCommand public $name $adefs $rtype $body] ns cns name cname
-	set wname tcl_$cns$cname
-	set cname c_$cns$cname
+	set traceref ns_$cns$cname
+	set wname    tcl_$cns$cname
+	set cname    c_$cns$cname
     }
 
     set names  [dict get $adb names]
@@ -1129,8 +1169,9 @@ proc ::critcl::cproc {name adefs rtype {body "#"} args} {
 
     EmitShimHeader         $wname
     EmitShimVariables      $adb $rtype
+    EmitArgTracing         $traceref
     EmitWrongArgsCheck     $adb
-    Emit [dict get $adb aconv]
+    Emit    [dict get $adb aconv]
     EmitCall               $cname $cnames $rtype
     EmitShimFooter         $adb $rtype
     EndCommand
@@ -3626,6 +3667,12 @@ proc ::critcl::EmitShimVariables {adb rtype} {
     return
 }
 
+proc ::critcl::EmitArgTracing {fun} {
+    if {!$v::options(trace)} return
+    Emitln "\n  TRACE_ARGS ($fun, oc, ov);"
+    return
+}
+
 proc ::critcl::EmitWrongArgsCheck {adb} {
     # Code checking for the correct count of arguments, and generating
     # the proper error if not.
@@ -3652,7 +3699,7 @@ proc ::critcl::EmitWrongArgsCheck {adb} {
     Emitln ""
     Emitln "  if ($wac) \{"
     Emitln "    Tcl_WrongNumArgs(interp, $offset, ov, $tsig);"
-    Emitln "    return TCL_ERROR;"
+    Emitln [TraceReturns "wrong-arg-num check" "    return TCL_ERROR;"]
     Emitln "  \}"
     Emitln ""
     return
@@ -3688,6 +3735,21 @@ proc ::critcl::EmitConst {rtype rvalue} {
     return
 }
 
+proc ::critcl::TraceReturns {label code} {
+    if {!$v::options(trace)} {
+	return $code
+    }
+
+    # Inject tracing into the 'return's.
+    regsub -all \
+	{return([^;]*);}           $code \
+	{TRACE_RESULT (interp,\1);} newcode
+    if {[string match {*return *} $code] && ($newcode eq $code)} {
+	error "Failed to inject tracing code into $label"
+    }
+    return $newcode
+}
+
 proc ::critcl::EmitShimFooter {adb rtype} {
     # Run release code for arguments which allocated temp memory.
     set arelease [dict get $adb arelease]
@@ -3700,8 +3762,13 @@ proc ::critcl::EmitShimFooter {adb rtype} {
 
     set code [Deline [ResultConversion $rtype]]
     if {$code ne {}} {
+	set code [TraceReturns "\"$rtype\" result" $code]
 	Emitln "  /* ($rtype return) - - -- --- ----- -------- */"
 	Emitln $code
+    } else {
+	if {$v::options(trace)} {
+	    Emitln "  TRACE_RETURN_VOID;"
+	}
     }
     Emitln \}
     return
@@ -5196,6 +5263,7 @@ proc ::critcl::Initialize {} {
     variable v::buildplatform [BuildPlatform]
     variable v::hdrdir	      [file join $mydir critcl_c]
     variable v::hdrsavailable
+    variable v::storageclass  [Cat [file join $hdrdir storageclass.c]]
 
     # Scan the directory holding the C fragments and our copies of the
     # Tcl header and determine for which versions of Tcl we actually
@@ -5292,7 +5360,7 @@ proc ::critcl::Initialize {} {
 
     # Predefined variadic type for the special Tcl_Obj*.
     # - No actual conversion, nor allocation, copying, release needed.
-    # - Just point into and reuse the incoming objv[] array.
+    # - Just point into and reuse the incoming ov[] array.
     # This shortcuts the operation of 'MakeVariadicTypeFor'.
 
     argtype variadic_object {
@@ -5522,6 +5590,16 @@ namespace eval ::critcl {
 				  #   emit #line-directives to help locating
 				  #   C code in the .tcl in case of compile
 				  #   warnings and errors.
+	set options(trace)    0  ;# - Boolean. If set the generator will
+	                          #   emit code tracing command entry
+	                          #   and return, for all cprocs and
+	                          #   ccommands. The latter is done by
+	                          #   creating a shim function. For
+	                          #   cprocs their regular shim
+	                          #   function is used and modified.
+	                          #   The functionality is based on
+	                          #   'critcl::cutil's 'tracer'
+	                          #   command and C code.
 
 	# XXX clientdata() per-command (See ccommand). per-file+ccommand better?
 	# XXX delproc()    per-command (See ccommand). s.a
@@ -5568,34 +5646,7 @@ namespace eval ::critcl {
 	variable  rconv
 	array set rconv {}
 
-	variable storageclass {
-/*
- * These macros are used to control whether functions are being declared for
- * import or export. If a function is being declared while it is being built
- * to be included in a shared library, then it should have the DLLEXPORT
- * storage class. If is being declared for use by a module that is going to
- * link against the shared library, then it should have the DLLIMPORT storage
- * class. If the symbol is beind declared for a static build or for use from a
- * stub library, then the storage class should be empty.
- *
- * The convention is that a macro called BUILD_xxxx, where xxxx is the name of
- * a library we are building, is set on the compile line for sources that are
- * to be placed in the library. When this macro is set, the storage class will
- * be set to DLLEXPORT. At the end of the header file, the storage class will
- * be reset to DLLIMPORT.
- */
-
-#undef TCL_STORAGE_CLASS
-#ifdef BUILD_@cname@
-#   define TCL_STORAGE_CLASS DLLEXPORT
-#else
-#   ifdef USE_@up@_STUBS
-#      define TCL_STORAGE_CLASS
-#   else
-#      define TCL_STORAGE_CLASS DLLIMPORT
-#   endif
-#endif
-	}
+	variable storageclass {} ;# See Initialize for setup.
 
 	variable code	         ;# This array collects all code snippets and
 				  # data about them.

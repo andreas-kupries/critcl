@@ -1,0 +1,30 @@
+/* ---------------------------------------------------------------------- */
+
+#define ns__aproc0 "::aproc"
+static void c__aproc0(int anargument)
+{
+
+}
+
+static int
+tcl__aproc0(ClientData cd, Tcl_Interp *interp, int oc, Tcl_Obj *CONST ov[])
+{
+  int _anargument;
+
+  TRACE_ARGS (ns__aproc0, oc, ov);
+
+  if (oc != 2) {
+    Tcl_WrongNumArgs(interp, 1, ov, "anargument");
+    TRACE_RESULT (interp, TCL_ERROR);
+  }
+
+  /* (int anargument) - - -- --- ----- -------- */
+	{
+	if (Tcl_GetIntFromObj(interp, ov[1], &_anargument) != TCL_OK) TRACE_RESULT (interp, TCL_ERROR); }
+
+  /* Call - - -- --- ----- -------- */
+  c__aproc0(_anargument);
+
+  /* (void return) - - -- --- ----- -------- */
+	TRACE_RESULT (interp, TCL_OK);
+}

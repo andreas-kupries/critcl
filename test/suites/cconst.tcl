@@ -1,10 +1,27 @@
 # -*- tcl -*-
 # -------------------------------------------------------------------------
-# critcl_cconst.test
+# critcl::cconst
+# -- Core tests.
+#    Used via cconst.test and cconst-trace.test
+# -- Parameters
+#    (1) suffix  ('' | '-trace')
+#        This parameter affects test naming and directory holding the
+#        expected results.
 # -------------------------------------------------------------------------
+# Parameter validation
+
+global suffix
+if {![info exists suffix]} {
+    error "Missing parameter 'suffix'. Please define as either empty string, or '-trace'"
+} elseif {($suffix ne "") && ($suffix ne "-trace")} {
+    error "Bad value '$suffix' for parameter 'suffix'. Please define as either empty string, or '-trace'"
+}
+
+# -------------------------------------------------------------------------
+# Setup
 
 source [file join \
-            [file dirname [file join [pwd] [info script]]] \
+            [file dirname [file dirname [file join [pwd] [info script]]]] \
             testutilities.tcl]
 
 testsNeedTcl     8.4
@@ -18,7 +35,6 @@ support {
     useLocal lib/stubs/reader.tcl    stubs::reader
     useLocal lib/stubs/genframe.tcl  stubs::gen
 
-    # Helper procedures
     useLocalFile test/support.tcl
 }
 testing {
@@ -27,32 +43,33 @@ testing {
     # Note: The next command does not influence the standard argument-
     # and result-types.
     critcl::config lines 0
+    on-traced-on
 }
 
 # -------------------------------------------------------------------------
 ## cconst syntax
 
-test critcl-cconst-1.0 {cconst, wrong args, not enough} -setup {
+test critcl-cconst${suffix}-1.0 {cconst, wrong args, not enough} -setup {
 } -body {
     critcl::cconst
 } -returnCodes error -result {wrong # args: should be "critcl::cconst name rtype rvalue"}
 
-test critcl-cconst-1.1 {cconst, wrong args, not enough} -setup {
+test critcl-cconst${suffix}-1.1 {cconst, wrong args, not enough} -setup {
 } -body {
     critcl::cconst N
 } -returnCodes error -result {wrong # args: should be "critcl::cconst name rtype rvalue"}
 
-test critcl-cconst-1.2 {cconst, wrong args, not enough} -setup {
+test critcl-cconst${suffix}-1.2 {cconst, wrong args, not enough} -setup {
 } -body {
     critcl::cconst N T
 } -returnCodes error -result {wrong # args: should be "critcl::cconst name rtype rvalue"}
 
-test critcl-cconst-1.3 {cconst, wrong args, too many} -setup {
+test critcl-cconst${suffix}-1.3 {cconst, wrong args, too many} -setup {
 } -body {
     critcl::cconst N T R X
 } -returnCodes error -result {wrong # args: should be "critcl::cconst name rtype rvalue"}
 
-test critcl-cconst-1.4 {cconst, bad result type (void)} -setup {
+test critcl-cconst${suffix}-1.4 {cconst, bad result type (void)} -setup {
 } -body {
     critcl::cconst N void T
 } -returnCodes error -result {Constants cannot be of type "void"}
@@ -60,21 +77,21 @@ test critcl-cconst-1.4 {cconst, bad result type (void)} -setup {
 # -------------------------------------------------------------------------
 ## Go through the various knobs we can use to configure the definition and output
 
-test critcl-cconst-2.0 {cconst, bool, fixed value} -body {
+test critcl-cconst${suffix}-2.0 {cconst, bool, fixed value} -body {
     get critcl::cconst alpha bool 1
-} -result [viewFile [localPath test/cconst/2.0]]
+} -result [viewFile [localPath test/support/cconst${suffix}/2.0]]
 
-test critcl-cconst-2.1 {cconst, bool, define} -body {
+test critcl-cconst${suffix}-2.1 {cconst, bool, define} -body {
     get critcl::cconst alpha bool FOO
-} -result [viewFile [localPath test/cconst/2.1]]
+} -result [viewFile [localPath test/support/cconst${suffix}/2.1]]
 
-test critcl-cconst-2.2 {cconst, bool, function} -body {
+test critcl-cconst${suffix}-2.2 {cconst, bool, function} -body {
     get critcl::cconst alpha bool foo()
-} -result [viewFile [localPath test/cconst/2.2]]
+} -result [viewFile [localPath test/support/cconst${suffix}/2.2]]
 
-test critcl-cconst-2.3 {cconst, namespaced name} -body {
+test critcl-cconst${suffix}-2.3 {cconst, namespaced name} -body {
     get critcl::cconst the::alpha bool 0
-} -result [viewFile [localPath test/cconst/2.3]]
+} -result [viewFile [localPath test/support/cconst${suffix}/2.3]]
 
 # -------------------------------------------------------------------------
 testsuiteCleanup

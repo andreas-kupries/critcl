@@ -1,0 +1,24 @@
+/* ---------------------------------------------------------------------- */
+
+static void c_snafu()
+{
+
+}
+
+static int
+snafu(ClientData cd, Tcl_Interp *interp, int oc, Tcl_Obj *CONST ov[])
+{
+
+  TRACE_ARGS ("snafu", oc, ov);
+
+  if (oc != 1) {
+    Tcl_WrongNumArgs(interp, 1, ov, NULL);
+    TRACE_RESULT (interp, TCL_ERROR);
+  }
+
+  /* Call - - -- --- ----- -------- */
+  c_snafu();
+
+  /* (void return) - - -- --- ----- -------- */
+	TRACE_RESULT (interp, TCL_OK);
+}

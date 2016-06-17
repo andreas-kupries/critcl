@@ -7,7 +7,7 @@
 #ifndef CRITCL_variadic_int
 #define CRITCL_variadic_int
 
-	    /* NOTE: Array 'v' allocated on the heap. The argument
+	    /* NOTE: Array 'v' is allocated on the heap. The argument
 	    // release code is used to free it after the worker
 	    // function returned. Depending on type and what is done
 	    // by the worker it may have to make copies of the data.

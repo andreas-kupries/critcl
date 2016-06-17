@@ -2,21 +2,31 @@
 # -------------------------------------------------------------------------
 
 proc do {suite} {
+    global suffix
+    set suffix ""
     uplevel 1 [list source [file join [file dirname [info script]] suites ${suite}.tcl]]
 }
 
-proc traced {script} {
+proc trace-do {suite} {
+    global suffix
+    set suffix "-trace"
+    uplevel 1 [list source [file join [file dirname [info script]] suites ${suite}.tcl]]
+
+    # Stop tracing code injection for the files coming after this one,
+    # and reset the marker.
+    critcl::config trace 0
+    #unset ::critcl::v::__trace__
+}
+
+proc on-traced-on {} {
+    global suffix
+    if {$suffix eq {}} return
     # Activate trace injection. Run a dummy cproc, in a collection
     # environment, to get the once-only generated code out of the way.
+    uplevel 1 {useLocal lib/critcl-cutil/cutil.tcl critcl::cutil}
     critcl::config trace 1
-    critcl::collect { critcl::cproc __ {} void {}}
-
-    set code [catch {uplevel 1 $script} res]
-
-    # Stop tracing code injection for the files coming after this one
-    critcl::config trace 0
-
-    return -code $code $res
+    uplevel 1 {critcl::collect { critcl::cproc __ {} void {}}}
+    return
 }
 
 proc get {args} {

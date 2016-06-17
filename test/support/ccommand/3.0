@@ -1,5 +1,6 @@
 *#define ns__command0 "::command"
-static int tcl__command0(ClientData clientdata, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv\[\])
+static int
+tcl__command0(ClientData clientdata, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv\[\])
 {
 return TCL_OK;
 }

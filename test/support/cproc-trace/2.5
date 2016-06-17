@@ -1,0 +1,25 @@
+/* ---------------------------------------------------------------------- */
+
+#define ns__aproc0 "::aproc"
+static void c__aproc0()
+{
+
+}
+
+static int
+tcl__aproc0(ClientData cd, Tcl_Interp *interp, int oc, Tcl_Obj *CONST ov[])
+{
+
+  TRACE_ARGS (ns__aproc0, oc, ov);
+
+  if (oc != 4) {
+    Tcl_WrongNumArgs(interp, 4, ov, NULL);
+    TRACE_RESULT (interp, TCL_ERROR);
+  }
+
+  /* Call - - -- --- ----- -------- */
+  c__aproc0();
+
+  /* (void return) - - -- --- ----- -------- */
+	TRACE_RESULT (interp, TCL_OK);
+}

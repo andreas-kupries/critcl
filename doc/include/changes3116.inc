@@ -24,7 +24,7 @@
        [const HandleDeclAfterBuild]. Corrected the forgotten
        [cmd critcl::cconst].
 
-[enum] Cosmetic: Added comment holding the name of the result type when
-       emitting result conversions.
+[enum] Debugging aid: Added comment holding the name of the result
+       type when emitting result conversions.
 
 [list_end]

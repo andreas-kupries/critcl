@@ -1,7 +1,6 @@
 # critcl::cproc -- Regular tests
 source [file join [file dirname [info script]] support.tcl]
 
-set suffix ""
 do cproc
 
 # Local variables:
