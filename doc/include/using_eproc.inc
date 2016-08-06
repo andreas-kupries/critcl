@@ -17,7 +17,7 @@ slow. Converting this to C we get:
 
     critcl::cproc math {double x double y double z} double {
         double up   = rand () * sin (x);
-	double down = pow(y, log (z);
+	double down = pow(y, log (z));
         return up/down;
     }
 }]

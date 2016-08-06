@@ -17,7 +17,7 @@ Thus, to handle something like the example below
 [example {
     proc math {args} {
         set sum 0
-        foreach y { set sum [expr {$sum + $y}] }
+        foreach y $args { set sum [expr {$sum + $y}] }
 	return $sum
     }
 }]
@@ -46,6 +46,7 @@ values (for arguments) and back (for the result), with
         double sum = 0;
         double y;
 
+        oc --;
         while (oc) {
             if (Tcl_GetDoubleFromObj (ip, ov[oc], &y) != TCL_OK) {
 	        return TCL_ERROR;
