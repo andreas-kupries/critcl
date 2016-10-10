@@ -206,6 +206,15 @@ proc _release {} {
     # Get scratchpad to assemble the release in.
     # Get version and hash of the commit to be released.
 
+    puts -nonewline "Have you run the tests ? "
+    flush stdout
+    set a [string tolower [gets stdin]]
+
+    if {($a ne "y" ) && ($a ne "yes")} {
+	puts "Please do"
+	exit 1
+    }
+
     set tmpdir [tmpdir]
     id commit version
 
