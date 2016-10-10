@@ -487,8 +487,8 @@ Bugfix: Fixed problem with the internal change to the hook
 \fBHandleDeclAfterBuild\fR\&. Corrected the forgotten
 \fBcritcl::cconst\fR\&.
 .IP [6]
-Cosmetic: Added comment holding the name of the result type when
-emitting result conversions\&.
+Debugging aid: Added comment holding the name of the result
+type when emitting result conversions\&.
 .PP
 .SH "CHANGES FOR VERSION 3\&.1\&.15"
 .IP [1]
