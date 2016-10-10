@@ -1,0 +1,42 @@
+#!/usr/bin/env tclsh
+# -*- tcl -*-
+# Run the example via mode "compile & run".
+# Note: generic code, same in all examples.
+
+cd [file dirname [file normalize [info script]]]
+source ../../lib/critcl/critcl.tcl
+
+# Show the config
+puts ""
+puts "target-config:   [critcl::targetconfig]"
+puts "target-platform: [critcl::targetplatform]"
+puts "target-actual:   [critcl::actualtarget]"
+puts "build-platform:  [critcl::buildplatform]"
+puts "cache:           [critcl::cache]"
+puts ""
+
+# Pull the package, ignoring build and examples ...
+foreach f [glob *.tcl] {
+    if {[string match build* $f]} continue
+    if {[string match cr* $f]} continue
+    if {[string match example* $f]} continue
+
+    puts "Reading $f ..."
+    source $f
+}
+
+proc ex {args} {
+    set  max [expr {80 - [string length $args] - [string length "Example: "]}]
+    puts "Example: $args [string repeat _ $max]"
+    puts "Result:  (([uplevel 1 $args]))"
+    puts ""
+    return
+}
+
+# ... and run the examples.
+foreach f [glob -nocomplain example*] {
+    puts "Running $f ..."
+    source $f
+}
+
+exit

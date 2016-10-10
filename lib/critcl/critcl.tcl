@@ -2738,9 +2738,19 @@ proc ::critcl::setconfig {targetconfig} {
 	set c::sharedlibext [info sharedlibextension]
     }
 
-    cache [file join ~ .critcl $v::targetplatform]
+    # The following definition of the cache directory is only relevant
+    # for mode "compile & run". The critcl application handling the
+    # package mode places the cache in a process-specific location
+    # without care about platforms. For here this means that we can
+    # ignore both cross-compilation, and the user choosing a target
+    # for us, as neither happens nor works for "compile & run". We can
+    # assume that build and target platforms will be the same, be the
+    # current platform, and we can make a simple choice for the
+    # directory.
 
-    #  set any Tcl variables
+    cache [file join ~ .critcl [platform::identify]]
+
+    # Initialize Tcl variables based on the chosen tooling
     foreach idx [array names v::toolchain $v::targetplatform,*] {
 	set var [lindex [split $idx ,] 1]
 	if {![info exists c::$var]} {
