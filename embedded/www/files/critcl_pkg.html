@@ -285,7 +285,8 @@
 <li><a href="#98"><b class="cmd">::critcl::argtype</b> <i class="arg">name</i> <i class="arg">body</i> <span class="opt">?<i class="arg">ctype</i>?</span> <span class="opt">?<i class="arg">ctypefun</i>?</span></a></li>
 <li><a href="#99"><b class="cmd">::critcl::argtype</b> <i class="arg">name</i> <b class="method">=</b> <i class="arg">origname</i></a></li>
 <li><a href="#100"><b class="cmd">::critcl::argtypesupport</b> <i class="arg">name</i> <i class="arg">code</i></a></li>
-<li><a href="#101"><b class="cmd">::preload</b> <i class="arg">library</i></a></li>
+<li><a href="#101"><b class="cmd">::critcl::argtyperelease</b> <i class="arg">name</i> <i class="arg">code</i></a></li>
+<li><a href="#102"><b class="cmd">::preload</b> <i class="arg">library</i></a></li>
 </ul>
 </div>
 </div>
@@ -1792,6 +1793,17 @@ types needed by the argument type.
 If the type is used by many functions the system ensure that only the
 first of the multiple insertions of the code fragment is active, and
 the others disabled.</p></dd>
+<dt><a name="101"><b class="cmd">::critcl::argtyperelease</b> <i class="arg">name</i> <i class="arg">code</i></a></dt>
+<dd><p>This command defines a C code fragment for the already defined
+argument type <i class="arg">name</i> which will be inserted whenever the worker
+function of a <b class="cmd">critcl::cproc</b> returns to the shim. It is the
+responsibility of this fragment to unconditionally release any
+resources the <b class="cmd">critcl::argtype</b> conversion code allocated.
+An example of this are the <em>variadic</em> types for the support of
+the special, variadic <i class="arg">args</i> argument to <b class="cmd">critcl::cproc</b>'s.
+They allocate a C array for the collected arguments which has to be
+released when the worker returns. This command defines the C code
+for doing that.</p></dd>
 </dl>
 </div>
 </div>
@@ -1906,7 +1918,7 @@ This package is not distributed separately, but as part of the package
 requiring the preload functionality.
 This support package exports a single Tcl command</p>
 <dl class="definitions">
-<dt><a name="101"><b class="cmd">::preload</b> <i class="arg">library</i></a></dt>
+<dt><a name="102"><b class="cmd">::preload</b> <i class="arg">library</i></a></dt>
 <dd><p>which is invoked once per libraries to preload, with the absolute path
 of that <i class="arg">library</i>. The command then loads the <i class="arg">library</i>.</p>
 <p>On windows the command will further use the Tcl command
@@ -2367,8 +2379,8 @@ document about <i class="term">Using CriTcl</i>.</p>
 <li><p>Bugfix: Fixed problem with the internal change to the hook
        <b class="const">HandleDeclAfterBuild</b>. Corrected the forgotten
        <b class="cmd">critcl::cconst</b>.</p></li>
-<li><p>Cosmetic: Added comment holding the name of the result type when
-       emitting result conversions.</p></li>
+<li><p>Debugging aid: Added comment holding the name of the result
+       type when emitting result conversions.</p></li>
 </ol>
 </div>
 <div id="section6" class="section"><h2><a name="section6">Changes for version 3.1.15</a></h2>

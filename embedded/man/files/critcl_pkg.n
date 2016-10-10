@@ -484,6 +484,8 @@ package require \fBmd5  ?2?\fR
 .sp
 \fB::critcl::argtypesupport\fR \fIname\fR \fIcode\fR
 .sp
+\fB::critcl::argtyperelease\fR \fIname\fR \fIcode\fR
+.sp
 \fB::preload\fR \fIlibrary\fR
 .sp
 .BE
@@ -2357,6 +2359,18 @@ types needed by the argument type\&.
 If the type is used by many functions the system ensure that only the
 first of the multiple insertions of the code fragment is active, and
 the others disabled\&.
+.TP
+\fB::critcl::argtyperelease\fR \fIname\fR \fIcode\fR
+This command defines a C code fragment for the already defined
+argument type \fIname\fR which will be inserted whenever the worker
+function of a \fBcritcl::cproc\fR returns to the shim\&. It is the
+responsibility of this fragment to unconditionally release any
+resources the \fBcritcl::argtype\fR conversion code allocated\&.
+An example of this are the \fIvariadic\fR types for the support of
+the special, variadic \fIargs\fR argument to \fBcritcl::cproc\fR's\&.
+They allocate a C array for the collected arguments which has to be
+released when the worker returns\&. This command defines the C code
+for doing that\&.
 .PP
 .SH CONCEPTS
 .SS "MODES OF OPERATION/USE"
@@ -3091,8 +3105,8 @@ Bugfix: Fixed problem with the internal change to the hook
 \fBHandleDeclAfterBuild\fR\&. Corrected the forgotten
 \fBcritcl::cconst\fR\&.
 .IP [6]
-Cosmetic: Added comment holding the name of the result type when
-emitting result conversions\&.
+Debugging aid: Added comment holding the name of the result
+type when emitting result conversions\&.
 .PP
 .SH "CHANGES FOR VERSION 3\&.1\&.15"
 .IP [1]

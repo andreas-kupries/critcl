@@ -144,5 +144,20 @@ If the type is used by many functions the system ensure that only the
 first of the multiple insertions of the code fragment is active, and
 the others disabled.
 
+[comment ---------------------------------------------------------------------]
+[call [cmd ::critcl::argtyperelease] [arg name] [arg code]]
+
+This command defines a C code fragment for the already defined
+argument type [arg name] which will be inserted whenever the worker
+function of a [cmd critcl::cproc] returns to the shim. It is the
+responsibility of this fragment to unconditionally release any
+resources the [cmd critcl::argtype] conversion code allocated.
+
+An example of this are the [emph variadic] types for the support of
+the special, variadic [arg args] argument to [cmd critcl::cproc]'s.
+They allocate a C array for the collected arguments which has to be
+released when the worker returns. This command defines the C code
+for doing that.
+
 [comment {- - -- --- ----- -------- ------------- ---------------------}]
 [list_end]
