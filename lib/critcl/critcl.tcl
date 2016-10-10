@@ -15,7 +15,7 @@ package require Tcl 8.4 ; # Minimal supported Tcl runtime.
 if {[catch {
     package require platform 1.0.2 ; # Determine current platform.
 }]} {
-    # Fall back to our internal copy (currently at platform 1.0.11
+    # Fall back to our internal copy (currently at platform 1.0.14
     # equivalent) if the environment does not have the official
     # package.
     package require critcl::platform
@@ -2078,7 +2078,7 @@ proc ::critcl::API_setup_export {file} {
 
     if {[dict exists $v::code($file) config api_ehdrs]} {
 	append sdecls "\n"
-	file mkdir $v::cache/$cname
+	file mkdir [cache]/$cname
 	foreach hdr [dict get $v::code($file) config api_ehdrs] {
 	    append sdecls "\#include \"[file tail $hdr]\"\n"
 	}
@@ -2086,9 +2086,9 @@ proc ::critcl::API_setup_export {file} {
 
     if {[dict exists $v::code($file) config api_hdrs]} {
 	append sdecls "\n"
-	file mkdir $v::cache/$cname
+	file mkdir [cache]/$cname
 	foreach hdr [dict get $v::code($file) config api_hdrs] {
-	    Copy $hdr $v::cache/$cname
+	    Copy $hdr [cache]/$cname
 	    append sdecls "\#include \"[file tail $hdr]\"\n"
 	}
     }
@@ -2154,7 +2154,7 @@ proc ::critcl::API_setup_export {file} {
     WriteCache $cname/${cname}.decls    $thedecls
 
     dict update v::code($file) result r {
-	dict lappend r apiheader [file join $v::cache $cname]
+	dict lappend r apiheader [file join [cache] $cname]
     }
 
     cinit $sinitrun $sinitstatic
@@ -2247,7 +2247,7 @@ proc ::critcl::checklink {args} {
 	return 0
     }
 
-    set out [file join $v::cache a_[pid].out]
+    set out [file join [cache] a_[pid].out]
     set cmdline [getconfigvalue link]
 
     if {$option::debug_symbols} {
@@ -2626,7 +2626,7 @@ proc ::critcl::showconfig {{fd ""}} {
 	lappend out "Config: $plat (built on $gen)"
     }
     lappend out "Origin: $configfile"
-    lappend out "    [format %-15s cache] [critcl::cache]"
+    lappend out "    [format %-15s cache] [cache]"
     foreach var [lsort $v::configvars] {
 	set val [getconfigvalue $var]
 	set line "    [format %-15s $var]"
@@ -4264,8 +4264,8 @@ proc ::critcl::TclIncludes {file} {
 	# The critcl package is wrapped. Copy the relevant headers out
 	# to disk and change the include path appropriately.
 
-	Copy $path $v::cache
-	set path [file join $v::cache $hdrs]
+	Copy $path [cache]
+	set path [file join [cache] $hdrs]
     }
 
     return [list $c::include$path]
@@ -4298,7 +4298,7 @@ proc ::critcl::SystemIncludePaths {file} {
     }
 
     # Result cache.
-    lappend paths $v::cache
+    lappend paths [cache]
 
     # critcl::cheaders
     foreach flag [GetParam $file cheaders] {
@@ -4411,7 +4411,7 @@ proc ::critcl::MakePreloadLibrary {file} {
     # compile and link the preload support, if necessary, i.e. not yet
     # done.
 
-    set shlib [file join $v::cache preload[getconfigvalue sharedlibext]]
+    set shlib [file join [cache] preload[getconfigvalue sharedlibext]]
     if {[file exists $shlib]} return
 
     # Operate like TclIncludes. Use the template file directly, if
@@ -4420,14 +4420,14 @@ proc ::critcl::MakePreloadLibrary {file} {
 
     set src [Template preload.c]
     if {[file system $src] ne "native"} {
-	file mkdir $v::cache
-	file copy -force $src $v::cache
-	set src [file join $v::cache preload.c]
+	file mkdir [cache]
+	file copy -force $src [cache]
+	set src [file join [cache] preload.c]
     }
 
     # Build the object for the helper package, 'preload' ...
 
-    set obj [file join $v::cache preload.o]
+    set obj [file join [cache] preload.o]
     Compile $file $src $src $obj
 
     # ... and link it.
@@ -4517,11 +4517,11 @@ proc ::critcl::CompanionObject {src} {
     set tail    [file tail $src]
     set srcbase [file rootname $tail]
 
-    if {$v::cache ne [file dirname $src]} {
+    if {[cache] ne [file dirname $src]} {
 	set srcbase [file tail [file dirname $src]]_$srcbase
     }
 
-    return [file join $v::cache ${srcbase}[getconfigvalue object]]
+    return [file join [cache] ${srcbase}[getconfigvalue object]]
 }
 
 proc ::critcl::CompileResult {object} {
@@ -4878,13 +4878,13 @@ proc ::critcl::PkgInit {file} {
 ## Implementation -- Internals - Access to the log file
 
 proc ::critcl::LogFile {} {
-    file mkdir $v::cache
-    return [file join $v::cache [pid].log]
+    file mkdir [cache]
+    return [file join [cache] [pid].log]
 }
 
 proc ::critcl::LogFileExec {} {
-    file mkdir $v::cache
-    return [file join $v::cache [pid]_exec.log]
+    file mkdir [cache]
+    return [file join [cache] [pid]_exec.log]
 }
 
 proc ::critcl::LogOpen {file} {
@@ -4962,7 +4962,7 @@ proc ::critcl::BaseOf {f} {
     }
 
     set base [file normalize \
-		  [file join $v::cache ${v::prefix}_[UUID $f]]]
+		  [file join [cache] ${v::prefix}_[UUID $f]]]
 
     dict set v::code($f) result base $base
     return $base
@@ -5010,7 +5010,7 @@ proc ::critcl::Cat {path} {
 }
 
 proc ::critcl::WriteCache {name content} {
-    set dst [file join $v::cache $name]
+    set dst [file join [cache] $name]
     file mkdir [file dirname $dst] ;# just in case
     return [Write [file normalize $dst] $content]
 }
@@ -5023,8 +5023,8 @@ proc ::critcl::Write {path content} {
 }
 
 proc ::critcl::AppendCache {name content} {
-    file mkdir $v::cache ;# just in case
-    return [Append [file normalize [file join $v::cache $name]] $content]
+    file mkdir [cache] ;# just in case
+    return [Append [file normalize [file join [cache] $name]] $content]
 }
 
 proc ::critcl::Append {path content} {
@@ -5119,7 +5119,7 @@ proc ::critcl::ExecWithLogging {cmdline okmsg errmsg} {
 proc ::critcl::BuildPlatform {} {
     set platform [::platform::generic]
 
-    # Behave like a autoconf generated configure
+    # Behave like an autoconf generated configure
     # - $CC (user's choice first)
     # - gcc, if available.
     # - cc/cl otherwise (without further check for availability)
@@ -5141,12 +5141,12 @@ proc ::critcl::BuildPlatform {} {
 	}
     }
 
-    # The cc may be a full path, through the CC environment variable,
-    # which is bad for use in the platform code. Use only the last
-    # element of said path, without extensions (.exe). And it may be
-    # followed by options too, so look for and strip these off as
-    # well. This last part assumes that the path of the compiler
-    # itself doesn't contain spaces.
+    # The cc may be specified with a full path, through the CC
+    # environment variable, which cannot be used as is in the platform
+    # code. Use only the last element of the path, without extensions
+    # (.exe). And it may be followed by options too, so look for and
+    # strip these off as well. This last part assumes that the path of
+    # the compiler itself doesn't contain spaces.
 
     regsub {( .*)$} [file tail $cc] {} cc
     append platform -[file rootname $cc]
@@ -5538,7 +5538,7 @@ namespace eval ::critcl {
 	# similar to "target identifier".
 
 	variable targetconfig    ;# Target identifier. The chosen configuration.
-	variable targetplatform  ;# Platform identifier. We generate binaries for there.
+	variable targetplatform  ;# Platform identifier. Type of generated binaries.
 	variable buildplatform   ;# Platform identifier. We run here.
 
 	variable knowntargets {} ;# List of all target identifiers found
