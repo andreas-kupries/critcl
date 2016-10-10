@@ -28,12 +28,12 @@ testsNeedTcl     8.4
 testsNeedTcltest 2
 
 support {
-    useLocal lib/util84/lassign.tcl     lassign84
-    useLocal lib/util84/dict.tcl        dict84
+    useLocal lib/lassign84/lassign.tcl     lassign84
+    useLocal lib/dict84/dict.tcl        dict84
 
-    useLocal lib/stubs/container.tcl    stubs::container
-    useLocal lib/stubs/reader.tcl       stubs::reader
-    useLocal lib/stubs/genframe.tcl     stubs::gen
+    useLocal lib/stubs_container/container.tcl    stubs::container
+    useLocal lib/stubs_reader/reader.tcl          stubs::reader
+    useLocal lib/stubs_genframe/genframe.tcl      stubs::gen
 
     useLocalFile test/support.tcl
 }
