@@ -2,8 +2,6 @@
 
 #define ns__aproc0 "::aproc"
 
-
-
 #ifndef CRITCL_variadic_int
 #define CRITCL_variadic_int
 

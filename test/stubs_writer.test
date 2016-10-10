@@ -20,7 +20,7 @@ support {
     useLocal lib/stubs_genframe/genframe.tcl   stubs::gen
 }
 testing {
-    useLocal lib/stubs_writer_/writer.tcl stubs::writer
+    useLocal lib/stubs_writer/writer.tcl stubs::writer
 }
 
 # -------------------------------------------------------------------------

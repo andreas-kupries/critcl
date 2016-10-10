@@ -431,7 +431,7 @@ proc ::critcl::ArgsInprocess {adefs skip} {
 	# a = name | {name default}
 
 	# Base type support
-	if {![dict exists has $t]} {
+	if {![dict exists $has $t]} {
 	    dict set has $t .
 	    lappend support "[ArgumentSupport $t]"
 	}
@@ -458,7 +458,7 @@ proc ::critcl::ArgsInprocess {adefs skip} {
 	    # Dynamically create an arg-type for "variadic list of T".
 	    set t [MakeVariadicTypeFor $t]
 	    # List support.
-	    if {![dict exists has $t]} {
+	    if {![dict exists $has $t]} {
 		dict set has $t .
 		lappend support "[ArgumentSupport $t]"
 	    }
