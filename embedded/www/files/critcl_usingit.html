@@ -208,7 +208,7 @@ slow. Converting this to C we get:</p>
     package require critcl
     critcl::cproc math {double x double y double z} double {
         double up   = rand () * sin (x);
-	double down = pow(y, log (z);
+	double down = pow(y, log (z));
         return up/down;
     }
 </pre>
@@ -237,7 +237,7 @@ means that they do not support default arguments either.</p>
 <pre class="example">
     proc math {args} {
         set sum 0
-        foreach y { set sum [expr {$sum + $y}] }
+        foreach y $args { set sum [expr {$sum + $y}] }
 	return $sum
     }
 </pre>
@@ -257,6 +257,7 @@ values (for arguments) and back (for the result), with
     critcl::ccommand math {cd ip oc ov} {
         double sum = 0;
         double y;
+        oc --;
         while (oc) {
             if (Tcl_GetDoubleFromObj (ip, ov[oc], &amp;y) != TCL_OK) {
 	        return TCL_ERROR;
