@@ -6,6 +6,7 @@
 # but shouldn't need to for typical *nix toolchains using gcc
 #
 #   platform        sets the platform (defaults to platform::generic)
+#   target          indicates that this is a cross-compile target, the value is the actual platform code.
 #   compile         compile a C source file to an object file
 #   version         print the compiler version number
 #   ldout           See below
@@ -27,8 +28,7 @@
 #   include         cflag to add an include directory
 #   noassert        cflag to turn off assertions in Tcl code
 #   threadflags     cflags to enable threaded build
-#   target          indicates that this is a cross-compile target
-#   sharedlibext    the platform shared library extension
+#   sharedlibext    the platform's file extension for shared libraries
 #
 #   (Support for Fortran)
 #   fcompile        compile a Fortran source file to an object file
