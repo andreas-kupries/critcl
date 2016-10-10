@@ -13,19 +13,29 @@ proc main {} {
     exit 0
 }
 set packages {
-    {critcl          critcl.tcl}
-    {critcl-util     util.tcl}
-    {critcl-cutil    cutil.tcl}
-    {critcl-class    class.tcl}
-    {critcl-iassoc   iassoc.tcl}
-    {critcl-literals literals.tcl}
-    {critcl-enum     enum.tcl}
-    {critcl-bitmap   bitmap.tcl}
-    {critcl-emap     emap.tcl}
-    {app-critcl      ../critcl/critcl.tcl critcl-app}
-    util84
-    stubs
-    critcl-platform
+    {app-critcl       ../critcl/critcl.tcl critcl-app}
+    {critcl           critcl.tcl}
+    {critcl-bitmap    bitmap.tcl}
+    {critcl-class     class.tcl}
+    {critcl-cutil     cutil.tcl}
+    {critcl-emap      emap.tcl}
+    {critcl-enum      enum.tcl}
+    {critcl-iassoc    iassoc.tcl}
+    {critcl-literals  literals.tcl}
+    {critcl-platform  platform.tcl}
+    {critcl-util      util.tcl}
+    {dict84           dict.tcl}
+    {lassign84        lassign.tcl}
+    {stubs_container  container.tcl}
+    {stubs_gen_decl   gen_decl.tcl}
+    {stubs_gen_header gen_header.tcl}
+    {stubs_gen_init   gen_init.tcl}
+    {stubs_gen_lib    gen_lib.tcl}
+    {stubs_gen_macro  gen_macro.tcl}
+    {stubs_gen_slot   gen_slot.tcl}
+    {stubs_genframe   genframe.tcl}
+    {stubs_reader     reader.tcl}
+    {stubs_writer     writer.tcl}
 }
 proc usage {{status 1}} {
     global errorInfo
