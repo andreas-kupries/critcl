@@ -1,0 +1,3 @@
+
+ex self
+ex companion

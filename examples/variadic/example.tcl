@@ -11,8 +11,6 @@ foreach a {
     {6 7 8 9}
     {6 7 8 9 0}
 } {
-    puts ___($a)_________
-    variadic {*}$a
-
-    ovariadic {*}$a
+    ex variadic  {*}$a
+    ex ovariadic {*}$a
 }
