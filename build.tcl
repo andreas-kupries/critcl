@@ -273,18 +273,37 @@ proc _release-doc {} {
     # # ## ### ##### ######## #############
     return
 }
-proc Hinstall {} { return "?destination?\n\tInstall all packages, and application.\n\tdestination = path of package directory, default \[info library\]." }
-proc _install {{dst {}}} {
-    global packages me
-    set selfdir [file dirname $me]
 
+proc Htargets {} { return "?destination?\n\tShow available targets.\n\tExpects critcl app to be installed in destination." }
+proc _targets {{dst {}}} {
     if {[llength [info level 0]] < 2} {
+	set dsta [file dirname [file dirname [file normalize [info nameofexecutable]/___]]]
+    } else {
+	set dsta [file dirname [findlib $dstl]]/bin
+    }
+    puts [join [split [exec $dsta/critcl -targets]] \n]
+    return
+}
+
+proc Hinstall {} { return "?-target T? ?destination?\n\tInstall all packages, and application.\n\tdestination = path of package directory, default \[info library\]." }
+proc _install {args} {
+    global packages me
+
+    set target {}
+    if {[lindex $args 0] eq "-target"} {
+	set target [lindex $args 1]
+	set args [lrange $args 2 end]
+    }
+
+    if {[llength $args] == 0} {
 	set dstl [info library]
 	set dsta [file dirname [file dirname [file normalize [info nameofexecutable]/___]]]
     } else {
-	set dstl $dst
+	set dstl [lindex $args 0]
 	set dsta [file dirname [findlib $dstl]]/bin
     }
+
+    set selfdir [file dirname $me]
 
     puts {Installing into:}
     puts \tPackages:\t$dstl
@@ -346,8 +365,12 @@ proc _install {{dst {}}} {
 	set name    critcl_md5c
 	set dst     $dstl/$name$version
 
-	exec >@ stdout 2>@ stderr \
-	    $dsta/critcl -libdir $dstl/tmp -pkg $src
+	lappend cmd exec >@ stdout 2>@ stderr $dsta/critcl
+	if {$target ne {}} {
+	    lappend cmd -target $target
+	}
+	lappend cmd -libdir $dstl/tmp -pkg $src
+	eval $cmd
 
 	file delete -force $dst
 	file rename        $dstl/tmp/md5c $dst
