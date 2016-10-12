@@ -48,12 +48,16 @@
  ***********************************************************************
  */
 
-/* typedef a 32-bit type */
-//#ifdef __alpha
-typedef unsigned int UINT4;
-//#else
-//typedef unsigned long int UINT4;
-//#endif
+/* typedef a 32-bit unsigned integer type */
+
+#include <limits.h>
+#if UINT_MAX == 4294967295U
+  typedef unsigned int UINT4;
+#elif ULONG_MAX == 4294967295UL
+  typedef unsigned long UINT4;
+#else
+#error "Unable to define UINT4, no 32bit unsigned integer type found"
+#endif
 
 /* Data structure for MD5 (Message-Digest) computation */
 typedef struct {
