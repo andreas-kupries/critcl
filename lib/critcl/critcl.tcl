@@ -15,12 +15,21 @@ package require Tcl 8.4 ; # Minimal supported Tcl runtime.
 if {[catch {
     package require platform 1.0.2 ; # Determine current platform.
 }]} {
-    # Fall back to our internal copy (currently at platform 1.0.14
-    # equivalent) if the environment does not have the official
+    # Fall back to our internal copy (currently equivalent to platform
+    # 1.0.14(+)) if the environment does not have the official
     # package.
+    package require critcl::platform
+} elseif {
+    [string match freebsd* [platform::generic]] &&
+    ([platform::generic] eq [platform::identify])
+} {
+    # Again fall back to the internal package if we are on FreeBSD and
+    # the official package does not properly identify the OS ABI
+    # version.
     package require critcl::platform
 }
 
+# # ## ### ##### ######## ############# #####################
 # Ensure forward compatibility of commands defined in 8.5+.
 package require lassign84
 package require dict84

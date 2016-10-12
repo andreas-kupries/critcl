@@ -168,6 +168,11 @@ proc ::platform::identify {} {
     regexp {^([^-]+)-([^-]+)$} $id -> plat cpu
 
     switch -- $plat {
+	freebsd {
+	    set abi [lindex [split $tcl_platform(osVersion) .] 0]
+	    append plat $abi
+	    return "${plat}-${cpu}"
+	}
 	solaris {
 	    regsub {^5} $tcl_platform(osVersion) 2 text
 	    append plat $text
