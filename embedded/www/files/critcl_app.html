@@ -500,6 +500,22 @@ targets. The result of such a merge would look like:</p>
        <b class="cmd">critcl::cconst</b>.</p></li>
 <li><p>Debugging aid: Added comment holding the name of the result
        type when emitting result conversions.</p></li>
+<li><p>Bugfix: Fixed issue #60. Unbundled the package directories
+       containing multiple packages. All directories under &quot;<b class="file">lib/</b>&quot;
+       now contain exactly one package.</p></li>
+<li><p>Bugfix: Fixed issue #62, a few <b class="cmd">dict exists</b> commands
+       operating on a fixed string instead of a variable.</p></li>
+<li><p>Bugfix: Fixed issue #56. Release builders are reminded to run
+       the tests.</p></li>
+<li><p>Bugfix: Fixed issue #55. For FreeBSD critcl's platform package
+       now identifies the Kernel ABI version. Initialization of the
+       cache directory now also uses <b class="cmd">platform::identify</b> for the
+       default path, instead of <b class="cmd">platform::generic</b>.</p></li>
+<li><p>Bugfix: Fixed issue #58. Simplified the setup and use of
+       md5. Critcl now makes use of its own package for md5, using
+       itself to built it. There is no chicken/egg problem with this
+       as the <b class="option">-pkg</b> mode used for this does not use md5. That
+       is limited to mode <i class="term"><a href="../index.html#key0">compile &amp; run</a></i>.</p></li>
 </ol>
 </div>
 <div id="section5" class="section"><h2><a name="section5">Changes for version 3.1.15</a></h2>

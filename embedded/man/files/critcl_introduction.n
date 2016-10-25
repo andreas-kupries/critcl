@@ -489,6 +489,27 @@ Bugfix: Fixed problem with the internal change to the hook
 .IP [6]
 Debugging aid: Added comment holding the name of the result
 type when emitting result conversions\&.
+.IP [7]
+Bugfix: Fixed issue #60\&. Unbundled the package directories
+containing multiple packages\&. All directories under "\fIlib/\fR"
+now contain exactly one package\&.
+.IP [8]
+Bugfix: Fixed issue #62, a few \fBdict exists\fR commands
+operating on a fixed string instead of a variable\&.
+.IP [9]
+Bugfix: Fixed issue #56\&. Release builders are reminded to run
+the tests\&.
+.IP [10]
+Bugfix: Fixed issue #55\&. For FreeBSD critcl's platform package
+now identifies the Kernel ABI version\&. Initialization of the
+cache directory now also uses \fBplatform::identify\fR for the
+default path, instead of \fBplatform::generic\fR\&.
+.IP [11]
+Bugfix: Fixed issue #58\&. Simplified the setup and use of
+md5\&. Critcl now makes use of its own package for md5, using
+itself to built it\&. There is no chicken/egg problem with this
+as the \fB-pkg\fR mode used for this does not use md5\&. That
+is limited to mode \fIcompile & run\fR\&.
 .PP
 .SH "CHANGES FOR VERSION 3\&.1\&.15"
 .IP [1]
