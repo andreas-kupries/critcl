@@ -20,41 +20,34 @@ if {![info exists suffix]} {
 # -------------------------------------------------------------------------
 # Setup
 
-source [file join \
-            [file dirname [file dirname [file join [pwd] [info script]]]] \
-            testutilities.tcl]
-
-testsNeedTcl     8.4
-testsNeedTcltest 2
-
 support {
     useLocal lib/lassign84/lassign.tcl  lassign84
-    useLocal lib/dict84/dict.tcl     dict84
+    useLocal lib/dict84/dict.tcl        dict84
 
     useLocal lib/stubs_container/container.tcl stubs::container
     useLocal lib/stubs_reader/reader.tcl       stubs::reader
     useLocal lib/stubs_genframe/genframe.tcl   stubs::gen
-
-    useLocalFile test/support.tcl
 }
+
 testing {
     useLocal lib/critcl/critcl.tcl critcl
-    overrides
-    on-traced-on
 }
+
+overrides
+on-traced-on
 
 # -------------------------------------------------------------------------
 ## ccommand syntax
 
-test critcl-ccommand${suffix}-1.0.6 {ccommand, wrong\#args} -constraints tcl86plus -body {
+test critcl-ccommand${suffix}-1.0.6 {ccommand, wrong\#args} -constraints tcl8.6plus -body {
     critcl::ccommand
 } -returnCodes error -result {wrong # args: should be "critcl::ccommand name anames ?arg ...?"}
 
-test critcl-ccommand${suffix}-1.0.5 {ccommand, wrong\#args} -constraints tcl85 -body {
+test critcl-ccommand${suffix}-1.0.5 {ccommand, wrong\#args} -constraints tcl8.5 -body {
     critcl::ccommand
 } -returnCodes error -result {wrong # args: should be "critcl::ccommand name anames ..."}
 
-test critcl-ccommand${suffix}-1.0.4 {ccommand, wrong\#args} -constraints tcl84 -body {
+test critcl-ccommand${suffix}-1.0.4 {ccommand, wrong\#args} -constraints tcl8.4 -body {
     critcl::ccommand
 } -returnCodes error -result {wrong # args: should be "critcl::ccommand name anames args"}
 
@@ -65,37 +58,37 @@ test critcl-ccommand${suffix}-2.0 {ccommand, defaults} -body {
     get critcl::ccommand command {} {
         return TCL_OK;
     }
-} -result [viewFile [localPath test/support/ccommand${suffix}/2.0]]
+} -result [viewFile [localPath test/assets/ccommand${suffix}/2.0]]
 
 test critcl-ccommand${suffix}-2.1 {ccommand, custom arguments} -body {
     get critcl::ccommand command {CD IP OC OV} {
         return TCL_OK;
     }
-} -result [viewFile [localPath test/support/ccommand${suffix}/2.1]]
+} -result [viewFile [localPath test/assets/ccommand${suffix}/2.1]]
 
 test critcl-ccommand${suffix}-2.2 {ccommand, -cname (custom C name)} -body {
     get critcl::ccommand snafu {} {
         return TCL_OK;
     } -cname 1
-} -result [viewFile [localPath test/support/ccommand${suffix}/2.2]]
+} -result [viewFile [localPath test/assets/ccommand${suffix}/2.2]]
 
 test critcl-ccommand${suffix}-2.3 {ccommand, namespaced name, and Tcl vs C} -body {
     get critcl::ccommand the::command+max {} {
         return TCL_OK;
     }
-} -result [viewFile [localPath test/support/ccommand${suffix}/2.3]]
+} -result [viewFile [localPath test/assets/ccommand${suffix}/2.3]]
 
 test critcl-ccommand${suffix}-2.4 {ccommand, -delproc} -body {
     get critcl::ccommand command {} {
         return TCL_OK;
     } -delproc DELE
-} -result [viewFile [localPath test/support/ccommand${suffix}/2.0]]
+} -result [viewFile [localPath test/assets/ccommand${suffix}/2.0]]
 
 test critcl-ccommand${suffix}-2.5 {ccommand, -clientdata} -body {
     get critcl::ccommand command {} {
         return TCL_OK;
     } -clientdata ABC
-} -result [viewFile [localPath test/support/ccommand${suffix}/2.0]]
+} -result [viewFile [localPath test/assets/ccommand${suffix}/2.0]]
 
 # -------------------------------------------------------------------------
 ## Full builds.
@@ -105,21 +98,21 @@ test critcl-ccommand${suffix}-3.0 {ccommand, defaults} -setup setup -body {
     critcl::cbuild [the-file]
     inspect v*.c
 } -cleanup cleanup -match glob \
-    -result [viewFile [localPath test/support/ccommand${suffix}/3.0]]
+    -result [viewFile [localPath test/assets/ccommand${suffix}/3.0]]
 
 test critcl-ccommand${suffix}-3.4 {ccommand, -delproc} -setup setup -body {
     critcl::ccommand command {} { return TCL_OK; } -delproc DELE
     critcl::cbuild [the-file]
     inspect v*.c
 } -cleanup cleanup -match glob \
-    -result [viewFile [localPath test/support/ccommand${suffix}/3.4]]
+    -result [viewFile [localPath test/assets/ccommand${suffix}/3.4]]
 
 test critcl-ccommand${suffix}-3.5 {ccommand, -clientdata} -setup setup -body {
     critcl::ccommand command {} { return TCL_OK; } -clientdata ABC
     critcl::cbuild [the-file]
     inspect v*.c
 } -cleanup cleanup -match glob \
-    -result [viewFile [localPath test/support/ccommand${suffix}/3.5]]
+    -result [viewFile [localPath test/assets/ccommand${suffix}/3.5]]
 
 # -------------------------------------------------------------------------
 testsuiteCleanup

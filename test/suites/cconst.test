@@ -20,31 +20,23 @@ if {![info exists suffix]} {
 # -------------------------------------------------------------------------
 # Setup
 
-source [file join \
-            [file dirname [file dirname [file join [pwd] [info script]]]] \
-            testutilities.tcl]
-
-testsNeedTcl     8.4
-testsNeedTcltest 2
-
 support {
     useLocal lib/lassign84/lassign.tcl  lassign84
-    useLocal lib/dict84/dict.tcl     dict84
+    useLocal lib/dict84/dict.tcl        dict84
 
-    useLocal lib/stubs_container/container.tcl stubs::container
-    useLocal lib/stubs_reader/reader.tcl       stubs::reader
-    useLocal lib/stubs_genframe/genframe.tcl   stubs::gen
-
-    useLocalFile test/support.tcl
+    useLocal lib/stubs_container/container.tcl  stubs::container
+    useLocal lib/stubs_reader/reader.tcl        stubs::reader
+    useLocal lib/stubs_genframe/genframe.tcl    stubs::gen
 }
 testing {
-    useLocal lib/critcl/critcl.tcl critcl
-
-    # Note: The next command does not influence the standard argument-
-    # and result-types.
-    critcl::config lines 0
-    on-traced-on
+    useLocal lib/critcl/critcl.tcl  critcl
 }
+
+# Note: The next command does not influence the standard argument-
+# and result-types.
+#critcl::config lines 0
+overrides
+on-traced-on
 
 # -------------------------------------------------------------------------
 ## cconst syntax
@@ -79,19 +71,19 @@ test critcl-cconst${suffix}-1.4 {cconst, bad result type (void)} -setup {
 
 test critcl-cconst${suffix}-2.0 {cconst, bool, fixed value} -body {
     get critcl::cconst alpha bool 1
-} -result [viewFile [localPath test/support/cconst${suffix}/2.0]]
+} -result [viewFile [localPath test/assets/cconst${suffix}/2.0]]
 
 test critcl-cconst${suffix}-2.1 {cconst, bool, define} -body {
     get critcl::cconst alpha bool FOO
-} -result [viewFile [localPath test/support/cconst${suffix}/2.1]]
+} -result [viewFile [localPath test/assets/cconst${suffix}/2.1]]
 
 test critcl-cconst${suffix}-2.2 {cconst, bool, function} -body {
     get critcl::cconst alpha bool foo()
-} -result [viewFile [localPath test/support/cconst${suffix}/2.2]]
+} -result [viewFile [localPath test/assets/cconst${suffix}/2.2]]
 
 test critcl-cconst${suffix}-2.3 {cconst, namespaced name} -body {
     get critcl::cconst the::alpha bool 0
-} -result [viewFile [localPath test/support/cconst${suffix}/2.3]]
+} -result [viewFile [localPath test/assets/cconst${suffix}/2.3]]
 
 # -------------------------------------------------------------------------
 testsuiteCleanup

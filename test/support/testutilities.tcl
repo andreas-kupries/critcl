@@ -1,6 +1,8 @@
 # -*- tcl -*-
 # Testsuite utilities / boilerplate
-# Copyright (c) 2006, Andreas Kupries <andreas_kupries@users.sourceforge.net>
+# Copyright (c) 2006-2016, Andreas Kupries <andreas_kupries@users.sourceforge.net>
+#                                          <akupries@shaw.ca>
+#                                          <andreas.kupries@gmail.com>
 
 namespace eval ::tcllib::testutils {
     variable version 1.2
@@ -196,6 +198,18 @@ proc InitializeTclTest {} {
 
     ::tcltest::testConstraint tcl8.4minus \
 	[expr {![package vsatisfies [package provide Tcl] 8.5]}]
+
+    ::tcltest::testConstraint tcl8.5 \
+	[expr {
+	       [ tcltest::testConstraint tcl8.5plus] &&
+	       ![tcltest::testConstraint tcl8.6plus]
+	   }]
+
+    ::tcltest::testConstraint tcl8.4 \
+	[expr {
+	       [ tcltest::testConstraint tcl8.4plus] &&
+	       ![tcltest::testConstraint tcl8.5plus]
+	   }]
 
     # ### ### ### ######### ######### #########
     ## Cross-version code for the generation of the error messages created

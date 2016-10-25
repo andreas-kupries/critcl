@@ -145,8 +145,22 @@ proc _recipes {} {
 proc Htest {} { return "\n\tRun the testsuite." }
 proc _test {} {
     global argv
-    set    argv {} ;# clear for tcltest to see nothing
-    source [file dirname $::me]/test/all.tcl
+    set    argv {} ;# clear -- tcltest shall see nothing
+    # Run all .test files in the test/ directory.
+    set selfdir [file dirname $::me]
+    foreach testsuite [lsort -dict [glob -directory $selfdir/test *.test]] {
+	puts ""
+	puts "_ _ __ ___ _____ ________ _____________ _____________________ *** [file tail $testsuite] ***"
+	if {[catch {
+	    exec >@ stdout 2>@ stderr [info nameofexecutable] $testsuite
+	}]} {
+	    puts $::errorInfo
+	}
+    }
+
+    puts ""
+    puts "_ _ __ ___ _____ ________ _____________ _____________________"
+    puts ""
     return
 }
 proc Hdoc {} { return "\n\t(Re)Generate the embedded documentation." }
@@ -273,17 +287,37 @@ proc _release-doc {} {
     # # ## ### ##### ######## #############
     return
 }
-proc Hinstall {} { return "?destination?\n\tInstall all packages, and application.\n\tdestination = path of package directory, default \[info library\]." }
-proc _install {{dst {}}} {
-    global packages
 
+proc Htargets {} { return "?destination?\n\tShow available targets.\n\tExpects critcl app to be installed in destination." }
+proc _targets {{dst {}}} {
     if {[llength [info level 0]] < 2} {
+	set dsta [file dirname [file dirname [file normalize [info nameofexecutable]/___]]]
+    } else {
+	set dsta [file dirname [findlib $dstl]]/bin
+    }
+    puts [join [split [exec $dsta/critcl -targets]] \n]
+    return
+}
+
+proc Hinstall {} { return "?-target T? ?destination?\n\tInstall all packages, and application.\n\tdestination = path of package directory, default \[info library\]." }
+proc _install {args} {
+    global packages me
+
+    set target {}
+    if {[lindex $args 0] eq "-target"} {
+	set target [lindex $args 1]
+	set args [lrange $args 2 end]
+    }
+
+    if {[llength $args] == 0} {
 	set dstl [info library]
 	set dsta [file dirname [file dirname [file normalize [info nameofexecutable]/___]]]
     } else {
-	set dstl $dst
+	set dstl [lindex $args 0]
 	set dsta [file dirname [findlib $dstl]]/bin
     }
+
+    set selfdir [file dirname $me]
 
     puts {Installing into:}
     puts \tPackages:\t$dstl
@@ -309,12 +343,12 @@ proc _install {{dst {}}} {
 	    }
 
 	    if {$vfile ne {}} {
-		set version  [version [file dirname $::me]/lib/$dir/$vfile]
+		set version  [version $selfdir/lib/$dir/$vfile]
 	    } else {
 		set version {}
 	    }
 
-	    file copy   -force [file dirname $::me]/lib/$dir     $dstl/${name}-new
+	    file copy   -force $selfdir/lib/$dir     $dstl/${name}-new
 	    file delete -force $dstl/$name$version
 	    file rename        $dstl/${name}-new     $dstl/$name$version
 	    puts "${prefix}Installed package:      $dstl/$name$version"
@@ -329,6 +363,35 @@ proc _install {{dst {}}} {
 	+x $dsta/critcl
 
 	puts "${prefix}Installed application:  $dsta/critcl"
+
+	# Special package: critcl_md5c
+	# Local MD5 hash implementation.
+
+	# It is special because it is a critcl-based package, not pure
+	# Tcl as everything else of critcl. Its installation makes it
+	# the first package which will be compiled with critcl on this
+	# machine. It uses the just-installed application for
+	# that. This is package-mode, where MD5 itself is not used, so
+	# there is no chicken vs. egg.
+
+	set src     $selfdir/lib/critcl-md5c/md5c.tcl
+	set version [version $src]
+	set name    critcl_md5c
+	set dst     $dstl/$name$version
+
+	lappend cmd exec >@ stdout 2>@ stderr $dsta/critcl
+	if {$target ne {}} {
+	    lappend cmd -target $target
+	}
+	lappend cmd -libdir $dstl/tmp -pkg $src
+	eval $cmd
+
+	file delete -force $dst
+	file rename        $dstl/tmp/md5c $dst
+	file delete -force $dstl/tmp
+
+	puts "${prefix}Installed package:      $dst"
+
     } msg]} {
 	if {![string match {*permission denied*} $msg]} {
 	    return -code error -errorcode $::errorCode -errorinfo $::errorInfo $msg
@@ -349,6 +412,10 @@ proc _drop {{dst {}}} {
 	set dstl $dst
 	set dsta [file dirname $dst]/bin
     }
+
+    # Add the special package (see install). Not special with regard
+    # to removal.
+    lappend packages [list critcl-md5c md5c.tcl]
 
     foreach item $packages {
 	# Package: /name/

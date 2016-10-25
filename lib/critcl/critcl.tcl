@@ -4,9 +4,12 @@
 # @mdgen OWNER: Config
 # @mdgen OWNER: critcl_c
 
+# # ## ### ##### ######## ############# #####################
 # CriTcl Core.
 
 package provide critcl 3.1.16
+
+namespace eval ::critcl {}
 
 # # ## ### ##### ######## ############# #####################
 ## Requirements.
@@ -34,57 +37,21 @@ if {[catch {
 package require lassign84
 package require dict84
 
+# # ## ### ##### ######## ############# #####################
+## Ensure that we have maximal 'info frame' data, if supported
+
 catch { interp debug {} -frame 1 }
 
-# md5 could be a cmd or a pkg, or be in a separate namespace
-if {[catch { md5 "" }]} {
-    # Do *not* use "package require md5c" since critcl is not loaded
-    # yet, but do look for a compiled one, in case object code already
-    # exists.
+# # ## ### ##### ######## ############# #####################
+# This is the md5 package bundled with critcl.
+# No need to look for fallbacks.
 
-    if {![catch { md5c "" }]} {
-	interp alias {} md5 {} md5c
-    } elseif {[catch {package require Trf 2.0}] || [catch {::md5 -- test}]} {
-	# Else try to load the Tcl version in tcllib
-	catch { package require md5 }
-	if {![catch { md5::md5 "" }]} {
-	    interp alias {} md5 {} md5::md5
-	} else {
-	    # Last resort: package require or source Don Libes'
-	    # md5pure script
-
-	    if {[catch { package require md5pure }]} {
-		if {[file exists md5pure.tcl]} {
-		    source md5pure.tcl
-		    interp alias {} md5 {} md5pure::md5
-		} else {
-		    # XXX: Note the assumption here, that the md5
-		    # XXX: package is found relative to critcl itself,
-		    # XXX: in the critcl starkit.
-
-		    source [file join [file dirname [info script]] ../md5/md5.tcl]
-		    interp alias {} md5 {} md5::md5
-		}
-	    } else {
-		interp alias {} md5 {} md5pure::md5
-	    }
-	}
+proc ::critcl::md5_hex {s} {
+    if {$v::uuidcounter} {
+	return [format %032d [incr v::uuidcounter]]
     }
-}
-
-namespace eval ::critcl {}
-
-# ouch, some md5 implementations return hex, others binary
-if {[string length [md5 ""]] == 32} {
-    proc ::critcl::md5_hex {s} {
-	if {$v::uuidcounter} { return [format %032d [incr v::uuidcounter]] }
-	return [md5 $s]
-    }
-} else {
-    proc ::critcl::md5_hex {s} {
-	if {$v::uuidcounter} { return [format %032d [incr v::uuidcounter]] }
-	binary scan [md5 $s] H* md; return $md
-    }
+    package require critcl_md5c
+    binary scan [md5c $s] H* md; return $md
 }
 
 # # ## ### ##### ######## ############# #####################
