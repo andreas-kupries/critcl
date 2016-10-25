@@ -401,7 +401,7 @@ proc _drop {{dst {}}} {
 
     # Add the special package (see install). Not special with regard
     # to removal.
-    lappend packages [list critcl_md5c md5c.tcl]
+    lappend packages [list critcl-md5c md5c.tcl]
 
     foreach item $packages {
 	# Package: /name/
