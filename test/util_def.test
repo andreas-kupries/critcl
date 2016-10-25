@@ -3,9 +3,7 @@
 # critcl_util_def.test
 # -------------------------------------------------------------------------
 
-source [file join \
-            [file dirname [file join [pwd] [info script]]] \
-            testutilities.tcl]
+source [file join [file dirname [info script]] support testutilities.tcl]
 
 testsNeedTcl     8.4
 testsNeedTcltest 2
@@ -21,49 +19,50 @@ support {
     useLocal lib/critcl/critcl.tcl critcl
 
     # Helper procedures
-    useLocalFile test/support.tcl
+    useLocalFile test/support/crit_utils.tcl
 }
 testing {
     useLocal lib/critcl-util/util.tcl critcl::util
-    overrides
 }
+
+overrides
 
 # -------------------------------------------------------------------------
 ## util::def syntax
 
-test critcl-util-def-1.0.6 {util-def, wrong\#args, not enough} -constraints tcl86plus -body {
+test critcl-util-def-1.0.6 {util-def, wrong\#args, not enough} -constraints tcl8.6plus -body {
     critcl::util::def
 } -returnCodes error -result {wrong # args: should be "critcl::util::def configfile define ?value?"}
 
-test critcl-util-def-1.0.5 {util-def, wrong\#args, not enough} -constraints tcl85 -body {
+test critcl-util-def-1.0.5 {util-def, wrong\#args, not enough} -constraints tcl8.5 -body {
     critcl::util::def
 } -returnCodes error -result {wrong # args: should be "critcl::util::def configfile define ?value?"}
 
-test critcl-util-def-1.0.4 {util-def, wrong\#args, not enough} -constraints tcl84 -body {
+test critcl-util-def-1.0.4 {util-def, wrong\#args, not enough} -constraints tcl8.4 -body {
     critcl::util::def
 } -returnCodes error -result {wrong # args: should be "critcl::util::def configfile define ?value?"}
 
-test critcl-util-def-1.1.6 {util-def, wrong\#args, not enough} -constraints tcl86plus -body {
+test critcl-util-def-1.1.6 {util-def, wrong\#args, not enough} -constraints tcl8.6plus -body {
     critcl::util::def C
 } -returnCodes error -result {wrong # args: should be "critcl::util::def configfile define ?value?"}
 
-test critcl-util-def-1.1.5 {util-def, wrong\#args, not enough} -constraints tcl85 -body {
+test critcl-util-def-1.1.5 {util-def, wrong\#args, not enough} -constraints tcl8.5 -body {
     critcl::util::def C
 } -returnCodes error -result {wrong # args: should be "critcl::util::def configfile define ?value?"}
 
-test critcl-util-def-1.1.4 {util-def, wrong\#args, not enough} -constraints tcl84 -body {
+test critcl-util-def-1.1.4 {util-def, wrong\#args, not enough} -constraints tcl8.4 -body {
     critcl::util::def C
 } -returnCodes error -result {wrong # args: should be "critcl::util::def configfile define ?value?"}
 
-test critcl-util-def-1.2.6 {util-def, wrong\#args, too many} -constraints tcl86plus -body {
+test critcl-util-def-1.2.6 {util-def, wrong\#args, too many} -constraints tcl8.6plus -body {
     critcl::util::def C D V X
 } -returnCodes error -result {wrong # args: should be "critcl::util::def configfile define ?value?"}
 
-test critcl-util-def-1.2.5 {util-def, wrong\#args, too many} -constraints tcl85 -body {
+test critcl-util-def-1.2.5 {util-def, wrong\#args, too many} -constraints tcl8.5 -body {
     critcl::util::def C D V X
 } -returnCodes error -result {wrong # args: should be "critcl::util::def configfile define ?value?"}
 
-test critcl-util-def-1.2.4 {util-def, wrong\#args, too many} -constraints tcl84 -body {
+test critcl-util-def-1.2.4 {util-def, wrong\#args, too many} -constraints tcl8.4 -body {
     critcl::util::def C D V X
 } -returnCodes error -result {wrong # args: should be "critcl::util::def configfile define ?value?"}
 
@@ -81,7 +80,7 @@ test critcl-util-def-2.0 {util-def} -setup {
     critcl::cache $here
     unset here
     file delete -force ~/.critcl-tests-[pid]
-} -result [viewFile [localPath test/util/def-2.0]]
+} -result [viewFile [localPath test/assets/def-2.0]]
 
 # -------------------------------------------------------------------------
 testsuiteCleanup

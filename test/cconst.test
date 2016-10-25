@@ -1,5 +1,15 @@
-# critcl::cproc -- Regular tests
-source [file join [file dirname [info script]] support.tcl]
+# critcl::cconst -- Regular tests
+# -------------------------------------------------------------------------
+# Setup
+
+source [file join [file dirname [info script]] support testutilities.tcl]
+
+testsNeedTcl     8.4
+testsNeedTcltest 2
+
+useLocalFile test/support/crit_utils.tcl
+
+# -------------------------------------------------------------------------
 
 do cconst
 

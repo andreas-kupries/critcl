@@ -3,42 +3,40 @@
 # critcl_cache.test
 # -------------------------------------------------------------------------
 
-source [file join \
-            [file dirname [file join [pwd] [info script]]] \
-            testutilities.tcl]
+source [file join [file dirname [info script]] support testutilities.tcl]
 
 testsNeedTcl     8.4
 testsNeedTcltest 2
 
 support {
     useLocal lib/lassign84/lassign.tcl  lassign84
-    useLocal lib/dict84/dict.tcl     dict84
+    useLocal lib/dict84/dict.tcl        dict84
 
     useLocal lib/stubs_container/container.tcl stubs::container
     useLocal lib/stubs_reader/reader.tcl       stubs::reader
     useLocal lib/stubs_genframe/genframe.tcl   stubs::gen
 
     # Helper procedures
-    useLocalFile test/support.tcl
+    useLocalFile test/support/crit_utils.tcl
 }
 testing {
     useLocal lib/critcl/critcl.tcl critcl
-
-    overrides
 }
+
+overrides
 
 # -------------------------------------------------------------------------
 ## cache syntax
 
-test critcl-cache-1.0.6 {cache, wrong\#args, too many} -constraints tcl86plus -body {
+test critcl-cache-1.0.6 {cache, wrong\#args, too many} -constraints tcl8.6plus -body {
     critcl::cache C X
 } -returnCodes error -result {wrong # args: should be "critcl::cache ?dir?"}
 
-test critcl-cache-1.0.5 {cache, wrong\#args, too many} -constraints tcl85 -body {
+test critcl-cache-1.0.5 {cache, wrong\#args, too many} -constraints tcl8.5 -body {
     critcl::cache C X
 } -returnCodes error -result {wrong # args: should be "critcl::cache ?dir?"}
 
-test critcl-cache-1.0.4 {cache, wrong\#args, too many} -constraints tcl84 -body {
+test critcl-cache-1.0.4 {cache, wrong\#args, too many} -constraints tcl8.4 -body {
     critcl::cache C X
 } -returnCodes error -result {wrong # args: should be "critcl::cache ?dir?"}
 

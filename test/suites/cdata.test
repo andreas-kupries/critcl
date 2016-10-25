@@ -20,28 +20,20 @@ if {![info exists suffix]} {
 # -------------------------------------------------------------------------
 # Setup
 
-source [file join \
-            [file dirname [file dirname [file join [pwd] [info script]]]] \
-            testutilities.tcl]
-
-testsNeedTcl     8.4
-testsNeedTcltest 2
-
 support {
     useLocal lib/lassign84/lassign.tcl  lassign84
-    useLocal lib/dict84/dict.tcl     dict84
+    useLocal lib/dict84/dict.tcl        dict84
 
-    useLocal lib/stubs_container/container.tcl stubs::container
-    useLocal lib/stubs_reader/reader.tcl       stubs::reader
-    useLocal lib/stubs_genframe/genframe.tcl   stubs::gen
-
-    useLocalFile test/support.tcl
+    useLocal lib/stubs_container/container.tcl  stubs::container
+    useLocal lib/stubs_reader/reader.tcl        stubs::reader
+    useLocal lib/stubs_genframe/genframe.tcl    stubs::gen
 }
 testing {
-    useLocal lib/critcl/critcl.tcl critcl
-
-    on-traced-on
+    useLocal lib/critcl/critcl.tcl  critcl
 }
+
+overrides
+on-traced-on
 
 # -------------------------------------------------------------------------
 ## cdata syntax
@@ -66,15 +58,15 @@ test critcl-cdata${suffix}-1.2 {cdata, wrong args, too many} -setup {
 
 test critcl-cdata${suffix}-2.0 {cdata, defaults} -body {
     get critcl::cdata alpha beta
-} -result [viewFile [localPath test/support/cdata${suffix}/2.0]]
+} -result [viewFile [localPath test/assets/cdata${suffix}/2.0]]
 
 test critcl-cdata${suffix}-2.1 {cdata, Tcl vs C identifiers} -body {
     get critcl::cdata alpha-x beta
-} -result [viewFile [localPath test/support/cdata${suffix}/2.1]]
+} -result [viewFile [localPath test/assets/cdata${suffix}/2.1]]
 
 test critcl-cdata${suffix}-2.2 {cdata, namespaced name} -body {
     get critcl::cdata the::alpha beta
-} -result [viewFile [localPath test/support/cdata${suffix}/2.2]]
+} -result [viewFile [localPath test/assets/cdata${suffix}/2.2]]
 
 # -------------------------------------------------------------------------
 testsuiteCleanup

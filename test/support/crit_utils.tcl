@@ -4,13 +4,13 @@
 proc do {suite} {
     global suffix
     set suffix ""
-    uplevel 1 [list source [file join [file dirname [info script]] suites ${suite}.tcl]]
+    uplevel 1 [list source [file join [file dirname [info script]] suites ${suite}.test]]
 }
 
 proc trace-do {suite} {
     global suffix
     set suffix "-trace"
-    uplevel 1 [list source [file join [file dirname [info script]] suites ${suite}.tcl]]
+    uplevel 1 [list source [file join [file dirname [info script]] suites ${suite}.test]]
 
     # Stop tracing code injection for the files coming after this one,
     # and reset the marker.
@@ -94,21 +94,5 @@ proc G {p s} {
     }
     return 1
 }
-
-tcltest::testConstraint tcl86plus [package vsatisfies [package present Tcl] 8.6]
-tcltest::testConstraint tcl85plus [package vsatisfies [package present Tcl] 8.5]
-tcltest::testConstraint tcl84plus [package vsatisfies [package present Tcl] 8.4]
-
-tcltest::testConstraint tcl85 \
-    [expr {
-	    [tcltest::testConstraint tcl85plus] &&
-	   ![tcltest::testConstraint tcl86plus]
-    }]
-
-tcltest::testConstraint tcl84 \
-    [expr {
-	    [tcltest::testConstraint tcl84plus] &&
-	   ![tcltest::testConstraint tcl85plus]
-    }]
 
 # -------------------------------------------------------------------------

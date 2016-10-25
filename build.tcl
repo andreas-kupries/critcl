@@ -145,8 +145,22 @@ proc _recipes {} {
 proc Htest {} { return "\n\tRun the testsuite." }
 proc _test {} {
     global argv
-    set    argv {} ;# clear for tcltest to see nothing
-    source [file dirname $::me]/test/all.tcl
+    set    argv {} ;# clear -- tcltest shall see nothing
+    # Run all .test files in the test/ directory.
+    set selfdir [file dirname $::me]
+    foreach testsuite [lsort -dict [glob -directory $selfdir/test *.test]] {
+	puts ""
+	puts "_ _ __ ___ _____ ________ _____________ _____________________ *** [file tail $testsuite] ***"
+	if {[catch {
+	    exec >@ stdout 2>@ stderr [info nameofexecutable] $testsuite
+	}]} {
+	    puts $::errorInfo
+	}
+    }
+
+    puts ""
+    puts "_ _ __ ___ _____ ________ _____________ _____________________"
+    puts ""
     return
 }
 proc Hdoc {} { return "\n\t(Re)Generate the embedded documentation." }
