@@ -65,6 +65,14 @@ proc +x {path} {
     catch { file attributes $path -permissions ugo+x }
     return
 }
+proc critapp {dst} {
+    global tcl_platform
+    set app $dst/critcl
+    if {$tcl_platform(platform) eq "windows"} {
+	append app .tcl
+    }
+    return $app
+}
 proc grep {file pattern} {
     set lines [split [read [set chan [open $file r]]] \n]
     close $chan
@@ -357,12 +365,14 @@ proc _install {args} {
 
 	# Application: critcl
 
-	set    c [open $dsta/critcl w]
+	set theapp [critapp $dsta]
+
+	set    c [open $theapp w]
 	puts  $c "#!/bin/sh\n# -*- tcl -*- \\\nexec [file dirname [file normalize [info nameofexecutable]/___]] \"\$0\" \$\{1+\"\$@\"\}\npackage require critcl::app\ncritcl::app::main \$argv"
 	close $c
-	+x $dsta/critcl
+	+x $theapp
 
-	puts "${prefix}Installed application:  $dsta/critcl"
+	puts "${prefix}Installed application:  $theapp"
 
 	# Special package: critcl_md5c
 	# Local MD5 hash implementation.
@@ -379,7 +389,11 @@ proc _install {args} {
 	set name    critcl_md5c
 	set dst     $dstl/$name$version
 
-	lappend cmd exec >@ stdout 2>@ stderr $dsta/critcl
+	lappend cmd exec >@ stdout 2>@ stderr
+	if {$::tcl_platform(platform) eq "windows"} {
+	    lappend cmd [info nameofexecutable]
+	}
+	lappend cmd $theapp
 	if {$target ne {}} {
 	    lappend cmd -target $target
 	}
@@ -442,9 +456,9 @@ proc _drop {{dst {}}} {
     }
 
     # Application: critcl
-
-    file delete $dsta/critcl
-    puts "Removed application: $dsta/critcl"
+    set theapp [critapp $dsta]
+    file delete $theapp
+    puts "Removed application: $theapp"
     return
 }
 proc Hstarkit {} { return "?destination? ?interpreter?\n\tGenerate a starkit\n\tdestination = path of result file, default 'critcl.kit'\n\tinterpreter = (path) name of tcl shell to use for execution, default 'tclkit'" }
