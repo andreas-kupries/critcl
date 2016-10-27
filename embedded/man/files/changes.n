@@ -303,33 +303,37 @@ New feature\&. Added two introspection commands,
 These enable a user to test if a specific (named) type
 conversion is implemented or not\&.
 .IP [4]
+Added new result type \fBTcl_Obj*0\fR, with alias
+\fBobject0\fR\&. The difference to \fBTcl_Obj*\fR is in
+the reference counting\&.
+.IP [5]
 Bugfix: Fixed problem with the implementation of issue #54 (See
 3\&.1\&.14)\&. Always create the secondary log file\&. Otherwise
 end-of-log handling may break, unconditionally assuming its
 existence\&.
-.IP [5]
+.IP [6]
 Bugfix: Fixed problem with the internal change to the hook
 \fBHandleDeclAfterBuild\fR\&. Corrected the forgotten
 \fBcritcl::cconst\fR\&.
-.IP [6]
+.IP [7]
 Debugging aid: Added comment holding the name of the result
 type when emitting result conversions\&.
-.IP [7]
+.IP [8]
 Bugfix: Fixed issue #60\&. Unbundled the package directories
 containing multiple packages\&. All directories under "\fIlib/\fR"
 now contain exactly one package\&.
-.IP [8]
+.IP [9]
 Bugfix: Fixed issue #62, a few \fBdict exists\fR commands
 operating on a fixed string instead of a variable\&.
-.IP [9]
+.IP [10]
 Bugfix: Fixed issue #56\&. Release builders are reminded to run
 the tests\&.
-.IP [10]
+.IP [11]
 Bugfix: Fixed issue #55\&. For FreeBSD critcl's platform package
 now identifies the Kernel ABI version\&. Initialization of the
 cache directory now also uses \fBplatform::identify\fR for the
 default path, instead of \fBplatform::generic\fR\&.
-.IP [11]
+.IP [12]
 Bugfix: Fixed issue #58\&. Simplified the setup and use of
 md5\&. Critcl now makes use of its own package for md5, using
 itself to built it\&. There is no chicken/egg problem with this

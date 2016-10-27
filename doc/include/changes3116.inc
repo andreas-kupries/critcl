@@ -15,6 +15,10 @@
        These enable a user to test if a specific (named) type
        conversion is implemented or not.
 
+[enum] Added new result type [const Tcl_Obj*0], with alias
+       [const object0]. The difference to [const Tcl_Obj*] is in
+       the reference counting.
+
 [enum] Bugfix: Fixed problem with the implementation of issue #54 (See
        3.1.14). Always create the secondary log file. Otherwise
        end-of-log handling may break, unconditionally assuming its
@@ -26,7 +30,6 @@
 
 [enum] Debugging aid: Added comment holding the name of the result
        type when emitting result conversions.
-
 
 [enum] Bugfix: Fixed issue #60. Unbundled the package directories
        containing multiple packages. All directories under [file lib/]

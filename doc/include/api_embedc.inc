@@ -226,11 +226,24 @@ The function returns a value of type "Tcl_Obj*".
 This value becomes the interpreter result, if not [const 0].
 The Tcl status is TCL_ERROR when a [const 0] is returned, and TCL_OK otherwise.
 
-[para][emph Attention]: The conversion assumes that the value belonged to
-the function, with an associated reference count, and decrements the
-reference count to indicate the loss of ownership by the
+[para][emph Attention]: The conversion assumes that the value belonged
+to the function, with an associated reference count, and decrements
+the reference count to indicate the loss of ownership by the
 function. This means that it is an error to return a value whose
-reference count is zero.
+reference count is zero. The system will crash at some point after due
+to reuse of the freed memory.
+
+[comment {% % %% %%% %%%%% %%%%%%%% %%%%%%%%%%%%%}]
+[def Tcl_Obj*0]
+[def object0]
+The function returns a value of type "Tcl_Obj*".
+This value becomes the interpreter result, if not [const 0].
+The Tcl status is TCL_ERROR when a [const 0] is returned, and TCL_OK otherwise.
+
+[para][emph Attention]: Contrary to [const Tcl_Obj*] above this
+conversion assumes that the returned value has a reference count of
+[const 0] and performs [emph no] decrement. Returning a value whose
+reference count is greater than zero will likely cause a memory leak.
 
 [comment {% % %% %%% %%%%% %%%%%%%% %%%%%%%%%%%%%}]
 [def char*]

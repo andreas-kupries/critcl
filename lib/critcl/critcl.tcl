@@ -5477,6 +5477,14 @@ proc ::critcl::Initialize {} {
     }
     resulttype object = Tcl_Obj*
 
+    critcl::resulttype Tcl_Obj*0 {
+	if (rv == NULL) { return TCL_ERROR; }
+	Tcl_SetObjResult(interp, rv);
+	/* No refcount adjustment */
+	return TCL_OK;
+    } Tcl_Obj*
+    resulttype object0 = Tcl_Obj*0
+
     rename ::critcl::Initialize {}
     return
 }

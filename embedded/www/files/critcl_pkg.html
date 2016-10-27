@@ -473,11 +473,22 @@ and details their semantics:</p>
 <dd><p>The function returns a value of type &quot;Tcl_Obj*&quot;.
 This value becomes the interpreter result, if not <b class="const">0</b>.
 The Tcl status is TCL_ERROR when a <b class="const">0</b> is returned, and TCL_OK otherwise.</p>
-<p><em>Attention</em>: The conversion assumes that the value belonged to
-the function, with an associated reference count, and decrements the
-reference count to indicate the loss of ownership by the
+<p><em>Attention</em>: The conversion assumes that the value belonged
+to the function, with an associated reference count, and decrements
+the reference count to indicate the loss of ownership by the
 function. This means that it is an error to return a value whose
-reference count is zero.</p></dd>
+reference count is zero. The system will crash at some point after due
+to reuse of the freed memory.</p></dd>
+<dt>Tcl_Obj*0</dt>
+<dd></dd>
+<dt>object0</dt>
+<dd><p>The function returns a value of type &quot;Tcl_Obj*&quot;.
+This value becomes the interpreter result, if not <b class="const">0</b>.
+The Tcl status is TCL_ERROR when a <b class="const">0</b> is returned, and TCL_OK otherwise.</p>
+<p><em>Attention</em>: Contrary to <b class="const">Tcl_Obj*</b> above this
+conversion assumes that the returned value has a reference count of
+<b class="const">0</b> and performs <em>no</em> decrement. Returning a value whose
+reference count is greater than zero will likely cause a memory leak.</p></dd>
 <dt>char*</dt>
 <dd></dd>
 <dt>vstring</dt>
@@ -2372,6 +2383,9 @@ document about <i class="term">Using CriTcl</i>.</p>
        <b class="cmd">critcl::has-argtype</b> and <b class="cmd">critcl::has-resulttype</b>.
        These enable a user to test if a specific (named) type
        conversion is implemented or not.</p></li>
+<li><p>Added new result type <b class="const">Tcl_Obj*0</b>, with alias
+       <b class="const">object0</b>. The difference to <b class="const">Tcl_Obj*</b> is in
+       the reference counting.</p></li>
 <li><p>Bugfix: Fixed problem with the implementation of issue #54 (See
        3.1.14). Always create the secondary log file. Otherwise
        end-of-log handling may break, unconditionally assuming its
