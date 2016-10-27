@@ -4175,7 +4175,7 @@ proc ::critcl::CollectEmbeddedSources {file destination libfile ininame placestu
     }
 
     if {[UsingTk $file]} {
-	SetupTkStubs $fd
+	SetupTkStubs $fd $mintcl
     }
 
     # Initialization boilerplate. This ends in the middle of the
@@ -4598,8 +4598,15 @@ proc ::critcl::ResolveColonSpec {lpath name} {
     return -l:$name
 }
 
-proc ::critcl::SetupTkStubs {fd} {
-    puts -nonewline $fd [Cat [Template tkstubs.c]]
+proc ::critcl::SetupTkStubs {fd mintcl} {
+    if {[package vcompare $mintcl 8.6] != 0} {
+	# Not 8.6. tkStubsPtr and tkIntXlibStubsPtr are not const yet.
+	set contents [Cat [Template tkstubs_noconst.c]]
+    } else {
+	set contents [Cat [Template tkstubs.c]]
+    }
+
+    puts -nonewline $fd $contents
     return
 }
 
