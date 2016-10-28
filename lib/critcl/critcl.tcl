@@ -148,6 +148,11 @@ proc ::critcl::Lines {text} {
 proc ::critcl::ccode {text} {
     set file [SkipIgnored [This]]
     HandleDeclAfterBuild
+    CCodeCore $file $text
+    return
+}
+
+proc ::critcl::CCodeCore {file text} {
     set digest [UUID.extend $file .ccode $text]
 
     set block {}
@@ -1032,7 +1037,7 @@ proc ::critcl::cconst {name rtype rvalue} {
     # constant return value, which allows the optimization of the
     # generated code. Only the shim is emitted, with the return value
     # in place. No need for a lower-level C function containing a
-    # funciton body.
+    # function body.
 
     SkipIgnored [set file [This]]
     HandleDeclAfterBuild
@@ -1157,7 +1162,11 @@ proc ::critcl::cproc {name adefs rtype {body "#"} args} {
 proc ::critcl::cinit {text edecls} {
     set file [SkipIgnored [set file [This]]]
     HandleDeclAfterBuild
+    CInitCore $file $text $edecls
+    return
+}
 
+proc ::critcl::CInitCore {file text edecls} {
     set digesta [UUID.extend $file .cinit.f $text]
     set digestb [UUID.extend $file .cinit.e $edecls]
 
@@ -1467,10 +1476,14 @@ proc ::critcl::cflags {args} {
     set file [SkipIgnored [This]]
     HandleDeclAfterBuild
     if {![llength $args]} return
+    CFlagsCore $file $args
+    return
+}
 
-    UUID.extend $file .cflags $args
+proc ::critcl::CFlagsCore {file flags} {
+    UUID.extend $file .cflags $flags
     dict update v::code($file) config c {
-	foreach flag $args {
+	foreach flag $flags {
 	    dict lappend c cflags $flag
 	}
     }
@@ -1999,10 +2012,10 @@ proc ::critcl::API_setup_import {file} {
 	    #include <$cname/${cname}Decls.h>
 	}]
 	append prefix \n$import
-	ccode $import
+	CCodeCore $file $import
 
 	# TODO :: DOCUMENT environment of the cinit code.
-	cinit [subst -nocommands {
+	CInitCore $file [subst -nocommands {
 	    if (!${capname}_InitStubs (ip, "$iversion", 0)) {
 		return TCL_ERROR;
 	    }
@@ -2043,7 +2056,7 @@ proc ::critcl::API_setup_export {file} {
 	#include <$cname/${cname}Decls.h>
     }]
     append prefix \n$import
-    ccode $import
+    CCodeCore $file $import
 
     # Generate the necessary header files.
 
@@ -2133,8 +2146,8 @@ proc ::critcl::API_setup_export {file} {
 	dict lappend r apiheader [file join [cache] $cname]
     }
 
-    cinit $sinitrun $sinitstatic
-    cflags -DBUILD_$cname
+    CInitCore  $file $sinitrun $sinitstatic
+    CFlagsCore $file [list -DBUILD_$cname]
 
     return $prefix
 }
