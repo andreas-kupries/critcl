@@ -961,7 +961,7 @@ proc ::critcl::argtype {name conversion {ctype {}} {ctypeb {}}} {
     return
 }
 
-proc ::critcl::argtypesupport {name code} {
+proc ::critcl::argtypesupport {name code {guard {}}} {
     variable v::aconv
     variable v::acsup
     if {![info exists aconv($name)]} {
@@ -970,13 +970,13 @@ proc ::critcl::argtypesupport {name code} {
     if {[info exists acsup($name)]} {
 	return -code error "Illegal duplicate support of '$name'."
     }
-
-    set cname $name ; # Handle non-identifier chars!
-
-    lappend lines "#ifndef CRITCL_$cname"
-    lappend lines "#define CRITCL_$cname"
+    if {$guard eq {}} {
+	set guard $name ; # Handle non-identifier chars!
+    }
+    lappend lines "#ifndef CRITCL_$guard"
+    lappend lines "#define CRITCL_$guard"
     lappend lines $code
-    lappend lines "#endif /* CRITCL_$cname _________ */"
+    lappend lines "#endif /* CRITCL_$guard _________ */"
 
     set acsup($name) [join $lines \n]\n
     return
