@@ -133,16 +133,21 @@ of argument type [arg origname], which has to be defined already. If
 this is not the case an error is thrown.
 
 [comment ---------------------------------------------------------------------]
-[call [cmd ::critcl::argtypesupport] [arg name] [arg code]]
+[call [cmd ::critcl::argtypesupport] [arg name] [arg code] [opt [arg guard]]]
 
 This command defines a C code fragment for the already defined
 argument type [arg name] which will be inserted before all functions
 using that type. Its purpose is the definition of any supporting C
 types needed by the argument type.
 
-If the type is used by many functions the system ensure that only the
+If the type is used by many functions the system ensures that only the
 first of the multiple insertions of the code fragment is active, and
 the others disabled.
+
+The guard identifier is normally derived from [arg name], but can also
+be set explicitly, via [arg guard]. This latter allows different
+custom types to share a common support structure without having to
+perform their own guarding.
 
 [comment ---------------------------------------------------------------------]
 [call [cmd ::critcl::argtyperelease] [arg name] [arg code]]

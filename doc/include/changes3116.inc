@@ -19,6 +19,10 @@
        [const object0]. The difference to [const Tcl_Obj*] is in
        the reference counting.
 
+[enum] Extended the command [cmd critcl::argtypesupport] with new
+       optional argument through which to explicitly specify the
+       identifier for guarding against multiple definitions.
+
 [enum] Bugfix: Fixed problem with the implementation of issue #54 (See
        3.1.14). Always create the secondary log file. Otherwise
        end-of-log handling may break, unconditionally assuming its

@@ -539,6 +539,9 @@ targets. The result of such a merge would look like:</p>
 <li><p>Added new result type <b class="const">Tcl_Obj*0</b>, with alias
        <b class="const">object0</b>. The difference to <b class="const">Tcl_Obj*</b> is in
        the reference counting.</p></li>
+<li><p>Extended the command <b class="cmd">critcl::argtypesupport</b> with new
+       optional argument through which to explicitly specify the
+       identifier for guarding against multiple definitions.</p></li>
 <li><p>Bugfix: Fixed problem with the implementation of issue #54 (See
        3.1.14). Always create the secondary log file. Otherwise
        end-of-log handling may break, unconditionally assuming its
