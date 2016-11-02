@@ -337,11 +337,9 @@ slow\&. Converting this to C we get:
 .CS
 
 
-    package require critcl
-
     critcl::cproc math {double x double y double z} double {
         double up   = rand () * sin (x);
-	double down = pow(y, log (z));
+        double down = pow(y, log (z));
         return up/down;
     }
 
@@ -359,45 +357,268 @@ We now also have to declare the type of the result, here
 The reference manpage lists all the legal C types supported as
 arguments and results\&.
 .PP
+.SS "CUSTOM TYPES, INTRODUCTION"
+When writing bindings to external libraries \fBcritcl::cproc\fR is
+usually the most convenient way of writing the lower layers\&. This is
+however hampered by the fact that critcl on its own only supports a
+few standard (arguably the most import) standard types, whereas the
+functions we wish to bind most certainly will use much more, specific
+to the library's function\&.
+.PP
+The critcl commands \fBargtype\fR, \fBresulttype\fR and their
+adjuncts are provided to help here, by allowing a developer to extend
+critcl's type system with custom conversions\&.
+.PP
+This and the XXX following sections will demonstrate this, from
+trivial to complex\&.
+.PP
+The most trivial use is to create types which are aliases of
+existing types, standard or other\&. As an alias it simply copies and
+uses the conversion code from the referenced types\&.
+.PP
+Our example is pulled from an incomplete project of mine, a
+binding to \fIJeffrey Kegler\fR's \fIlibmarpa\fR library managing
+Earley parsers\&. Several custom types simply reflect the typedef's done
+by the library, to make the \fBcproc\fRs as self-documenting as the
+underlying library functions themselves\&.
+.CS
+
+
+    critcl::argtype Marpa_Symbol_ID     = int
+    critcl::argtype Marpa_Rule_ID       = int
+    critcl::argtype Marpa_Rule_Int      = int
+    critcl::argtype Marpa_Rank          = int
+    critcl::argtype Marpa_Earleme       = int
+    critcl::argtype Marpa_Earley_Set_ID = int
+
+    \&.\&.\&.
+
+    method sym-rank: proc {
+        Marpa_Symbol_ID sym
+        Marpa_Rank      rank
+    } Marpa_Rank {
+        return marpa_g_symbol_rank_set (instance->grammar, sym, rank);
+    }
+
+    \&.\&.\&.
+
+.CE
+.SS "CUSTOM TYPES, SEMI-TRIVIAL"
+A more involved custom argument type would be to map from Tcl stringas
+to some internal representation, like an integer code\&.
+.PP
+The first example is taken from the \fBtclyaml\fR package,
+a binding to the \fBlibyaml\fR library\&. In a few places we have to
+map readable names for block styles, scalar styles, etc\&. to the
+internal enumeration\&.
+.CS
+
+
+    critcl::argtype yaml_sequence_style_t {
+        if (!encode_sequence_style (interp, @@, &@A)) return TCL_ERROR;
+    }
+
+    \&.\&.\&.
+
+    critcl::ccode {
+        static const char* ty_block_style_names [] = {
+            "any", "block", "flow", NULL
+        };
+
+        static int
+        encode_sequence_style (Tcl_Interp* interp, Tcl_Obj* style,
+                               yaml_sequence_style_t* estyle)
+        {
+            int value;
+            if (Tcl_GetIndexFromObj (interp, style, ty_block_style_names,
+                                     "sequence style", 0, &value) != TCL_OK) {
+                return 0;
+            }
+            *estyle = value;
+            return 1;
+        }
+    }
+
+    \&.\&.\&.
+
+    method sequence_start proc {
+        pstring anchor
+        pstring tag
+        int implicit
+        yaml_sequence_style_t style
+    } ok {
+        /* Syntax: <instance> seq_start <anchor> <tag> <implicit> <style> */
+        \&.\&.\&.
+    }
+
+    \&.\&.\&.
+
+.CE
+It should be noted that this code precedes the advent of the
+supporting generator package \fBcritcl:emap\fR\&. With it available
+we can simlply define the mapping via
+.CS
+
+
+    critcl::emap::def yaml_sequence_style_t {
+        any   0
+        block 1
+        flow  2
+    }
+
+.CE
+and the generator will not only provide the conversions, but also
+define the argument and result types needed for their use by
+\fBcproc\fR\&.
+Another example of such a semi-trivial argument type can be found in
+the \fBCRIMP\fR package, which defines a \fBTcl_ObjType\fR for
+\fIimage\fR values\&. This not only provides a basic argument type for
+any image, but also types which check that the image has a specific
+format\&. Here we see for the first time non-integer arguments, and the
+need to define the C types used for variables holding the C level
+value, and the type of function parameters (Due to C promotion rules
+we may need different types)\&.
+.CS
+
+
+    critcl::argtype image {
+        if (crimp_get_image_from_obj (interp, @@, &@A) != TCL_OK) {
+            return TCL_ERROR;
+        }
+    } crimp_image* crimp_image*
+
+    \&.\&.\&.
+
+        set map [list <<type>> $type]
+        critcl::argtype image_$type [string map $map {
+            if (crimp_get_image_from_obj (interp, @@, &@A) != TCL_OK) {
+                return TCL_ERROR;
+            }
+            if (@A->itype != crimp_imagetype_find ("crimp::image::<<type>>")) {
+                Tcl_SetObjResult (interp,
+                                  Tcl_NewStringObj ("expected image type <<type>>",
+                                                    -1));
+                return TCL_ERROR;
+            }
+        }] crimp_image* crimp_image*
+
+    \&.\&.\&.
+
+.CE
+.SS "CUSTOM TYPES, SUPPORT STRUCTURES"
+The adjunct command \fBcritcl::argtypesupport\fR is for when the
+conversion needs additional definitions, for example a helper
+structure\&.
+.PP
+An example of this can be found among the standard types of
+critcl itself, the \fIpstring\fR type\&. This type provides the C
+function with not only the string pointer, but also the string length,
+and the \fITcl_Obj*\fR this data came from\&. As \fBcproc\fR's calling
+conventions allow us only one argument for the data of the parameter a
+structure is needed to convey these three pieces of information\&.
+.PP
+Thus the argument type is defined as
+.CS
+
+
+    argtype pstring {
+        @A\&.s = Tcl_GetStringFromObj(@@, &(@A\&.len));
+        @A\&.o = @@;
+    } critcl_pstring critcl_pstring
+
+    argtypesupport pstring {
+        typedef struct critcl_pstring {
+            Tcl_Obj* o;
+            char*    s;
+            int      len;
+        } critcl_pstring;
+    }
+
+.CE
+.PP
+In the case of such a structure being large we may wish to
+allocate it on the heap instead of having it taking space on the
+stack\&. If we do that we need another adjunct command,
+\fBcritcl::argtyperelease\fR\&. This command specifies the code required
+to release dynamically allocated resources when the worker function
+returned, before the shim returns to the caller in Tcl\&.
+To keep things simple our example is synthetic, a modification of
+\fBpstring\fR above, to demonstrate the technique\&. An actual, but
+more complex example is the code to support the variadic \fIargs\fR
+argument of \fBcproc\fR\&.
+.CS
+
+
+    argtype pstring {
+        @A = (critcl_pstring*) ckalloc(sizeof(critcl_pstring));
+        @A->s = Tcl_GetStringFromObj(@@, &(@A->len));
+        @A->o = @@;
+    } critcl_pstring* critcl_pstring*
+
+    argtypesupport pstring {
+        typedef struct critcl_pstring {
+            Tcl_Obj* o;
+            char*    s;
+            int      len;
+        } critcl_pstring;
+    }
+
+    argtyperelease pstring {
+        ckfree ((char*)) @A);
+    }
+
+.CE
+Note, the above example shows only the most simple case of an
+allocated argument, with a conversion that cannot fail (namely, string
+retrieval)\&. If the conversion can fail then either allocation has to
+be defered to happen only on successful conversion, or the conversion
+code has to release the allocated memory itself in the failure path,
+because it will never reach the code defined via
+\fBcritcl::argtyperelease\fR in that case\&.
 .SS "HANDLING A VARIABLE NUMBER OF ARGUMENTS"
 In \fBA Simple Procedure\fR we demonstrated how easy a
 translation to C can be\&. Is it still as easy when we introduce
 something moderately complex like handling a variable number of
 arguments ? A feature which is needed to handle commands with options
-and optional arguments ? Unfortunately not\&.
-We can use \fBcritcl::cproc\fR only if the number of arguments is
-known beforehand, i\&.e\&. at the time of declaration\&. This of course also
-means that they do not support default arguments either\&.
+and optional arguments ?
 .PP
-Thus, to handle something like the example below
+Well, starting with version 3\&.1\&.16 \fBcritcl::cproc\fR does
+have full support for optional arguments, \fIargs\fR-style variadics,
+and default values, extending its range to everything covered by the
+builtin \fBproc\fR\&. The only thing not truly supported are options
+(i\&.e\&. flag arguments) of any kind\&.
+.PP
+For the moment, and the example, let us pretend that we can use
+\fBcritcl::cproc\fR only if the number of arguments is fully known
+beforehand, i\&.e\&. at the time of declaration\&.
+Then we have to use \fBcritcl::ccommand\fR to handle the translation
+of the procedure shown below:
 .CS
 
 
     proc math {args} {
         set sum 0
         foreach y $args { set sum [expr {$sum + $y}] }
-	return $sum
+        return $sum
     }
 
 .CE
-we have to use \fBcritcl::ccommand\fR instead\&.
 .PP
 Its advantage: Access to the low-level C arguments representing
-the Tcl arguments of the command\&.
-That allows things like variable number of arguments, optional
-arguments, options, etc\&.
+the Tcl arguments of the command\&. Full control over argument
+conversion, argument validation, etc\&.
 .PP
 Its disadvantage: Access to the low-level C arguments
-representing the Tcl arguments of the command\&.
-Where \fBcritcl::cproc\fR handles the task of converting from Tcl to C
+representing the Tcl arguments of the command\&. Assuming the burden of
+having to write argument conversion, argument validation, etc\&. Where
+\fBcritcl::cproc\fR handles the task of converting from Tcl to C
 values (for arguments) and back (for the result), with
-\fBcritcl::command\fRs we have to do this on our own\&.
+\fBcritcl::command\fR it is the developer who has to write all this
+code\&.
 .PP
-Here is the translation of the example:
+Under our restriction the translation of the example is:
 .CS
 
-
-    package require critcl
 
     critcl::ccommand math {cd ip oc ov} {
         double sum = 0;
@@ -406,10 +627,10 @@ Here is the translation of the example:
         oc --;
         while (oc) {
             if (Tcl_GetDoubleFromObj (ip, ov[oc], &y) != TCL_OK) {
-	        return TCL_ERROR;
+                return TCL_ERROR;
             }
             sum += y;
-	    oc --;
+            oc --;
         }
 
         Tcl_SetObjResult (ip, Tcl_NewDoubleObj (sum));
@@ -450,6 +671,26 @@ objc
 objv
 .RE
 .PP
+.PP
+Now, letting go of our pretenses regarding the limitations of
+\fBcritcl::cproc\fR, due to the support it does have for
+\fIargs\fR-style variadics (since version 3\&.1\&.16) we can write a much
+simpler translation:
+.CS
+
+
+    critcl::cproc math {double args} double {
+        double sum = 0;
+
+        args\&.c --;
+        while (args\&.c) {
+            sum += args\&.v[args\&.c];
+            args\&.c --;
+        }
+        return sum;
+    }
+
+.CE
 .SS "DATA AS A TCL COMMAND"
 Here we assume that we have a Tcl procedure which returns a fixed
 string\&. In the final product we are going to C to hide this string
@@ -514,6 +755,34 @@ As our example now an excerpt taken from real code, the top of the
 We see here the beginning of the C code defining a custom
 \fITcl_ObjType\fR holding the data of a SHA1 context used during the
 incremental calculation of sha1 hashes\&.
+.SS "CONSTANT VALUES"
+While one might believe that there is no need for commands which
+returns constant values that is not true\&. Commands reporting on
+compile-time configuration, like version numbers, available features,
+etc\&. are at least one use case for such commands\&.
+.PP
+The reason for creating critcl commands to support them ?
+Convenience to the user, yes, but further than that, the ability to
+optimize the internals, i\&.e\&. the generated code\&.
+.PP
+A \fBcproc\fR would be easy to write, but incurs overhead due
+to a superfluous work function\&. A \fBccommand\fR has no overhead,
+except that of the user having to write the argument checking and
+result conversion\&.
+.PP
+Using \fBcritcl::cconst\fR is both convenient and without code
+overhead\&.
+Our example is a function found in package \fBtcl-linenoise\fR,
+that is, if \fBcconst\fR had existed at the time of writing\&. It
+returns a configuration value reporting to the policy layer if an
+extended mode for hidden input is available from the bound
+\fBlinenoise\fR, or not\&.
+.CS
+
+
+    critcl::cconst linenoise::hidden_extended boolean 1
+
+.CE
 .SS "LIFTING CONSTANTS"
 When writing a critcl-based package to make a third-party library
 available to scripts we do not only have to make the relevant
