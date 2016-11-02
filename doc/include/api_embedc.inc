@@ -339,16 +339,7 @@ a 2-element list containing the actual name, and the default value.
 For example, in the declaration [example { int {x 1} }] [arg x] is an
 optional argument of type [type int] and default value [const 1].
 
-[para] One limitation, and one caveat!
-
-[para] First, the set of optional arguments must be a single
-contiguous segment in the argument list. This limits them to a series
-of optional arguments at either the beginning, end, or middle of the
-list. Multiple segments separated by non-optional arguments are
-rejected, as the system cannot determine in these cases which
-arguments are present and what to set where.
-
-[para] Second, the default value is assigned unconditionally. If a
+[para] A caveat! The default value is assigned unconditionally. If a
 custom argument type uses more complex validation, and the default may
 be invalid according to it, then the relevant checks have to be done
 in the procedure body. The argument conversion cannot do it as it is
@@ -479,9 +470,6 @@ good use cases are shown.
 [list_end]
 [comment {% % %% %%% %%%%% %%%%%%%% %%%%%%%%%%%%% %%%%%%%%%%%%%%%%%%%%%}]
 
-[para] [emph Note] that optional arguments are not possible. This
-restriction is inherited from C.
-
 [para] Further note that the type of the first argument is allowed to
 be [const Tcl_Interp*]. In that case the argument in question is
 [emph not] counted as an argument of the new Tcl command.
@@ -490,7 +478,7 @@ be [const Tcl_Interp*]. In that case the argument in question is
 [call [cmd ::critcl::cproc] [arg name] [arg arguments] [arg resulttype]]
 
 This variant of [cmd critcl::cproc] assumes that the functionality to
-connect is implemented by the C function [arg name] which has the
+connect to is implemented by the C function [arg name] which has the
 signature described by the [arg arguments] and [arg resulttype].
 
 [para] It creates only the shim performing the conversions required by

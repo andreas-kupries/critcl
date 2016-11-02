@@ -845,16 +845,7 @@ For example, in the declaration
 .IP \fIx\fR is an
 optional argument of type \fBint\fR and default value \fB1\fR\&.
 .sp
-One limitation, and one caveat!
-.sp
-First, the set of optional arguments must be a single
-contiguous segment in the argument list\&. This limits them to a series
-of optional arguments at either the beginning, end, or middle of the
-list\&. Multiple segments separated by non-optional arguments are
-rejected, as the system cannot determine in these cases which
-arguments are present and what to set where\&.
-.sp
-Second, the default value is assigned unconditionally\&. If a
+A caveat! The default value is assigned unconditionally\&. If a
 custom argument type uses more complex validation, and the default may
 be invalid according to it, then the relevant checks have to be done
 in the procedure body\&. The argument conversion cannot do it as it is
@@ -969,16 +960,13 @@ implementation in release 3\&.3\&.  Their deprecation can be undone if
 good use cases are shown\&.
 .RE
 .sp
-\fINote\fR that optional arguments are not possible\&. This
-restriction is inherited from C\&.
-.sp
 Further note that the type of the first argument is allowed to
 be \fBTcl_Interp*\fR\&. In that case the argument in question is
 \fInot\fR counted as an argument of the new Tcl command\&.
 .TP
 \fB::critcl::cproc\fR \fIname\fR \fIarguments\fR \fIresulttype\fR
 This variant of \fBcritcl::cproc\fR assumes that the functionality to
-connect is implemented by the C function \fIname\fR which has the
+connect to is implemented by the C function \fIname\fR which has the
 signature described by the \fIarguments\fR and \fIresulttype\fR\&.
 .sp
 It creates only the shim performing the conversions required by

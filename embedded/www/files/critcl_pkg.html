@@ -559,14 +559,7 @@ For example, in the declaration</p>
 <pre class="example"> int {x 1} </pre>
 <p><i class="arg">x</i> is an
 optional argument of type <b class="type">int</b> and default value <b class="const">1</b>.</p>
-<p>One limitation, and one caveat!</p>
-<p>First, the set of optional arguments must be a single
-contiguous segment in the argument list. This limits them to a series
-of optional arguments at either the beginning, end, or middle of the
-list. Multiple segments separated by non-optional arguments are
-rejected, as the system cannot determine in these cases which
-arguments are present and what to set where.</p>
-<p>Second, the default value is assigned unconditionally. If a
+<p>A caveat! The default value is assigned unconditionally. If a
 custom argument type uses more complex validation, and the default may
 be invalid according to it, then the relevant checks have to be done
 in the procedure body. The argument conversion cannot do it as it is
@@ -661,14 +654,12 @@ It is planned to remove their documentation in release 3.2, and their
 implementation in release 3.3.  Their deprecation can be undone if
 good use cases are shown.</p></dd>
 </dl>
-<p><em>Note</em> that optional arguments are not possible. This
-restriction is inherited from C.</p>
 <p>Further note that the type of the first argument is allowed to
 be <b class="const">Tcl_Interp*</b>. In that case the argument in question is
 <em>not</em> counted as an argument of the new Tcl command.</p></dd>
 <dt><a name="8"><b class="cmd">::critcl::cproc</b> <i class="arg">name</i> <i class="arg">arguments</i> <i class="arg">resulttype</i></a></dt>
 <dd><p>This variant of <b class="cmd">critcl::cproc</b> assumes that the functionality to
-connect is implemented by the C function <i class="arg">name</i> which has the
+connect to is implemented by the C function <i class="arg">name</i> which has the
 signature described by the <i class="arg">arguments</i> and <i class="arg">resulttype</i>.</p>
 <p>It creates only the shim performing the conversions required by
 arguments and result.</p></dd>
