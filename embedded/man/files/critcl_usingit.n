@@ -369,8 +369,8 @@ The critcl commands \fBargtype\fR, \fBresulttype\fR and their
 adjuncts are provided to help here, by allowing a developer to extend
 critcl's type system with custom conversions\&.
 .PP
-This and the XXX following sections will demonstrate this, from
-trivial to complex\&.
+This and the three following sections will demonstrate this,
+from trivial to complex\&.
 .PP
 The most trivial use is to create types which are aliases of
 existing types, standard or other\&. As an alias it simply copies and
@@ -521,12 +521,12 @@ Thus the argument type is defined as
 .CS
 
 
-    argtype pstring {
+    critcl::argtype pstring {
         @A\&.s = Tcl_GetStringFromObj(@@, &(@A\&.len));
         @A\&.o = @@;
     } critcl_pstring critcl_pstring
 
-    argtypesupport pstring {
+    critcl::argtypesupport pstring {
         typedef struct critcl_pstring {
             Tcl_Obj* o;
             char*    s;
@@ -549,13 +549,13 @@ argument of \fBcproc\fR\&.
 .CS
 
 
-    argtype pstring {
+    critcl::argtype pstring {
         @A = (critcl_pstring*) ckalloc(sizeof(critcl_pstring));
         @A->s = Tcl_GetStringFromObj(@@, &(@A->len));
         @A->o = @@;
     } critcl_pstring* critcl_pstring*
 
-    argtypesupport pstring {
+    critcl::argtypesupport pstring {
         typedef struct critcl_pstring {
             Tcl_Obj* o;
             char*    s;
@@ -563,7 +563,7 @@ argument of \fBcproc\fR\&.
         } critcl_pstring;
     }
 
-    argtyperelease pstring {
+    critcl::argtyperelease pstring {
         ckfree ((char*)) @A);
     }
 
@@ -575,6 +575,66 @@ be defered to happen only on successful conversion, or the conversion
 code has to release the allocated memory itself in the failure path,
 because it will never reach the code defined via
 \fBcritcl::argtyperelease\fR in that case\&.
+.SS "CUSTOM TYPES, RESULTS"
+All of the previous sections dealt with argument conversions,
+i\&.e\&. going from Tcl into C\&.
+Custom result types are for the reverse direction, from C to Tcl\&.
+This is usually easier, as most of the time errors should not be
+possible\&. Supporting structures, or allocating them on the heap are
+not really required and therefore not supported\&.
+.PP
+The example of a result type shown below was pulled from
+\fBKineTcl\fR\&. It is a variant of the builtin result type
+\fBTcl_Obj*\fR, aka \fBobject\fR\&. The builtin conversion assumes
+that the object returned by the function has a refcount of 1 (or
+higher), with the function having held the reference, and releases
+that reference after placing the value into the interp result\&. The
+conversion below on the other hand assumes that the value has a
+refcount of 0 and thus that decrementing it is forbidden, lest it be
+released much to early, and crashing the system\&.
+.CS
+
+
+    critcl::resulttype KTcl_Obj* {
+        if (rv == NULL) { return TCL_ERROR; }
+        Tcl_SetObjResult(interp, rv);
+        /* No refcount adjustment */
+        return TCL_OK;
+    } Tcl_Obj*
+
+.CE
+This type of definition is also found in \fBMarpa\fR and recent
+hacking hacking on \fBCRIMP\fR introduced it there as well\&. Which
+is why this definition became a builtin type starting with version
+3\&.1\&.16, under the names \fBTcl_Obj*0\fR and \fBobject0\fR\&.
+.PP
+Going back to errors and their handling, of course, if a
+function we are wrapping signals them in-band, then the conversion of
+such results has to deal with that\&. This happens for example in
+\fBKineTcl\fR, where we find
+.CS
+
+
+    critcl::resulttype XnStatus {
+        if (rv != XN_STATUS_OK) {
+            Tcl_AppendResult (interp, xnGetStatusString (rv), NULL);
+            return TCL_ERROR;
+        }
+        return TCL_OK;
+    }
+
+    critcl::resulttype XnDepthPixel {
+        if (rv == ((XnDepthPixel) -1)) {
+            Tcl_AppendResult (interp,
+                              "Inheritance error: Not a depth generator",
+                              NULL);
+            return TCL_ERROR;
+        }
+        Tcl_SetObjResult (interp, Tcl_NewIntObj (rv));
+        return TCL_OK;
+    }
+
+.CE
 .SS "HANDLING A VARIABLE NUMBER OF ARGUMENTS"
 In \fBA Simple Procedure\fR we demonstrated how easy a
 translation to C can be\&. Is it still as easy when we introduce

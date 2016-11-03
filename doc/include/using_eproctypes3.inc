@@ -14,12 +14,12 @@ structure is needed to convey these three pieces of information.
 [para] Thus the argument type is defined as
 
 [example {
-    argtype pstring {
+    critcl::argtype pstring {
         @A.s = Tcl_GetStringFromObj(@@, &(@A.len));
         @A.o = @@;
     } critcl_pstring critcl_pstring
 
-    argtypesupport pstring {
+    critcl::argtypesupport pstring {
         typedef struct critcl_pstring {
             Tcl_Obj* o;
             char*    s;
@@ -41,13 +41,13 @@ more complex example is the code to support the variadic [arg args]
 argument of [cmd cproc].
 
 [example {
-    argtype pstring {
+    critcl::argtype pstring {
         @A = (critcl_pstring*) ckalloc(sizeof(critcl_pstring));
         @A->s = Tcl_GetStringFromObj(@@, &(@A->len));
         @A->o = @@;
     } critcl_pstring* critcl_pstring*
 
-    argtypesupport pstring {
+    critcl::argtypesupport pstring {
         typedef struct critcl_pstring {
             Tcl_Obj* o;
             char*    s;
@@ -55,7 +55,7 @@ argument of [cmd cproc].
         } critcl_pstring;
     }
 
-    argtyperelease pstring {
+    critcl::argtyperelease pstring {
         ckfree ((char*)) @A);
     }
 }]

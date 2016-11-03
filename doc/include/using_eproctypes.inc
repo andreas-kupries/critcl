@@ -11,8 +11,8 @@ to the library's function.
 adjuncts are provided to help here, by allowing a developer to extend
 critcl's type system with custom conversions.
 
-[para] This and the XXX following sections will demonstrate this, from
-trivial to complex.
+[para] This and the three following sections will demonstrate this,
+from trivial to complex.
 
 [para] The most trivial use is to create types which are aliases of
 existing types, standard or other. As an alias it simply copies and
