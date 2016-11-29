@@ -1352,10 +1352,11 @@ proc ::critcl::Dpop {} {
     return $slot
 }
 
-proc ::critcl::include {path} {
-    # Include a header or other C file into the current code.
-    msg -nonewline " (include <$path>)"
-    ccode "#include <$path>"
+proc ::critcl::include {path args} {
+    # Include headers or other C files into the current code.
+    set args [linsert $args 0 $path]
+    msg -nonewline " (include <[join $args ">) (include <"]>)"
+    ccode "#include <[join $args ">\n#include <"]>"
 }
 
 proc ::critcl::make {path contents} {
