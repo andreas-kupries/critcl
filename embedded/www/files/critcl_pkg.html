@@ -935,16 +935,17 @@ non-existing files cause the command to throw an error.</p>
 absolute path are interpreted relative to the directory containing the
 current &quot;<b class="file">.critcl</b>&quot; file.</p>
 <p><em>Note</em> further that this declaration does not cause the
-specified header files to be <b class="const">#include</b>'d automatically. This
-still has to be done via <b class="cmd">critcl::ccode</b> where necessary.
+specified header files to be automatically
+<b class="const">#include</b>'d. Inclusion still has to be done via either
+<b class="cmd">critcl::include</b> or <b class="cmd">critcl::ccode</b>, where necessary.
 It does simply ensure that the compiler will be able to find these
 files when invoked, by providing the necessary command line flags
-extending the compiler's search paths.</p>
+to extend the compiler's search paths.</p>
 <p>Multiple invocations of this command accumulate their
 information.</p></dd>
 <dt><a name="23"><b class="cmd">::critcl::csources</b> <span class="opt">?<i class="arg">pattern</i>...?</span></a></dt>
 <dd><p>This command provides the compile step with additional C source files.</p>
-<p>All arguments are intepreted as glob patterns. Patterns
+<p>All arguments are interpreted as glob patterns. Patterns
 matching no file or non-existing files cause the command to throw an
 error. The files matching the patterns are made available to the
 compiler when it is invoked for the current &quot;<b class="file">.critcl</b>&quot; file. This

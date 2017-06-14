@@ -289,7 +289,7 @@ namespace eval Wikit::Format {
 				}
 				EVAL {
 					if {![interp exists eval_interp]} {
-						# create an intepreter to run eval commands
+						# create an interpreter to run eval commands
 						# when running via web/ GGI this should be a safe interp
 						interp create eval_interp
 						# create the wikidir variable as a convenience
