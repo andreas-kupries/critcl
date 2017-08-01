@@ -461,6 +461,24 @@ overall picture shown by the large examples mentioned in the previous
 paragraph\&.
 .PP
 The latest changes are found at the top\&.
+.SH "CHANGES FOR VERSION 3\&.1\&.17"
+.IP [1]
+Bugfix: Fixed issue #75\&.
+Extended \fBcritcl::include\fR to now take multiple paths\&.
+.IP [2]
+Added new compatibility package \fBlmap84\fR\&.
+.IP [3]
+Fixed typos in various documentation files\&.
+.IP [4]
+Fixed bug introduced by commit 86f415dd30 (3\&.1\&.16 release)\&. The
+separation of \fBcritcl::ccode\fR into user and work layers
+means that location retrieval has to go one more level up to
+find the user location\&.
+.IP [5]
+New supporting package \fBcritcl::cutil\fR\&. Provides common
+C level facilities useful to packages (assertions, tracing,
+memory allocation shorthands)\&.
+.PP
 .SH "CHANGES FOR VERSION 3\&.1\&.16"
 .IP [1]
 New feature\&. Extended \fBcritcl::cproc\fR's argument handling
