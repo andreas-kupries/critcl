@@ -36,6 +36,7 @@ if {[catch {
 # Ensure forward compatibility of commands defined in 8.5+.
 package require lassign84
 package require dict84
+package require lmap84
 
 # # ## ### ##### ######## ############# #####################
 ## Ensure that we have maximal 'info frame' data, if supported

@@ -26,6 +26,7 @@ set packages {
     {critcl-util      util.tcl}
     {dict84           dict.tcl}
     {lassign84        lassign.tcl}
+    {lmap84           lmap.tcl}
     {stubs_container  container.tcl}
     {stubs_gen_decl   gen_decl.tcl}
     {stubs_gen_header gen_header.tcl}
