@@ -15,7 +15,8 @@ package require Tcl    8.4   ; # Min supported version.
 if {[catch {
     package require critcl 3
 }]} {
-    package require critcl 2.1 ; # Only this and higher has the enhanced check, and checklink.
+    package require critcl 2.1
+    # Only this and higher has the enhanced check, and checklink.
 }
 
 namespace eval ::critcl::cutil {}
@@ -32,30 +33,25 @@ proc critcl::cutil::alloc {} {
     return
 }
 
-proc critcl::cutil::assertions {} {
+proc critcl::cutil::assertions {{enable 0}} {
     variable selfdir
     critcl::cheaders -I$selfdir/asserts
     critcl::include critcl_assert.h
+    if {!$enable} return
+    critcl::cflags -DCRITCL_ASSERT
     return
 }
 
-proc critcl::cutil::tracer {} {
+proc critcl::cutil::tracer {{enable 0}} {
     variable selfdir
     alloc ;# Tracer uses the allocation utilities in its implementation
     critcl::cheaders -I$selfdir/trace
     critcl::include  critcl_trace.h
     critcl::csources $selfdir/trace/trace.c
+    if {!$enable} return
+    critcl::cflags -DCRITCL_TRACER
     return
 }
-
-if 0 {proc critcl::cutil::tracer {} {
-    variable selfdir
-    alloc ;# Tracer uses the allocation utilities in its implementation
-    critcl::cheaders -I$selfdir/trace
-    critcl::include critcl_trace.h
-    critcl::csources $selfdir/trace/trace.c
-    return
-}}
 
 # # ## ### ##### ######## ############# #####################
 ## State

@@ -1668,6 +1668,13 @@ not\&. The default is \fBoff\fR\&.
 \fBlines\fR bool
 This flag tells the package whether to embed #line directives into the
 generated C code (when \fBtrue\fR) or not\&. By default this is \fBon\fR\&.
+.TP
+\fBtrace\fR bool
+Inactive by default\&.
+When active code tracing entry and exit of \fBcritcl::cproc\fR-based
+is inserted into the C code\&.
+Note that this is subordinate to the tracing facility being available
+and active in general (See package \fBcritcl::cutil\fR)\&.
 .sp
 Side note: This facility requires the use of a tclsh supporting
 the builtin \fBinfo frame\fR command\&. If critcl is run by a tclsh

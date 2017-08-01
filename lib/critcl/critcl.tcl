@@ -1073,8 +1073,7 @@ proc ::critcl::CheckForTracing {} {
     if {[info exists ::critcl::v::__trace__]} return
 
     package require critcl::cutil
-    ::critcl::cutil::tracer
-    cflags -DCRITCL_TRACER
+    ::critcl::cutil::tracer on
     set ::critcl::v::__trace__ marker ;# See above
     return
 }

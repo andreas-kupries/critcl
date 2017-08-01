@@ -15,17 +15,17 @@
 
 #ifdef CRITCL_ASSERT
 
-#define XSTR(x) #x
-#define STR(x) XSTR(x)
-#define RANGEOK(i,n) ((0 <= (i)) && (i < (n)))
+#define CRITCL_UTIL_ASSERT_XSTR(x) #x
+#define CRITCL_UTIL_ASSERT_STR(x) CRITCL_UTIL_ASSERT_XSTR(x)
+#define CRITCL_UTIL_ASSERT_RANGEOK(i,n) ((0 <= (i)) && ((i) < (n)))
 
 #define ASSERT(x,msg) if (!(x)) { \
-	Tcl_Panic (msg " (" #x "), in file " __FILE__ " @line " STR(__LINE__)); \
+	Tcl_Panic (msg " (" #x "), in file " __FILE__ " @line " CRITCL_UTIL_ASSERT_STR(__LINE__)); \
     }
 
 #define ASSERT_BOUNDS(i,n) \
-    ASSERT (RANGEOK(i,n),						\
-	    "array index out of bounds: " STR(i) " >= " STR(n))
+    ASSERT (CRITCL_UTIL_ASSERT_RANGEOK(i,n),						\
+	    "array index out of bounds: " CRITCL_UTIL_ASSERT_STR(i) " >= " CRITCL_UTIL_ASSERT_STR(n))
 
 #define STOPAFTER(x) { \
 	static int count = (x); \

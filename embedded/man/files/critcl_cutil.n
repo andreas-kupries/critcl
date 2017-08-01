@@ -282,9 +282,41 @@ package require \fBcritcl::cutil  ?0\&.1?\fR
 .sp
 \fB::critcl::cutil::alloc\fR
 .sp
-\fB::critcl::cutil::assertions\fR
+\fB::critcl::cutil::assertions\fR ?\fIenable\fR?
 .sp
-\fB::critcl::cutil::tracer\fR
+\fB::critcl::cutil::tracer\fR ?\fIenable\fR?
+.sp
+\fBtype* ALLOC (type)\fR
+.sp
+\fBtype* NALLOC (type, int n)\fR
+.sp
+\fBtype* REALLOC (type* var, type, int n)\fR
+.sp
+\fBvoid FREE (type* var)\fR
+.sp
+\fBvoid ASSERT (expression, char* message\fR
+.sp
+\fBvoid ASSERT_BOUNDS (int index, int size)\fR
+.sp
+\fBvoid STOPAFTER(n)\fR
+.sp
+\fBvoid STREP (Tcl_Obj* o, char* s, int len)\fR
+.sp
+\fBvoid STREP_DS (Tcl_Obj* o, Tcl_DString* ds)\fR
+.sp
+\fBvoid TRACE_ENTER (char* function)\fR
+.sp
+\fBvoid TRACE_RETURN_VOID (void)\fR
+.sp
+\fBany TRACE_RETURN (char* format, any x)\fR
+.sp
+\fBvoid TRACE ((char* format, \&.\&.\&.))\fR
+.sp
+\fBvoid TRACE0 ((char* format, \&.\&.\&.))\fR
+.sp
+\fBvoid TRACE_ARGS (char* function, int c, TclObj* v[])\fR
+.sp
+\fBany TRACE_RESULT (Tcl_Interp* interp, any code)\fR
 .sp
 .BE
 .SH DESCRIPTION
@@ -344,33 +376,42 @@ available to the "\fI\&.critcl\fR" file containing the command, and
 becomes available for use in \fB#include\fR directives of companion
 C code declared via \fBcritcl::csources\fR\&.
 .sp
-The definitions, their signatures and semantics are
+The macros definitions and their signatures are:
 .CS
 
 
     type* ALLOC (type)
     type* NALLOC (type, int n)
     type* REALLOC (type* var, type, int n)
+    void  FREE (type* var)
 
 .CE
 .sp
+The details of the semantics are explained in section
+\fBAllocation\fR\&.
+.sp
 The result of the command is an empty string\&.
 .TP
-\fB::critcl::cutil::assertions\fR
-This command provides a number C-preprocessor macros for the writing of assertions\&.
+\fB::critcl::cutil::assertions\fR ?\fIenable\fR?
+This command provides a number C-preprocessor macros for the writing
+of assertions in C code\&.
 .sp
-When run the header file "\fIcritcl_assert\&.h\fR" is directly made
-available to the "\fI\&.critcl\fR" file containing the command, and
+When invoked the header file "\fIcritcl_assert\&.h\fR" is directly
+made available to the "\fI\&.critcl\fR" file containing the command, and
 becomes available for use in \fB#include\fR directives of companion
 C code declared via \fBcritcl::csources\fR\&.
 .sp
-The definitions, their signatures and semantics are
+The macro definitions and their signatures are
 .CS
 
 
-    void ASSERT (expression, char* message)
-    void ASSERT_BOUNDS (int index, int size)
-    void STOPAFTER (int n)
+    void ASSERT (expression, char* message);
+    void ASSERT_BOUNDS (int index, int size);
+
+    void STOPAFTER (int n);
+
+    void STREP (Tcl_Obj* o, char* s, int len);
+    void STREP_DS (Tcl_Obj* o, Tcl_DString* ds);
 
 .CE
 .sp
@@ -381,12 +422,173 @@ C code are quiescent and not compiled into the object file\&. In other
 words, assertions can be (de)activated at will during build time, as
 needed by the user\&.
 .sp
-The result of the command is an empty string\&.
-.TP
-\fB::critcl::cutil::tracer\fR
-This command
+For convenience this is controlled by \fIenable\fR\&. By default
+(\fBfalse\fR) the facility available, but not active\&.
+Using \fBtrue\fR not only makes it available, but activates it as
+well\&.
+.sp
+The details of the semantics are explained in section
+\fBAssertions\fR\&.
 .sp
 The result of the command is an empty string\&.
+.TP
+\fB::critcl::cutil::tracer\fR ?\fIenable\fR?
+This command provides a number C-preprocessor macros for tracing
+C-level internals\&.
+.sp
+When invoked the header file "\fIcritcl_trace\&.h\fR" is directly
+made available to the "\fI\&.critcl\fR" file containing the command, and
+becomes available for use in \fB#include\fR directives of companion
+C code declared via \fBcritcl::csources\fR\&. Furthermore the "\fI\&.c\fR"
+file containing the runtime support is added to the set of C companion
+files
+.sp
+The macro definitions and their signatures are
+.CS
+
+
+
+    void TRACE_ENTER (char* function);
+    void TRACE_RETURN_VOID (void);
+    any  TRACE_RETURN (char* format, any x);
+
+    void TRACE  ((char* format, \&.\&.\&.));
+    void TRACE0 ((char* format, \&.\&.\&.));
+
+    void TRACE_ARGS (char* function, int c, TclObj* v[]);
+    any  TRACE_RESULT (Tcl_Interp* interp, any code);
+
+.CE
+.sp
+Note that these definitions are conditional on the existence of
+the macro \fBCRITCL_TRACER\fR\&.
+Without a \fBcritcl::cflags -DCRITCL_TRACER\fR all trace
+functionality in the C code is quiescent and not compiled into the
+object file\&. In other words, tracing can be (de)activated at will
+during build time, as needed by the user\&.
+.sp
+For convenience this is controlled by \fIenable\fR\&. By default
+(\fBfalse\fR) the facility available, but not active\&.
+Using \fBtrue\fR not only makes it available, but activates it as
+well\&.
+Further note that the command \fBcritcl::config\fR now accepts a
+boolean option \fBtrace\fR\&. Setting it activates enter/exit tracing
+in all commands based on \fBcritcl::cproc\fR, with proper printing of
+arguments and results\&. It should be noted that this is subordinate to
+the activation of the tracing facility in general\&. In other words, if
+the tracing facility is not active then setting the config has no
+effect\&.
+.sp
+The details of the semantics are explained in section
+\fBTracing\fR
+.sp
+The result of the command is an empty string\&.
+.PP
+.SH ALLOCATION
+.TP
+\fBtype* ALLOC (type)\fR
+This macro allocates a single element of the given \fItype\fR and
+returns a pointer to that memory\&.
+.TP
+\fBtype* NALLOC (type, int n)\fR
+This macro allocates \fIn\fR elements of the given \fItype\fR and
+returns a pointer to that memory\&.
+.TP
+\fBtype* REALLOC (type* var, type, int n)\fR
+This macro expands or shrinks the memory associated with the C
+variable \fIvar\fR of type \fItype\fR to hold \fIn\fR elements of the
+type\&. It returns a pointer to that memory\&.
+Remember, a reallocation may move the data to a new location in memory
+to satisfy the request\&. Returning a pointer instead of immediately
+assigning it to the \fIvar\fR allows the user to validate the new
+pointer before trying to use it\&.
+.TP
+\fBvoid FREE (type* var)\fR
+This macro releases the memory referenced by the pointer variable
+\fIvar\fR\&.
+.PP
+.SH ASSERTIONS
+.TP
+\fBvoid ASSERT (expression, char* message\fR
+This macro tests the \fIexpression\fR and panics if it does not hold\&.
+The specified \fImessage\fR is used as part of the panic\&.
+The \fImessage\fR has to be a static string, it cannot be a variable\&.
+.TP
+\fBvoid ASSERT_BOUNDS (int index, int size)\fR
+This macro ensures that the \fIindex\fR is in the
+range \fB0\fR to \fBsize-1\fR\&.
+.TP
+\fBvoid STOPAFTER(n)\fR
+This macro throws a panic after it is called \fIn\fR times\&.
+Note, each separate instance of the macro has its own counter\&.
+.TP
+\fBvoid STREP (Tcl_Obj* o, char* s, int len)\fR
+This macro properly sets the string representation of the Tcl object
+\fIo\fR to a copy of the string \fIs\fR, expected to be of length
+\fIlen\fR\&.
+.TP
+\fBvoid STREP_DS (Tcl_Obj* o, Tcl_DString* ds)\fR
+This macro properly sets the string representation of the Tcl object
+\fIo\fR to a copy of the string held by the \fBDString\fR \fIds\fR\&.
+.PP
+.SH TRACING
+All output is printed to \fBstdout\fR\&.
+.TP
+\fBvoid TRACE_ENTER (char* function)\fR
+Use this macro at the beginning of a C function to record entry into
+it\&. The argument is expected to be the name of the entered function\&.
+.sp
+Note, the tracer's runtime maintains a stack of entered
+functions and expects that function exit is signaled by either
+\fBTRACE_RETURN\fR or \fBTRACE_RETURN_VOID\fR\&.
+.TP
+\fBvoid TRACE_RETURN_VOID (void)\fR
+Use this macro instead of
+.CS
+
+return
+.CE
+.IP to exit a void
+function\&. Beyond returning from the function this also signals the
+same to the tracer's runtime, popping the last entered function from
+its stack of active functions\&.
+.TP
+\fBany TRACE_RETURN (char* format, any x)\fR
+Use this macro instead of
+.CS
+
+return x
+.CE
+.IP to exit a non-void
+function\&. Beyond returning from the function with value \fIx\fR this
+also signals the same to the tracer's runtime, popping the last
+entered function from its stack of active functions\&.
+The \fIformat\fR is expected to be a proper formatting string for
+\fBprintf\fR and analogues, able to stringify \fIx\fR\&.
+.TP
+\fBvoid TRACE ((char* format, \&.\&.\&.))\fR
+This macro is the trace facilities' equivalent of \fBprintf\fR,
+printing arbitrary data under the control of the \fIformat\fR\&. Note
+how it is written with doubled parentheses\&.
+.sp
+The printed text is closed with a newline, and indented per the
+stack of active functions\&.
+.TP
+\fBvoid TRACE0 ((char* format, \&.\&.\&.))\fR
+This is the same functionality as \fBTRACE\fR above, except that the
+printed message is \fInot\fR indented\&.
+.TP
+\fBvoid TRACE_ARGS (char* function, int c, TclObj* v[])\fR
+This is a special macro used within the core \fBcritcl\fR package
+to provide entry tracing for \fBcritcl::cproc\fR-based commands\&. It
+takes the name of the command, plus count and values of the Tcl
+arguments\&.
+.TP
+\fBany TRACE_RESULT (Tcl_Interp* interp, any code)\fR
+This is a special macro used within the core \fBcritcl\fR package
+to provide exit tracing for \fBcritcl::cproc\fR-based commands\&. It
+takes the interpreter holding the command result, and the Tcl return
+code\&.
 .PP
 .SH AUTHORS
 Andreas Kupries

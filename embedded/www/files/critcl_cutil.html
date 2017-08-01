@@ -113,8 +113,11 @@
 <li class="section"><a href="#synopsis">Synopsis</a></li>
 <li class="section"><a href="#section1">Description</a></li>
 <li class="section"><a href="#section2">API</a></li>
-<li class="section"><a href="#section3">Authors</a></li>
-<li class="section"><a href="#section4">Bugs, Ideas, Feedback</a></li>
+<li class="section"><a href="#section3">Allocation</a></li>
+<li class="section"><a href="#section4">Assertions</a></li>
+<li class="section"><a href="#section5">Tracing</a></li>
+<li class="section"><a href="#section6">Authors</a></li>
+<li class="section"><a href="#section7">Bugs, Ideas, Feedback</a></li>
 <li class="section"><a href="#keywords">Keywords</a></li>
 <li class="section"><a href="#category">Category</a></li>
 <li class="section"><a href="#copyright">Copyright</a></li>
@@ -129,8 +132,24 @@
 </ul>
 <ul class="syntax">
 <li><a href="#1"><b class="cmd">::critcl::cutil::alloc</b></a></li>
-<li><a href="#2"><b class="cmd">::critcl::cutil::assertions</b></a></li>
-<li><a href="#3"><b class="cmd">::critcl::cutil::tracer</b></a></li>
+<li><a href="#2"><b class="cmd">::critcl::cutil::assertions</b> <span class="opt">?<i class="arg">enable</i>?</span></a></li>
+<li><a href="#3"><b class="cmd">::critcl::cutil::tracer</b> <span class="opt">?<i class="arg">enable</i>?</span></a></li>
+<li><a href="#4"><b class="cmd">type* ALLOC (type)</b></a></li>
+<li><a href="#5"><b class="cmd">type* NALLOC (type, int n)</b></a></li>
+<li><a href="#6"><b class="cmd">type* REALLOC (type* var, type, int n)</b></a></li>
+<li><a href="#7"><b class="cmd">void FREE (type* var)</b></a></li>
+<li><a href="#8"><b class="cmd">void ASSERT (expression, char* message</b></a></li>
+<li><a href="#9"><b class="cmd">void ASSERT_BOUNDS (int index, int size)</b></a></li>
+<li><a href="#10"><b class="cmd">void STOPAFTER(n)</b></a></li>
+<li><a href="#11"><b class="cmd">void STREP (Tcl_Obj* o, char* s, int len)</b></a></li>
+<li><a href="#12"><b class="cmd">void STREP_DS (Tcl_Obj* o, Tcl_DString* ds)</b></a></li>
+<li><a href="#13"><b class="cmd">void TRACE_ENTER (char* function)</b></a></li>
+<li><a href="#14"><b class="cmd">void TRACE_RETURN_VOID (void)</b></a></li>
+<li><a href="#15"><b class="cmd">any TRACE_RETURN (char* format, any x)</b></a></li>
+<li><a href="#16"><b class="cmd">void TRACE ((char* format, ...))</b></a></li>
+<li><a href="#17"><b class="cmd">void TRACE0 ((char* format, ...))</b></a></li>
+<li><a href="#18"><b class="cmd">void TRACE_ARGS (char* function, int c, TclObj* v[])</b></a></li>
+<li><a href="#19"><b class="cmd">any TRACE_RESULT (Tcl_Interp* interp, any code)</b></a></li>
 </ul>
 </div>
 </div>
@@ -163,41 +182,177 @@ easier.</p>
 available to the &quot;<b class="file">.critcl</b>&quot; file containing the command, and
 becomes available for use in <b class="cmd">#include</b> directives of companion
 C code declared via <b class="cmd">critcl::csources</b>.</p>
-<p>The definitions, their signatures and semantics are</p>
+<p>The macros definitions and their signatures are:</p>
 <pre class="example">
     type* ALLOC (type)
     type* NALLOC (type, int n)
     type* REALLOC (type* var, type, int n)
+    void  FREE (type* var)
 </pre>
+<p>The details of the semantics are explained in section
+<span class="sectref"><a href="#section3">Allocation</a></span>.</p>
 <p>The result of the command is an empty string.</p></dd>
-<dt><a name="2"><b class="cmd">::critcl::cutil::assertions</b></a></dt>
-<dd><p>This command provides a number C-preprocessor macros for the writing of assertions.</p>
-<p>When run the header file &quot;<b class="file">critcl_assert.h</b>&quot; is directly made
-available to the &quot;<b class="file">.critcl</b>&quot; file containing the command, and
+<dt><a name="2"><b class="cmd">::critcl::cutil::assertions</b> <span class="opt">?<i class="arg">enable</i>?</span></a></dt>
+<dd><p>This command provides a number C-preprocessor macros for the writing
+of assertions in C code.</p>
+<p>When invoked the header file &quot;<b class="file">critcl_assert.h</b>&quot; is directly
+made available to the &quot;<b class="file">.critcl</b>&quot; file containing the command, and
 becomes available for use in <b class="cmd">#include</b> directives of companion
 C code declared via <b class="cmd">critcl::csources</b>.</p>
-<p>The definitions, their signatures and semantics are</p>
+<p>The macro definitions and their signatures are</p>
 <pre class="example">
-    void ASSERT (expression, char* message)
-    void ASSERT_BOUNDS (int index, int size)
-    void STOPAFTER (int n)
+    void ASSERT (expression, char* message);
+    void ASSERT_BOUNDS (int index, int size);
+    void STOPAFTER (int n);
+    void STREP (Tcl_Obj* o, char* s, int len);
+    void STREP_DS (Tcl_Obj* o, Tcl_DString* ds);
 </pre>
 <p>Note that these definitions are conditional on the existence of
-the macro <b class="const">CRITCL_ASSERT</b>.
+the macro <b class="const">CRITCL_ASSERT</b>. 
 Without a <b class="cmd">critcl::cflags -DCRITCL_ASSERT</b> all assertions in the
 C code are quiescent and not compiled into the object file. In other
 words, assertions can be (de)activated at will during build time, as
 needed by the user.</p>
+<p>For convenience this is controlled by <i class="arg">enable</i>. By default
+(<b class="const">false</b>) the facility available, but not active.
+Using <b class="const">true</b> not only makes it available, but activates it as
+well.</p>
+<p>The details of the semantics are explained in section
+<span class="sectref"><a href="#section4">Assertions</a></span>.</p>
 <p>The result of the command is an empty string.</p></dd>
-<dt><a name="3"><b class="cmd">::critcl::cutil::tracer</b></a></dt>
-<dd><p>This command</p>
+<dt><a name="3"><b class="cmd">::critcl::cutil::tracer</b> <span class="opt">?<i class="arg">enable</i>?</span></a></dt>
+<dd><p>This command provides a number C-preprocessor macros for tracing
+C-level internals.</p>
+<p>When invoked the header file &quot;<b class="file">critcl_trace.h</b>&quot; is directly
+made available to the &quot;<b class="file">.critcl</b>&quot; file containing the command, and
+becomes available for use in <b class="cmd">#include</b> directives of companion
+C code declared via <b class="cmd">critcl::csources</b>. Furthermore the &quot;<b class="file">.c</b>&quot;
+file containing the runtime support is added to the set of C companion
+files</p>
+<p>The macro definitions and their signatures are</p>
+<pre class="example">
+    void TRACE_ENTER (char* function);
+    void TRACE_RETURN_VOID (void);
+    any  TRACE_RETURN (char* format, any x);
+    void TRACE  ((char* format, ...));
+    void TRACE0 ((char* format, ...));
+    void TRACE_ARGS (char* function, int c, TclObj* v[]);
+    any  TRACE_RESULT (Tcl_Interp* interp, any code);
+</pre>
+<p>Note that these definitions are conditional on the existence of
+the macro <b class="const">CRITCL_TRACER</b>. 
+Without a <b class="cmd">critcl::cflags -DCRITCL_TRACER</b> all trace
+functionality in the C code is quiescent and not compiled into the
+object file. In other words, tracing can be (de)activated at will
+during build time, as needed by the user.</p>
+<p>For convenience this is controlled by <i class="arg">enable</i>. By default
+(<b class="const">false</b>) the facility available, but not active.
+Using <b class="const">true</b> not only makes it available, but activates it as
+well.
+Further note that the command <b class="cmd">critcl::config</b> now accepts a
+boolean option <b class="const">trace</b>. Setting it activates enter/exit tracing
+in all commands based on <b class="cmd">critcl::cproc</b>, with proper printing of
+arguments and results. It should be noted that this is subordinate to
+the activation of the tracing facility in general. In other words, if
+the tracing facility is not active then setting the config has no
+effect.</p>
+<p>The details of the semantics are explained in section
+<span class="sectref"><a href="#section5">Tracing</a></span></p>
 <p>The result of the command is an empty string.</p></dd>
 </dl>
 </div>
-<div id="section3" class="section"><h2><a name="section3">Authors</a></h2>
+<div id="section3" class="section"><h2><a name="section3">Allocation</a></h2>
+<dl class="definitions">
+<dt><a name="4"><b class="cmd">type* ALLOC (type)</b></a></dt>
+<dd><p>This macro allocates a single element of the given <i class="arg">type</i> and
+returns a pointer to that memory.</p></dd>
+<dt><a name="5"><b class="cmd">type* NALLOC (type, int n)</b></a></dt>
+<dd><p>This macro allocates <i class="arg">n</i> elements of the given <i class="arg">type</i> and
+returns a pointer to that memory.</p></dd>
+<dt><a name="6"><b class="cmd">type* REALLOC (type* var, type, int n)</b></a></dt>
+<dd><p>This macro expands or shrinks the memory associated with the C
+variable <i class="arg">var</i> of type <i class="arg">type</i> to hold <i class="arg">n</i> elements of the
+type. It returns a pointer to that memory.
+Remember, a reallocation may move the data to a new location in memory
+to satisfy the request. Returning a pointer instead of immediately
+assigning it to the <i class="arg">var</i> allows the user to validate the new
+pointer before trying to use it.</p></dd>
+<dt><a name="7"><b class="cmd">void FREE (type* var)</b></a></dt>
+<dd><p>This macro releases the memory referenced by the pointer variable
+<i class="arg">var</i>.</p></dd>
+</dl>
+</div>
+<div id="section4" class="section"><h2><a name="section4">Assertions</a></h2>
+<dl class="definitions">
+<dt><a name="8"><b class="cmd">void ASSERT (expression, char* message</b></a></dt>
+<dd><p>This macro tests the <i class="arg">expression</i> and panics if it does not hold.
+The specified <i class="arg">message</i> is used as part of the panic.
+The <i class="arg">message</i> has to be a static string, it cannot be a variable.</p></dd>
+<dt><a name="9"><b class="cmd">void ASSERT_BOUNDS (int index, int size)</b></a></dt>
+<dd><p>This macro ensures that the <i class="arg">index</i> is in the
+range <b class="const">0</b> to <b class="const">size-1</b>.</p></dd>
+<dt><a name="10"><b class="cmd">void STOPAFTER(n)</b></a></dt>
+<dd><p>This macro throws a panic after it is called <i class="arg">n</i> times.
+Note, each separate instance of the macro has its own counter.</p></dd>
+<dt><a name="11"><b class="cmd">void STREP (Tcl_Obj* o, char* s, int len)</b></a></dt>
+<dd><p>This macro properly sets the string representation of the Tcl object
+<i class="arg">o</i> to a copy of the string <i class="arg">s</i>, expected to be of length
+<i class="arg">len</i>.</p></dd>
+<dt><a name="12"><b class="cmd">void STREP_DS (Tcl_Obj* o, Tcl_DString* ds)</b></a></dt>
+<dd><p>This macro properly sets the string representation of the Tcl object
+<i class="arg">o</i> to a copy of the string held by the <b class="type">DString</b> <i class="arg">ds</i>.</p></dd>
+</dl>
+</div>
+<div id="section5" class="section"><h2><a name="section5">Tracing</a></h2>
+<p>All output is printed to <b class="const">stdout</b>.</p>
+<dl class="definitions">
+<dt><a name="13"><b class="cmd">void TRACE_ENTER (char* function)</b></a></dt>
+<dd><p>Use this macro at the beginning of a C function to record entry into
+it. The argument is expected to be the name of the entered function.</p>
+<p>Note, the tracer's runtime maintains a stack of entered
+functions and expects that function exit is signaled by either
+<b class="function">TRACE_RETURN</b> or <b class="function">TRACE_RETURN_VOID</b>.</p></dd>
+<dt><a name="14"><b class="cmd">void TRACE_RETURN_VOID (void)</b></a></dt>
+<dd><p>Use this macro instead of</p>
+<pre class="example">return</pre>
+<p>to exit a void
+function. Beyond returning from the function this also signals the
+same to the tracer's runtime, popping the last entered function from
+its stack of active functions.</p></dd>
+<dt><a name="15"><b class="cmd">any TRACE_RETURN (char* format, any x)</b></a></dt>
+<dd><p>Use this macro instead of</p>
+<pre class="example">return x</pre>
+<p>to exit a non-void
+function. Beyond returning from the function with value <i class="arg">x</i> this
+also signals the same to the tracer's runtime, popping the last
+entered function from its stack of active functions.
+The <i class="arg">format</i> is expected to be a proper formatting string for
+<b class="function">printf</b> and analogues, able to stringify <i class="arg">x</i>.</p></dd>
+<dt><a name="16"><b class="cmd">void TRACE ((char* format, ...))</b></a></dt>
+<dd><p>This macro is the trace facilities' equivalent of <b class="function">printf</b>,
+printing arbitrary data under the control of the <i class="arg">format</i>. Note
+how it is written with doubled parentheses.</p>
+<p>The printed text is closed with a newline, and indented per the
+stack of active functions.</p></dd>
+<dt><a name="17"><b class="cmd">void TRACE0 ((char* format, ...))</b></a></dt>
+<dd><p>This is the same functionality as <b class="function">TRACE</b> above, except that the
+printed message is <em>not</em> indented.</p></dd>
+<dt><a name="18"><b class="cmd">void TRACE_ARGS (char* function, int c, TclObj* v[])</b></a></dt>
+<dd><p>This is a special macro used within the core <b class="package"><a href="critcl_pkg.html">critcl</a></b> package
+to provide entry tracing for <b class="cmd">critcl::cproc</b>-based commands. It
+takes the name of the command, plus count and values of the Tcl
+arguments.</p></dd>
+<dt><a name="19"><b class="cmd">any TRACE_RESULT (Tcl_Interp* interp, any code)</b></a></dt>
+<dd><p>This is a special macro used within the core <b class="package"><a href="critcl_pkg.html">critcl</a></b> package
+to provide exit tracing for <b class="cmd">critcl::cproc</b>-based commands. It
+takes the interpreter holding the command result, and the Tcl return
+code.</p></dd>
+</dl>
+</div>
+<div id="section6" class="section"><h2><a name="section6">Authors</a></h2>
 <p>Andreas Kupries</p>
 </div>
-<div id="section4" class="section"><h2><a name="section4">Bugs, Ideas, Feedback</a></h2>
+<div id="section7" class="section"><h2><a name="section7">Bugs, Ideas, Feedback</a></h2>
 <p>This document, and the package it describes, will undoubtedly contain
 bugs and other problems.
 Please report such at <a href="https://github.com/andreas-kupries/critcl">https://github.com/andreas-kupries/critcl</a>.

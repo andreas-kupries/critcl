@@ -1221,7 +1221,13 @@ files despite having a cached shared library (when <b class="const">true</b>, or
 not. The default is <b class="const">off</b>.</p></dd>
 <dt><b class="option">lines</b> bool</dt>
 <dd><p>This flag tells the package whether to embed #line directives into the
-generated C code (when <b class="const">true</b>) or not. By default this is <b class="const">on</b>.</p>
+generated C code (when <b class="const">true</b>) or not. By default this is <b class="const">on</b>.</p></dd>
+<dt><b class="option">trace</b> bool</dt>
+<dd><p>Inactive by default.
+When active code tracing entry and exit of <b class="cmd">critcl::cproc</b>-based
+is inserted into the C code.
+Note that this is subordinate to the tracing facility being available
+and active in general (See package <b class="package"><a href="critcl_cutil.html">critcl::cutil</a></b>).</p>
 <p>Side note: This facility requires the use of a tclsh supporting
 the builtin <b class="cmd">info frame</b> command. If critcl is run by a tclsh
 not supporting this no <i class="term">#line</i> directives will be emitted. The

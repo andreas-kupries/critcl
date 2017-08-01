@@ -26,6 +26,16 @@ not. The default is [const off].
 This flag tells the package whether to embed #line directives into the
 generated C code (when [const true]) or not. By default this is [const on].
 
+[opt_def trace bool]
+
+Inactive by default.
+
+When active code tracing entry and exit of [cmd critcl::cproc]-based
+is inserted into the C code.
+
+Note that this is subordinate to the tracing facility being available
+and active in general (See package [package critcl::cutil]).
+
 [include rq_cline.inc]
 
 [para] Developers of higher-level packages generating their own C
