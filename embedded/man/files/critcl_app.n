@@ -737,6 +737,13 @@ find the user location\&.
 New supporting package \fBcritcl::cutil\fR\&. Provides common
 C level facilities useful to packages (assertions, tracing,
 memory allocation shorthands)\&.
+.IP [6]
+Extended the support package \fBcritcl::literals\fR with
+limited configurability\&. It is now able to generate code for
+C-level access to the pool without Tcl types (Mode \fBc\fR)\&.
+The previously existing functionality is accesssible under mode
+\fBtcl\fR, which also is the default\&. Both modes can be used
+together\&.
 .PP
 .SH "CHANGES FOR VERSION 3\&.1\&.16"
 .IP [1]

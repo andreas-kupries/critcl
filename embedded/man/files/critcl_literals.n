@@ -2,7 +2,7 @@
 '\" Generated from file 'critcl_literals\&.man' by tcllib/doctools with format 'nroff'
 '\" Copyright (c) 2011-2015 Andreas Kupries
 '\"
-.TH "critcl::literals" n 1\&.1 doc "C Runtime In Tcl (CriTcl)"
+.TH "critcl::literals" n 1\&.2 doc "C Runtime In Tcl (CriTcl)"
 .\" The -*- nroff -*- definitions below are for supplemental macros used
 .\" in Tcl/Tk manual entries.
 .\"
@@ -278,9 +278,9 @@ package require \fBTcl  8\&.4\fR
 .sp
 package require \fBcritcl  ?3\&.1\&.11?\fR
 .sp
-package require \fBcritcl::literals  ?1\&.1?\fR
+package require \fBcritcl::literals  ?1\&.2?\fR
 .sp
-\fB::critcl::literals::def\fR \fIname\fR \fIdefinition\fR
+\fB::critcl::literals::def\fR \fIname\fR \fIdefinition\fR ?\fImode\fR?
 .sp
 .BE
 .SH DESCRIPTION
@@ -336,17 +336,26 @@ This package resides in the Core Package Layer of CriTcl\&.
 .PP
 .SH API
 .TP
-\fB::critcl::literals::def\fR \fIname\fR \fIdefinition\fR
+\fB::critcl::literals::def\fR \fIname\fR \fIdefinition\fR ?\fImode\fR?
 This command defines a C function with the given \fIname\fR which
 provides access to a pool of constant strings with a Tcl interpreter\&.
 .sp
 The \fIdefinition\fR dictionary provides the mapping from the
 C-level symbolic names to the string themselves\&.
 .sp
-The new function has two parameters, a \fBTcl_Interp*\fR
-pointer refering to the interpreter holding the string pool, and a
-code of type "\fIname\fR_names" (see below), the symbolic name of the
-literal to return\&. Tcl result of the function is a \fBTcl_Obj*\fR
+The \fImode\fR-list configures the output somewhat\&. The two
+allowed modes are \fBc\fR and \fBtcl\fR\&. Both modes can be used
+together\&. The default mode is \fBtcl\fR\&.
+.sp
+For mode \fBtcl\fR the new function has two arguments, a
+\fBTcl_Interp*\fR pointer refering to the interpreter holding the
+string pool, and a code of type "\fIname\fR_names" (see below), the
+symbolic name of the literal to return\&. The result of the function is
+a \fBTcl_Obj*\fR pointer to the requested string constant\&.
+.sp
+For mode \fBc\fR the new function has one argument, a code of
+type "\fIname\fR_names" (see below), the symbolic name of the literal
+to return\&. The result of the function is a \fBconst char*\fR
 pointer to the requested string constant\&.
 .sp
 The underlying string pool is automatically initialized on
@@ -358,7 +367,7 @@ proper C identifier\&.
 .RS
 .TP
 \fIname\fR
-The function providing access to the string pool\&.
+The mode \fBtcl\fR function providing access to the string pool\&.
 Its signature is
 .sp
 .CS
@@ -368,13 +377,24 @@ Tcl_Obj* \fIname\fR (Tcl_Interp* interp, \fIname\fR_names literal);
 
 .CE
 .TP
+\fIname\fR_cstr
+The mode \fBc\fR function providing access to the string pool\&.
+Its signature is
+.sp
+.CS
+
+
+const char* \fIname\fR_cstr (\fIname\fR_names literal);
+
+.CE
+.TP
 \fIname\fR_names
 A C enumeration type containing the symbolic names of the strings
 provided by the pool\&.
 .TP
 \fIname\fR\&.h
-A header file containing the declarations for the accessor function
-and enumeration type, for use by other parts of the system, if
+A header file containing the declarations for the accessor functions
+and the enumeration type, for use by other parts of the system, if
 necessary\&.
 .sp
 The generated file is stored in a place where it will not
@@ -383,9 +403,10 @@ available for easy inclusion by package files (\fBcsources\fR)\&.
 .TP
 \fIname\fR
 \fINew in version 1\&.1\fR:
-At the level of critcl itself the command registers a new result-type
-for \fBcritcl::cproc\fR, which takes an integer result from the function
-and converts it to the equivalent string in the pool for the script\&.
+For mode \fBtcl\fR the command registers a new result-type for
+\fBcritcl::cproc\fR with critcl, which takes an integer result from
+the function and converts it to the equivalent string in the pool for
+the script\&.
 .RE
 .PP
 .SH EXAMPLE
@@ -408,12 +429,13 @@ critcl::literals::def tcl_inotify_strings {
     w_file	"file"
     w_handler	"handler"
     w_remove	"remove"
-}
+} {c tcl}
 
 # Declarations: tcl_inotify_strings\&.h
 # Type:         tcl_inotify_strings_names
-# Accessor:     Tcl_Obj* tcl_inotify_strings (Tcl_Interp*               interp,
-#                                             tcl_inotify_strings_names literal);
+# Accessor:     Tcl_Obj*    tcl_inotify_strings      (Tcl_Interp*               interp,
+#                                                     tcl_inotify_strings_names literal);
+# Accessor:     const char* tcl_inotify_strings_cstr (tcl_inotify_strings_names literal);
 # ResultType:   tcl_inotify_strings
 
 .CE

@@ -17,4 +17,11 @@
        C level facilities useful to packages (assertions, tracing,
        memory allocation shorthands).
 
+[enum] Extended the support package [package critcl::literals] with
+       limited configurability. It is now able to generate code for
+       C-level access to the pool without Tcl types (Mode [const c]).
+       The previously existing functionality is accesssible under mode
+       [const tcl], which also is the default. Both modes can be used
+       together.
+
 [list_end]

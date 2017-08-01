@@ -2386,6 +2386,12 @@ document about <i class="term">Using CriTcl</i>.</p>
 <li><p>New supporting package <b class="package"><a href="critcl_cutil.html">critcl::cutil</a></b>. Provides common
        C level facilities useful to packages (assertions, tracing,
        memory allocation shorthands).</p></li>
+<li><p>Extended the support package <b class="package"><a href="critcl_literals.html">critcl::literals</a></b> with
+       limited configurability. It is now able to generate code for
+       C-level access to the pool without Tcl types (Mode <b class="const">c</b>).
+       The previously existing functionality is accesssible under mode
+       <b class="const">tcl</b>, which also is the default. Both modes can be used
+       together.</p></li>
 </ol>
 </div>
 <div id="section6" class="section"><h2><a name="section6">Changes for version 3.1.16</a></h2>

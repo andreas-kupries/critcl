@@ -1,5 +1,5 @@
 [comment {-*- tcl -*- doctools manpage}]
-[vset literal_version 1.1]
+[vset literal_version 1.2]
 [manpage_begin critcl::literals n [vset literal_version]]
 [include include/module2.inc]
 [keywords singleton {Tcl Interp Association}]
@@ -39,7 +39,7 @@ Tcl packages with embedded C code.
 [section API]
 
 [list_begin definitions]
-[call [cmd ::critcl::literals::def] [arg name] [arg definition]]
+[call [cmd ::critcl::literals::def] [arg name] [arg definition] [opt [arg mode]]]
 
 This command defines a C function with the given [arg name] which
 provides access to a pool of constant strings with a Tcl interpreter.
@@ -47,10 +47,19 @@ provides access to a pool of constant strings with a Tcl interpreter.
 [para] The [arg definition] dictionary provides the mapping from the
 C-level symbolic names to the string themselves.
 
-[para] The new function has two parameters, a [const Tcl_Interp*]
-pointer refering to the interpreter holding the string pool, and a
-code of type "[arg name]_names" (see below), the symbolic name of the
-literal to return. Tcl result of the function is a [const Tcl_Obj*]
+[para] The [arg mode]-list configures the output somewhat. The two
+allowed modes are [const c] and [const tcl]. Both modes can be used
+together. The default mode is [const tcl].
+
+[para] For mode [const tcl] the new function has two arguments, a
+[const Tcl_Interp*] pointer refering to the interpreter holding the
+string pool, and a code of type "[arg name]_names" (see below), the
+symbolic name of the literal to return. The result of the function is
+a [const Tcl_Obj*] pointer to the requested string constant.
+
+[para] For mode [const c] the new function has one argument, a code of
+type "[arg name]_names" (see below), the symbolic name of the literal
+to return. The result of the function is a [const {const char*}]
 pointer to the requested string constant.
 
 [para] The underlying string pool is automatically initialized on
@@ -62,11 +71,19 @@ proper C identifier.
 
 [list_begin definitions]
 [def [arg name]]
-The function providing access to the string pool.
+The mode [const tcl] function providing access to the string pool.
 
 Its signature is
 [para][example_begin]
 Tcl_Obj* [arg name] (Tcl_Interp* interp, [arg name]_names literal);
+[example_end]
+
+[def [arg name]_cstr]
+The mode [const c] function providing access to the string pool.
+
+Its signature is
+[para][example_begin]
+const char* [arg name]_cstr ([arg name]_names literal);
 [example_end]
 
 [def [arg name]_names]
@@ -74,8 +91,8 @@ A C enumeration type containing the symbolic names of the strings
 provided by the pool.
 
 [def [arg name].h]
-A header file containing the declarations for the accessor function
-and enumeration type, for use by other parts of the system, if
+A header file containing the declarations for the accessor functions
+and the enumeration type, for use by other parts of the system, if
 necessary.
 
 [para] The generated file is stored in a place where it will not
@@ -85,9 +102,10 @@ available for easy inclusion by package files ([cmd csources]).
 [def [arg name]]
 [emph {New in version 1.1}]:
 
-At the level of critcl itself the command registers a new result-type
-for [cmd critcl::cproc], which takes an integer result from the function
-and converts it to the equivalent string in the pool for the script.
+For mode [const tcl] the command registers a new result-type for
+[cmd critcl::cproc] with critcl, which takes an integer result from
+the function and converts it to the equivalent string in the pool for
+the script.
 
 [list_end]
 [list_end]
@@ -113,12 +131,13 @@ critcl::literals::def tcl_inotify_strings {
     w_file	"file"
     w_handler	"handler"
     w_remove	"remove"
-}
+} {c tcl}
 
 # Declarations: tcl_inotify_strings.h
 # Type:         tcl_inotify_strings_names
-# Accessor:     Tcl_Obj* tcl_inotify_strings (Tcl_Interp*               interp,
-#                                             tcl_inotify_strings_names literal);
+# Accessor:     Tcl_Obj*    tcl_inotify_strings      (Tcl_Interp*               interp,
+#                                                     tcl_inotify_strings_names literal);
+# Accessor:     const char* tcl_inotify_strings_cstr (tcl_inotify_strings_names literal);
 # ResultType:   tcl_inotify_strings
 }]
 

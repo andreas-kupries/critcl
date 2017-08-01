@@ -103,7 +103,7 @@
    <a href="../toc.html">Table Of Contents</a>
 | <a href="../index.html">Keyword Index</a>
  ] <hr>
-<h1 class="title">critcl::literals(n) 1.1 doc &quot;C Runtime In Tcl (CriTcl)&quot;</h1>
+<h1 class="title">critcl::literals(n) 1.2 doc &quot;C Runtime In Tcl (CriTcl)&quot;</h1>
 <div id="name" class="section"><h2><a name="name">Name</a></h2>
 <p>critcl::literals - CriTcl Utilities: Constant string pools</p>
 </div>
@@ -126,10 +126,10 @@
 <ul class="requirements">
 <li>package require <b class="pkgname">Tcl 8.4</b></li>
 <li>package require <b class="pkgname">critcl <span class="opt">?3.1.11?</span></b></li>
-<li>package require <b class="pkgname">critcl::literals <span class="opt">?1.1?</span></b></li>
+<li>package require <b class="pkgname">critcl::literals <span class="opt">?1.2?</span></b></li>
 </ul>
 <ul class="syntax">
-<li><a href="#1"><b class="cmd">::critcl::literals::def</b> <i class="arg">name</i> <i class="arg">definition</i></a></li>
+<li><a href="#1"><b class="cmd">::critcl::literals::def</b> <i class="arg">name</i> <i class="arg">definition</i> <span class="opt">?<i class="arg">mode</i>?</span></a></li>
 </ul>
 </div>
 </div>
@@ -157,15 +157,22 @@ Tcl packages with embedded C code.</p>
 </div>
 <div id="section2" class="section"><h2><a name="section2">API</a></h2>
 <dl class="definitions">
-<dt><a name="1"><b class="cmd">::critcl::literals::def</b> <i class="arg">name</i> <i class="arg">definition</i></a></dt>
+<dt><a name="1"><b class="cmd">::critcl::literals::def</b> <i class="arg">name</i> <i class="arg">definition</i> <span class="opt">?<i class="arg">mode</i>?</span></a></dt>
 <dd><p>This command defines a C function with the given <i class="arg">name</i> which
 provides access to a pool of constant strings with a Tcl interpreter.</p>
 <p>The <i class="arg">definition</i> dictionary provides the mapping from the
 C-level symbolic names to the string themselves.</p>
-<p>The new function has two parameters, a <b class="const">Tcl_Interp*</b>
-pointer refering to the interpreter holding the string pool, and a
-code of type &quot;<i class="arg">name</i>_names&quot; (see below), the symbolic name of the
-literal to return. Tcl result of the function is a <b class="const">Tcl_Obj*</b>
+<p>The <i class="arg">mode</i>-list configures the output somewhat. The two
+allowed modes are <b class="const">c</b> and <b class="const">tcl</b>. Both modes can be used
+together. The default mode is <b class="const">tcl</b>.</p>
+<p>For mode <b class="const">tcl</b> the new function has two arguments, a
+<b class="const">Tcl_Interp*</b> pointer refering to the interpreter holding the
+string pool, and a code of type &quot;<i class="arg">name</i>_names&quot; (see below), the
+symbolic name of the literal to return. The result of the function is
+a <b class="const">Tcl_Obj*</b> pointer to the requested string constant.</p>
+<p>For mode <b class="const">c</b> the new function has one argument, a code of
+type &quot;<i class="arg">name</i>_names&quot; (see below), the symbolic name of the literal
+to return. The result of the function is a <b class="const">const char*</b>
 pointer to the requested string constant.</p>
 <p>The underlying string pool is automatically initialized on
 first access, and finalized on interpreter destruction.</p>
@@ -174,27 +181,35 @@ definitions) with names derived from <i class="arg">name</i>, which has to be a
 proper C identifier.</p>
 <dl class="definitions">
 <dt><i class="arg">name</i></dt>
-<dd><p>The function providing access to the string pool.
+<dd><p>The mode <b class="const">tcl</b> function providing access to the string pool.
 Its signature is</p>
 <pre class="example">
 Tcl_Obj* <i class="arg">name</i> (Tcl_Interp* interp, <i class="arg">name</i>_names literal);
+</pre>
+</dd>
+<dt><i class="arg">name</i>_cstr</dt>
+<dd><p>The mode <b class="const">c</b> function providing access to the string pool.
+Its signature is</p>
+<pre class="example">
+const char* <i class="arg">name</i>_cstr (<i class="arg">name</i>_names literal);
 </pre>
 </dd>
 <dt><i class="arg">name</i>_names</dt>
 <dd><p>A C enumeration type containing the symbolic names of the strings
 provided by the pool.</p></dd>
 <dt><i class="arg">name</i>.h</dt>
-<dd><p>A header file containing the declarations for the accessor function
-and enumeration type, for use by other parts of the system, if
+<dd><p>A header file containing the declarations for the accessor functions
+and the enumeration type, for use by other parts of the system, if
 necessary.</p>
 <p>The generated file is stored in a place where it will not
 interfere with the overall system outside of the package, yet also be
 available for easy inclusion by package files (<b class="cmd">csources</b>).</p></dd>
 <dt><i class="arg">name</i></dt>
 <dd><p><em>New in version 1.1</em>:
-At the level of critcl itself the command registers a new result-type
-for <b class="cmd">critcl::cproc</b>, which takes an integer result from the function
-and converts it to the equivalent string in the pool for the script.</p></dd>
+For mode <b class="const">tcl</b> the command registers a new result-type for
+<b class="cmd">critcl::cproc</b> with critcl, which takes an integer result from
+the function and converts it to the equivalent string in the pool for
+the script.</p></dd>
 </dl></dd>
 </dl>
 </div>
@@ -214,11 +229,12 @@ critcl::literals::def tcl_inotify_strings {
     w_file	&quot;file&quot;
     w_handler	&quot;handler&quot;
     w_remove	&quot;remove&quot;
-}
+} {c tcl}
 # Declarations: tcl_inotify_strings.h
 # Type:         tcl_inotify_strings_names
-# Accessor:     Tcl_Obj* tcl_inotify_strings (Tcl_Interp*               interp,
-#                                             tcl_inotify_strings_names literal);
+# Accessor:     Tcl_Obj*    tcl_inotify_strings      (Tcl_Interp*               interp,
+#                                                     tcl_inotify_strings_names literal);
+# Accessor:     const char* tcl_inotify_strings_cstr (tcl_inotify_strings_names literal);
 # ResultType:   tcl_inotify_strings
 </pre>
 </div>
