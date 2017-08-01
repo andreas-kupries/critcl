@@ -1,0 +1,96 @@
+[comment {-*- tcl -*- doctools manpage}]
+[manpage_begin critcl::cutil n 0.1]
+[include include/module2.inc]
+[titledesc {CriTcl C-level Utilities}]
+[require Tcl 8.4]
+[require critcl [opt 2.1]]
+[require critcl::cutil [opt 0.1]]
+[description]
+[para]
+[include include/welcome.inc]
+[para]
+
+This document is the reference manpage for the [package critcl::cutil]
+package. This package encapsulates a number of C-level utilites for
+easier writing of memory allocations, assertions, and narrative tracing
+and provides convenience commands to make these utilities accessible
+to critcl projects.
+
+Its intended audience are mainly developers wishing to write Tcl
+packages with embedded C code.
+[para]
+
+This package resides in the Core Package Layer of CriTcl.
+[para][image arch_core][para]
+
+The reason for this is that the main [package critcl] package makes
+use of the facilities for narrative tracing when
+[cmd {critcl::config trace}] is set, to instrument commands and
+procedures.
+
+[comment {===================================================================}]
+[section API]
+
+[list_begin definitions]
+[comment {* * ** *** ***** ******** ************* *********************}]
+[call [cmd ::critcl::cutil::alloc]]
+
+This command provides a number C-preprocessor macros which make the
+writing of memory allocations for structures and arrays of structures
+easier.
+
+[para] When run the header file [file critcl_alloc.h] is directly made
+available to the [file .critcl] file containing the command, and
+becomes available for use in [cmd {#include}] directives of companion
+C code declared via [cmd critcl::csources].
+
+[para] The definitions, their signatures and semantics are
+
+[example {
+    type* ALLOC (type)
+    type* NALLOC (type, int n)
+    type* REALLOC (type* var, type, int n)
+}]
+
+[para] The result of the command is an empty string.
+
+[comment {* * ** *** ***** ******** ************* *********************}]
+[call [cmd ::critcl::cutil::assertions]]
+
+This command provides a number C-preprocessor macros for the writing of assertions.
+
+[para] When run the header file [file critcl_assert.h] is directly made
+available to the [file .critcl] file containing the command, and
+becomes available for use in [cmd {#include}] directives of companion
+C code declared via [cmd critcl::csources].
+
+[para] The definitions, their signatures and semantics are
+
+[example {
+    void ASSERT (expression, char* message)
+    void ASSERT_BOUNDS (int index, int size)
+    void STOPAFTER (int n)
+}]
+
+[para] Note that these definitions are conditional on the existence of
+the macro [const CRITCL_ASSERT].
+
+Without a [cmd {critcl::cflags -DCRITCL_ASSERT}] all assertions in the
+C code are quiescent and not compiled into the object file. In other
+words, assertions can be (de)activated at will during build time, as
+needed by the user.
+
+[para] The result of the command is an empty string.
+
+[comment {* * ** *** ***** ******** ************* *********************}]
+[call [cmd ::critcl::cutil::tracer]]
+
+This command 
+
+[para] The result of the command is an empty string.
+
+[list_end]
+
+[comment {===================================================================}]
+[include include/feedback2.inc]
+[manpage_end]
