@@ -4,6 +4,8 @@
 # n/a
 
 # CriTcl Utility Commands To Provide Common C-level utility functions.
+#
+# Copyright (c) 2017 Andreas Kupries <andreas_kupries@users.sourceforge.net>
 
 package provide critcl::cutil 0.1
 
