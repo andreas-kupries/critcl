@@ -43,13 +43,16 @@ Tcl packages with embedded C code.
 [section API]
 
 [list_begin definitions]
-[call [cmd ::critcl::emap::def] [arg name] [arg definition] [opt [option -nocase]]]
+[call [cmd ::critcl::emap::def] [arg name] [arg definition] \
+     [opt [option -nocase]] \
+     [opt "[option -mode] [arg mode]"]]
 
-This command defines two C functions for the conversion of the
-[arg name]d state code into a Tcl string, and vice versa.
+This command defines C functions for the conversion of the [arg name]d
+state code into a Tcl string, and vice versa.
 
 The underlying mapping tables are automatically initialized on first
-access, and finalized on interpreter destruction.
+access (if not fully constant), and finalized on interpreter
+destruction.
 
 [para] The [arg definition] dictionary provides the mapping from the
 Tcl-level symbolic names of the state to their C expressions (often
@@ -61,23 +64,31 @@ in contrast to the package [package critcl::enum] which creates an
 enumeration based on the specified symbolic names.
 
 [para] Further note that multiple strings can be mapped to the same C
-expression. When converting to Tcl the first string for the mapping
-is returned. An important thing to know: If all C expressions are
-recognizable as integer numbers and their covered range is not too large
-(at most 50) the package will generate code using direct and fast
-mapping tables instead of using a linear search.
+expression. When converting to Tcl the first string for the mapping is
+returned. An important thing to know: If all C expressions are
+recognizable as integer numbers and their covered range is not too
+large (at most 50) the package will generate code using direct and
+fast mapping tables instead of using a linear search.
 
-[para] If the option [option -nocase] is specified then the encoder will
-match strings case-insensitively, and the decoder will always return a
-lower-case string, regardless of the string's case in the [arg definition].
+[para] If the option [option -nocase] is specified then the encoder
+will match strings case-insensitively, and the decoder will always
+return a lower-case string, regardless of the string's case in the
+[arg definition].
+
+[para] If the option [option -mode] is specified its contents will
+interpreted as a list of access modes to support.  The two allowed
+modes are [const c] and [const tcl]. Both modes can be used
+together. The default mode is [const tcl].
 
 [para] The package generates multiple things (declarations and
 definitions) with names derived from [arg name], which has to be a
-proper C identifier.
+proper C identifier. Some of the things are generated conditional on
+the chosen [arg mode]s.
 
 [list_begin definitions]
 [def [arg name]_encode]
-The function for encoding a Tcl string into the equivalent state code.
+The [const tcl]-mode function for encoding a Tcl string into the
+equivalent state code.
 
 Its signature is
 [para][example_begin]
@@ -87,16 +98,43 @@ int [arg name]_encode (Tcl_Interp* interp, Tcl_Obj* state, int* result);
 [para] The return value of the function is a Tcl error code,
 i.e. [const TCL_OK], [const TCL_ERROR], etc.
 
+[def [arg name]_encode_cstr]
+The [const c]-mode function for encoding a C string into the
+equivalent state code.
+
+Its signature is
+[para][example_begin]
+int [arg name]_encode_cstr (const char* state);
+[example_end]
+
+[para] The return value of the function is the encoded state, or -1 if
+the argument is not a vlaid state.
+
 [def [arg name]_decode]
-The function for decoding a state code into the equivalent Tcl strings.
+The [const tcl]-mode function for decoding a state code into the
+equivalent Tcl string.
 
 Its signature is
 [para][example_begin]
 Tcl_Obj* [arg name]_decode (Tcl_Interp* interp, int state);
 [example_end]
 
+[def [arg name]_decode_cstr]
+The [const c]-mode function for decoding a state code into the
+equivalent C string.
+
+Its signature is
+[para][example_begin]
+const char* [arg name]_decode_cstr (int state);
+[example_end]
+
+[para] The return value of the function is the C string for the state,
+or [const NULL] if the [arg state] argument does not contain a valid
+state value.
+
+
 [def [arg name].h]
-A header file containing the declarations for the two conversion
+A header file containing the declarations for the conversion
 functions, for use by other parts of the system, if necessary.
 
 [para] The generated file is stored in a place where it will not
@@ -104,12 +142,12 @@ interfere with the overall system outside of the package, yet also be
 available for easy inclusion by package files ([cmd csources]).
 
 [def [arg name]]
-The name of a critcl argument type encapsulating the encoder function
-for use by [cmd critcl::cproc].
+For mode [const tcl] the command registers a new argument-type for
+[cmd critcl::cproc] with critcl, encapsulating the encoder function.
 
 [def [arg name]]
-The name of a critcl result type encapsulating the decoder function
-for use by [cmd critcl::cproc].
+For mode [const tcl] the command registers a new result-type for
+[cmd critcl::cproc] with critcl, encapsulating the decoder function.
 
 [list_end]
 [list_end]

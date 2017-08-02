@@ -34,6 +34,9 @@ proc critcl::literals::def {name dict {use tcl}} {
     return
 }
 
+# # ## ### ##### ######## ############# #####################
+## Internals
+
 proc critcl::literals::Use {use} {
     # Use cases: tcl, c, both
     upvar 1 mode mode
@@ -128,8 +131,8 @@ proc critcl::literals::HeaderIntro {name dict} {
     lappend map @NAME@  $name
     lappend map @CODES@ [join [dict keys $dict] {, }]
     return \n[critcl::at::here!][string map $map {
-	#ifndef @NAME@_HEADER
-	#define @NAME@_HEADER
+	#ifndef @NAME@_LITERALS_HEADER
+	#define @NAME@_LITERALS_HEADER
 
 	/* Symbolic names for the literals */
 	typedef enum @NAME@_names {
@@ -142,7 +145,7 @@ proc critcl::literals::HeaderIntro {name dict} {
 proc critcl::literals::HeaderEnd {name} {
     lappend map @NAME@ $name
     return [string map $map {
-	#endif /* @NAME@_HEADER */
+	#endif /* @NAME@_LITERALS_HEADER */
     }]
 }
 

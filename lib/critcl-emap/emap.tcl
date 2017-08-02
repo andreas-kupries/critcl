@@ -6,9 +6,9 @@
 # CriTcl Utility Package for emap en- and decoder.
 # Based on i-assoc.
 #
-# Copyright (c) 2014-2015 Andreas Kupries <andreas_kupries@users.sourceforge.net>
+# Copyright (c) 2014-2017 Andreas Kupries <andreas_kupries@users.sourceforge.net>
 
-package provide critcl::emap 1
+package provide critcl::emap 1.1
 
 # # ## ### ##### ######## ############# #####################
 ## Requirements.
@@ -28,120 +28,199 @@ proc critcl::emap::def {name dict args} {
     # (Ad 1) Can be numeric, or symbolic, as long as it is a C int
     #        expression in the end.
 
-    # args = options. Currently only -nocase for case-insensitive strings on encoding.
+    # args = options. Currently supported:
+    # * -nocase : case-insensitive strings on encoding.
+    # * -mode   : list of use cases, access case: tcl, c (default: tcl)
 
-    set nocase 0
-    foreach o $args {
-	switch -glob -- $o {
-	    -nocase -
-	    -nocas -
-	    -noca -
-	    -noc -
-	    -no -
-	    -n { set nocase 1 }
-	    -* -
-	    default {
-		return -code error -errorcode {CRITCL EMAP INVALID-OPTION} \
-		    "Expected option -nocase, got \"$o\""
+    Options $args
+    Index $dict id symbols last
+    # symbols :: list of words, lexicographically sorted
+    # id   :: symbol -> index (sorted)
+    # last :: number of symbols
+
+    Header $name
+    ConstStringTable $name $symbols $dict $nocase $last
+    set isdirect [DecideIfDirect $dict min max direct]
+    if {$isdirect} {
+	DecodeDirect $name $min $max id direct
+    }
+    Tcl Iassoc       $name $symbols $dict $nocase $last
+    Tcl EncoderTcl   $name                $nocase
+    Tcl DecoderTcl   $name $isdirect              $last
+    Tcl ArgType      $name
+    Tcl ResultType   $name
+    C   EncoderC     $name                $nocase $last
+    C   DecoderC     $name $isdirect              $last
+    return
+}
+
+# # ## ### ##### ######## ############# #####################
+## Internals
+
+proc critcl::emap::DecoderTcl {name isdirect last} {
+    if {$isdirect} {
+	DecoderTclDirect $name
+    } else {
+	DecoderTclSearch $name $last
+    }
+    return
+}
+
+proc critcl::emap::DecoderTclSearch {name last} {
+    # Decoder based on linear search. Because we either
+    # - see some symbolic values (= do not know actual value)
+    # - the direct mapping table would be too large (> 50 entries).
+    lappend map @NAME@  $name
+    lappend map @UNAME@ [string toupper $name]
+    lappend map @LAST@  $last
+    
+    critcl::ccode \n[critcl::at::here!][string map $map {
+	Tcl_Obj*
+	@NAME@_decode (Tcl_Interp* interp, int state)
+	{
+	    /* Decode via linear search */
+	    char buf [20];
+	    int i;
+	    @NAME@_iassoc_data context = @NAME@_iassoc (interp);
+
+	    for (i = 0; i < @LAST@; i++)  {
+		if (@NAME@_emap_state [i] != state) continue;
+		return context->tcl [i];
 	    }
+
+	    sprintf (buf, "%d", state);
+	    Tcl_AppendResult (interp, "Invalid @NAME@ state code ", buf, NULL);
+	    Tcl_SetErrorCode (interp, "@UNAME@", "STATE", NULL);
+	    return NULL;
+	}
+    }]
+    return
+}
+
+proc critcl::emap::DecodeDirect {name min max iv dv} {
+    upvar 1 $iv id $dv direct
+    # Decoder based on a direct mapping table. We can do this because
+    # we found that all the values are pure integers, i.e. we know
+    # them in detail, and that the table is not too big (< 50 entries).
+
+    lassign [DirectTable $min $max id direct] table size
+
+    lappend map @NAME@      $name
+    lappend map @DIRECT@    $table
+    lappend map @SIZE@      $size
+    lappend map @MIN@       $min
+    lappend map @MAX@       $max
+    lappend map @OFFSET@    [Offset $min]
+
+    critcl::ccode \n[critcl::at::here!][string map $map {
+	static int @NAME@_direct (int state)
+	{
+	    static const int direct [@SIZE@] = {@DIRECT@
+	    };
+	    /* Check limits first */
+	    if (state < @MIN@) { return -1; }
+	    if (state > @MAX@) { return -1; }
+	    /* Map to string index */
+	    return direct [state@OFFSET@];
+	}
+    }]
+}
+
+proc critcl::emap::DecoderTclDirect {name} {
+    lappend map @NAME@      $name
+    lappend map @UNAME@     [string toupper $name]
+
+    critcl::ccode \n[critcl::at::here!][string map $map {
+	Tcl_Obj*
+	@NAME@_decode (Tcl_Interp* interp, int state)
+	{
+	    /* Decode via direct mapping */
+	    char buf [20];
+	    int i;
+	    @NAME@_iassoc_data context = @NAME@_iassoc (interp);
+
+	    i = @NAME@_direct (state);
+	    if (i < 0) { goto error; }
+	    
+	    /* Return the chosen string */
+	    return context->tcl [i];
+
+	    error:
+	    sprintf (buf, "%d", state);
+	    Tcl_AppendResult (interp, "Invalid @NAME@ state code ", buf, NULL);
+	    Tcl_SetErrorCode (interp, "@UNAME@", "STATE", NULL);
+	    return NULL;
+	}
+    }]
+    return
+}
+
+proc critcl::emap::DirectTable {min max iv dv} {
+    upvar 1 $iv id $dv direct
+
+    set table {}
+    set fmt   %[string length $max]d
+    
+    for {set i $min} {$i <= $max} {incr i} {
+	if {[info exists direct($i)]} {
+	    set sym [lindex $direct($i) 0]
+	    set code $id($sym)
+	    lappend table "$code,\t/* [format $fmt $i] <=> \"$sym\" */"
+	} else {
+	    lappend table "-1,"
 	}
     }
 
-    # For the C level opt array we want the elements sorted alphabetically.
-    set symbols [lsort -dict [dict keys $dict]]
-    set i 0
-    foreach s $symbols {
-	set id($s) $i
-	incr i
-    }
-    set last $i
+    return [list "\n\t\t    [join $table "\n\t\t    "]" [llength $table]]
+}
 
-    set allint 1
-    set min {}
-    set max {}
+proc critcl::emap::Offset {min} {
+    if {$min == 0} {
+	return ""
+    } elseif {$min < 0} {
+	return "+[expr {0-$min}]"
+    } else {
+	# Note: The 0+... ensures that we get a decimal number.
+	return "-[expr {0+$min}]"
+    }
+}
+
+proc critcl::emap::DecideIfDirect {dict minv maxv dv} {
+    upvar 1 $minv min $maxv max $dv direct
+    
+    set min  {}
+    set max  {}
 
     dict for {sym value} $dict {
 	# Manage a direct mapping table from stati to strings, if we
 	# can see the numeric value of all stati.
-	if {$allint && [string is integer -strict $value]} {
+	if {[string is integer -strict $value]} {
 	    if {($min eq {}) || ($value < $min)} { set min $value }
 	    if {($max eq {}) || ($value > $max)} { set max $value }
 	    lappend direct($value) $sym
 	} else {
-	    set allint 0
+	    return 0
 	}
-
-	if {$nocase} { set sym [string tolower $sym] }
-	set map [list @ID@ $id($sym) @SYM@ $sym @VALUE@ $value]
-
-	append init \n[critcl::at::here!][string map $map {
-	    data->c     [@ID@] = "@SYM@";
-	    data->value [@ID@] = @VALUE@;
-	    data->tcl   [@ID@] = Tcl_NewStringObj ("@SYM@", -1);
-	    Tcl_IncrRefCount (data->tcl [@ID@]);
-	}]
-
-	append final \n[critcl::at::here!][string map $map {
-	    Tcl_DecrRefCount (data->tcl [@ID@]);
-	}]
     }
-    append init \n "    data->c \[$last\] = NULL;"
+    
+    if {$min eq {}}        { return 0 }
+    if {$max eq {}}        { return 0 }
+    if {($max-$min) >= 50} { return 0 }
+    return 1
+}
 
-    lappend map @NAME@  $name
-    lappend map @UNAME@ [string toupper $name]
-    lappend map @LAST@  $last
-
-    # I. Generate a header file for inclusion by other parts of the
-    #    package, i.e. csources. Include the header here as well, for
-    #    the following blocks of code.
-    #
-    #    Declaration of the en- and decoder functions.
-
-    critcl::include [critcl::make ${name}.h \n[critcl::at::here!][string map $map {
-	#ifndef @NAME@_HEADER
-	#define @NAME@_HEADER
-
-	/* Encode a Tcl string into the corresponding state code */
-	extern int
-	@NAME@_encode (Tcl_Interp* interp,
-		       Tcl_Obj*    state,
-		       int*        result);
-
-	/* Decode a state into the corresponding Tcl string */
-	extern Tcl_Obj*
-	@NAME@_decode (Tcl_Interp* interp,
-		       int         state);
-
-	#endif
-    }]]
-
-    # II: Generate the interp association holding the various
-    #     conversion maps.
-
-    critcl::iassoc def ${name}_iassoc {} \n[critcl::at::here!][string map $map {
-	const char*    c     [@LAST@+1]; /* State name, C string */
-	Tcl_Obj*       tcl   [@LAST@];   /* State name, Tcl_Obj*, sharable */
-	int            value [@LAST@];   /* State code */
-    }] $init $final
-
-    # III: Generate encoder function: Conversion of Tcl state string
-    #      into corresponding state code.
-
+proc critcl::emap::EncoderTcl {name nocase} {
     if {$nocase} {
-	lappend line ""
-	lappend line "/* -nocase :: Due to the duplication the state string is not shared,"
-	lappend line " * allowing us to convert in place. As the string may change"
-	lappend line " * length (shrinking) we have to reset the length after"
-	lappend line " * conversion."
-	lappend line " */"
-	lappend line "state = Tcl_DuplicateObj (state);"
-	lappend line "Tcl_SetObjLength(state, Tcl_UtfToLower (Tcl_GetString (state)));"
-	lappend map @NOCASE_BEGIN@ [join $line "\n\t    "]
-	lappend map @NOCASE_END@   "Tcl_DecrRefCount (state);\n"
+	EncoderTclNocase $name
     } else {
-	lappend map @NOCASE_BEGIN@ ""
-	lappend map @NOCASE_END@   ""
+	EncoderTclPlain $name
     }
+    return
+}
+
+proc critcl::emap::EncoderTclPlain {name} {
+    lappend map @NAME@ $name
+    lappend map @UNAME@ [string toupper $name]
 
     critcl::ccode \n[critcl::at::here!][string map $map {
 	int
@@ -149,126 +228,173 @@ proc critcl::emap::def {name dict args} {
 		       Tcl_Obj*    state,
 		       int*        result)
 	{
-	    @NAME@_iassoc_data context = @NAME@_iassoc (interp);
 	    int id, res;
-	    @NOCASE_BEGIN@
-	    res = Tcl_GetIndexFromObj (interp, state, context->c, "@NAME@", 0, &id);
-	    @NOCASE_END@
+	    res = Tcl_GetIndexFromObj (interp, state, @NAME@_emap_cstr, "@NAME@", 0, &id);
 	    if (res != TCL_OK) {
 		Tcl_SetErrorCode (interp, "@UNAME@", "STATE", NULL);
 		return TCL_ERROR;
 	    }
 
-	    *result = context->value [id];
+	    *result = @NAME@_emap_state [id];
 	    return TCL_OK;
 	}
     }]
+    return
+}
 
-    # IV: Generate decoder function: Convert state code into the
-    #     corresponding Tcl state string (First mapping wins).
+proc critcl::emap::EncoderTclNocase {name} {
+    lappend map @NAME@ $name
+    lappend map @UNAME@ [string toupper $name]
 
-    if {$allint &&
-	($min ne {}) && ($max ne {}) &&
-	(($max-$min) < 50)} {
-	# Decoder based on a direct mapping table. We can do this
-	# because all the values are pure integers, i.e. we know them
-	# in detail, and the table is not too big.
-
-	if {$min == 0} {
-	    set offset ""
-	} elseif {$min < 0} {
-	    set offset "+[expr {0-$min}]"
-	} else {
-	    # Note: The 0+... ensures that we get a decimal number.
-	    set offset "-[expr {0+$min}]"
-	}
-
-	set table {}
-	set hasholes 0
-	set n [string length $max]
-	for {set i $min} {$i <= $max} {incr i} {
-	    if {[info exists direct($i)]} {
-		set sym [lindex $direct($i) 0]
-		set code $id($sym)
-		lappend table "$code,\t/* [format %${n}d $i] <=> \"$sym\" */"
-	    } else {
-		lappend table "-1,"
-		set hasholes 1
-	    }
-	}
-
-	lappend map @DIRECT@ "\n\t\t    [join $table "\n\t\t    "]"
-	lappend map @SIZE@   [llength $table]
-	lappend map @MIN@    $min
-	lappend map @MAX@    $max
-	lappend map @OFFSET@ $offset
-	lappend map @HOLCHK@ [expr {$hasholes
-				    ? "if (i < 0) goto error;"
-				    : ""}]
-
-	critcl::ccode \n[critcl::at::here!][string map $map {
-	    Tcl_Obj*
-	    @NAME@_decode (Tcl_Interp* interp, int state)
-	    {
-		static const direct [@SIZE@] = {@DIRECT@
-		};
-
-		char buf [20];
-		int i;
-		@NAME@_iassoc_data context = @NAME@_iassoc (interp);
-
-		/* Check limits first */
-		if (state < @MIN@) goto error;
-		if (state > @MAX@) goto error;
-
-		/* Map to string index, check if it was a hole (if necessary) */
-		i = direct [state@OFFSET@];
-		@HOLCHK@
-
-		/* Return the chosen string */
-		return context->tcl [i];
-
-	      error:
-		sprintf (buf, "%d", state);
-		Tcl_AppendResult (interp, "Invalid @NAME@ state code ", buf, NULL);
+    critcl::ccode \n[critcl::at::here!][string map $map {
+	int
+	@NAME@_encode (Tcl_Interp* interp,
+		       Tcl_Obj*    state,
+		       int*        result)
+	{
+	    int id, res;
+	    /* -nocase :: We duplicate the state string, making it unshared,
+	     * allowing us to convert in place. As the string may change
+	     * length (shrinking) we have to reset the length after
+	     * conversion.
+	     */
+	    state = Tcl_DuplicateObj (state);
+	    Tcl_SetObjLength(state, Tcl_UtfToLower (Tcl_GetString (state)));
+	    res = Tcl_GetIndexFromObj (interp, state, @NAME@_emap_cstr, "@NAME@", 0, &id);
+	    Tcl_DecrRefCount (state);
+	    if (res != TCL_OK) {
 		Tcl_SetErrorCode (interp, "@UNAME@", "STATE", NULL);
-		return NULL;
+		return TCL_ERROR;
 	    }
-	}]
 
+	    *result = @NAME@_emap_state [id];
+	    return TCL_OK;
+	}
+    }]
+    return
+}
+
+proc critcl::emap::EncoderC {name nocase last} {
+    if {$nocase} {
+	EncoderCNocase $name $last
     } else {
-	# Decoder based on linear search. Because we either
-	# - see some symbolic values (= do not know actual value)
-	# - the direct mapping table would be too large (> 50 entries).
-
-	critcl::ccode \n[critcl::at::here!][string map $map {
-	    Tcl_Obj*
-	    @NAME@_decode (Tcl_Interp* interp, int state)
-	    {
-		char buf [20];
-		int i;
-		@NAME@_iassoc_data context = @NAME@_iassoc (interp);
-
-		for (i = 0; i < @LAST@; i++)  {
-		   if (context->value[i] != state) continue;
-		   return context->tcl [i];
-		}
-
-		sprintf (buf, "%d", state);
-		Tcl_AppendResult (interp, "Invalid @NAME@ state code ", buf, NULL);
-		Tcl_SetErrorCode (interp, "@UNAME@", "STATE", NULL);
-		return NULL;
-	    }
-	}]
+	EncoderCPlain $name $last
     }
+    return
+}
 
-    # V. Define convenient argument- and result-type definitions
-    #    wrapping the de- and encoder functions for use by cprocs.
+proc critcl::emap::EncoderCPlain {name last} {
+    lappend map @NAME@ $name
+    lappend map @UNAME@ [string toupper $name]
+    lappend map @LAST@  $last
 
-    critcl::argtype $name \n[critcl::at::here!][string map $map {
-	if (@NAME@_encode (interp, @@, &@A) != TCL_OK) return TCL_ERROR;
-    }] int int
+    # case-sensitive search
+    critcl::ccode \n[critcl::at::here!][string map $map {
+	#include <string.h>
 
+	int
+	@NAME@_encode_cstr (const char* state)
+	{
+	    int id;
+	    /* explicit linear search */
+	    for (id = 0; id < @LAST@; id++)  {
+		if (strcmp (state, @NAME@_emap_cstr [id]) != 0) continue;
+		return @NAME@_emap_state [id];
+	    }
+	    return -1;
+	}
+    }]
+    return
+}
+
+proc critcl::emap::EncoderCNocase {name last} {
+    lappend map @NAME@ $name
+    lappend map @UNAME@ [string toupper $name]
+    lappend map @LAST@  $last
+
+    # case-insensitive search
+    critcl::ccode \n[critcl::at::here!][string map $map {
+	#include <string.h>
+
+	int
+	@NAME@_encode_cstr (const char* state)
+	{
+	    /* -nocase :: We duplicate the state string, allowing us to
+	     * convert in place. As the string may change length (shrink)
+	     * we have to re-terminate it after conversion.
+	     */
+	    int id, slen = 1 + strlen (state);
+	    char* lower = ckalloc (slen);
+
+	    memcpy (lower, state, slen);
+	    lower [Tcl_UtfToLower (lower)] = '\0';
+
+	    /* explicit linear search */
+	    for (id = 0; id < @LAST@; id++)  {
+		if (strcmp (lower, @NAME@_emap_cstr [id]) != 0) continue;
+		ckfree ((char*) lower);
+		return @NAME@_emap_state [id];
+	    }
+	    ckfree ((char*) lower);
+	    return -1;
+	}
+    }]
+    return
+}
+    
+proc critcl::emap::DecoderC {name isdirect last} {
+    if {$isdirect} {
+	DecoderCDirect $name
+    } else {
+	DecoderCSearch $name $last
+    }
+    return
+}
+
+proc critcl::emap::DecoderCSearch {name last} {
+    # Decoder based on linear search. Because we either
+    # - see some symbolic values (= do not know actual value)
+    # - the direct mapping table would be too large (> 50 entries).
+    lappend map @NAME@  $name
+    lappend map @UNAME@ [string toupper $name]
+    lappend map @LAST@  $last
+    
+    critcl::ccode \n[critcl::at::here!][string map $map {
+	const char*
+	@NAME@_decode_cstr (int state)
+	{
+	    /* Decode via linear search */
+	    int id;
+	    for (id = 0; id < @LAST@; id++)  {
+		if (@NAME@_emap_state [id] != state) continue;
+		return @NAME@_emap_cstr [id];
+	    }
+	    return NULL;
+	}
+    }]
+    return
+}
+
+proc critcl::emap::DecoderCDirect {name} {
+    lappend map @NAME@      $name
+    lappend map @UNAME@     [string toupper $name]
+
+    critcl::ccode \n[critcl::at::here!][string map $map {
+	const char*
+	@NAME@_decode_cstr (int state)
+	{
+	    /* Decode via direct mapping */
+	    int i = @NAME@_direct (state);
+	    if (i < 0) { return NULL; }
+	    /* Return the chosen string */
+	    return @NAME@_emap_cstr [i];
+	}
+    }]
+    return
+}
+
+proc critcl::emap::ResultType {name} {
+    lappend map @NAME@ $name
     critcl::resulttype $name \n[critcl::at::here!][string map $map {
 	/* @NAME@_decode result is 0-refcount */
 	{ Tcl_Obj* ro = @NAME@_decode (interp, rv);
@@ -276,6 +402,217 @@ proc critcl::emap::def {name dict args} {
 	Tcl_SetObjResult (interp, ro);
 	return TCL_OK; }
     }] int
+    return
+}
+
+proc critcl::emap::ArgType {name} {
+    lappend map @NAME@ $name
+    critcl::argtype $name \n[critcl::at::here!][string map $map {
+	if (@NAME@_encode (interp, @@, &@A) != TCL_OK) return TCL_ERROR;
+    }] int int
+    return
+}
+
+proc critcl::emap::Header {name} {
+    # I. Generate a header file for inclusion by other parts of the
+    #    package, i.e. csources. Include the header here as well, for
+    #    the following blocks of code.
+    #
+    #    Declaration of the en- and decoder functions.
+    upvar 1 mode mode
+    append h [HeaderIntro   $name]
+    append h [Tcl HeaderTcl $name]
+    append h [C   HeaderC   $name]
+    append h [HeaderEnd     $name]
+    critcl::include [critcl::make ${name}.h $h]
+    return
+}
+
+proc critcl::emap::HeaderIntro {name} {
+    lappend map @NAME@  $name
+    return \n[critcl::at::here!][string map $map {
+	#ifndef @NAME@_EMAP_HEADER
+	#define @NAME@_EMAP_HEADER
+    }]
+}
+
+proc critcl::emap::HeaderEnd {name} {
+    lappend map @NAME@ $name
+    return [string map $map {
+	#endif /* @NAME@_EMAP_HEADER */
+    }]
+}
+
+proc critcl::emap::HeaderTcl {name} {
+    lappend map @NAME@ $name
+    return \n[critcl::at::here!][string map $map {
+	/* Encode a Tcl string into the corresponding state code */
+	extern int @NAME@_encode (Tcl_Interp* interp, Tcl_Obj* state, int* result);
+
+	/* Decode a state into the corresponding Tcl string */
+	extern Tcl_Obj* @NAME@_decode (Tcl_Interp* interp, int state);
+    }]
+}
+
+proc critcl::emap::HeaderC {name} {
+    lappend map @NAME@ $name
+    return \n[critcl::at::here!][string map $map {
+	/* Encode a C string into the corresponding state code */
+	extern int @NAME@_encode_cstr (const char* state);
+
+	/* Decode a state into the corresponding C string */
+	extern const char* @NAME@_decode_cstr (int state);
+    }]
+}
+
+proc critcl::emap::Iassoc {name symbols dict nocase last} {
+    upvar 1 mode mode
+    critcl::iassoc def ${name}_iassoc {} \
+	[IassocStructure $last] \
+	[IassocInit  $name $symbols $dict $nocase $last] \
+	[IassocFinal       $symbols $dict]
+    return
+}
+
+proc critcl::emap::IassocStructure {last} {
+    lappend map @LAST@ $last
+    return \n[critcl::at::here!][string map $map {
+	Tcl_Obj* tcl [@LAST@]; /* State name, Tcl_Obj*, sharable */
+    }]
+}
+
+proc critcl::emap::IassocInit {name symbols dict nocase last} {
+    set id -1
+    foreach sym $symbols {
+	set value [dict get $dict $sym]
+	incr id
+	if {$nocase} { set sym [string tolower $sym] }
+	set map [list @ID@ $id @SYM@ $sym @VALUE@ $value @NAME@ $name]
+
+	# iassoc initialization, direct from string, no C level
+	append init \n[critcl::at::here!][string map $map {
+	    data->tcl [@ID@] = Tcl_NewStringObj (@NAME@_emap_cstr[@ID@], -1);
+	    Tcl_IncrRefCount (data->tcl [@ID@]);
+	}]
+    }
+    return $init
+}
+
+proc critcl::emap::IassocFinal {symbols dict} {
+    set id -1
+    foreach sym $symbols {
+	incr id
+	set map [list @ID@ $id]
+	append final \n[critcl::at::here!][string map $map {
+	    Tcl_DecrRefCount (data->tcl [@ID@]);
+	}]
+    }
+    return $final
+}
+
+proc critcl::emap::ConstStringTable {name symbols dict nocase last} {
+    # C level table initialization (constant data)
+    foreach sym $symbols {
+	set value [dict get $dict $sym]
+	if {$nocase} { set sym [string tolower $sym] }
+	append ctable "\n\t    \"${sym}\","
+	append stable "\n\t    ${value},"
+    }
+    append ctable "\n\t    0"
+    set stable [string trimright $stable ,]
+
+    lappend map @NAME@    $name
+    lappend map @STRINGS@ $ctable
+    lappend map @STATES@  $stable
+    lappend map @LAST@    $last
+
+    critcl::ccode [critcl::at::here!][string map $map {
+	/* State names, C string */
+	static const char* @NAME@_emap_cstr [@LAST@+1] = {@STRINGS@
+	};
+
+	/* State codes */
+	static int @NAME@_emap_state [@LAST@] = {@STATES@
+	};
+    }]
+    return
+}
+
+proc critcl::emap::C {args} {
+    upvar 1 mode mode
+    if {!$mode(c)} return
+    return [uplevel 1 $args]
+}
+
+proc critcl::emap::!C {args} {
+    upvar 1 mode mode
+    if {$mode(c)} return
+    return [uplevel 1 $args]
+}
+
+proc critcl::emap::Tcl {args} {
+    upvar 1 mode mode
+    if {!$mode(tcl)} return
+    return [uplevel 1 $args]
+}
+
+proc critcl::emap::!Tcl {args} {
+    upvar 1 mode mode
+    if {$mode(tcl)} return
+    return [uplevel 1 $args]
+}
+
+proc critcl::emap::Index {dict iv sv lv} {
+    upvar 1 $iv id $sv symbols $lv last
+    # For the C level search we want lexicographically sorted elements
+    set symbols [lsort -dict [dict keys $dict]]
+    set i 0
+    foreach s $symbols {
+	set id($s) $i
+	incr i
+    }
+    set last $i
+    # id :: symbol -> index (sorted)
+    return
+}
+
+proc critcl::emap::Options {options} {
+    upvar 1 nocase nocase mode mode
+    set nocase 0
+    set use    tcl
+
+    while {[llength $options]} {
+	set options [lassign $options o]
+	switch -glob -- $o {
+	    -nocase -
+	    -nocas -
+	    -noca -
+	    -noc -
+	    -no -
+	    -n { set nocase 1 }
+	    -mode -
+	    -mod -
+	    -mo -
+	    -m { set options [lassign $options use] }
+	    -* -
+	    default {
+		return -code error -errorcode {CRITCL EMAP INVALID-OPTION} \
+		    "Expected option -nocase, or -use, got \"$o\""
+	    }
+	}
+    }
+    Use $use
+    return
+}
+
+proc critcl::emap::Use {use} {
+    # Use cases: tcl, c, both
+    upvar 1 mode mode
+    set uses 0
+    foreach u {c tcl} { set mode($u) 0 }
+    foreach u $use    { set mode($u) 1 ; incr uses }
+    if {$uses} return
+    return -code error "Need at least one use case (c, or tcl)"
 }
 
 # # ## ### ##### ######## ############# #####################

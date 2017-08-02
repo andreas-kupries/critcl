@@ -30,18 +30,17 @@ critcl::subject demonstration {emap conversion} {encode emap} \
 # # ## ### ##### ######## ############# #####################
 ## C code.
 
-critcl::ccode {
-    #define STATE_INIT 0
-    #define STATE_MIX  1
-    #define STATE_DONE 2
-}
-
 critcl::emap::def demo {
-    init STATE_INIT
-    mix  STATE_MIX
-    done STATE_DONE
-}
-# Add -nocase as last argument for case-insensitive Tcl strings.
+    init  0
+    start 0
+    mix   1
+    final 2
+    done  2
+} -nocase
+# Add
+#    loop  5
+# to the spec to see an example with a hole in the code sequence.
+# Append -nocase as last arg to make encoding case-insensitive.
 
 critcl::cproc encode {Tcl_Interp* ip Tcl_Obj* state} int {
     int scode;
@@ -72,4 +71,4 @@ critcl::cproc xdecode {Tcl_Interp* ip int state} demo {
 
 # ### ### ### ######### ######### #########
 ## Ready
-package provide emap_ex 1
+package provide emapint 1

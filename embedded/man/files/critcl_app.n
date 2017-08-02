@@ -744,6 +744,13 @@ C-level access to the pool without Tcl types (Mode \fBc\fR)\&.
 The previously existing functionality is accesssible under mode
 \fBtcl\fR, which also is the default\&. Both modes can be used
 together\&.
+.IP [7]
+Extended the support package \fBcritcl::emap\fR with
+limited configurability\&. It is now able to generate code for
+C-level access to the mapping without Tcl types
+(Mode \fBc\fR)\&. The previously existing functionality is
+accessible under mode \fBtcl\fR, which also is the
+default\&. Both modes can be used together\&.
 .PP
 .SH "CHANGES FOR VERSION 3\&.1\&.16"
 .IP [1]

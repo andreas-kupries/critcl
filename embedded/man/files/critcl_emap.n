@@ -280,7 +280,7 @@ package require \fBcritcl  ?3\&.1\&.11?\fR
 .sp
 package require \fBcritcl::emap  ?1?\fR
 .sp
-\fB::critcl::emap::def\fR \fIname\fR \fIdefinition\fR ?\fB-nocase\fR?
+\fB::critcl::emap::def\fR \fIname\fR \fIdefinition\fR ?\fB-nocase\fR? ?\fB-mode\fR \fImode\fR?
 .sp
 .BE
 .SH DESCRIPTION
@@ -339,11 +339,12 @@ This package resides in the Core Package Layer of CriTcl\&.
 .PP
 .SH API
 .TP
-\fB::critcl::emap::def\fR \fIname\fR \fIdefinition\fR ?\fB-nocase\fR?
-This command defines two C functions for the conversion of the
-\fIname\fRd state code into a Tcl string, and vice versa\&.
+\fB::critcl::emap::def\fR \fIname\fR \fIdefinition\fR ?\fB-nocase\fR? ?\fB-mode\fR \fImode\fR?
+This command defines C functions for the conversion of the \fIname\fRd
+state code into a Tcl string, and vice versa\&.
 The underlying mapping tables are automatically initialized on first
-access, and finalized on interpreter destruction\&.
+access (if not fully constant), and finalized on interpreter
+destruction\&.
 .sp
 The \fIdefinition\fR dictionary provides the mapping from the
 Tcl-level symbolic names of the state to their C expressions (often
@@ -354,23 +355,31 @@ in contrast to the package \fBcritcl::enum\fR which creates an
 enumeration based on the specified symbolic names\&.
 .sp
 Further note that multiple strings can be mapped to the same C
-expression\&. When converting to Tcl the first string for the mapping
-is returned\&. An important thing to know: If all C expressions are
-recognizable as integer numbers and their covered range is not too large
-(at most 50) the package will generate code using direct and fast
-mapping tables instead of using a linear search\&.
+expression\&. When converting to Tcl the first string for the mapping is
+returned\&. An important thing to know: If all C expressions are
+recognizable as integer numbers and their covered range is not too
+large (at most 50) the package will generate code using direct and
+fast mapping tables instead of using a linear search\&.
 .sp
-If the option \fB-nocase\fR is specified then the encoder will
-match strings case-insensitively, and the decoder will always return a
-lower-case string, regardless of the string's case in the \fIdefinition\fR\&.
+If the option \fB-nocase\fR is specified then the encoder
+will match strings case-insensitively, and the decoder will always
+return a lower-case string, regardless of the string's case in the
+\fIdefinition\fR\&.
+.sp
+If the option \fB-mode\fR is specified its contents will
+interpreted as a list of access modes to support\&.  The two allowed
+modes are \fBc\fR and \fBtcl\fR\&. Both modes can be used
+together\&. The default mode is \fBtcl\fR\&.
 .sp
 The package generates multiple things (declarations and
 definitions) with names derived from \fIname\fR, which has to be a
-proper C identifier\&.
+proper C identifier\&. Some of the things are generated conditional on
+the chosen \fImode\fRs\&.
 .RS
 .TP
 \fIname\fR_encode
-The function for encoding a Tcl string into the equivalent state code\&.
+The \fBtcl\fR-mode function for encoding a Tcl string into the
+equivalent state code\&.
 Its signature is
 .sp
 .CS
@@ -383,8 +392,24 @@ int \fIname\fR_encode (Tcl_Interp* interp, Tcl_Obj* state, int* result);
 The return value of the function is a Tcl error code,
 i\&.e\&. \fBTCL_OK\fR, \fBTCL_ERROR\fR, etc\&.
 .TP
+\fIname\fR_encode_cstr
+The \fBc\fR-mode function for encoding a C string into the
+equivalent state code\&.
+Its signature is
+.sp
+.CS
+
+
+int \fIname\fR_encode_cstr (const char* state);
+
+.CE
+.sp
+The return value of the function is the encoded state, or -1 if
+the argument is not a vlaid state\&.
+.TP
 \fIname\fR_decode
-The function for decoding a state code into the equivalent Tcl strings\&.
+The \fBtcl\fR-mode function for decoding a state code into the
+equivalent Tcl string\&.
 Its signature is
 .sp
 .CS
@@ -394,8 +419,24 @@ Tcl_Obj* \fIname\fR_decode (Tcl_Interp* interp, int state);
 
 .CE
 .TP
+\fIname\fR_decode_cstr
+The \fBc\fR-mode function for decoding a state code into the
+equivalent C string\&.
+Its signature is
+.sp
+.CS
+
+
+const char* \fIname\fR_decode_cstr (int state);
+
+.CE
+.sp
+The return value of the function is the C string for the state,
+or \fBNULL\fR if the \fIstate\fR argument does not contain a valid
+state value\&.
+.TP
 \fIname\fR\&.h
-A header file containing the declarations for the two conversion
+A header file containing the declarations for the conversion
 functions, for use by other parts of the system, if necessary\&.
 .sp
 The generated file is stored in a place where it will not
@@ -403,12 +444,12 @@ interfere with the overall system outside of the package, yet also be
 available for easy inclusion by package files (\fBcsources\fR)\&.
 .TP
 \fIname\fR
-The name of a critcl argument type encapsulating the encoder function
-for use by \fBcritcl::cproc\fR\&.
+For mode \fBtcl\fR the command registers a new argument-type for
+\fBcritcl::cproc\fR with critcl, encapsulating the encoder function\&.
 .TP
 \fIname\fR
-The name of a critcl result type encapsulating the decoder function
-for use by \fBcritcl::cproc\fR\&.
+For mode \fBtcl\fR the command registers a new result-type for
+\fBcritcl::cproc\fR with critcl, encapsulating the decoder function\&.
 .RE
 .PP
 .SH EXAMPLE

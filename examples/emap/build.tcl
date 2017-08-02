@@ -2,7 +2,7 @@
 # -*- tcl -*- \
 exec tclsh "$0" ${1+"$@"}
 set me [file normalize [info script]]
-set packages {emap_ex}
+set packages {emap}
 proc main {} {
     global argv tcl_platform tag
     set tag {}

@@ -1,5 +1,5 @@
 
-package require emapint
+package require emapint-both
 
 ex encode  mix  ;# 1
 ex xencode done ;# 2

@@ -24,4 +24,11 @@
        [const tcl], which also is the default. Both modes can be used
        together.
 
+[enum] Extended the support package [package critcl::emap] with
+       limited configurability. It is now able to generate code for
+       C-level access to the mapping without Tcl types
+       (Mode [const c]). The previously existing functionality is
+       accessible under mode [const tcl], which also is the
+       default. Both modes can be used together.
+
 [list_end]

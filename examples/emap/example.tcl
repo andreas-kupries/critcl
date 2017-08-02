@@ -1,5 +1,5 @@
 
-package require emap_ex
+package require emap
 
 ex encode  mix  ;# 1
 ex xencode done ;# 2
