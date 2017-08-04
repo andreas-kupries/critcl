@@ -259,9 +259,9 @@ proc ::critcl::ccommand {name anames args} {
 	    Emitln "\nstatic int\n$wname$ca"
 	    Emitln \{
 	    Emitln "  int _rv;"
-	    Emitln "  TRACE_ARGS ($traceref, $oc, $ov);"
+	    Emitln "  TRACE_CPROC_ARGS ($traceref, $oc, $ov);"
 	    Emitln "  _rv = ${wname}_actual ($cd, $ip, $oc, $ov);"
-	    Emitln "  TRACE_RESULT ($ip, _rv);"
+	    Emitln "  TRACE_CPROC_RESULT ($ip, _rv);"
 	    Emitln \}
 	}
     } else {
@@ -3673,7 +3673,7 @@ proc ::critcl::EmitShimVariables {adb rtype} {
 
 proc ::critcl::EmitArgTracing {fun} {
     if {!$v::options(trace)} return
-    Emitln "\n  TRACE_ARGS ($fun, oc, ov);"
+    Emitln "\n  TRACE_CPROC_ARGS ($fun, oc, ov);"
     return
 }
 
@@ -3747,7 +3747,7 @@ proc ::critcl::TraceReturns {label code} {
     # Inject tracing into the 'return's.
     regsub -all \
 	{return([^;]*);}           $code \
-	{TRACE_RESULT (interp,\1);} newcode
+	{TRACE_CPROC_RESULT (interp,\1);} newcode
     if {[string match {*return *} $code] && ($newcode eq $code)} {
 	error "Failed to inject tracing code into $label"
     }
@@ -3771,7 +3771,7 @@ proc ::critcl::EmitShimFooter {adb rtype} {
 	Emitln $code
     } else {
 	if {$v::options(trace)} {
-	    Emitln "  TRACE_RETURN_VOID;"
+	    Emitln "  TRACE_CPROC_VOID;"
 	}
     }
     Emitln \}

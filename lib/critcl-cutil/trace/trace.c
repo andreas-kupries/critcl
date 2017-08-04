@@ -16,18 +16,28 @@
  * top to bottom.
  */
 
-typedef struct FUNCTION_STACK {
+typedef struct function_stack {
     const char*            str;
-    struct FUNCTION_STACK* down;
-} FUNCTION_STACK;
+    struct function_stack* down;
+} function_stack;
 
-static FUNCTION_STACK* top   = 0;
+/*
+ * = = == === ===== ======== ============= =====================
+ * Tracing state
+ */
+
+static function_stack* top   = 0;
 static int             level = 0;
+
+/*
+ * = = == === ===== ======== ============= =====================
+ * Internal - Function stack
+ */
 
 static void
 push (const char* str)
 {
-    FUNCTION_STACK* new = ALLOC (FUNCTION_STACK);
+    function_stack* new = ALLOC (function_stack);
     new->str = str;
     new->down = top;
     top = new;
@@ -37,7 +47,7 @@ push (const char* str)
 static void
 pop (void)
 {
-    FUNCTION_STACK* next = top->down;
+    function_stack* next = top->down;
     level -= 4;
     ckfree ((char*)top);
     top = next;
@@ -63,11 +73,13 @@ print_prefix (void)
 
 /*
  * = = == === ===== ======== ============= =====================
+ * API
  */
 
 void
-critcl_trace_enter (const char* fun)
+critcl_trace_enter (int on, const char* fun)
 {
+    if (!on) return;
     push (fun);
     print_prefix();
     fwrite("ENTER\n", 1, 6, stdout);
@@ -81,11 +93,12 @@ critcl_trace_enter (const char* fun)
 static char msg [1024*1024];
 
 void
-critcl_trace_return (const char *pat, ...)
+critcl_trace_return (int on, const char *pat, ...)
 {
     int len;
     va_list args;
 
+    if (!on) return;
     print_prefix();
     fwrite("RETURN = ", 1, 9, stdout);
     fflush                   (stdout);
@@ -104,31 +117,13 @@ critcl_trace_return (const char *pat, ...)
 }
 
 void
-critcl_trace_printf (const char *pat, ...)
+critcl_trace_printf (int on, int indent, const char *pat, ...)
 {
     int len;
     va_list args;
 
-    print_prefix();
-
-    va_start(args, pat);
-    len = vsprintf(msg, pat, args);
-    va_end(args);
-
-    msg[len++] = '\n';
-    msg[len] = '\0';
-
-    fwrite(msg, 1, len, stdout);
-    fflush             (stdout);
-}
-
-void
-critcl_trace_printf0 (const char *pat, ...)
-{
-    int len;
-    va_list args;
-
-    /* 0 -- do not use the current indent -- */
+    if (!on) return;
+    if (indent) print_prefix();
 
     va_start(args, pat);
     len = vsprintf(msg, pat, args);
@@ -146,17 +141,17 @@ critcl_trace_cmd_args (int argc, Tcl_Obj*const* argv)
 {
     int i;
     for (i=0; i < argc; i++) {
-	critcl_trace_printf ("ARG [%3d] = '%s'", i, Tcl_GetString(argv[i]));
+	critcl_trace_printf (1, 1, "ARG [%3d] = '%s'", i, Tcl_GetString((Tcl_Obj*) argv[i]));
     }
 }
 
 void
 critcl_trace_cmd_result (const Tcl_Obj* result)
 {
-    critcl_trace_printf ("RESULT = '%s'", Tcl_GetString(result));
+    critcl_trace_printf (1, 1, "RESULT = '%s'", Tcl_GetString((Tcl_Obj*) result));
 }
 
-#endif
+#endif /*  CRITCL_TRACER */
 /*
  * = = == === ===== ======== ============= =====================
  */

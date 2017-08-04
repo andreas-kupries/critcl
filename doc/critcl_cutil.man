@@ -121,8 +121,8 @@ files
     void TRACE_RETURN_VOID (void);
     any  TRACE_RETURN (char* format, any x);
 
-    void TRACE  ((char* format, ...));
-    void TRACE0 ((char* format, ...));
+    void TRACE  (char* format, ...);
+    void TRACE0 (char* format, ...);
 
     void TRACE_ARGS (char* function, int c, TclObj* v[]);
     any  TRACE_RESULT (Tcl_Interp* interp, any code);
@@ -145,10 +145,8 @@ well.
 Further note that the command [cmd critcl::config] now accepts a
 boolean option [const trace]. Setting it activates enter/exit tracing
 in all commands based on [cmd critcl::cproc], with proper printing of
-arguments and results. It should be noted that this is subordinate to
-the activation of the tracing facility in general. In other words, if
-the tracing facility is not active then setting the config has no
-effect.
+arguments and results. This implicitly activates the tracing facility
+in general.
 
 [para] The details of the semantics are explained in section
 [sectref Tracing]

@@ -31,10 +31,8 @@ generated C code (when [const true]) or not. By default this is [const on].
 Inactive by default.
 
 When active code tracing entry and exit of [cmd critcl::cproc]-based
-is inserted into the C code.
-
-Note that this is subordinate to the tracing facility being available
-and active in general (See package [package critcl::cutil]).
+is inserted into the C code. This implicitly activates the tracing
+facility in general. (See package [package critcl::cutil]).
 
 [include rq_cline.inc]
 
