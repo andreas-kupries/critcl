@@ -77,13 +77,14 @@ print_prefix (void)
  */
 
 void
-critcl_trace_enter (int on, const char* fun)
+critcl_trace_enter (int on, const char* fun, int nonewline)
 {
     if (!on) return;
     push (fun);
     print_prefix();
-    fwrite("ENTER\n", 1, 6, stdout);
-    fflush                 (stdout);
+    fwrite ("ENTER",                1, 5, stdout);
+    fwrite (nonewline ? " " : "\n", 1, 1, stdout);
+    fflush (stdout);
 }
 
 /*
@@ -117,20 +118,25 @@ critcl_trace_return (int on, const char *pat, ...)
 }
 
 void
-critcl_trace_printf (int on, int indent, const char *pat, ...)
+critcl_trace_printf (int on, int indent, int nl, const char *pat, ...)
 {
     int len;
     va_list args;
+    static int closed;
 
     if (!on) return;
-    if (indent) print_prefix();
+    if (closed && indent) print_prefix();
 
     va_start(args, pat);
     len = vsprintf(msg, pat, args);
     va_end(args);
-
-    msg[len++] = '\n';
-    msg[len] = '\0';
+    if (nl) {
+	msg[len++] = '\n';
+	msg[len] = '\0';
+	closed = 1;
+    } else {
+	closed = 0;
+    }
 
     fwrite(msg, 1, len, stdout);
     fflush             (stdout);
@@ -141,14 +147,14 @@ critcl_trace_cmd_args (int argc, Tcl_Obj*const* argv)
 {
     int i;
     for (i=0; i < argc; i++) {
-	critcl_trace_printf (1, 1, "ARG [%3d] = '%s'", i, Tcl_GetString((Tcl_Obj*) argv[i]));
+	critcl_trace_printf (1, 1, 1, "ARG [%3d] = '%s'", i, Tcl_GetString((Tcl_Obj*) argv[i]));
     }
 }
 
 void
 critcl_trace_cmd_result (const Tcl_Obj* result)
 {
-    critcl_trace_printf (1, 1, "RESULT = '%s'", Tcl_GetString((Tcl_Obj*) result));
+    critcl_trace_printf (1, 1, 1, "RESULT = '%s'", Tcl_GetString((Tcl_Obj*) result));
 }
 
 #endif /*  CRITCL_TRACER */
