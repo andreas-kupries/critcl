@@ -416,6 +416,8 @@ proc _install {args} {
     }
     return
 }
+proc Huninstall {} { Hdrop }
+proc _uninstall {{dst {}}} { _drop $dst }
 proc Hdrop {} { return "?destination?\n\tRemove packages.\n\tdestination = path of package directory, default \[info library\]." }
 proc _drop {{dst {}}} {
     global packages
