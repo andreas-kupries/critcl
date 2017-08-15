@@ -304,15 +304,41 @@ package require \fBcritcl::cutil  ?0\&.1?\fR
 .sp
 \fBvoid STREP_DS (Tcl_Obj* o, Tcl_DString* ds)\fR
 .sp
-\fBvoid TRACE_ENTER (char* function)\fR
+\fBTRACE_ON\fR
 .sp
-\fBvoid TRACE_RETURN_VOID (void)\fR
+\fBTRACE_OFF\fR
 .sp
-\fBany TRACE_RETURN (char* format, any x)\fR
+\fBTRACE_TAG_ON (identifier)\fR
 .sp
-\fBvoid TRACE ((char* format, \&.\&.\&.))\fR
+\fBTRACE_TAG_OFF(identifier)\fR
 .sp
-\fBvoid TRACE0 ((char* format, \&.\&.\&.))\fR
+\fBvoid TRACE_ENTER     (     char* function, char* format, \&.\&.\&.)\fR
+.sp
+\fBvoid TRACE_TAG_ENTER (tag, char* function, char* format, \&.\&.\&.)\fR
+.sp
+\fBvoid TRACE_RETURN_VOID     (void)\fR
+.sp
+\fBvoid TRACE_TAG_RETURN_VOID (tag)\fR
+.sp
+\fBany TRACE_RETURN     (     char* format, any x)\fR
+.sp
+\fBany TRACE_TAG_RETURN (tag, char* format, any x)\fR
+.sp
+\fBvoid TRACE     (     char* format, \&.\&.\&.)\fR
+.sp
+\fBvoid TRACE_TAG (tag, char* format, \&.\&.\&.)\fR
+.sp
+\fBvoid TRACE0 (    char* format, \&.\&.\&.)\fR
+.sp
+\fBvoid TRACE0_TAG (tag, char* format, \&.\&.\&.)\fR
+.sp
+\fBvoid TRACEC     (char* format, \&.\&.\&.)\fR
+.sp
+\fBvoid TRACEC_TAG (tag, char* format, \&.\&.\&.)\fR
+.sp
+\fBvoid TRACE0C     (     char* format, \&.\&.\&.)\fR
+.sp
+\fBvoid TRACE0C_TAG (tag, char* format, \&.\&.\&.)\fR
 .sp
 \fBvoid TRACE_ARGS (char* function, int c, TclObj* v[])\fR
 .sp
@@ -447,13 +473,33 @@ The macro definitions and their signatures are
 .CS
 
 
+    /* (de)activation of tracing streams based on file name, and
+    ** user-specified tag\&. These are declarators, not statements\&.
+    */
+    TRACE_ON
+    TRACE_OFF
+    TRACE_TAG_ON  (tag_identifier);
+    TRACE_TAG_OFF (tag_identifier);
 
-    void TRACE_ENTER (char* function);
+    /* Trace statements */
+
+    void TRACE_ENTER (const char* function, const char* format, \&.\&.\&.);
     void TRACE_RETURN_VOID (void);
     any  TRACE_RETURN (char* format, any x);
 
-    void TRACE  ((char* format, \&.\&.\&.));
-    void TRACE0 ((char* format, \&.\&.\&.));
+    void TRACE_TAG_ENTER (tag_identifier, const char* function, const char* format, \&.\&.\&.);
+    void TRACE_TAG_RETURN_VOID (tag_identifier);
+    any  TRACE_TAG_RETURN (tag_identifier, char* format, any x);
+
+    void TRACE   (char* format, \&.\&.\&.);
+    void TRACE0  (char* format, \&.\&.\&.);
+    void TRACEC  (char* format, \&.\&.\&.);
+    void TRACE0C (char* format, \&.\&.\&.);
+
+    void TRACE_TAG   (char* format, \&.\&.\&.);
+    void TRACE0_TAG  (char* format, \&.\&.\&.);
+    void TRACEC_TAG  (char* format, \&.\&.\&.);
+    void TRACE0C_TAG (char* format, \&.\&.\&.);
 
     void TRACE_ARGS (char* function, int c, TclObj* v[]);
     any  TRACE_RESULT (Tcl_Interp* interp, any code);
@@ -474,10 +520,8 @@ well\&.
 Further note that the command \fBcritcl::config\fR now accepts a
 boolean option \fBtrace\fR\&. Setting it activates enter/exit tracing
 in all commands based on \fBcritcl::cproc\fR, with proper printing of
-arguments and results\&. It should be noted that this is subordinate to
-the activation of the tracing facility in general\&. In other words, if
-the tracing facility is not active then setting the config has no
-effect\&.
+arguments and results\&. This implicitly activates the tracing facility
+in general\&.
 .sp
 The details of the semantics are explained in section
 \fBTracing\fR
@@ -534,48 +578,101 @@ This macro properly sets the string representation of the Tcl object
 .SH TRACING
 All output is printed to \fBstdout\fR\&.
 .TP
-\fBvoid TRACE_ENTER (char* function)\fR
-Use this macro at the beginning of a C function to record entry into
+\fBTRACE_ON\fR
+.TP
+\fBTRACE_OFF\fR
+.TP
+\fBTRACE_TAG_ON (identifier)\fR
+.TP
+\fBTRACE_TAG_OFF(identifier)\fR
+These "commands" are actually declarators, for use outside of
+functions\&. They (de)activate specific tracing streams, named either
+explicitly by the user, or implicitly, taking the name of the file as
+the tag\&.
+.sp
+For example:
+.sp
+.CS
+
+
+    TRACE_TAG_ON (lexer_in);
+
+.CE
+.sp
+All other trace commands have the controlling tag as an
+implicit argument\&.
+.TP
+\fBvoid TRACE_ENTER     (     char* function, char* format, \&.\&.\&.)\fR
+.TP
+\fBvoid TRACE_TAG_ENTER (tag, char* function, char* format, \&.\&.\&.)\fR
+Use these macros at the beginning of a C function to record entry into
 it\&. The argument is expected to be the name of the entered function\&.
 .sp
-Note, the tracer's runtime maintains a stack of entered
-functions and expects that function exit is signaled by either
-\fBTRACE_RETURN\fR or \fBTRACE_RETURN_VOID\fR\&.
+Note that the tracer's runtime maintains a stack of entered,
+i\&.e\&. active functions and expects that function return is signaled by
+either \fBTRACE_RETURN\fR or \fBTRACE_RETURN_VOID\fR, or the
+equivalent forms taking a tag\&.
 .TP
-\fBvoid TRACE_RETURN_VOID (void)\fR
+\fBvoid TRACE_RETURN_VOID     (void)\fR
+.TP
+\fBvoid TRACE_TAG_RETURN_VOID (tag)\fR
 Use this macro instead of
 .CS
 
 return
 .CE
-.IP to exit a void
+.IP to return from a void
 function\&. Beyond returning from the function this also signals the
 same to the tracer's runtime, popping the last entered function from
 its stack of active functions\&.
 .TP
-\fBany TRACE_RETURN (char* format, any x)\fR
+\fBany TRACE_RETURN     (     char* format, any x)\fR
+.TP
+\fBany TRACE_TAG_RETURN (tag, char* format, any x)\fR
 Use this macro instead of
 .CS
 
 return x
 .CE
-.IP to exit a non-void
-function\&. Beyond returning from the function with value \fIx\fR this
-also signals the same to the tracer's runtime, popping the last
-entered function from its stack of active functions\&.
+.IP to return from a
+non-void function\&.
+Beyond returning from the function with value \fIx\fR this also
+signals the same to the tracer's runtime, popping the last entered
+function from its stack of active functions\&.
 The \fIformat\fR is expected to be a proper formatting string for
 \fBprintf\fR and analogues, able to stringify \fIx\fR\&.
 .TP
-\fBvoid TRACE ((char* format, \&.\&.\&.))\fR
-This macro is the trace facilities' equivalent of \fBprintf\fR,
-printing arbitrary data under the control of the \fIformat\fR\&. Note
-how it is written with doubled parentheses\&.
-.sp
-The printed text is closed with a newline, and indented per the
-stack of active functions\&.
+\fBvoid TRACE     (     char* format, \&.\&.\&.)\fR
 .TP
-\fBvoid TRACE0 ((char* format, \&.\&.\&.))\fR
+\fBvoid TRACE_TAG (tag, char* format, \&.\&.\&.)\fR
+This macro is the trace facilities' equivalent of \fBprintf\fR,
+printing arbitrary data under the control of the \fIformat\fR\&.
+.sp
+The printed text is closed with a newline, and indented as per
+the stack of active functions\&. A preceding \fBC\fR-form however
+prevents emission of the indentation and prefix\&.
+.TP
+\fBvoid TRACE0 (    char* format, \&.\&.\&.)\fR
+.TP
+\fBvoid TRACE0_TAG (tag, char* format, \&.\&.\&.)\fR
 This is the same functionality as \fBTRACE\fR above, except that the
+printed message is \fInot\fR indented\&.
+.TP
+\fBvoid TRACEC     (char* format, \&.\&.\&.)\fR
+.TP
+\fBvoid TRACEC_TAG (tag, char* format, \&.\&.\&.)\fR
+This macro is the trace facilities' equivalent of \fBprintf\fR,
+printing arbitrary data under the control of the \fIformat\fR\&.
+.sp
+Being a \fBC\fR-form the printed text is printed as is,
+without a closing a newline\&. It is indented as per the stack of active
+functions\&. A preceding \fBC\fR-form however prevents emission of the
+indentation and prefix\&.
+.TP
+\fBvoid TRACE0C     (     char* format, \&.\&.\&.)\fR
+.TP
+\fBvoid TRACE0C_TAG (tag, char* format, \&.\&.\&.)\fR
+This is the same functionality as \fBTRACEC\fR above, except that the
 printed message is \fInot\fR indented\&.
 .TP
 \fBvoid TRACE_ARGS (char* function, int c, TclObj* v[])\fR
