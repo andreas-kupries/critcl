@@ -11,7 +11,7 @@
 # # ## ### ##### ######## ############# #####################
 # CriTcl Core.
 
-package provide critcl 3.1.16
+package provide critcl 3.1.17
 
 namespace eval ::critcl {}
 
@@ -189,13 +189,15 @@ proc ::critcl::ccommand {name anames args} {
     set clientdata NULL ;# Default: ClientData expression
     set delproc    NULL ;# Default: Function pointer expression
     set acname     0
+    set tname      ""
     while {[string match "-*" $args]} {
         switch -- [set opt [lindex $args 0]] {
 	    -clientdata { set clientdata [lindex $args 1] }
 	    -delproc    { set delproc    [lindex $args 1] }
 	    -cname      { set acname     [lindex $args 1] }
+	    -tracename  { set tname      [lindex $args 1] }
 	    default {
-		error "Unknown option $opt, expected one of -clientdata, -cname, or -delproc"
+		error "Unknown option $opt, expected one of -clientdata, -cname, -delproc"
 	    }
         }
         set args [lrange $args 2 end]
@@ -212,7 +214,11 @@ proc ::critcl::ccommand {name anames args} {
 	set cns   {}
 	set key   $cname
 	set wname $name
-	set traceref \"$name\"
+	if {$tname ne {}} {
+	    set traceref \"$tname\"
+	} else {
+	    set traceref \"$name\"
+	}
     } else {
 	lassign [BeginCommand public $name $anames $args] ns cns name cname
 	set key   [string map {:: _} $ns$cname]
@@ -1090,11 +1096,13 @@ proc ::critcl::cproc {name adefs rtype {body "#"} args} {
     set acname 0
     set passcd 0
     set aoffset 0
+    set tname ""
     while {[string match "-*" $args]} {
         switch -- [set opt [lindex $args 0]] {
 	    -cname      { set acname  [lindex $args 1] }
 	    -pass-cdata { set passcd  [lindex $args 1] }
 	    -arg-offset { set aoffset [lindex $args 1] }
+	    -tracename  { set tname   [lindex $args 1] }
 	    default {
 		error "Unknown option $opt, expected one of -cname, or -pass-cdata"
 	    }
@@ -1111,7 +1119,11 @@ proc ::critcl::cproc {name adefs rtype {body "#"} args} {
 	set cns {}
 	set wname $name
 	set cname c_$name
-	set traceref \"$name\"
+	if {$tname ne {}} {
+	    set traceref \"$tname\"
+	} else {
+	    set traceref \"$name\"
+	}
     } else {
 	lassign [BeginCommand public $name $adefs $rtype $body] ns cns name cname
 	set traceref ns_$cns$cname
