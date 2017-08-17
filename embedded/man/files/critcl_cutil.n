@@ -308,15 +308,19 @@ package require \fBcritcl::cutil  ?0\&.1?\fR
 .sp
 \fBTRACE_OFF\fR
 .sp
-\fBTRACE_TAG_ON (identifier)\fR
+\fBTRACE_TAG_ON  (identifier)\fR
 .sp
-\fBTRACE_TAG_OFF(identifier)\fR
+\fBTRACE_TAG_OFF (identifier)\fR
 .sp
-\fBvoid TRACE_ENTER     (     char* function, char* format, \&.\&.\&.)\fR
+\fBvoid TRACE_FUNC\fR
 .sp
-\fBvoid TRACE_TAG_ENTER (tag, char* function, char* format, \&.\&.\&.)\fR
+\fBvoid TRACE_TAG_FUNC (tag)\fR
 .sp
-\fBvoid TRACE_RETURN_VOID     (void)\fR
+\fBvoid TRACE_FUNC_VOID\fR
+.sp
+\fBvoid TRACE_TAG_FUNC_VOID (tag)\fR
+.sp
+\fBvoid TRACE_RETURN_VOID\fR
 .sp
 \fBvoid TRACE_TAG_RETURN_VOID (tag)\fR
 .sp
@@ -328,21 +332,23 @@ package require \fBcritcl::cutil  ?0\&.1?\fR
 .sp
 \fBvoid TRACE_TAG (tag, char* format, \&.\&.\&.)\fR
 .sp
-\fBvoid TRACE0 (    char* format, \&.\&.\&.)\fR
+\fBvoid TRACE_HEADER (int indent)\fR
 .sp
-\fBvoid TRACE0_TAG (tag, char* format, \&.\&.\&.)\fR
+\fBvoid TRACE_TAG_HEADER (tag, int indent)\fR
 .sp
-\fBvoid TRACEC     (char* format, \&.\&.\&.)\fR
+\fBvoid TRACE_CLOSER\fR
 .sp
-\fBvoid TRACEC_TAG (tag, char* format, \&.\&.\&.)\fR
+\fBvoid TRACE_TAG_CLOSER (tag)\fR
 .sp
-\fBvoid TRACE0C     (     char* format, \&.\&.\&.)\fR
+\fBvoid TRACE_ADD             (const char* format, \&.\&.\&.)\fR
 .sp
-\fBvoid TRACE0C_TAG (tag, char* format, \&.\&.\&.)\fR
+\fBvoid TRACE_TAG_CLOSER (tag, const char* format, \&.\&.\&.)\fR
 .sp
-\fBvoid TRACE_ARGS (char* function, int c, TclObj* v[])\fR
+\fBvoid TRACE_PUSH_SCOPE (const char* name)\fR
 .sp
-\fBany TRACE_RESULT (Tcl_Interp* interp, any code)\fR
+\fBvoid TRACE_PUSH_FUNC\fR
+.sp
+\fBvoid TRACE_PUSH_POP\fR
 .sp
 .BE
 .SH DESCRIPTION
@@ -473,36 +479,37 @@ The macro definitions and their signatures are
 .CS
 
 
-    /* (de)activation of tracing streams based on file name, and
-    ** user-specified tag\&. These are declarators, not statements\&.
-    */
-    TRACE_ON
-    TRACE_OFF
+    /* (de)activation of named logical streams\&.
+     * These are declarators, not statements\&.
+     */
+
+    TRACE_ON;
+    TRACE_OFF;
     TRACE_TAG_ON  (tag_identifier);
     TRACE_TAG_OFF (tag_identifier);
 
-    /* Trace statements */
+    /*
+     * Higher level trace statements (convenience commands)
+     */
 
-    void TRACE_ENTER (const char* function, const char* format, \&.\&.\&.);
-    void TRACE_RETURN_VOID (void);
-    any  TRACE_RETURN (char* format, any x);
+    void TRACE_FUNC   (const char* format, \&.\&.\&.);
+    void TRACE_FUNC_VOID;
+    any  TRACE_RETURN (const char* format, any x);
+    void TRACE_RETURN_VOID;
+    void TRACE (const char* format, \&.\&.\&.);
 
-    void TRACE_TAG_ENTER (tag_identifier, const char* function, const char* format, \&.\&.\&.);
-    void TRACE_TAG_RETURN_VOID (tag_identifier);
-    any  TRACE_TAG_RETURN (tag_identifier, char* format, any x);
+    /*
+     * Low-level trace statements the higher level ones above
+     * are composed from\&. Scope management and output management\&.
+     */
 
-    void TRACE   (char* format, \&.\&.\&.);
-    void TRACE0  (char* format, \&.\&.\&.);
-    void TRACEC  (char* format, \&.\&.\&.);
-    void TRACE0C (char* format, \&.\&.\&.);
+    void TRACE_PUSH_SCOPE (const char* scope);
+    void TRACE_PUSH_FUNC;
+    void TRACE_POP;
 
-    void TRACE_TAG   (char* format, \&.\&.\&.);
-    void TRACE0_TAG  (char* format, \&.\&.\&.);
-    void TRACEC_TAG  (char* format, \&.\&.\&.);
-    void TRACE0C_TAG (char* format, \&.\&.\&.);
-
-    void TRACE_ARGS (char* function, int c, TclObj* v[]);
-    any  TRACE_RESULT (Tcl_Interp* interp, any code);
+    void TRACE_HEADER (int indent);
+    void TRACE_ADD (const char* format, \&.\&.\&.);
+    void TRACE_CLOSER;
 
 .CE
 .sp
@@ -582,13 +589,12 @@ All output is printed to \fBstdout\fR\&.
 .TP
 \fBTRACE_OFF\fR
 .TP
-\fBTRACE_TAG_ON (identifier)\fR
+\fBTRACE_TAG_ON  (identifier)\fR
 .TP
-\fBTRACE_TAG_OFF(identifier)\fR
+\fBTRACE_TAG_OFF (identifier)\fR
 These "commands" are actually declarators, for use outside of
-functions\&. They (de)activate specific tracing streams, named either
-explicitly by the user, or implicitly, taking the name of the file as
-the tag\&.
+functions\&. They (de)activate specific logical streams, named either
+explicitly by the user, or implicitly, refering to the current file\&.
 .sp
 For example:
 .sp
@@ -599,24 +605,29 @@ For example:
 
 .CE
 .sp
-All other trace commands have the controlling tag as an
-implicit argument\&.
+All high- and low-level trace commands producing output have
+the controlling tag as an implicit argument\&. The scope management
+commands do not take tags\&.
 .TP
-\fBvoid TRACE_ENTER     (     char* function, char* format, \&.\&.\&.)\fR
+\fBvoid TRACE_FUNC\fR
 .TP
-\fBvoid TRACE_TAG_ENTER (tag, char* function, char* format, \&.\&.\&.)\fR
+\fBvoid TRACE_TAG_FUNC (tag)\fR
+.TP
+\fBvoid TRACE_FUNC_VOID\fR
+.TP
+\fBvoid TRACE_TAG_FUNC_VOID (tag)\fR
 Use these macros at the beginning of a C function to record entry into
-it\&. The argument is expected to be the name of the entered function\&.
+it\&. The name of the entered function is an implicit argument
+(\fB__func__\fR), forcing users to have a C99 compiler\&.\&.
 .sp
-Note that the tracer's runtime maintains a stack of entered,
-i\&.e\&. active functions and expects that function return is signaled by
-either \fBTRACE_RETURN\fR or \fBTRACE_RETURN_VOID\fR, or the
-equivalent forms taking a tag\&.
+The tracer's runtime maintains a stack of active functions and
+expects that function return is signaled by either \fBTRACE_RETURN\fR,
+\fBTRACE_RETURN_VOID\fR, or the equivalent forms taking a tag\&.
 .TP
-\fBvoid TRACE_RETURN_VOID     (void)\fR
+\fBvoid TRACE_RETURN_VOID\fR
 .TP
 \fBvoid TRACE_TAG_RETURN_VOID (tag)\fR
-Use this macro instead of
+Use these macros instead of
 .CS
 
 return
@@ -649,39 +660,33 @@ This macro is the trace facilities' equivalent of \fBprintf\fR,
 printing arbitrary data under the control of the \fIformat\fR\&.
 .sp
 The printed text is closed with a newline, and indented as per
-the stack of active functions\&. A preceding \fBC\fR-form however
-prevents emission of the indentation and prefix\&.
+the stack of active functions\&.
 .TP
-\fBvoid TRACE0 (    char* format, \&.\&.\&.)\fR
+\fBvoid TRACE_HEADER (int indent)\fR
 .TP
-\fBvoid TRACE0_TAG (tag, char* format, \&.\&.\&.)\fR
-This is the same functionality as \fBTRACE\fR above, except that the
-printed message is \fInot\fR indented\&.
+\fBvoid TRACE_TAG_HEADER (tag, int indent)\fR
+This is the low-level macro which prints the beginning of a trace
+line\&. This prefix consists of physical location (file name and line
+number), if available, indentation as per the stack of active scopes
+(if activated), and the name of the active scope\&.
 .TP
-\fBvoid TRACEC     (char* format, \&.\&.\&.)\fR
+\fBvoid TRACE_CLOSER\fR
 .TP
-\fBvoid TRACEC_TAG (tag, char* format, \&.\&.\&.)\fR
-This macro is the trace facilities' equivalent of \fBprintf\fR,
-printing arbitrary data under the control of the \fIformat\fR\&.
-.sp
-Being a \fBC\fR-form the printed text is printed as is,
-without a closing a newline\&. It is indented as per the stack of active
-functions\&. A preceding \fBC\fR-form however prevents emission of the
-indentation and prefix\&.
+\fBvoid TRACE_TAG_CLOSER (tag)\fR
+This is the low-level macro which prints the end of a trace
+line\&.
 .TP
-\fBvoid TRACE0C     (     char* format, \&.\&.\&.)\fR
+\fBvoid TRACE_ADD             (const char* format, \&.\&.\&.)\fR
 .TP
-\fBvoid TRACE0C_TAG (tag, char* format, \&.\&.\&.)\fR
-This is the same functionality as \fBTRACEC\fR above, except that the
-printed message is \fInot\fR indented\&.
+\fBvoid TRACE_TAG_CLOSER (tag, const char* format, \&.\&.\&.)\fR
+This is the low-level macro which adds formatted data to the line\&.
 .TP
-\fBvoid TRACE_ARGS (char* function, int c, TclObj* v[])\fR
-This is a special macro used within the core \fBcritcl\fR package
-to provide entry tracing for \fBcritcl::cproc\fR-based commands\&. It
-takes the name of the command, plus count and values of the Tcl
-arguments\&.
+\fBvoid TRACE_PUSH_SCOPE (const char* name)\fR
 .TP
-\fBany TRACE_RESULT (Tcl_Interp* interp, any code)\fR
+\fBvoid TRACE_PUSH_FUNC\fR
+.TP
+\fBvoid TRACE_PUSH_POP\fR
+These are the low-level macros for scope management\&. The first two forms push a new scope on the stack of active scopes, and the last forms pops the last
 This is a special macro used within the core \fBcritcl\fR package
 to provide exit tracing for \fBcritcl::cproc\fR-based commands\&. It
 takes the interpreter holding the command result, and the Tcl return
