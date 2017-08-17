@@ -81,7 +81,7 @@ if {[package vsatisfies [package present Tcl] 8.5]} {
 }
 
 # # ## ### ##### ######## ############# #####################
-## 
+##
 
 proc ::critcl::buildrequirement {script} {
     # In regular code this does nothing. It is a marker for
@@ -499,7 +499,7 @@ proc ::critcl::ArgsInprocess {adefs skip} {
 	# arguments are left then A can take the current word,
 	# otherwise A is left to its default. We compute them from the
 	# end.
-	set t 0 
+	set t 0
 	foreach o [lreverse $optional] {
 	    if {$o} {
 		lappend thresholds $t
@@ -947,7 +947,7 @@ proc ::critcl::argtype {name conversion {ctype {}} {ctypeb {}}} {
 	    set acrel($name) $acrel($ctype)
 	}
 
-	set conversion $aconv($ctype) 
+	set conversion $aconv($ctype)
 	set ctypeb     $actypeb($ctype)
 	set ctype      $actype($ctype)
     } else {
@@ -1019,7 +1019,7 @@ proc ::critcl::resulttype {name conversion {ctype {}}} {
 	if {![info exists rconv($ctype)]} {
 	    return -code error "Unable to alias unknown type '$ctype'."
 	}
-	set conversion $rconv($ctype) 
+	set conversion $rconv($ctype)
 	set ctype      $rctype($ctype)
     } else {
 	lassign [HeaderLines $conversion] leadoffset conversion
@@ -2122,7 +2122,7 @@ proc ::critcl::API_setup_export {file} {
 	}
 	append sdecls "\n"
 	append sdecls [stubs::gen::header::gen $T $cname]
-    } 
+    }
 
     append sdecls "\#endif /* ${cname}_DECLS_H */\n"
 
@@ -2464,7 +2464,7 @@ proc ::critcl::readconfig {config} {
 	    #                                 PLATFORM.
             # (4c) PLATFORM copy PARENT...  - Copies the currently defined
             #                                 configuration variables and
-            #                                 values to the settings for 
+            #                                 values to the settings for
             #                                 this platform.
 	    # (5.) VAR VALUE............... - Default configuration
 	    #                                 variable, and value.
@@ -4145,7 +4145,7 @@ proc ::critcl::at::SHOWFRAMES {level {all 1}} {
     }
     return [join $lines \n]
 }
- 
+
 # # ## ### ##### ######## ############# #####################
 
 proc ::critcl::CollectEmbeddedSources {file destination libfile ininame placestubs} {
@@ -5562,7 +5562,7 @@ namespace eval ::critcl {
 
 	variable knowntargets {} ;# List of all target identifiers found
 	# in the configuration file last processed by "readconfig".
-	
+
 	variable xtargets        ;# Cross-compile targets. This array maps from
 	array set xtargets {}    ;# the target identifier to the actual platform
 	# identifier of the target platform in question. If a target identifier
