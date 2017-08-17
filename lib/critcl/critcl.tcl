@@ -252,16 +252,16 @@ proc ::critcl::ccommand {name anames args} {
 	Emit   $body
 	Emitln \n\}
 
+	# Now emit the call to the ccommand tracing shim. It simply
+	# calls the regular implementation and places the tracing
+	# around that.
 	if {$v::options(trace)} {
-	    # Now emit the shim for ccommand tracing. It just calls
-	    # the actual implementation and puts the tracing code
-	    # around that.
 	    Emitln "\nstatic int\n$wname$ca"
 	    Emitln \{
 	    Emitln "  int _rv;"
-	    Emitln "  TRACE_CPROC_ARGS ($traceref, $oc, $ov);"
+	    Emitln "  critcl_trace_cmd_args ($traceref, $oc, $ov);"
 	    Emitln "  _rv = ${wname}_actual ($cd, $ip, $oc, $ov);"
-	    Emitln "  TRACE_CPROC_RESULT ($ip, _rv);"
+	    Emitln "  return critcl_trace_cmd_result (_rv, $ip);"
 	    Emitln \}
 	}
     } else {
@@ -3673,7 +3673,7 @@ proc ::critcl::EmitShimVariables {adb rtype} {
 
 proc ::critcl::EmitArgTracing {fun} {
     if {!$v::options(trace)} return
-    Emitln "\n  TRACE_CPROC_ARGS ($fun, oc, ov);"
+    Emitln "\n  critcl_trace_cmd_args ($fun, oc, ov);"
     return
 }
 
@@ -3746,8 +3746,8 @@ proc ::critcl::TraceReturns {label code} {
 
     # Inject tracing into the 'return's.
     regsub -all \
-	{return([^;]*);}           $code \
-	{TRACE_CPROC_RESULT (interp,\1);} newcode
+	{return[[:space:]]*([^;]*);}           $code \
+	{return critcl_trace_cmd_result (\1, interp);} newcode
     if {[string match {*return *} $code] && ($newcode eq $code)} {
 	error "Failed to inject tracing code into $label"
     }
@@ -3771,7 +3771,11 @@ proc ::critcl::EmitShimFooter {adb rtype} {
 	Emitln $code
     } else {
 	if {$v::options(trace)} {
-	    Emitln "  TRACE_CPROC_VOID;"
+	    Emitln "  critcl_trace_header (1, 0, 0);"
+	    Emitln "  critcl_trace_printf (1, \"RETURN (void)\");"
+	    Emitln "  critcl_trace_closer (1);"
+	    Emitln "  critcl_trace_pop();"
+	    Emitln "  return;"
 	}
     }
     Emitln \}
