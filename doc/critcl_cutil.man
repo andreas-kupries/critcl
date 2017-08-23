@@ -147,6 +147,20 @@ files
     void TRACE_HEADER (int indent);
     void TRACE_ADD (const char* format, ...);
     void TRACE_CLOSER;
+
+    /*
+     * Convert tag to the underlying status variable.
+     */
+
+    TRACE_TAG_VAR (tag)
+
+    /*
+     * Conditional use of arbitrary code.
+     */
+
+    TRACE_RUN (code);
+    TRACE_DO (code);
+    TRACE_TAG_DO (code);
 }]
 
 [para] Note that these definitions are conditional on the existence of
@@ -338,8 +352,8 @@ This is the low-level macro which prints the end of a trace
 line.
 
 [comment {* * ** *** ***** ******** ************* *********************}]
-[call [cmd {void TRACE_ADD             (const char* format, ...)}]]
-[call [cmd {void TRACE_TAG_CLOSER (tag, const char* format, ...)}]]
+[call [cmd {void TRACE_ADD          (const char* format, ...)}]]
+[call [cmd {void TRACE_TAG_ADD (tag, const char* format, ...)}]]
 
 This is the low-level macro which adds formatted data to the line.
 
@@ -348,14 +362,29 @@ This is the low-level macro which adds formatted data to the line.
 [call [cmd {void TRACE_PUSH_FUNC}]]
 [call [cmd {void TRACE_PUSH_POP}]]
 
-These are the low-level macros for scope management. The first two forms push a new scope on the stack of active scopes, and the last forms pops the last
+These are the low-level macros for scope management. The first two
+forms push a new scope on the stack of active scopes, and the last
+forms pops the last scope pushed.
 
+[comment {* * ** *** ***** ******** ************* *********************}]
+[call [cmd {TRACE_TAG_VAR (tag)}]]
 
+Helper macro converting from a tag identifier to the name of the
+underlying status variable.
 
-This is a special macro used within the core [package critcl] package
-to provide exit tracing for [cmd critcl::cproc]-based commands. It
-takes the interpreter holding the command result, and the Tcl return
-code.
+[comment {* * ** *** ***** ******** ************* *********************}]
+[call [cmd {TRACE_RUN (code);}]]
+
+Conditionally insert the [arg code] at compile time when the tracing
+facility is activated.
+
+[comment {* * ** *** ***** ******** ************* *********************}]
+[call [cmd {TRACE_DO (code);}]]
+[call [cmd {TRACE_TAG_DO (tag, code);}]]
+
+Insert the [arg code] at compile time when the tracing facility is
+activated, and execute the same when either the implicit tag for the
+file or the user-specified tag is active.
 
 [list_end]
 

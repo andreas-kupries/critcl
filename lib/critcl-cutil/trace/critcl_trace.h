@@ -73,10 +73,13 @@
 #define TRACE_TAG_RETURN(tag, format, x) return (x);
 #define TRACE_TAG_RETURN_VOID(tag)       return;
 #define TRACE_TAG(tag, format, ...)
+#define TRACE_RUN(code)
+#define TRACE_DO(code)
+#define TRACE_TAG_DO(tag, code)
 #endif
 
 #ifdef CRITCL_TRACER
-/* Tracing active. Macros expand to content
+/* Tracing active. Macros expand to content.
  */
 #define TRACE_PUSH_SCOPE(string) critcl_trace_push (string)
 #define TRACE_PUSH_FUNC          TRACE_PUSH_SCOPE (__func__)
@@ -111,6 +114,10 @@
 #define TRACE_TAG_RETURN(tag, format, x) TRACE_TAG_HEADER (tag,1); TRACE_TAG_ADD (tag, "%s", "RETURN = ") ; TRACE_TAG_ADD (tag, format, x) ; TRACE_TAG_CLOSER (tag) ; TRACE_POP ; return (x)
 #define TRACE_TAG_RETURN_VOID(tag)       TRACE_TAG_HEADER (tag,1); TRACE_TAG_ADD (tag, "RETURN %s", "(void)") ; TRACE_TAG_CLOSER (tag) ; TRACE_POP ; return
 #define TRACE_TAG(tag, format, ...)      TRACE_TAG_HEADER (tag,1); TRACE_TAG_ADD (tag, format, __VA_ARGS__) ; TRACE_TAG_CLOSER (tag)
+
+#define TRACE_RUN(code)         code
+#define TRACE_DO(code)          TRACE_TAG_DO (THIS_FILE, code)
+#define TRACE_TAG_DO(tag, code) if (TRACE_TAG_VAR (tag)) { code ; }
 
 /* Support functions used in the macros.
  */

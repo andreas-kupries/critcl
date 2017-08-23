@@ -161,11 +161,15 @@
 <li><a href="#28"><b class="cmd">void TRACE_TAG_HEADER (tag, int indent)</b></a></li>
 <li><a href="#29"><b class="cmd">void TRACE_CLOSER</b></a></li>
 <li><a href="#30"><b class="cmd">void TRACE_TAG_CLOSER (tag)</b></a></li>
-<li><a href="#31"><b class="cmd">void TRACE_ADD             (const char* format, ...)</b></a></li>
-<li><a href="#32"><b class="cmd">void TRACE_TAG_CLOSER (tag, const char* format, ...)</b></a></li>
+<li><a href="#31"><b class="cmd">void TRACE_ADD          (const char* format, ...)</b></a></li>
+<li><a href="#32"><b class="cmd">void TRACE_TAG_ADD (tag, const char* format, ...)</b></a></li>
 <li><a href="#33"><b class="cmd">void TRACE_PUSH_SCOPE (const char* name)</b></a></li>
 <li><a href="#34"><b class="cmd">void TRACE_PUSH_FUNC</b></a></li>
 <li><a href="#35"><b class="cmd">void TRACE_PUSH_POP</b></a></li>
+<li><a href="#36"><b class="cmd">TRACE_TAG_VAR (tag)</b></a></li>
+<li><a href="#37"><b class="cmd">TRACE_RUN (code);</b></a></li>
+<li><a href="#38"><b class="cmd">TRACE_DO (code);</b></a></li>
+<li><a href="#39"><b class="cmd">TRACE_TAG_DO (tag, code);</b></a></li>
 </ul>
 </div>
 </div>
@@ -272,6 +276,16 @@ files</p>
     void TRACE_HEADER (int indent);
     void TRACE_ADD (const char* format, ...);
     void TRACE_CLOSER;
+    /*
+     * Convert tag to the underlying status variable.
+     */
+    TRACE_TAG_VAR (tag)
+    /*
+     * Conditional use of arbitrary code.
+     */
+    TRACE_RUN (code);
+    TRACE_DO (code);
+    TRACE_TAG_DO (code);
 </pre>
 <p>Note that these definitions are conditional on the existence of
 the macro <b class="const">CRITCL_TRACER</b>. 
@@ -408,20 +422,30 @@ number), if available, indentation as per the stack of active scopes
 <dt><a name="30"><b class="cmd">void TRACE_TAG_CLOSER (tag)</b></a></dt>
 <dd><p>This is the low-level macro which prints the end of a trace
 line.</p></dd>
-<dt><a name="31"><b class="cmd">void TRACE_ADD             (const char* format, ...)</b></a></dt>
+<dt><a name="31"><b class="cmd">void TRACE_ADD          (const char* format, ...)</b></a></dt>
 <dd></dd>
-<dt><a name="32"><b class="cmd">void TRACE_TAG_CLOSER (tag, const char* format, ...)</b></a></dt>
+<dt><a name="32"><b class="cmd">void TRACE_TAG_ADD (tag, const char* format, ...)</b></a></dt>
 <dd><p>This is the low-level macro which adds formatted data to the line.</p></dd>
 <dt><a name="33"><b class="cmd">void TRACE_PUSH_SCOPE (const char* name)</b></a></dt>
 <dd></dd>
 <dt><a name="34"><b class="cmd">void TRACE_PUSH_FUNC</b></a></dt>
 <dd></dd>
 <dt><a name="35"><b class="cmd">void TRACE_PUSH_POP</b></a></dt>
-<dd><p>These are the low-level macros for scope management. The first two forms push a new scope on the stack of active scopes, and the last forms pops the last
-This is a special macro used within the core <b class="package"><a href="critcl_pkg.html">critcl</a></b> package
-to provide exit tracing for <b class="cmd">critcl::cproc</b>-based commands. It
-takes the interpreter holding the command result, and the Tcl return
-code.</p></dd>
+<dd><p>These are the low-level macros for scope management. The first two
+forms push a new scope on the stack of active scopes, and the last
+forms pops the last scope pushed.</p></dd>
+<dt><a name="36"><b class="cmd">TRACE_TAG_VAR (tag)</b></a></dt>
+<dd><p>Helper macro converting from a tag identifier to the name of the
+underlying status variable.</p></dd>
+<dt><a name="37"><b class="cmd">TRACE_RUN (code);</b></a></dt>
+<dd><p>Conditionally insert the <i class="arg">code</i> at compile time when the tracing
+facility is activated.</p></dd>
+<dt><a name="38"><b class="cmd">TRACE_DO (code);</b></a></dt>
+<dd></dd>
+<dt><a name="39"><b class="cmd">TRACE_TAG_DO (tag, code);</b></a></dt>
+<dd><p>Insert the <i class="arg">code</i> at compile time when the tracing facility is
+activated, and execute the same when either the implicit tag for the
+file or the user-specified tag is active.</p></dd>
 </dl>
 </div>
 <div id="section6" class="section"><h2><a name="section6">Authors</a></h2>

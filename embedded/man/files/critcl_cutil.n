@@ -340,15 +340,23 @@ package require \fBcritcl::cutil  ?0\&.1?\fR
 .sp
 \fBvoid TRACE_TAG_CLOSER (tag)\fR
 .sp
-\fBvoid TRACE_ADD             (const char* format, \&.\&.\&.)\fR
+\fBvoid TRACE_ADD          (const char* format, \&.\&.\&.)\fR
 .sp
-\fBvoid TRACE_TAG_CLOSER (tag, const char* format, \&.\&.\&.)\fR
+\fBvoid TRACE_TAG_ADD (tag, const char* format, \&.\&.\&.)\fR
 .sp
 \fBvoid TRACE_PUSH_SCOPE (const char* name)\fR
 .sp
 \fBvoid TRACE_PUSH_FUNC\fR
 .sp
 \fBvoid TRACE_PUSH_POP\fR
+.sp
+\fBTRACE_TAG_VAR (tag)\fR
+.sp
+\fBTRACE_RUN (code);\fR
+.sp
+\fBTRACE_DO (code);\fR
+.sp
+\fBTRACE_TAG_DO (tag, code);\fR
 .sp
 .BE
 .SH DESCRIPTION
@@ -510,6 +518,20 @@ The macro definitions and their signatures are
     void TRACE_HEADER (int indent);
     void TRACE_ADD (const char* format, \&.\&.\&.);
     void TRACE_CLOSER;
+
+    /*
+     * Convert tag to the underlying status variable\&.
+     */
+
+    TRACE_TAG_VAR (tag)
+
+    /*
+     * Conditional use of arbitrary code\&.
+     */
+
+    TRACE_RUN (code);
+    TRACE_DO (code);
+    TRACE_TAG_DO (code);
 
 .CE
 .sp
@@ -676,9 +698,9 @@ number), if available, indentation as per the stack of active scopes
 This is the low-level macro which prints the end of a trace
 line\&.
 .TP
-\fBvoid TRACE_ADD             (const char* format, \&.\&.\&.)\fR
+\fBvoid TRACE_ADD          (const char* format, \&.\&.\&.)\fR
 .TP
-\fBvoid TRACE_TAG_CLOSER (tag, const char* format, \&.\&.\&.)\fR
+\fBvoid TRACE_TAG_ADD (tag, const char* format, \&.\&.\&.)\fR
 This is the low-level macro which adds formatted data to the line\&.
 .TP
 \fBvoid TRACE_PUSH_SCOPE (const char* name)\fR
@@ -686,11 +708,24 @@ This is the low-level macro which adds formatted data to the line\&.
 \fBvoid TRACE_PUSH_FUNC\fR
 .TP
 \fBvoid TRACE_PUSH_POP\fR
-These are the low-level macros for scope management\&. The first two forms push a new scope on the stack of active scopes, and the last forms pops the last
-This is a special macro used within the core \fBcritcl\fR package
-to provide exit tracing for \fBcritcl::cproc\fR-based commands\&. It
-takes the interpreter holding the command result, and the Tcl return
-code\&.
+These are the low-level macros for scope management\&. The first two
+forms push a new scope on the stack of active scopes, and the last
+forms pops the last scope pushed\&.
+.TP
+\fBTRACE_TAG_VAR (tag)\fR
+Helper macro converting from a tag identifier to the name of the
+underlying status variable\&.
+.TP
+\fBTRACE_RUN (code);\fR
+Conditionally insert the \fIcode\fR at compile time when the tracing
+facility is activated\&.
+.TP
+\fBTRACE_DO (code);\fR
+.TP
+\fBTRACE_TAG_DO (tag, code);\fR
+Insert the \fIcode\fR at compile time when the tracing facility is
+activated, and execute the same when either the implicit tag for the
+file or the user-specified tag is active\&.
 .PP
 .SH AUTHORS
 Andreas Kupries
