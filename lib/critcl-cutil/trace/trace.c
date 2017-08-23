@@ -24,10 +24,24 @@ typedef struct scope_stack {
 /*
  * = = == === ===== ======== ============= =====================
  * Tracing state (stack of scopes, associated indentation level)
+ *
+ * API regexp for trace output:
+ *  (header printf* closer)*
+ *
+ * - closed == 1 :: post (closer)
+ * - closed == 0 :: post (header)
+ *
+ * [1] in (header) && !closed
+ *     => starting a new line in the middle of an incomplete line
+ *     => force closer
+ * [2] in (printf) && closed
+ *     => continuing a line which was interrupted by another (see [1])
+ *     => force header
  */
 
 static scope_stack* top   = 0;
 static int          level = 0;
+static int          closed = 1;
 
 /*
  * = = == === ===== ======== ============= =====================
@@ -82,26 +96,31 @@ critcl_trace_pop (void)
 }
 
 void
-critcl_trace_header (int on, int ind, const char* filename, int line)
-{
-    if (!on) return;
-    // location prefix
-    if (filename) {
-	fprintf (stdout, "%s:%6d", filename, line);
-	fflush  (stdout);
-    }
-    // indentation, scope, separator
-    if (ind) { indent (); }
-    scope ();
-    separator();
-}
-
-void
 critcl_trace_closer (int on)
 {
     if (!on) return;
     fwrite ("\n", 1, 1, stdout);
     fflush (stdout);
+    closed = 1;
+}
+
+void
+critcl_trace_header (int on, int ind, const char* filename, int line)
+{
+    if (!on) return;
+    if (!closed) critcl_trace_closer (1);
+    // location prefix
+#if 0 /* varying path length breaks indenting by call level :( */
+    if (filename) {
+	fprintf (stdout, "%s:%6d", filename, line);
+	fflush  (stdout);
+    }
+#endif
+    // indentation, scope, separator
+    if (ind) { indent (); }
+    scope ();
+    separator();
+    closed = 0;
 }
 
 void
@@ -111,12 +130,15 @@ critcl_trace_printf (int on, const char *format, ...)
      * 1MB output-buffer. We may trace large data structures. This is also a
      * reason why the implementation can be compiled out entirely.
      */
-    static char msg [1024*1024];
+#define MSGMAX (1024*1024)
+    static char msg [MSGMAX];
     int len;
     va_list args;
     if (!on) return;
+    if (closed) critcl_trace_header (1, 1, 0, 0);
+	
     va_start(args, format);
-    len = vsprintf(msg, format, args);
+    len = vsnprintf(msg, MSGMAX, format, args);
     va_end(args);
     fwrite(msg, 1, len, stdout);
     fflush             (stdout);
