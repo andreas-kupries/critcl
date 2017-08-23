@@ -1672,9 +1672,8 @@ generated C code (when \fBtrue\fR) or not\&. By default this is \fBon\fR\&.
 \fBtrace\fR bool
 Inactive by default\&.
 When active code tracing entry and exit of \fBcritcl::cproc\fR-based
-is inserted into the C code\&.
-Note that this is subordinate to the tracing facility being available
-and active in general (See package \fBcritcl::cutil\fR)\&.
+is inserted into the C code\&. This implicitly activates the tracing
+facility in general\&. (See package \fBcritcl::cutil\fR)\&.
 .sp
 Side note: This facility requires the use of a tclsh supporting
 the builtin \fBinfo frame\fR command\&. If critcl is run by a tclsh
@@ -3110,13 +3109,21 @@ New supporting package \fBcritcl::cutil\fR\&. Provides common
 C level facilities useful to packages (assertions, tracing,
 memory allocation shorthands)\&.
 .IP [6]
+Modified package \fBcritcl\fR to make use of the new
+tracing facilities to provide tracing of arguments and results
+for \fBcritcl::ccommand\fR and \fBcritcl::cproc\fR invokations\&.
+.IP [7]
+Modified packages \fBcritcl\fR and \fBcritcl::class\fR
+to provide better function names for (class) method tracing\&.
+Bumped package \fBcritcl::class\fR to version 1\&.0\&.7\&.
+.IP [8]
 Extended the support package \fBcritcl::literals\fR with
 limited configurability\&. It is now able to generate code for
 C-level access to the pool without Tcl types (Mode \fBc\fR)\&.
 The previously existing functionality is accesssible under mode
 \fBtcl\fR, which also is the default\&. Both modes can be used
 together\&.
-.IP [7]
+.IP [9]
 Extended the support package \fBcritcl::emap\fR with
 limited configurability\&. It is now able to generate code for
 C-level access to the mapping without Tcl types

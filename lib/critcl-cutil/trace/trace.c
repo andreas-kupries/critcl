@@ -11,152 +11,168 @@
 
 #ifdef CRITCL_TRACER
 
-/* Tracking the stack of functions,
+/* Tracking the stack of scopes,
  * single-linked list,
  * top to bottom.
  */
 
-typedef struct FUNCTION_STACK {
-    const char*            str;
-    struct FUNCTION_STACK* down;
-} FUNCTION_STACK;
+typedef struct scope_stack {
+    const char*         scope;
+    struct scope_stack* down;
+} scope_stack;
 
-static FUNCTION_STACK* top   = 0;
-static int             level = 0;
+/*
+ * = = == === ===== ======== ============= =====================
+ * Tracing state (stack of scopes, associated indentation level)
+ *
+ * API regexp for trace output:
+ *  (header printf* closer)*
+ *
+ * - closed == 1 :: post (closer)
+ * - closed == 0 :: post (header)
+ *
+ * [1] in (header) && !closed
+ *     => starting a new line in the middle of an incomplete line
+ *     => force closer
+ * [2] in (printf) && closed
+ *     => continuing a line which was interrupted by another (see [1])
+ *     => force header
+ */
+
+static scope_stack* top   = 0;
+static int          level = 0;
+static int          closed = 1;
+
+/*
+ * = = == === ===== ======== ============= =====================
+ * Internals
+ */
 
 static void
-push (const char* str)
+indent (void)
 {
-    FUNCTION_STACK* new = ALLOC (FUNCTION_STACK);
-    new->str = str;
-    new->down = top;
+    int i;
+    for (i = 0; i < level; i++) { fwrite(" ", 1, 1, stdout); }
+    fflush (stdout);
+}
+
+static void
+scope (void)
+{
+    if (!top) return;
+    fwrite (top->scope, 1, strlen(top->scope), stdout);
+    fflush (stdout);
+}
+
+static void
+separator (void)
+{
+    fwrite(" | ", 1, 3, stdout);
+    fflush             (stdout);
+}
+
+/*
+ * = = == === ===== ======== ============= =====================
+ * API
+ */
+
+void
+critcl_trace_push (const char* scope)
+{
+    scope_stack* new = ALLOC (scope_stack);
+    new->scope = scope;
+    new->down  = top;
     top = new;
     level += 4;
 }
 
-static void
-pop (void)
+void
+critcl_trace_pop (void)
 {
-    FUNCTION_STACK* next = top->down;
+    scope_stack* next = top->down;
     level -= 4;
     ckfree ((char*)top);
     top = next;
 }
 
-static void
-print_prefix (void)
+void
+critcl_trace_closer (int on)
 {
-    int i;
-    for (i = 0; i < level; i++) {
-	fwrite(" ", 1, 1, stdout);
-	fflush           (stdout);
+    if (!on) return;
+    fwrite ("\n", 1, 1, stdout);
+    fflush (stdout);
+    closed = 1;
+}
+
+void
+critcl_trace_header (int on, int ind, const char* filename, int line)
+{
+    if (!on) return;
+    if (!closed) critcl_trace_closer (1);
+    // location prefix
+#if 0 /* varying path length breaks indenting by call level :( */
+    if (filename) {
+	fprintf (stdout, "%s:%6d", filename, line);
+	fflush  (stdout);
     }
-
-    if (top) {
-	fwrite(top->str, 1, strlen(top->str), stdout);
-	fflush                               (stdout);
-    }
-
-    fwrite(" ", 1, 1, stdout);
-    fflush           (stdout);
-}
-
-/*
- * = = == === ===== ======== ============= =====================
- */
-
-void
-critcl_trace_enter (const char* fun)
-{
-    push (fun);
-    print_prefix();
-    fwrite("ENTER\n", 1, 6, stdout);
-    fflush                 (stdout);
-}
-
-/*
- * 1MB output-buffer. We may trace large data structures. This is also a
- * reason why the implementation can be compiled out entirely.
- */
-static char msg [1024*1024];
-
-void
-critcl_trace_return (const char *pat, ...)
-{
-    int len;
-    va_list args;
-
-    print_prefix();
-    fwrite("RETURN = ", 1, 9, stdout);
-    fflush                   (stdout);
-
-    va_start(args, pat);
-    len = vsprintf(msg, pat, args);
-    va_end(args);
-
-    msg[len++] = '\n';
-    msg[len] = '\0';
-
-    fwrite(msg, 1, len, stdout);
-    fflush             (stdout);
-
-    pop();
-}
-
-void
-critcl_trace_printf (const char *pat, ...)
-{
-    int len;
-    va_list args;
-
-    print_prefix();
-
-    va_start(args, pat);
-    len = vsprintf(msg, pat, args);
-    va_end(args);
-
-    msg[len++] = '\n';
-    msg[len] = '\0';
-
-    fwrite(msg, 1, len, stdout);
-    fflush             (stdout);
-}
-
-void
-critcl_trace_printf0 (const char *pat, ...)
-{
-    int len;
-    va_list args;
-
-    /* 0 -- do not use the current indent -- */
-
-    va_start(args, pat);
-    len = vsprintf(msg, pat, args);
-    va_end(args);
-
-    msg[len++] = '\n';
-    msg[len] = '\0';
-
-    fwrite(msg, 1, len, stdout);
-    fflush             (stdout);
-}
-
-void
-critcl_trace_cmd_args (int argc, Tcl_Obj*const* argv)
-{
-    int i;
-    for (i=0; i < argc; i++) {
-	critcl_trace_printf ("ARG [%3d] = '%s'", i, Tcl_GetString(argv[i]));
-    }
-}
-
-void
-critcl_trace_cmd_result (const Tcl_Obj* result)
-{
-    critcl_trace_printf ("RESULT = '%s'", Tcl_GetString(result));
-}
-
 #endif
+    // indentation, scope, separator
+    if (ind) { indent (); }
+    scope ();
+    separator();
+    closed = 0;
+}
+
+void
+critcl_trace_printf (int on, const char *format, ...)
+{    
+    /*
+     * 1MB output-buffer. We may trace large data structures. This is also a
+     * reason why the implementation can be compiled out entirely.
+     */
+#define MSGMAX (1024*1024)
+    static char msg [MSGMAX];
+    int len;
+    va_list args;
+    if (!on) return;
+    if (closed) critcl_trace_header (1, 1, 0, 0);
+	
+    va_start(args, format);
+    len = vsnprintf(msg, MSGMAX, format, args);
+    va_end(args);
+    fwrite(msg, 1, len, stdout);
+    fflush             (stdout);
+}
+
+void
+critcl_trace_cmd_args (const char* scopename, int argc, Tcl_Obj*const* argv)
+{
+    int i;
+    critcl_trace_push (scopename);
+    for (i=0; i < argc; i++) {
+	// No location information
+	indent();
+	scope();
+	separator();
+	critcl_trace_printf (1, "ARG [%3d] = '%s'\n",
+			     i, Tcl_GetString((Tcl_Obj*) argv[i]));
+    }
+}
+
+int
+critcl_trace_cmd_result (int status, Tcl_Interp* ip)
+{
+    char* result = Tcl_GetString (Tcl_GetObjResult (ip));
+    // No location information
+    indent();
+    scope();
+    separator();
+    critcl_trace_printf (1, "RESULT = %d '%s'\n", status, result);
+    critcl_trace_pop ();
+    return status;
+}
+
+#endif /*  CRITCL_TRACER */
 /*
  * = = == === ===== ======== ============= =====================
  */

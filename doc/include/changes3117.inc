@@ -17,6 +17,14 @@
        C level facilities useful to packages (assertions, tracing,
        memory allocation shorthands).
 
+[enum] Modified package [package critcl] to make use of the new
+       tracing facilities to provide tracing of arguments and results
+       for [cmd critcl::ccommand] and [cmd critcl::cproc] invokations.
+
+[enum] Modified packages [package critcl] and [package critcl::class]
+       to provide better function names for (class) method tracing.
+       Bumped package [package critcl::class] to version 1.0.7.
+
 [enum] Extended the support package [package critcl::literals] with
        limited configurability. It is now able to generate code for
        C-level access to the pool without Tcl types (Mode [const c]).

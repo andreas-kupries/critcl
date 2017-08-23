@@ -492,6 +492,12 @@ targets. The result of such a merge would look like:</p>
 <li><p>New supporting package <b class="package"><a href="critcl_cutil.html">critcl::cutil</a></b>. Provides common
        C level facilities useful to packages (assertions, tracing,
        memory allocation shorthands).</p></li>
+<li><p>Modified package <b class="package"><a href="critcl_pkg.html">critcl</a></b> to make use of the new
+       tracing facilities to provide tracing of arguments and results
+       for <b class="cmd">critcl::ccommand</b> and <b class="cmd">critcl::cproc</b> invokations.</p></li>
+<li><p>Modified packages <b class="package"><a href="critcl_pkg.html">critcl</a></b> and <b class="package"><a href="critcl_class.html">critcl::class</a></b>
+       to provide better function names for (class) method tracing.
+       Bumped package <b class="package"><a href="critcl_class.html">critcl::class</a></b> to version 1.0.7.</p></li>
 <li><p>Extended the support package <b class="package"><a href="critcl_literals.html">critcl::literals</a></b> with
        limited configurability. It is now able to generate code for
        C-level access to the pool without Tcl types (Mode <b class="const">c</b>).

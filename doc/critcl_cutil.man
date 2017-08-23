@@ -116,16 +116,51 @@ files
 [para] The macro definitions and their signatures are
 
 [example {
+    /* (de)activation of named logical streams.
+     * These are declarators, not statements.
+     */
 
-    void TRACE_ENTER (char* function);
-    void TRACE_RETURN_VOID (void);
-    any  TRACE_RETURN (char* format, any x);
+    TRACE_ON;
+    TRACE_OFF;
+    TRACE_TAG_ON  (tag_identifier);
+    TRACE_TAG_OFF (tag_identifier);
 
-    void TRACE  ((char* format, ...));
-    void TRACE0 ((char* format, ...));
+    /*
+     * Higher level trace statements (convenience commands)
+     */
 
-    void TRACE_ARGS (char* function, int c, TclObj* v[]);
-    any  TRACE_RESULT (Tcl_Interp* interp, any code);
+    void TRACE_FUNC   (const char* format, ...);
+    void TRACE_FUNC_VOID;
+    any  TRACE_RETURN (const char* format, any x);
+    void TRACE_RETURN_VOID;
+    void TRACE (const char* format, ...);
+
+    /*
+     * Low-level trace statements the higher level ones above
+     * are composed from. Scope management and output management.
+     */
+
+    void TRACE_PUSH_SCOPE (const char* scope);
+    void TRACE_PUSH_FUNC;
+    void TRACE_POP;
+
+    void TRACE_HEADER (int indent);
+    void TRACE_ADD (const char* format, ...);
+    void TRACE_CLOSER;
+
+    /*
+     * Convert tag to the underlying status variable.
+     */
+
+    TRACE_TAG_VAR (tag)
+
+    /*
+     * Conditional use of arbitrary code.
+     */
+
+    TRACE_RUN (code);
+    TRACE_DO (code);
+    TRACE_TAG_DO (code);
 }]
 
 [para] Note that these definitions are conditional on the existence of
@@ -145,10 +180,8 @@ well.
 Further note that the command [cmd critcl::config] now accepts a
 boolean option [const trace]. Setting it activates enter/exit tracing
 in all commands based on [cmd critcl::cproc], with proper printing of
-arguments and results. It should be noted that this is subordinate to
-the activation of the tracing facility in general. In other words, if
-the tracing facility is not active then setting the config has no
-effect.
+arguments and results. This implicitly activates the tracing facility
+in general.
 
 [para] The details of the semantics are explained in section
 [sectref Tracing]
@@ -236,65 +269,122 @@ All output is printed to [const stdout].
 [list_begin definitions]
 
 [comment {* * ** *** ***** ******** ************* *********************}]
-[call [cmd {void TRACE_ENTER (char* function)}]]
+[call [cmd TRACE_ON]]
+[call [cmd TRACE_OFF]]
+[call [cmd {TRACE_TAG_ON  (identifier)}]]
+[call [cmd {TRACE_TAG_OFF (identifier)}]]
 
-Use this macro at the beginning of a C function to record entry into
-it. The argument is expected to be the name of the entered function.
+These "commands" are actually declarators, for use outside of
+functions. They (de)activate specific logical streams, named either
+explicitly by the user, or implicitly, refering to the current file.
 
-[para] Note, the tracer's runtime maintains a stack of entered
-functions and expects that function exit is signaled by either
-[fun TRACE_RETURN] or [fun TRACE_RETURN_VOID].
+[para] For example:
+[para][example {
+    TRACE_TAG_ON (lexer_in);
+}]
+
+[para] All high- and low-level trace commands producing output have
+the controlling tag as an implicit argument. The scope management
+commands do not take tags.
+
 
 [comment {* * ** *** ***** ******** ************* *********************}]
-[call [cmd {void TRACE_RETURN_VOID (void)}]]
+[call [cmd {void TRACE_FUNC}]]
+[call [cmd {void TRACE_TAG_FUNC (tag)}]]
+[call [cmd {void TRACE_FUNC_VOID}]]
+[call [cmd {void TRACE_TAG_FUNC_VOID (tag)}]]
 
-Use this macro instead of [example {return}] to exit a void
+Use these macros at the beginning of a C function to record entry into
+it. The name of the entered function is an implicit argument
+([var __func__]), forcing users to have a C99 compiler..
+
+[para] The tracer's runtime maintains a stack of active functions and
+expects that function return is signaled by either [fun TRACE_RETURN],
+[fun TRACE_RETURN_VOID], or the equivalent forms taking a tag.
+
+[comment {* * ** *** ***** ******** ************* *********************}]
+[call [cmd {void TRACE_RETURN_VOID}]]
+[call [cmd {void TRACE_TAG_RETURN_VOID (tag)}]]
+
+Use these macros instead of [example {return}] to return from a void
 function. Beyond returning from the function this also signals the
 same to the tracer's runtime, popping the last entered function from
 its stack of active functions.
 
 [comment {* * ** *** ***** ******** ************* *********************}]
-[call [cmd {any TRACE_RETURN (char* format, any x)}]]
+[call [cmd {any TRACE_RETURN     (     char* format, any x)}]]
+[call [cmd {any TRACE_TAG_RETURN (tag, char* format, any x)}]]
 
-Use this macro instead of [example {return x}] to exit a non-void
-function. Beyond returning from the function with value [arg x] this
-also signals the same to the tracer's runtime, popping the last
-entered function from its stack of active functions.
+Use this macro instead of [example {return x}] to return from a
+non-void function.
+
+Beyond returning from the function with value [arg x] this also
+signals the same to the tracer's runtime, popping the last entered
+function from its stack of active functions.
 
 The [arg format] is expected to be a proper formatting string for
 [fun printf] and analogues, able to stringify [arg x].
 
 [comment {* * ** *** ***** ******** ************* *********************}]
-[call [cmd {void TRACE ((char* format, ...))}]]
+[call [cmd {void TRACE     (     char* format, ...)}]]
+[call [cmd {void TRACE_TAG (tag, char* format, ...)}]]
 
 This macro is the trace facilities' equivalent of [fun printf],
-printing arbitrary data under the control of the [arg format]. Note
-how it is written with doubled parentheses.
+printing arbitrary data under the control of the [arg format].
 
-[para] The printed text is closed with a newline, and indented per the
-stack of active functions.
-
-[comment {* * ** *** ***** ******** ************* *********************}]
-[call [cmd {void TRACE0 ((char* format, ...))}]]
-
-This is the same functionality as [fun TRACE] above, except that the
-printed message is [emph not] indented.
+[para] The printed text is closed with a newline, and indented as per
+the stack of active functions.
 
 [comment {* * ** *** ***** ******** ************* *********************}]
-[call [cmd {void TRACE_ARGS (char* function, int c, TclObj* v[])}]]
+[call [cmd {void TRACE_HEADER (int indent)}]]
+[call [cmd {void TRACE_TAG_HEADER (tag, int indent)}]]
 
-This is a special macro used within the core [package critcl] package
-to provide entry tracing for [cmd critcl::cproc]-based commands. It
-takes the name of the command, plus count and values of the Tcl
-arguments.
+This is the low-level macro which prints the beginning of a trace
+line. This prefix consists of physical location (file name and line
+number), if available, indentation as per the stack of active scopes
+(if activated), and the name of the active scope.
 
 [comment {* * ** *** ***** ******** ************* *********************}]
-[call [cmd {any TRACE_RESULT (Tcl_Interp* interp, any code)}]]
+[call [cmd {void TRACE_CLOSER}]]
+[call [cmd {void TRACE_TAG_CLOSER (tag)}]]
 
-This is a special macro used within the core [package critcl] package
-to provide exit tracing for [cmd critcl::cproc]-based commands. It
-takes the interpreter holding the command result, and the Tcl return
-code.
+This is the low-level macro which prints the end of a trace
+line.
+
+[comment {* * ** *** ***** ******** ************* *********************}]
+[call [cmd {void TRACE_ADD          (const char* format, ...)}]]
+[call [cmd {void TRACE_TAG_ADD (tag, const char* format, ...)}]]
+
+This is the low-level macro which adds formatted data to the line.
+
+[comment {* * ** *** ***** ******** ************* *********************}]
+[call [cmd {void TRACE_PUSH_SCOPE (const char* name)}]]
+[call [cmd {void TRACE_PUSH_FUNC}]]
+[call [cmd {void TRACE_PUSH_POP}]]
+
+These are the low-level macros for scope management. The first two
+forms push a new scope on the stack of active scopes, and the last
+forms pops the last scope pushed.
+
+[comment {* * ** *** ***** ******** ************* *********************}]
+[call [cmd {TRACE_TAG_VAR (tag)}]]
+
+Helper macro converting from a tag identifier to the name of the
+underlying status variable.
+
+[comment {* * ** *** ***** ******** ************* *********************}]
+[call [cmd {TRACE_RUN (code);}]]
+
+Conditionally insert the [arg code] at compile time when the tracing
+facility is activated.
+
+[comment {* * ** *** ***** ******** ************* *********************}]
+[call [cmd {TRACE_DO (code);}]]
+[call [cmd {TRACE_TAG_DO (tag, code);}]]
+
+Insert the [arg code] at compile time when the tracing facility is
+activated, and execute the same when either the implicit tag for the
+file or the user-specified tag is active.
 
 [list_end]
 

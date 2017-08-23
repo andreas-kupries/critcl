@@ -11,7 +11,7 @@
 # # ## ### ##### ######## ############# #####################
 # CriTcl Core.
 
-package provide critcl 3.1.16
+package provide critcl 3.1.17
 
 namespace eval ::critcl {}
 
@@ -81,7 +81,7 @@ if {[package vsatisfies [package present Tcl] 8.5]} {
 }
 
 # # ## ### ##### ######## ############# #####################
-## 
+##
 
 proc ::critcl::buildrequirement {script} {
     # In regular code this does nothing. It is a marker for
@@ -189,13 +189,15 @@ proc ::critcl::ccommand {name anames args} {
     set clientdata NULL ;# Default: ClientData expression
     set delproc    NULL ;# Default: Function pointer expression
     set acname     0
+    set tname      ""
     while {[string match "-*" $args]} {
         switch -- [set opt [lindex $args 0]] {
 	    -clientdata { set clientdata [lindex $args 1] }
 	    -delproc    { set delproc    [lindex $args 1] }
 	    -cname      { set acname     [lindex $args 1] }
+	    -tracename  { set tname      [lindex $args 1] }
 	    default {
-		error "Unknown option $opt, expected one of -clientdata, -cname, or -delproc"
+		error "Unknown option $opt, expected one of -clientdata, -cname, -delproc"
 	    }
         }
         set args [lrange $args 2 end]
@@ -212,7 +214,11 @@ proc ::critcl::ccommand {name anames args} {
 	set cns   {}
 	set key   $cname
 	set wname $name
-	set traceref \"$name\"
+	if {$tname ne {}} {
+	    set traceref \"$tname\"
+	} else {
+	    set traceref \"$name\"
+	}
     } else {
 	lassign [BeginCommand public $name $anames $args] ns cns name cname
 	set key   [string map {:: _} $ns$cname]
@@ -252,16 +258,16 @@ proc ::critcl::ccommand {name anames args} {
 	Emit   $body
 	Emitln \n\}
 
+	# Now emit the call to the ccommand tracing shim. It simply
+	# calls the regular implementation and places the tracing
+	# around that.
 	if {$v::options(trace)} {
-	    # Now emit the shim for ccommand tracing. It just calls
-	    # the actual implementation and puts the tracing code
-	    # around that.
 	    Emitln "\nstatic int\n$wname$ca"
 	    Emitln \{
 	    Emitln "  int _rv;"
-	    Emitln "  TRACE_ARGS ($traceref, $oc, $ov);"
+	    Emitln "  critcl_trace_cmd_args ($traceref, $oc, $ov);"
 	    Emitln "  _rv = ${wname}_actual ($cd, $ip, $oc, $ov);"
-	    Emitln "  TRACE_RESULT ($ip, _rv);"
+	    Emitln "  return critcl_trace_cmd_result (_rv, $ip);"
 	    Emitln \}
 	}
     } else {
@@ -499,7 +505,7 @@ proc ::critcl::ArgsInprocess {adefs skip} {
 	# arguments are left then A can take the current word,
 	# otherwise A is left to its default. We compute them from the
 	# end.
-	set t 0 
+	set t 0
 	foreach o [lreverse $optional] {
 	    if {$o} {
 		lappend thresholds $t
@@ -947,7 +953,7 @@ proc ::critcl::argtype {name conversion {ctype {}} {ctypeb {}}} {
 	    set acrel($name) $acrel($ctype)
 	}
 
-	set conversion $aconv($ctype) 
+	set conversion $aconv($ctype)
 	set ctypeb     $actypeb($ctype)
 	set ctype      $actype($ctype)
     } else {
@@ -1019,7 +1025,7 @@ proc ::critcl::resulttype {name conversion {ctype {}}} {
 	if {![info exists rconv($ctype)]} {
 	    return -code error "Unable to alias unknown type '$ctype'."
 	}
-	set conversion $rconv($ctype) 
+	set conversion $rconv($ctype)
 	set ctype      $rctype($ctype)
     } else {
 	lassign [HeaderLines $conversion] leadoffset conversion
@@ -1090,11 +1096,13 @@ proc ::critcl::cproc {name adefs rtype {body "#"} args} {
     set acname 0
     set passcd 0
     set aoffset 0
+    set tname ""
     while {[string match "-*" $args]} {
         switch -- [set opt [lindex $args 0]] {
 	    -cname      { set acname  [lindex $args 1] }
 	    -pass-cdata { set passcd  [lindex $args 1] }
 	    -arg-offset { set aoffset [lindex $args 1] }
+	    -tracename  { set tname   [lindex $args 1] }
 	    default {
 		error "Unknown option $opt, expected one of -cname, or -pass-cdata"
 	    }
@@ -1111,7 +1119,11 @@ proc ::critcl::cproc {name adefs rtype {body "#"} args} {
 	set cns {}
 	set wname $name
 	set cname c_$name
-	set traceref \"$name\"
+	if {$tname ne {}} {
+	    set traceref \"$tname\"
+	} else {
+	    set traceref \"$name\"
+	}
     } else {
 	lassign [BeginCommand public $name $adefs $rtype $body] ns cns name cname
 	set traceref ns_$cns$cname
@@ -1442,7 +1454,7 @@ proc ::critcl::cheaders {args} {
 proc ::critcl::csources {args} {
     SkipIgnored [This]
     HandleDeclAfterBuild
-    return [SetParam csources $args 1 1]
+    return [SetParam csources $args 1 1 1]
 }
 
 proc ::critcl::clibraries {args} {
@@ -2122,7 +2134,7 @@ proc ::critcl::API_setup_export {file} {
 	}
 	append sdecls "\n"
 	append sdecls [stubs::gen::header::gen $T $cname]
-    } 
+    }
 
     append sdecls "\#endif /* ${cname}_DECLS_H */\n"
 
@@ -2464,7 +2476,7 @@ proc ::critcl::readconfig {config} {
 	    #                                 PLATFORM.
             # (4c) PLATFORM copy PARENT...  - Copies the currently defined
             #                                 configuration variables and
-            #                                 values to the settings for 
+            #                                 values to the settings for
             #                                 this platform.
 	    # (5.) VAR VALUE............... - Default configuration
 	    #                                 variable, and value.
@@ -3673,7 +3685,7 @@ proc ::critcl::EmitShimVariables {adb rtype} {
 
 proc ::critcl::EmitArgTracing {fun} {
     if {!$v::options(trace)} return
-    Emitln "\n  TRACE_ARGS ($fun, oc, ov);"
+    Emitln "\n  critcl_trace_cmd_args ($fun, oc, ov);"
     return
 }
 
@@ -3746,8 +3758,8 @@ proc ::critcl::TraceReturns {label code} {
 
     # Inject tracing into the 'return's.
     regsub -all \
-	{return([^;]*);}           $code \
-	{TRACE_RESULT (interp,\1);} newcode
+	{return[[:space:]]*([^;]*);}           $code \
+	{return critcl_trace_cmd_result (\1, interp);} newcode
     if {[string match {*return *} $code] && ($newcode eq $code)} {
 	error "Failed to inject tracing code into $label"
     }
@@ -3771,7 +3783,11 @@ proc ::critcl::EmitShimFooter {adb rtype} {
 	Emitln $code
     } else {
 	if {$v::options(trace)} {
-	    Emitln "  TRACE_RETURN_VOID;"
+	    Emitln "  critcl_trace_header (1, 0, 0);"
+	    Emitln "  critcl_trace_printf (1, \"RETURN (void)\");"
+	    Emitln "  critcl_trace_closer (1);"
+	    Emitln "  critcl_trace_pop();"
+	    Emitln "  return;"
 	}
     }
     Emitln \}
@@ -3829,7 +3845,7 @@ proc ::critcl::GetParam {file type {default {}}} {
     }
 }
 
-proc ::critcl::SetParam {type values {expand 1} {uuid 0}} {
+proc ::critcl::SetParam {type values {expand 1} {uuid 0} {unique 0}} {
     set file [This]
     if {![llength $values]} return
 
@@ -3839,22 +3855,30 @@ proc ::critcl::SetParam {type values {expand 1} {uuid 0}} {
 	# Process the list of flags, treat non-option arguments as
 	# glob patterns and expand them to a set of files, stored as
 	# absolute paths.
+
+	set have {}
+	if {$unique && [dict exists $v::code($file) config $type]} {
+	    foreach v [dict get $v::code($file) config $type] {
+		dict set have $v .
+	    }
+	}
+
 	set tmp {}
 	foreach v $values {
 	    if {[string match "-*" $v]} {
 		lappend tmp $v
 	    } else {
 		if {$expand} {
-		    if {$uuid} {
-			foreach f [Expand $file $v] {
-			    lappend tmp $f
-			    UUID.extend $file .$type.$f [Cat $f]
-			}
-		    } else {
-			lappendlist tmp [Expand $file $v]
+		    foreach f [Expand $file $v] {
+			if {$unique && [dict exists $have $f]} continue
+			lappend tmp $f
+			if {$unique} { dict set have $f . }
+			if {$uuid} { UUID.extend $file .$type.$f [Cat $f] }
 		    }
 		} else {
+		    if {$unique && [dict exists $have $v]} continue
 		    lappend tmp $v
+		    if {$unique} { dict set have $v . }
 		}
 	    }
 	}
@@ -4145,7 +4169,7 @@ proc ::critcl::at::SHOWFRAMES {level {all 1}} {
     }
     return [join $lines \n]
 }
- 
+
 # # ## ### ##### ######## ############# #####################
 
 proc ::critcl::CollectEmbeddedSources {file destination libfile ininame placestubs} {
@@ -5562,7 +5586,7 @@ namespace eval ::critcl {
 
 	variable knowntargets {} ;# List of all target identifiers found
 	# in the configuration file last processed by "readconfig".
-	
+
 	variable xtargets        ;# Cross-compile targets. This array maps from
 	array set xtargets {}    ;# the target identifier to the actual platform
 	# identifier of the target platform in question. If a target identifier
