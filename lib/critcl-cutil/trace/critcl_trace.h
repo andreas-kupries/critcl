@@ -89,8 +89,8 @@
 #define TRACE_ADD(format, ...) TRACE_TAG_ADD    (THIS_FILE, format, __VA_ARGS__)
 #define TRACE_CLOSER           TRACE_TAG_CLOSER (THIS_FILE)
 
-#define TRACE_TAG_ON(tag)  static int TRACE_TAG_VAR (tag) = 1;
-#define TRACE_TAG_OFF(tag) static int TRACE_TAG_VAR (tag) = 0;
+#define TRACE_TAG_ON(tag)  static int TRACE_TAG_VAR (tag) = 1
+#define TRACE_TAG_OFF(tag) static int TRACE_TAG_VAR (tag) = 0
 #define TRACE_TAG_VAR(tag) __critcl_tag_ ## tag ## _status
 
 #define TRACE_TAG_HEADER(tag, indent)   critcl_trace_header (TRACE_TAG_VAR (tag), (indent), __FILE__, __LINE__)
