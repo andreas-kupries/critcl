@@ -106,6 +106,22 @@ proc findlib {path} {
     }
     return $path
 }
+proc dstlfromlib {path} {
+    # kinda the inverse of findlib above, it returns the path to
+    # dstlpath, relative the */lib path returned by findlib. The path
+    # is returned as a list of segments
+    set relpath {}
+    while {1} {
+        if {[file tail $path] eq "lib"} {
+            break
+        }
+        set new [file dirname $path]
+        set relpath [linsert $relpath 0 [file tail $path]]
+        if {$new eq $path} break
+        set path $new
+    }
+    return $relpath
+}
 proc id {cv vv} {
     upvar 1 $cv commit $vv version
 
@@ -366,10 +382,25 @@ proc _install {args} {
 
 	# Application: critcl
 
-	set theapp [critapp $dsta]
+	set theapp  [critapp     $dsta]
+	set reldstl [dstlfromlib $dstl]
 
-	set    c [open $theapp w]
-	puts  $c "#!/bin/sh\n# -*- tcl -*- \\\nexec [file dirname [file normalize [info nameofexecutable]/___]] \"\$0\" \$\{1+\"\$@\"\}\npackage require critcl::app\ncritcl::app::main \$argv"
+	set c [open $theapp w]
+	lappend map @bs@   "\\"
+	lappend map @exe@  [file dirname [file normalize [info nameofexecutable]/___]]
+	lappend map @path@ $reldstl  ;# insert the dst path
+	lappend map "\t    " {} ;# de-dent
+	puts $c [string trimleft [string map $map {
+	    #!/bin/sh
+	    # -*- tcl -*- @bs@
+	    exec "@exe@" "$0" ${1+"$@"}
+
+	    set libpath [file normalize [file join [file dirname [info script]] .. lib]]
+	    set libpath [file join $libpath {@path@}]
+	    if {[lsearch -exact $auto_path $libpath] < 0} {lappend auto_path $libpath}
+
+	    package require critcl::app
+	    critcl::app::main $argv}]]
 	close $c
 	+x $theapp
 
