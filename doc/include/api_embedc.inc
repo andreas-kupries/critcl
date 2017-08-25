@@ -489,10 +489,10 @@ arguments and result.
 
 This command compiles the C code in [arg text] and [arg externals].
 
-[para] Both have access to all definitions created by the previously
-listed commands, regardless of their and its placement in the
-[file .critcl] file. See section [sectref {Runtime Behaviour}] for
-more details.
+[para] Both arguments have access to all definitions created by the
+previously listed commands, regardless of their placement in the
+[file .critcl] file relative to this command.
+See section [sectref {Runtime Behaviour}] for more details.
 
 [para] The C code in [arg text] is put into the body of the
 initialization function of the shared library backing the
