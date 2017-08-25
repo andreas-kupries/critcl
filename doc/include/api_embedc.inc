@@ -508,6 +508,9 @@ and just before the initialization function, making this is a good
 place for any external symbols required by initialization function
 which should not be accessible by any other parts of the C code.
 
+[para] Multiple invokations of this command are allowed, and a later
+call has access to the information of all preceding ones.
+
 [para]
 The result of the command is the empty string.
 

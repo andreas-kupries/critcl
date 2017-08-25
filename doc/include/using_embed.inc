@@ -51,4 +51,5 @@ meat of things.
 
 [comment {
 	No examples for: cinit, compiling, compiled, preload, done
+	No examples for the supporting generator classes.
 }]

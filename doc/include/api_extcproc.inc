@@ -32,7 +32,7 @@ it is not specified.
 
 [emph Attention!] The standard result type [const void] is special as
 it has no accompanying result variable. This cannot be expressed
-by the this extension command.
+by this extension command.
 
 [para] The [arg body]'s responsibility is the conversion of the
 functions result into a Tcl result and a Tcl status. The first has to
