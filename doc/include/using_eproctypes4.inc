@@ -11,7 +11,7 @@ not really required and therefore not supported.
 
 [para] The example of a result type shown below was pulled from
 [package KineTcl]. It is a variant of the builtin result type
-[const Tcl_Obj*], aka [const object]. The builtin conversion assumes
+[type Tcl_Obj*], aka [type object]. The builtin conversion assumes
 that the object returned by the function has a refcount of 1 (or
 higher), with the function having held the reference, and releases
 that reference after placing the value into the interp result. The
@@ -31,7 +31,7 @@ released much to early, and crashing the system.
 This type of definition is also found in [package Marpa] and recent
 hacking hacking on [package CRIMP] introduced it there as well. Which
 is why this definition became a builtin type starting with version
-3.1.16, under the names [const Tcl_Obj*0] and [const object0].
+3.1.16, under the names [type Tcl_Obj*0] and [type object0].
 
 [para] Going back to errors and their handling, of course, if a
 function we are wrapping signals them in-band, then the conversion of

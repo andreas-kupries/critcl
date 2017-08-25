@@ -21,8 +21,8 @@ uses the conversion code from the referenced types.
 [para] Our example is pulled from an incomplete project of mine, a
 binding to [term {Jeffrey Kegler}]'s [term libmarpa] library managing
 Earley parsers. Several custom types simply reflect the typedef's done
-by the library, to make the [cmd cproc]s as self-documenting as the
-underlying library functions themselves.
+by the library, to make the [cmd critcl::cproc]s as self-documenting
+as the underlying library functions themselves.
 
 [example {
     critcl::argtype Marpa_Symbol_ID     = int

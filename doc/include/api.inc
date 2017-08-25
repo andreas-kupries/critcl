@@ -30,4 +30,4 @@ regardless of their file extension.
 [subsection {Advanced: Location management}]	[include include/api_location.inc]
 [subsection {Advanced: Diversions}]		[include include/api_diversions.inc]
 [subsection {Advanced: File Generation}]	[include include/api_generation.inc]
-[subsection {Advanced: Extending cproc}]	[include include/api_extcproc.inc]
+[subsection {Advanced: Extending cproc}]	[include include/api_extcproc1.inc]

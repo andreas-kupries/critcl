@@ -1,6 +1,6 @@
 [subsection {Custom Types, Semi-trivial}]
 
-A more involved custom argument type would be to map from Tcl stringas
+A more involved custom argument type would be to map from Tcl strings
 to some internal representation, like an integer code.
 
 [para] The first example is taken from the [package tclyaml] package,
@@ -50,8 +50,8 @@ internal enumeration.
 }]
 
 It should be noted that this code precedes the advent of the
-supporting generator package [package critcl:emap]. With it available
-we can simlply define the mapping via
+supporting generator package [package critcl::emap]. using the
+generator the definition of the mapping becomes much simpler:
 
 [example {
     critcl::emap::def yaml_sequence_style_t {
@@ -61,18 +61,18 @@ we can simlply define the mapping via
     }
 }]
 
-and the generator will not only provide the conversions, but also
-define the argument and result types needed for their use by
-[cmd cproc].
+Note that the generator will not only provide the conversions, but
+also define the argument and result types needed for their use by
+[cmd critcl::cproc].
 
 Another example of such a semi-trivial argument type can be found in
-the [package CRIMP] package, which defines a [const Tcl_ObjType] for
+the [package CRIMP] package, which defines a [type Tcl_ObjType] for
 [term image] values. This not only provides a basic argument type for
-any image, but also types which check that the image has a specific
-format. Here we see for the first time non-integer arguments, and the
-need to define the C types used for variables holding the C level
-value, and the type of function parameters (Due to C promotion rules
-we may need different types).
+any image, but also derived types which check that the image has a
+specific format. Here we see for the first time non-integer arguments,
+and the need to define the C types used for variables holding the C
+level value, and the type of function parameters (Due to C promotion
+rules we may need different types).
 
 [example {
     critcl::argtype image {

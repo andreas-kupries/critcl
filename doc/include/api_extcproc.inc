@@ -1,12 +1,8 @@
 
-While the [cmd critcl::cproc] command understands the most common C
-types (see section [sectref {Embedded C Code}]), sometimes this is not
-enough.
-
 [para] To get around this limitation the commands in this section
 enable users of [package critcl] to extend the set of argument and
-result types understood by [cmd critcl::cproc]. In other words, to
-define their own custom types.
+result types understood by [cmd critcl::cproc]. In other words, they
+allow them to define their own, custom, types.
 
 [list_begin definitions]
 

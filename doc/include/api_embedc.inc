@@ -214,113 +214,14 @@ function, but influence argument counting and extraction.
 
 [list_end]
 
-The list below shows the values which are legal for [arg resulttype],
-and details their semantics:
+Below is the list of predefined types legal for [arg resulttype], plus
+the details of their semantics. Note that it is possible to extend
+this list with custom types if the standard does not support what is
+needed. See section [sectref {Advanced: Extending cproc}] for details.
 
 [comment {% % %% %%% %%%%% %%%%%%%% %%%%%%%%%%%%% %%%%%%%%%%%%%%%%%%%%%}]
-[list_begin definitions]
-[comment {% % %% %%% %%%%% %%%%%%%% %%%%%%%%%%%%%}]
-[def Tcl_Obj*]
-[def object]
-The function returns a value of type "Tcl_Obj*".
-This value becomes the interpreter result, if not [const 0].
-The Tcl status is TCL_ERROR when a [const 0] is returned, and TCL_OK otherwise.
-
-[para][emph Attention]: The conversion assumes that the value belonged
-to the function, with an associated reference count, and decrements
-the reference count to indicate the loss of ownership by the
-function. This means that it is an error to return a value whose
-reference count is zero. The system will crash at some point after due
-to reuse of the freed memory.
-
-[comment {% % %% %%% %%%%% %%%%%%%% %%%%%%%%%%%%%}]
-[def Tcl_Obj*0]
-[def object0]
-The function returns a value of type "Tcl_Obj*".
-This value becomes the interpreter result, if not [const 0].
-The Tcl status is TCL_ERROR when a [const 0] is returned, and TCL_OK otherwise.
-
-[para][emph Attention]: Contrary to [const Tcl_Obj*] above this
-conversion assumes that the returned value has a reference count of
-[const 0] and performs [emph no] decrement. Returning a value whose
-reference count is greater than zero will likely cause a memory leak.
-
-[comment {% % %% %%% %%%%% %%%%%%%% %%%%%%%%%%%%%}]
-[def char*]
-[def vstring]
-The function returns a value of type "char*".
-This value becomes the interpreter result, wrapped in a String.
-
-It is assumed that the string is volatile in some way, with the
-wrapping in a String duplicating it before making it the result,
-ensuring that we will not access a dangling pointer in the future.
-
-The Tcl status is always TCL_OK.
-
-[comment {% % %% %%% %%%%% %%%%%%%% %%%%%%%%%%%%%}]
-[def {const char*}]
-Like type [const char*] above, except that the returned string is const-qualified.
-
-[comment {% % %% %%% %%%%% %%%%%%%% %%%%%%%%%%%%%}]
-[def string]
-[def dstring]
-The function returns a value of type "char*".
-
-Contrary to the previous string types here it is assumed that the
-value is dynamically allocated, via [fun Tcl_Alloc].
-
-This value becomes the interpreter result, as usual, but is [emph not] copied.
-The Tcl status is always TCL_OK.
-
-[comment {% % %% %%% %%%%% %%%%%%%% %%%%%%%%%%%%%}]
-[def double]
-The function returns a value of type "double".
-This value becomes the interpreter result, properly wrapped (Int).
-The Tcl status is always TCL_OK.
-
-[comment {% % %% %%% %%%%% %%%%%%%% %%%%%%%%%%%%%}]
-[def float]
-The function returns a value of type "float".
-This value becomes the interpreter result, properly wrapped (Double).
-The Tcl status is always TCL_OK.
-
-[comment {% % %% %%% %%%%% %%%%%%%% %%%%%%%%%%%%%}]
-[def boolean]
-[def bool]
-The function returns a value of type "int", interpreted as boolean.
-This value becomes the interpreter result, properly wrapped (Int).
-The Tcl status is always TCL_OK.
-
-[comment {% % %% %%% %%%%% %%%%%%%% %%%%%%%%%%%%%}]
-[def int]
-The function returns a value of type "int".
-This value becomes the interpreter result, properly wrapped (Int).
-The Tcl status is always TCL_OK.
-
-[comment {% % %% %%% %%%%% %%%%%%%% %%%%%%%%%%%%%}]
-[def long]
-The function returns a value of type "long int".
-This value becomes the interpreter result, properly wrapped (Long).
-The Tcl status is always TCL_OK.
-
-[comment {% % %% %%% %%%%% %%%%%%%% %%%%%%%%%%%%%}]
-[def ok]
-The function returns a value of type "int".
-It is interpreted as the Tcl status code.
-The interpreter result is left untouched (empty).
-
-[comment {% % %% %%% %%%%% %%%%%%%% %%%%%%%%%%%%%}]
-[def void]
-The function does not return a value.
-The interpreter result is left untouched (empty).
-The Tcl status is always TCL_OK.
-
-[list_end]
+[include api_stdrt_cproc.inc]
 [comment {% % %% %%% %%%%% %%%%%%%% %%%%%%%%%%%%% %%%%%%%%%%%%%%%%%%%%%}]
-
-[para] Please note that it is possible to extend the above with custom
-types if these types are not enough. See section
-[sectref {Advanced: Extending cproc}] for details.
 
 [para] The [arg arguments] parameter has the overall syntax of a Tcl
 dictionary value, except that keys (argument names) and values
@@ -346,133 +247,18 @@ in the procedure body. The argument conversion cannot do it as it is
 completely bypassed when the argument is not present. Overcoming this
 requires the separation of argument conversion and validation code.
 
-[para] The list below shows the values which are legal for argument
-types, and details their semantics:
-
-[comment {% % %% %%% %%%%% %%%%%%%% %%%%%%%%%%%%% %%%%%%%%%%%%%%%%%%%%%}]
-[list_begin definitions]
-[comment {% % %% %%% %%%%% %%%%%%%% %%%%%%%%%%%%%}]
-[def Tcl_Obj*]
-[def object]
-The function takes an argument of type "Tcl_Obj*".
-No argument checking is done.
-The Tcl level word is passed to the argument as-is.
-
-[comment {% % %% %%% %%%%% %%%%%%%% %%%%%%%%%%%%%}]
-[def pstring]
-The function takes an argument of type "critcl_pstring" containing the
-original Tcl_Obj* reference of the Tcl argument, plus the length of
-the string and pointer to the characters.
-
-[example {
-typedef struct critcl_pstring {
-    Tcl_Obj* o;
-    char*    s;
-    int      len;
-} critcl_pstring;
-}]
-
-[comment {% % %% %%% %%%%% %%%%%%%% %%%%%%%%%%%%%}]
-[def list]
-The function takes an argument of type "critcl_list" containing the
-original Tcl_Obj* reference of the Tcl argument, plus the length of
-the Tcl list and pointer to the list elements.
-
-[example {
-typedef struct critcl_list {
-    Tcl_Obj*  o;
-    Tcl_Obj** v;
-    int       c;
-} critcl_list;
-}]
-
-The Tcl argument must be convertible to List, an error is thrown
-otherwise.
-
-[comment {% % %% %%% %%%%% %%%%%%%% %%%%%%%%%%%%%}]
-[def bytearray]
-[def rawchar*]
-[def rawchar]
-The function takes an argument of type "char*".
-
-The Tcl argument must be convertible to ByteArray, an error is thrown
-otherwise.
-
-[emph Note] that the length of the ByteArray is [emph not] passed to
-the function.
-
-[comment {% % %% %%% %%%%% %%%%%%%% %%%%%%%%%%%%%}]
-[def char*]
-The function takes an argument of type "char*".
-The string representation of the Tcl argument is passed in.
-
-[comment {% % %% %%% %%%%% %%%%%%%% %%%%%%%%%%%%%}]
-[def double]
-The function takes an argument of type "double".
-
-The Tcl argument must be convertible to Double, an error is thrown
-otherwise.
-
-[comment {% % %% %%% %%%%% %%%%%%%% %%%%%%%%%%%%%}]
-[def float]
-The function takes an argument of type "float".
-
-The Tcl argument must be convertible to Double, an error is thrown
-otherwise.
-
-[comment {% % %% %%% %%%%% %%%%%%%% %%%%%%%%%%%%%}]
-[def boolean]
-[def bool]
-The function takes an argument of type "int".
-
-The Tcl argument must be convertible to Boolean, an error is thrown
-otherwise.
-
-[comment {% % %% %%% %%%%% %%%%%%%% %%%%%%%%%%%%%}]
-[def int]
-The function takes an argument of type "int".
-
-The Tcl argument must be convertible to Int, an error is thrown
-otherwise.
-
-[comment {% % %% %%% %%%%% %%%%%%%% %%%%%%%%%%%%%}]
-[def long]
-The function takes an argument of type "long int".
-
-The Tcl argument must be convertible to Long, an error is thrown
-otherwise.
-
-[comment {% % %% %%% %%%%% %%%%%%%% %%%%%%%%%%%%%}]
-[def void*]
-
-[comment {% % %% %%% %%%%% %%%%%%%% %%%%%%%%%%%%%}]
-[def double*]
-[def float*]
-[def int*]
-
-The function takes an argument of the same-named C type.
-
-The Tcl argument must be convertible to ByteArray, an error is thrown
-otherwise.
-
-The bytes in the ByteArray are then re-interpreted as the raw
-representation of a C pointer of the given type which is then passed
-as argument to the function.
-
-In other words, this is for Tcl values somehow holding raw C pointers,
-i.e. memory addresses.
-
-[para] [emph Attention]: These types are considered [emph DEPRECATED].
-It is planned to remove their documentation in release 3.2, and their
-implementation in release 3.3.  Their deprecation can be undone if
-good use cases are shown.
-
-[list_end]
-[comment {% % %% %%% %%%%% %%%%%%%% %%%%%%%%%%%%% %%%%%%%%%%%%%%%%%%%%%}]
+[para] Below is the list of predefined types legal for arguments, plus
+the details of their semantics. Note that it is possible to extend
+this list with custom types if the standard does not support what is
+needed. See section [sectref {Advanced: Extending cproc}] for details.
 
 [para] Further note that the type of the first argument is allowed to
 be [const Tcl_Interp*]. In that case the argument in question is
 [emph not] counted as an argument of the new Tcl command.
+
+[comment {% % %% %%% %%%%% %%%%%%%% %%%%%%%%%%%%% %%%%%%%%%%%%%%%%%%%%%}]
+[include api_stdat_cproc.inc]
+[comment {% % %% %%% %%%%% %%%%%%%% %%%%%%%%%%%%% %%%%%%%%%%%%%%%%%%%%%}]
 
 [comment ---------------------------------------------------------------------]
 [call [cmd ::critcl::cproc] [arg name] [arg arguments] [arg resulttype]]

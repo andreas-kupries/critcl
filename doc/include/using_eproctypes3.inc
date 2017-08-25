@@ -5,11 +5,12 @@ conversion needs additional definitions, for example a helper
 structure.
 
 [para] An example of this can be found among the standard types of
-critcl itself, the [term pstring] type. This type provides the C
+critcl itself, the [type pstring] type. This type provides the C
 function with not only the string pointer, but also the string length,
-and the [term Tcl_Obj*] this data came from. As [cmd cproc]'s calling
-conventions allow us only one argument for the data of the parameter a
-structure is needed to convey these three pieces of information.
+and the [type Tcl_Obj*] this data came from. As [cmd critcl::cproc]'s
+calling conventions allow us only one argument for the data of the
+parameter a structure is needed to convey these three pieces of
+information.
 
 [para] Thus the argument type is defined as
 
@@ -33,12 +34,12 @@ allocate it on the heap instead of having it taking space on the
 stack. If we do that we need another adjunct command,
 [cmd critcl::argtyperelease]. This command specifies the code required
 to release dynamically allocated resources when the worker function
-returned, before the shim returns to the caller in Tcl.
+returns, before the shim returns to the caller in Tcl.
 
 To keep things simple our example is synthetic, a modification of
 [const pstring] above, to demonstrate the technique. An actual, but
 more complex example is the code to support the variadic [arg args]
-argument of [cmd cproc].
+argument of [cmd critcl::cproc].
 
 [example {
     critcl::argtype pstring {
