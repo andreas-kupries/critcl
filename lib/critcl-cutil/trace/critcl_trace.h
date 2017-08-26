@@ -76,6 +76,7 @@
 #define TRACE_RUN(code)
 #define TRACE_DO(code)
 #define TRACE_TAG_DO(tag, code)
+#define TRACE_TAG_VAR(tag) 0
 #endif
 
 #ifdef CRITCL_TRACER
