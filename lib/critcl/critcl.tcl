@@ -1478,13 +1478,20 @@ proc ::critcl::tsources {args} {
     # all.
     InitializeFile $file
 
+    set dfiles {}
     dict update v::code($file) config c {
 	foreach f $args {
 	    foreach e [Expand $file $f] {
 		dict lappend c tsources $e
-	        ScanDependencies $file $e
+		lappend dfiles $e
 	    }
 	}
+    }
+    # Attention: The actual scanning is done outside of the `dict
+    # update`, because it makes changes to the dictionary which would
+    # be revert on exiting the update.
+    foreach e $dfiles {
+	ScanDependencies $file $e
     }
     return
 }
@@ -1714,7 +1721,7 @@ proc ::critcl::ImetaAdd {file key words} {
 	    }
 	}
     }
-    #puts |||$key|+|[dict get $v::code($file) config package $key]|
+    #puts XXX|$file||$key|+|[dict get $v::code($file) config package $key]|
     return
 }
 
@@ -1754,6 +1761,24 @@ proc ::critcl::GetMeta {file} {
 	set result [dict merge $result [dict get $v::code($file) config package]]
     }
 
+    # A few keys need a cleanup, i.e. removal of duplicates, and the like
+    catch {
+	dict set result require         [lsort -dict -unique [dict get $result require]]
+    }
+    catch {
+	dict set result build::require  [lsort -dict -unique [dict get $result build::require]]
+    }
+    catch {
+	dict set result platform        [lindex [dict get $result platform] 0]
+    }
+    catch {
+	dict set result generated::by   [lrange [dict get $result generated::by] 0 1]
+    }
+    catch {
+	dict set result generated::date [lindex [dict get $result generated::by] 0]
+    }
+
+    #array set ___M $result ; parray ___M ; unset ___M
     return $result
 }
 
@@ -3342,7 +3367,9 @@ proc ::critcl::ScanDependencies {dfile file {mode plain}} {
 	    ImetaAdd $dfile $k $vlist
 
 	    if {$k ne "require"} continue
-	    msg -nonewline " ($k [join $vlist {}])"
+	    # vlist = package list, each element a package name,
+	    # and optional version.
+	    msg -nonewline " ([file tail $file]: require [join [lsort -dict -unique $vlist] {, }])"
 	}
 
 	# The above information also goes into the teapot meta data of
