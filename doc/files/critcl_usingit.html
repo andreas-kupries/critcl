@@ -246,8 +246,8 @@ uses the conversion code from the referenced types.</p>
 <p>Our example is pulled from an incomplete project of mine, a
 binding to <i class="term">Jeffrey Kegler</i>'s <i class="term">libmarpa</i> library managing
 Earley parsers. Several custom types simply reflect the typedef's done
-by the library, to make the <b class="cmd">cproc</b>s as self-documenting as the
-underlying library functions themselves.</p>
+by the library, to make the <b class="cmd">critcl::cproc</b>s as self-documenting
+as the underlying library functions themselves.</p>
 <pre class="example">
     critcl::argtype Marpa_Symbol_ID     = int
     critcl::argtype Marpa_Rule_ID       = int
@@ -266,7 +266,7 @@ underlying library functions themselves.</p>
 </pre>
 </div>
 <div id="subsection3" class="subsection"><h3><a name="subsection3">Custom Types, Semi-trivial</a></h3>
-<p>A more involved custom argument type would be to map from Tcl stringas
+<p>A more involved custom argument type would be to map from Tcl strings
 to some internal representation, like an integer code.</p>
 <p>The first example is taken from the <b class="package">tclyaml</b> package,
 a binding to the <b class="package">libyaml</b> library. In a few places we have to
@@ -307,8 +307,8 @@ internal enumeration.</p>
     ...
 </pre>
 <p>It should be noted that this code precedes the advent of the
-supporting generator package <b class="package">critcl:emap</b>. With it available
-we can simlply define the mapping via</p>
+supporting generator package <b class="package"><a href="critcl_emap.html">critcl::emap</a></b>. using the
+generator the definition of the mapping becomes much simpler:</p>
 <pre class="example">
     critcl::emap::def yaml_sequence_style_t {
         any   0
@@ -316,17 +316,17 @@ we can simlply define the mapping via</p>
         flow  2
     }
 </pre>
-<p>and the generator will not only provide the conversions, but also
-define the argument and result types needed for their use by
-<b class="cmd">cproc</b>.
+<p>Note that the generator will not only provide the conversions, but
+also define the argument and result types needed for their use by
+<b class="cmd">critcl::cproc</b>.
 Another example of such a semi-trivial argument type can be found in
-the <b class="package">CRIMP</b> package, which defines a <b class="const">Tcl_ObjType</b> for
+the <b class="package">CRIMP</b> package, which defines a <b class="type">Tcl_ObjType</b> for
 <i class="term">image</i> values. This not only provides a basic argument type for
-any image, but also types which check that the image has a specific
-format. Here we see for the first time non-integer arguments, and the
-need to define the C types used for variables holding the C level
-value, and the type of function parameters (Due to C promotion rules
-we may need different types).</p>
+any image, but also derived types which check that the image has a
+specific format. Here we see for the first time non-integer arguments,
+and the need to define the C types used for variables holding the C
+level value, and the type of function parameters (Due to C promotion
+rules we may need different types).</p>
 <pre class="example">
     critcl::argtype image {
         if (crimp_get_image_from_obj (interp, @@, &amp;@A) != TCL_OK) {
@@ -354,11 +354,12 @@ we may need different types).</p>
 conversion needs additional definitions, for example a helper
 structure.</p>
 <p>An example of this can be found among the standard types of
-critcl itself, the <i class="term">pstring</i> type. This type provides the C
+critcl itself, the <b class="type">pstring</b> type. This type provides the C
 function with not only the string pointer, but also the string length,
-and the <i class="term">Tcl_Obj*</i> this data came from. As <b class="cmd">cproc</b>'s calling
-conventions allow us only one argument for the data of the parameter a
-structure is needed to convey these three pieces of information.</p>
+and the <b class="type">Tcl_Obj*</b> this data came from. As <b class="cmd">critcl::cproc</b>'s
+calling conventions allow us only one argument for the data of the
+parameter a structure is needed to convey these three pieces of
+information.</p>
 <p>Thus the argument type is defined as</p>
 <pre class="example">
     critcl::argtype pstring {
@@ -378,11 +379,11 @@ allocate it on the heap instead of having it taking space on the
 stack. If we do that we need another adjunct command,
 <b class="cmd">critcl::argtyperelease</b>. This command specifies the code required
 to release dynamically allocated resources when the worker function
-returned, before the shim returns to the caller in Tcl.
+returns, before the shim returns to the caller in Tcl.
 To keep things simple our example is synthetic, a modification of
 <b class="const">pstring</b> above, to demonstrate the technique. An actual, but
 more complex example is the code to support the variadic <i class="arg">args</i>
-argument of <b class="cmd">cproc</b>.</p>
+argument of <b class="cmd">critcl::cproc</b>.</p>
 <pre class="example">
     critcl::argtype pstring {
         @A = (critcl_pstring*) ckalloc(sizeof(critcl_pstring));
@@ -417,7 +418,7 @@ possible. Supporting structures, or allocating them on the heap are
 not really required and therefore not supported.</p>
 <p>The example of a result type shown below was pulled from
 <b class="package">KineTcl</b>. It is a variant of the builtin result type
-<b class="const">Tcl_Obj*</b>, aka <b class="const">object</b>. The builtin conversion assumes
+<b class="type">Tcl_Obj*</b>, aka <b class="type">object</b>. The builtin conversion assumes
 that the object returned by the function has a refcount of 1 (or
 higher), with the function having held the reference, and releases
 that reference after placing the value into the interp result. The
@@ -435,7 +436,7 @@ released much to early, and crashing the system.</p>
 <p>This type of definition is also found in <b class="package">Marpa</b> and recent
 hacking hacking on <b class="package">CRIMP</b> introduced it there as well. Which
 is why this definition became a builtin type starting with version
-3.1.16, under the names <b class="const">Tcl_Obj*0</b> and <b class="const">object0</b>.</p>
+3.1.16, under the names <b class="type">Tcl_Obj*0</b> and <b class="type">object0</b>.</p>
 <p>Going back to errors and their handling, of course, if a
 function we are wrapping signals them in-band, then the conversion of
 such results has to deal with that. This happens for example in

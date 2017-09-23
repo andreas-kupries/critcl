@@ -143,34 +143,35 @@
 </ul>
 </li>
 <li class="section"><a href="#section4">Examples</a></li>
-<li class="section"><a href="#section5">Changes for version 3.1.16</a></li>
-<li class="section"><a href="#section6">Changes for version 3.1.15</a></li>
-<li class="section"><a href="#section7">Changes for version 3.1.14</a></li>
-<li class="section"><a href="#section8">Changes for version 3.1.13</a></li>
-<li class="section"><a href="#section9">Changes for version 3.1.12</a></li>
-<li class="section"><a href="#section10">Changes for version 3.1.11</a></li>
-<li class="section"><a href="#section11">Changes for version 3.1.10</a></li>
-<li class="section"><a href="#section12">Changes for version 3.1.9</a></li>
-<li class="section"><a href="#section13">Changes for version 3.1.8</a></li>
-<li class="section"><a href="#section14">Changes for version 3.1.7</a></li>
-<li class="section"><a href="#section15">Changes for version 3.1.6</a></li>
-<li class="section"><a href="#section16">Changes for version 3.1.5</a></li>
-<li class="section"><a href="#section17">Changes for version 3.1.4</a></li>
-<li class="section"><a href="#section18">Changes for version 3.1.3</a></li>
-<li class="section"><a href="#section19">Changes for version 3.1.2</a></li>
-<li class="section"><a href="#section20">Changes for version 3.1.1</a></li>
-<li class="section"><a href="#section21">Changes for version 3.1</a></li>
-<li class="section"><a href="#section22">Changes for version 3.0.7</a></li>
-<li class="section"><a href="#section23">Changes for version 3.0.6</a></li>
-<li class="section"><a href="#section24">Changes for version 3.0.5</a></li>
-<li class="section"><a href="#section25">Changes for version 3.0.4</a></li>
-<li class="section"><a href="#section26">Changes for version 3.0.3</a></li>
-<li class="section"><a href="#section27">Changes for version 3.0.2</a></li>
-<li class="section"><a href="#section28">Changes for version 3.0.1</a></li>
-<li class="section"><a href="#section29">Changes for version 3</a></li>
-<li class="section"><a href="#section30">Changes for version 2.1</a></li>
-<li class="section"><a href="#section31">Authors</a></li>
-<li class="section"><a href="#section32">Bugs, Ideas, Feedback</a></li>
+<li class="section"><a href="#section5">Changes for version 3.1.17</a></li>
+<li class="section"><a href="#section6">Changes for version 3.1.16</a></li>
+<li class="section"><a href="#section7">Changes for version 3.1.15</a></li>
+<li class="section"><a href="#section8">Changes for version 3.1.14</a></li>
+<li class="section"><a href="#section9">Changes for version 3.1.13</a></li>
+<li class="section"><a href="#section10">Changes for version 3.1.12</a></li>
+<li class="section"><a href="#section11">Changes for version 3.1.11</a></li>
+<li class="section"><a href="#section12">Changes for version 3.1.10</a></li>
+<li class="section"><a href="#section13">Changes for version 3.1.9</a></li>
+<li class="section"><a href="#section14">Changes for version 3.1.8</a></li>
+<li class="section"><a href="#section15">Changes for version 3.1.7</a></li>
+<li class="section"><a href="#section16">Changes for version 3.1.6</a></li>
+<li class="section"><a href="#section17">Changes for version 3.1.5</a></li>
+<li class="section"><a href="#section18">Changes for version 3.1.4</a></li>
+<li class="section"><a href="#section19">Changes for version 3.1.3</a></li>
+<li class="section"><a href="#section20">Changes for version 3.1.2</a></li>
+<li class="section"><a href="#section21">Changes for version 3.1.1</a></li>
+<li class="section"><a href="#section22">Changes for version 3.1</a></li>
+<li class="section"><a href="#section23">Changes for version 3.0.7</a></li>
+<li class="section"><a href="#section24">Changes for version 3.0.6</a></li>
+<li class="section"><a href="#section25">Changes for version 3.0.5</a></li>
+<li class="section"><a href="#section26">Changes for version 3.0.4</a></li>
+<li class="section"><a href="#section27">Changes for version 3.0.3</a></li>
+<li class="section"><a href="#section28">Changes for version 3.0.2</a></li>
+<li class="section"><a href="#section29">Changes for version 3.0.1</a></li>
+<li class="section"><a href="#section30">Changes for version 3</a></li>
+<li class="section"><a href="#section31">Changes for version 2.1</a></li>
+<li class="section"><a href="#section32">Authors</a></li>
+<li class="section"><a href="#section33">Bugs, Ideas, Feedback</a></li>
 <li class="section"><a href="#keywords">Keywords</a></li>
 <li class="section"><a href="#category">Category</a></li>
 <li class="section"><a href="#copyright">Copyright</a></li>
@@ -464,27 +465,37 @@ This is useful to higher-order code generator using the command in
 settings with prefix arguments which are not directly seen by the
 function, but influence argument counting and extraction.</p></dd>
 </dl>
-<p>The list below shows the values which are legal for <i class="arg">resulttype</i>,
-and details their semantics:</p>
+<p>Below is the list of predefined types legal for <i class="arg">resulttype</i>, plus
+the details of their semantics. Note that it is possible to extend
+this list with custom types if the standard does not support what is
+needed. See section <span class="sectref"><a href="#subsection15">Advanced: Extending cproc</a></span> for details.</p>
 <dl class="definitions">
 <dt>Tcl_Obj*</dt>
 <dd></dd>
 <dt>object</dt>
-<dd><p>The function returns a value of type &quot;Tcl_Obj*&quot;.
-This value becomes the interpreter result, if not <b class="const">0</b>.
-The Tcl status is TCL_ERROR when a <b class="const">0</b> is returned, and TCL_OK otherwise.</p>
+<dd><p>The function returns a value of type <b class="type">Tcl_Obj*</b>.
+This value becomes the interpreter result, if not <b class="const">0</b>. The Tcl
+status is <b class="const">TCL_ERROR</b> when a <b class="const">0</b> is returned, and
+<b class="const">TCL_OK</b> otherwise.</p>
+<p><em>Note</em> how it is the responsibility of the function to set
+the interpreter result to an appropriate error message when returning
+<b class="const">0</b>.</p>
 <p><em>Attention</em>: The conversion assumes that the value belonged
 to the function, with an associated reference count, and decrements
 the reference count to indicate the loss of ownership by the
 function. This means that it is an error to return a value whose
-reference count is zero. The system will crash at some point after due
-to reuse of the freed memory.</p></dd>
+reference count is zero. The system will crash at some point after the
+return due to reuse of the freed memory.</p></dd>
 <dt>Tcl_Obj*0</dt>
 <dd></dd>
 <dt>object0</dt>
-<dd><p>The function returns a value of type &quot;Tcl_Obj*&quot;.
-This value becomes the interpreter result, if not <b class="const">0</b>.
-The Tcl status is TCL_ERROR when a <b class="const">0</b> is returned, and TCL_OK otherwise.</p>
+<dd><p>The function returns a value of type <b class="type">Tcl_Obj*</b>.
+This value becomes the interpreter result, if not <b class="const">0</b>. The Tcl
+status is <b class="const">TCL_ERROR</b> when a <b class="const">0</b> is returned, and
+<b class="const">TCL_OK</b> otherwise.</p>
+<p><em>Note</em> how it is the responsibility of the function to set
+the interpreter result to an appropriate error message when returning
+<b class="const">0</b>.</p>
 <p><em>Attention</em>: Contrary to <b class="const">Tcl_Obj*</b> above this
 conversion assumes that the returned value has a reference count of
 <b class="const">0</b> and performs <em>no</em> decrement. Returning a value whose
@@ -492,56 +503,68 @@ reference count is greater than zero will likely cause a memory leak.</p></dd>
 <dt>char*</dt>
 <dd></dd>
 <dt>vstring</dt>
-<dd><p>The function returns a value of type &quot;char*&quot;.
-This value becomes the interpreter result, wrapped in a String.
+<dd><p>The function returns a value of type <b class="type">char*</b>.
+This value becomes the interpreter result, wrapped in a <b class="type">String</b>.
 It is assumed that the string is volatile in some way, with the
-wrapping in a String duplicating it before making it the result,
-ensuring that we will not access a dangling pointer in the future.
-The Tcl status is always TCL_OK.</p></dd>
+wrapping in a <b class="type">String</b> duplicating it before making it the
+result, ensuring that we will not access a dangling pointer in the
+future.
+The Tcl status is <em>always</em> <b class="const">TCL_OK</b>.</p></dd>
 <dt>const char*</dt>
-<dd><p>Like type <b class="const">char*</b> above, except that the returned string is const-qualified.</p></dd>
+<dd><p>Like type <b class="const">char*</b> above, except that the returned string is
+<b class="const">const</b>-qualified.</p></dd>
 <dt>string</dt>
 <dd></dd>
 <dt>dstring</dt>
-<dd><p>The function returns a value of type &quot;char*&quot;.
+<dd><p>The function returns a value of type <b class="type">char*</b>.
 Contrary to the previous string types here it is assumed that the
 value is dynamically allocated, via <b class="function">Tcl_Alloc</b>.
-This value becomes the interpreter result, as usual, but is <em>not</em> copied.
-The Tcl status is always TCL_OK.</p></dd>
+This value becomes the interpreter result, as usual, but is <em>not</em>
+copied.
+The Tcl status is <em>always</em> <b class="const">TCL_OK</b>.</p></dd>
 <dt>double</dt>
-<dd><p>The function returns a value of type &quot;double&quot;.
-This value becomes the interpreter result, properly wrapped (Int).
-The Tcl status is always TCL_OK.</p></dd>
+<dd><p>The function returns a value of type <b class="type">double</b>.
+This value becomes the interpreter result, properly wrapped as a
+<b class="type">Double</b>.
+The Tcl status is <em>always</em> <b class="const">TCL_OK</b>.</p></dd>
 <dt>float</dt>
-<dd><p>The function returns a value of type &quot;float&quot;.
-This value becomes the interpreter result, properly wrapped (Double).
-The Tcl status is always TCL_OK.</p></dd>
+<dd><p>The function returns a value of type <b class="type">float</b>.
+This value becomes the interpreter result, properly wrapped as a
+<b class="type">Double</b>.
+The Tcl status is <em>always</em> <b class="const">TCL_OK</b>.</p></dd>
 <dt>boolean</dt>
 <dd></dd>
 <dt>bool</dt>
-<dd><p>The function returns a value of type &quot;int&quot;, interpreted as boolean.
-This value becomes the interpreter result, properly wrapped (Int).
-The Tcl status is always TCL_OK.</p></dd>
+<dd><p>The function returns a value of type <b class="type">int</b>, interpreted as boolean.
+This value becomes the interpreter result, properly wrapped as a
+<b class="type">Int</b>.
+The Tcl status is <em>always</em> <b class="const">TCL_OK</b>.</p></dd>
 <dt>int</dt>
-<dd><p>The function returns a value of type &quot;int&quot;.
-This value becomes the interpreter result, properly wrapped (Int).
-The Tcl status is always TCL_OK.</p></dd>
+<dd><p>The function returns a value of type <b class="type">int</b>.
+This value becomes the interpreter result, properly wrapped as a
+<b class="type">Int</b>.
+The Tcl status is <em>always</em> <b class="const">TCL_OK</b>.</p></dd>
 <dt>long</dt>
-<dd><p>The function returns a value of type &quot;long int&quot;.
-This value becomes the interpreter result, properly wrapped (Long).
-The Tcl status is always TCL_OK.</p></dd>
+<dd><p>The function returns a value of type <b class="type">long int</b>.
+This value becomes the interpreter result, properly wrapped as a
+<b class="type">Long</b>.
+The Tcl status is <em>always</em> <b class="const">TCL_OK</b>.</p></dd>
+<dt>wideint</dt>
+<dd><p>The function returns a value of type <b class="type">Tcl_WideInt</b>.
+This value becomes the interpreter result, properly wrapped as a
+<b class="type">WideInt</b>.
+The Tcl status is <em>always</em> <b class="const">TCL_OK</b>.</p></dd>
 <dt>ok</dt>
-<dd><p>The function returns a value of type &quot;int&quot;.
+<dd><p>The function returns a value of type <b class="type">int</b>.
 It is interpreted as the Tcl status code.
-The interpreter result is left untouched (empty).</p></dd>
+The interpreter result is left untouched (empty).  For a different
+outcome the function has to set the interpreter result by itself.</p></dd>
 <dt>void</dt>
 <dd><p>The function does not return a value.
-The interpreter result is left untouched (empty).
-The Tcl status is always TCL_OK.</p></dd>
+The interpreter result is left untouched (empty). For a different
+outcome the function has to set the interpreter result by itself.
+The Tcl status is <em>always</em> <b class="const">TCL_OK</b>.</p></dd>
 </dl>
-<p>Please note that it is possible to extend the above with custom
-types if these types are not enough. See section
-<span class="sectref"><a href="#subsection15">Advanced: Extending cproc</a></span> for details.</p>
 <p>The <i class="arg">arguments</i> parameter has the overall syntax of a Tcl
 dictionary value, except that keys (argument names) and values
 (argument types) are specified in reverse order. Consider the
@@ -565,19 +588,24 @@ be invalid according to it, then the relevant checks have to be done
 in the procedure body. The argument conversion cannot do it as it is
 completely bypassed when the argument is not present. Overcoming this
 requires the separation of argument conversion and validation code.</p>
-<p>The list below shows the values which are legal for argument
-types, and details their semantics:</p>
+<p>Below is the list of predefined types legal for arguments, plus
+the details of their semantics. Note that it is possible to extend
+this list with custom types if the standard does not support what is
+needed. See section <span class="sectref"><a href="#subsection15">Advanced: Extending cproc</a></span> for details.</p>
+<p>Further note that the type of the first argument is allowed to
+be <b class="const">Tcl_Interp*</b>. In that case the argument in question is
+<em>not</em> counted as an argument of the new Tcl command.</p>
 <dl class="definitions">
 <dt>Tcl_Obj*</dt>
 <dd></dd>
 <dt>object</dt>
-<dd><p>The function takes an argument of type &quot;Tcl_Obj*&quot;.
+<dd><p>The function takes an argument of type <b class="type">Tcl_Obj*</b>.
 No argument checking is done.
 The Tcl level word is passed to the argument as-is.</p></dd>
 <dt>pstring</dt>
-<dd><p>The function takes an argument of type &quot;critcl_pstring&quot; containing the
-original Tcl_Obj* reference of the Tcl argument, plus the length of
-the string and pointer to the characters.</p>
+<dd><p>The function takes an argument of type <b class="type">critcl_pstring</b>
+containing the original <b class="type">Tcl_Obj*</b> reference of the Tcl argument,
+plus the length of the string and a pointer to the character array.</p>
 <pre class="example">
 typedef struct critcl_pstring {
     Tcl_Obj* o;
@@ -587,9 +615,10 @@ typedef struct critcl_pstring {
 </pre>
 </dd>
 <dt>list</dt>
-<dd><p>The function takes an argument of type &quot;critcl_list&quot; containing the
-original Tcl_Obj* reference of the Tcl argument, plus the length of
-the Tcl list and pointer to the list elements.</p>
+<dd><p>The function takes an argument of type <b class="type">critcl_list</b> containing
+the original <b class="type">Tcl_Obj*</b> reference of the Tcl argument, plus the
+length of the Tcl list and a pointer to the array of the list
+elements.</p>
 <pre class="example">
 typedef struct critcl_list {
     Tcl_Obj*  o;
@@ -597,43 +626,61 @@ typedef struct critcl_list {
     int       c;
 } critcl_list;
 </pre>
-<p>The Tcl argument must be convertible to List, an error is thrown
-otherwise.</p></dd>
+<p>The Tcl argument must be convertible to <b class="type">List</b>, an error is
+thrown otherwise.</p></dd>
 <dt>bytearray</dt>
 <dd></dd>
 <dt>rawchar*</dt>
 <dd></dd>
 <dt>rawchar</dt>
-<dd><p>The function takes an argument of type &quot;char*&quot;.
-The Tcl argument must be convertible to ByteArray, an error is thrown
-otherwise.
-<em>Note</em> that the length of the ByteArray is <em>not</em> passed to
-the function.</p></dd>
+<dd><p>The function takes an argument of type <b class="type">char*</b>.
+The Tcl argument must be convertible to <b class="type">ByteArray</b>, an error is
+thrown otherwise.
+<em>Note</em> that the length of the <b class="type">ByteArray</b> is <em>not</em>
+passed to the function, making this type not very usable.</p></dd>
+<dt>bytes</dt>
+<dd><p>This is the <em>new</em> and usable <b class="type">ByteArray</b> type.</p>
+<p>The function takes an argument of type <b class="type">critcl_bytes</b>
+containing the original <b class="type">Tcl_Obj*</b> reference of the Tcl argument,
+plus the length of the byte array and a pointer to the byte data.</p>
+<pre class="example">
+typedef struct critcl_bytes {
+    Tcl_Obj* o;
+    char*    s;
+    int      len;
+} critcl_list;
+</pre>
+<p>The Tcl argument must be convertible to <b class="type">ByteArray</b>, an error is
+thrown otherwise.</p></dd>
 <dt>char*</dt>
-<dd><p>The function takes an argument of type &quot;char*&quot;.
+<dd><p>The function takes an argument of type <b class="type">char*</b>.
 The string representation of the Tcl argument is passed in.</p></dd>
 <dt>double</dt>
-<dd><p>The function takes an argument of type &quot;double&quot;.
-The Tcl argument must be convertible to Double, an error is thrown
-otherwise.</p></dd>
+<dd><p>The function takes an argument of type <b class="type">double</b>.
+The Tcl argument must be convertible to <b class="type">Double</b>, an error is
+thrown otherwise.</p></dd>
 <dt>float</dt>
-<dd><p>The function takes an argument of type &quot;float&quot;.
-The Tcl argument must be convertible to Double, an error is thrown
-otherwise.</p></dd>
+<dd><p>The function takes an argument of type <b class="type">float</b>.
+The Tcl argument must be convertible to <b class="type">Double</b>, an error is
+thrown otherwise.</p></dd>
 <dt>boolean</dt>
 <dd></dd>
 <dt>bool</dt>
-<dd><p>The function takes an argument of type &quot;int&quot;.
-The Tcl argument must be convertible to Boolean, an error is thrown
-otherwise.</p></dd>
+<dd><p>The function takes an argument of type <b class="type">int</b>.
+The Tcl argument must be convertible to <b class="type">Boolean</b>, an error is
+thrown otherwise.</p></dd>
 <dt>int</dt>
-<dd><p>The function takes an argument of type &quot;int&quot;.
-The Tcl argument must be convertible to Int, an error is thrown
+<dd><p>The function takes an argument of type <b class="type">int</b>.
+The Tcl argument must be convertible to <b class="type">Int</b>, an error is thrown
 otherwise.</p></dd>
 <dt>long</dt>
-<dd><p>The function takes an argument of type &quot;long int&quot;.
-The Tcl argument must be convertible to Long, an error is thrown
-otherwise.</p></dd>
+<dd><p>The function takes an argument of type <b class="type">long int</b>.
+The Tcl argument must be convertible to <b class="type">Long</b>, an error is
+thrown otherwise.</p></dd>
+<dt>wideint</dt>
+<dd><p>The function takes an argument of type <b class="type">Tcl_WideInt</b>.
+The Tcl argument must be convertible to <b class="type">WideInt</b>, an error is
+thrown otherwise.</p></dd>
 <dt>void*</dt>
 <dd></dd>
 <dt>double*</dt>
@@ -645,18 +692,15 @@ otherwise.</p></dd>
 The Tcl argument must be convertible to ByteArray, an error is thrown
 otherwise.
 The bytes in the ByteArray are then re-interpreted as the raw
-representation of a C pointer of the given type which is then passed
-as argument to the function.
+representation of a single C pointer of the given type which is then
+passed as argument to the function.
 In other words, this is for Tcl values somehow holding raw C pointers,
 i.e. memory addresses.</p>
 <p><em>Attention</em>: These types are considered <em>DEPRECATED</em>.
 It is planned to remove their documentation in release 3.2, and their
 implementation in release 3.3.  Their deprecation can be undone if
 good use cases are shown.</p></dd>
-</dl>
-<p>Further note that the type of the first argument is allowed to
-be <b class="const">Tcl_Interp*</b>. In that case the argument in question is
-<em>not</em> counted as an argument of the new Tcl command.</p></dd>
+</dl></dd>
 <dt><a name="8"><b class="cmd">::critcl::cproc</b> <i class="arg">name</i> <i class="arg">arguments</i> <i class="arg">resulttype</i></a></dt>
 <dd><p>This variant of <b class="cmd">critcl::cproc</b> assumes that the functionality to
 connect to is implemented by the C function <i class="arg">name</i> which has the
@@ -665,10 +709,10 @@ signature described by the <i class="arg">arguments</i> and <i class="arg">resul
 arguments and result.</p></dd>
 <dt><a name="9"><b class="cmd">::critcl::cinit</b> <i class="arg">text</i> <i class="arg">externals</i></a></dt>
 <dd><p>This command compiles the C code in <i class="arg">text</i> and <i class="arg">externals</i>.</p>
-<p>Both have access to all definitions created by the previously
-listed commands, regardless of their and its placement in the
-&quot;<b class="file">.critcl</b>&quot; file. See section <span class="sectref"><a href="#subsection17">Runtime Behaviour</a></span> for
-more details.</p>
+<p>Both arguments have access to all definitions created by the
+previously listed commands, regardless of their placement in the
+&quot;<b class="file">.critcl</b>&quot; file relative to this command.
+See section <span class="sectref"><a href="#subsection17">Runtime Behaviour</a></span> for more details.</p>
 <p>The C code in <i class="arg">text</i> is put into the body of the
 initialization function of the shared library backing the
 &quot;<b class="file">.critcl</b>&quot; file, and is executed when this library is loaded into
@@ -680,6 +724,8 @@ initialized.</p>
 and just before the initialization function, making this is a good
 place for any external symbols required by initialization function
 which should not be accessible by any other parts of the C code.</p>
+<p>Multiple invokations of this command are allowed, and a later
+call has access to the information of all preceding ones.</p>
 <p>The result of the command is the empty string.</p></dd>
 <dt><a name="10"><b class="cmd">::critcl::include</b> <i class="arg">path</i></a></dt>
 <dd><p>This command is a convenient shorthand for</p>
@@ -935,16 +981,17 @@ non-existing files cause the command to throw an error.</p>
 absolute path are interpreted relative to the directory containing the
 current &quot;<b class="file">.critcl</b>&quot; file.</p>
 <p><em>Note</em> further that this declaration does not cause the
-specified header files to be <b class="const">#include</b>'d automatically. This
-still has to be done via <b class="cmd">critcl::ccode</b> where necessary.
+specified header files to be automatically
+<b class="const">#include</b>'d. Inclusion still has to be done via either
+<b class="cmd">critcl::include</b> or <b class="cmd">critcl::ccode</b>, where necessary.
 It does simply ensure that the compiler will be able to find these
 files when invoked, by providing the necessary command line flags
-extending the compiler's search paths.</p>
+to extend the compiler's search paths.</p>
 <p>Multiple invocations of this command accumulate their
 information.</p></dd>
 <dt><a name="23"><b class="cmd">::critcl::csources</b> <span class="opt">?<i class="arg">pattern</i>...?</span></a></dt>
 <dd><p>This command provides the compile step with additional C source files.</p>
-<p>All arguments are intepreted as glob patterns. Patterns
+<p>All arguments are interpreted as glob patterns. Patterns
 matching no file or non-existing files cause the command to throw an
 error. The files matching the patterns are made available to the
 compiler when it is invoked for the current &quot;<b class="file">.critcl</b>&quot; file. This
@@ -1220,7 +1267,12 @@ files despite having a cached shared library (when <b class="const">true</b>, or
 not. The default is <b class="const">off</b>.</p></dd>
 <dt><b class="option">lines</b> bool</dt>
 <dd><p>This flag tells the package whether to embed #line directives into the
-generated C code (when <b class="const">true</b>) or not. By default this is <b class="const">on</b>.</p>
+generated C code (when <b class="const">true</b>) or not. By default this is <b class="const">on</b>.</p></dd>
+<dt><b class="option">trace</b> bool</dt>
+<dd><p>Inactive by default.
+When active code tracing entry and exit of <b class="cmd">critcl::cproc</b>-based
+is inserted into the C code. This implicitly activates the tracing
+facility in general. (See package <b class="package"><a href="critcl_cutil.html">critcl::cutil</a></b>).</p>
 <p>Side note: This facility requires the use of a tclsh supporting
 the builtin <b class="cmd">info frame</b> command. If critcl is run by a tclsh
 not supporting this no <i class="term">#line</i> directives will be emitted. The
@@ -1694,8 +1746,8 @@ types (see section <span class="sectref"><a href="#subsection1">Embedded C Code<
 enough.</p>
 <p>To get around this limitation the commands in this section
 enable users of <b class="package">critcl</b> to extend the set of argument and
-result types understood by <b class="cmd">critcl::cproc</b>. In other words, to
-define their own custom types.</p>
+result types understood by <b class="cmd">critcl::cproc</b>. In other words, they
+allow them to define their own, custom, types.</p>
 <dl class="definitions">
 <dt><a name="94"><b class="cmd">::critcl::has-resulttype</b> <i class="arg">name</i></a></dt>
 <dd><p>This command tests if the named result-type is known or not.
@@ -1710,7 +1762,7 @@ it is not specified.</p>
 <p>If <i class="arg">name</i> is declared already an error will be thrown.
 <em>Attention!</em> The standard result type <b class="const">void</b> is special as
 it has no accompanying result variable. This cannot be expressed
-by the this extension command.</p>
+by this extension command.</p>
 <p>The <i class="arg">body</i>'s responsibility is the conversion of the
 functions result into a Tcl result and a Tcl status. The first has to
 be set into the interpreter we are in, and the second has to be
@@ -2365,7 +2417,47 @@ into a separate document. Please see section &quot;Embedding C&quot; in the
 document about <i class="term">Using CriTcl</i>.</p>
 <p>The latest changes are found at the top.</p>
 </div>
-<div id="section5" class="section"><h2><a name="section5">Changes for version 3.1.16</a></h2>
+<div id="section5" class="section"><h2><a name="section5">Changes for version 3.1.17</a></h2>
+<ol class="enumerated">
+<li><p>Bugfix: Fixed issue #76.
+       Support installation directories which are not in the <b class="variable">auto_path</b>.
+       Without the patch the installed <b class="cmd">critcl</b> will not find its
+       own packages and fail. Thank you to
+       <a href="https://github.com/lupylucke">Simon Bachmann</a> for the
+       report and patch, and then his patience with me to getting to
+       actually apply it.</p></li>
+<li><p>Bugfix: Fixed issue #75.
+       Extended <b class="cmd">critcl::include</b> to now take multiple paths.</p></li>
+<li><p>Added new compatibility package <b class="package">lmap84</b>.</p></li>
+<li><p>Fixed typos in various documentation files.</p></li>
+<li><p>Fixed bug introduced by commit 86f415dd30 (3.1.16 release). The
+       separation of <b class="cmd">critcl::ccode</b> into user and work layers
+       means that location retrieval has to go one more level up to
+       find the user location.</p></li>
+<li><p>New supporting package <b class="package"><a href="critcl_cutil.html">critcl::cutil</a></b>. Provides common
+       C level facilities useful to packages (assertions, tracing,
+       memory allocation shorthands).</p></li>
+<li><p>Modified package <b class="package">critcl</b> to make use of the new
+       tracing facilities to provide tracing of arguments and results
+       for <b class="cmd">critcl::ccommand</b> and <b class="cmd">critcl::cproc</b> invokations.</p></li>
+<li><p>Modified packages <b class="package">critcl</b> and <b class="package"><a href="critcl_class.html">critcl::class</a></b>
+       to provide better function names for (class) method tracing.
+       Bumped package <b class="package"><a href="critcl_class.html">critcl::class</a></b> to version 1.0.7.</p></li>
+<li><p>Extended the support package <b class="package"><a href="critcl_literals.html">critcl::literals</a></b> with
+       limited configurability. It is now able to generate code for
+       C-level access to the pool without Tcl types (Mode <b class="const">c</b>).
+       The previously existing functionality is accesssible under mode
+       <b class="const">tcl</b>, which also is the default. Both modes can be used
+       together.</p></li>
+<li><p>Extended the support package <b class="package"><a href="critcl_emap.html">critcl::emap</a></b> with
+       limited configurability. It is now able to generate code for
+       C-level access to the mapping without Tcl types
+       (Mode <b class="const">c</b>). The previously existing functionality is
+       accessible under mode <b class="const">tcl</b>, which also is the
+       default. Both modes can be used together.</p></li>
+</ol>
+</div>
+<div id="section6" class="section"><h2><a name="section6">Changes for version 3.1.16</a></h2>
 <ol class="enumerated">
 <li><p>New feature. Extended <b class="cmd">critcl::cproc</b>'s argument handling
        to allow arbitrary mixing of required and optional arguments.</p></li>
@@ -2411,12 +2503,12 @@ document about <i class="term">Using CriTcl</i>.</p>
        is limited to mode <i class="term"><a href="../index.html#key0">compile &amp; run</a></i>.</p></li>
 </ol>
 </div>
-<div id="section6" class="section"><h2><a name="section6">Changes for version 3.1.15</a></h2>
+<div id="section7" class="section"><h2><a name="section7">Changes for version 3.1.15</a></h2>
 <ol class="enumerated">
 <li><p>Fixed version number bogosity with <b class="const">3.1.14</b>.</p></li>
 </ol>
 </div>
-<div id="section7" class="section"><h2><a name="section7">Changes for version 3.1.14</a></h2>
+<div id="section8" class="section"><h2><a name="section8">Changes for version 3.1.14</a></h2>
 <ol class="enumerated">
 <li><p>Fixed issue #36. Added message to target <b class="const">all</b> of the
         Makefile generated for TEA mode. Additionally tweaked other
@@ -2446,7 +2538,7 @@ document about <i class="term">Using CriTcl</i>.</p>
         location of the troubling declaration.</p></li>
 </ol>
 </div>
-<div id="section8" class="section"><h2><a name="section8">Changes for version 3.1.13</a></h2>
+<div id="section9" class="section"><h2><a name="section9">Changes for version 3.1.13</a></h2>
 <ol class="enumerated">
 <li><p>Merged PR #43. Fixed bug loading adjunct Tcl sources.</p></li>
 <li><p>Fixes in documentation and generated code of package
@@ -2498,7 +2590,7 @@ document about <i class="term">Using CriTcl</i>.</p>
 	a fix as they are all built on top of &quot;iassoc&quot;.</p></li>
 </ol>
 </div>
-<div id="section9" class="section"><h2><a name="section9">Changes for version 3.1.12</a></h2>
+<div id="section10" class="section"><h2><a name="section10">Changes for version 3.1.12</a></h2>
 <ol class="enumerated">
 <li><p>Fixed issue 42. Clear ::errorInfo immediately after startup to
        prevent leakage of irrelevant (caught) errors into our script
@@ -2523,7 +2615,7 @@ document about <i class="term">Using CriTcl</i>.</p>
 	<b class="package"><a href="critcl_enum.html">critcl::enum</a></b></p></li>
 </ol>
 </div>
-<div id="section10" class="section"><h2><a name="section10">Changes for version 3.1.11</a></h2>
+<div id="section11" class="section"><h2><a name="section11">Changes for version 3.1.11</a></h2>
 <ol class="enumerated">
 <li><p>Fixed issue #37, via pull request #38, with thanks to
        Jos DeCoster. Information was stored into the v::delproc
@@ -2543,7 +2635,7 @@ document about <i class="term">Using CriTcl</i>.</p>
        Built on top of <b class="package"><a href="critcl_iassoc.html">critcl::iassoc</a></b>.</p></li>
 </ol>
 </div>
-<div id="section11" class="section"><h2><a name="section11">Changes for version 3.1.10</a></h2>
+<div id="section12" class="section"><h2><a name="section12">Changes for version 3.1.10</a></h2>
 <ol class="enumerated">
 <li><p>Fixed code version numbering forgotten with 3.1.9.</p></li>
 <li><p>Fixed issue #35. In package mode (-pkg) the object cache
@@ -2559,7 +2651,7 @@ document about <i class="term">Using CriTcl</i>.</p>
 	sources. Bug and fix reported by Peter Spjuth.</p></li>
 </ol>
 </div>
-<div id="section12" class="section"><h2><a name="section12">Changes for version 3.1.9</a></h2>
+<div id="section13" class="section"><h2><a name="section13">Changes for version 3.1.9</a></h2>
 <ol class="enumerated">
 <li><p>Fixed issue #27. Added missing platform definitions for
 	various alternate linux and OS X targets.</p></li>
@@ -2583,7 +2675,7 @@ document about <i class="term">Using CriTcl</i>.</p>
 <li><p>Fixed issue #34. Handle files starting with a dot better.</p></li>
 </ol>
 </div>
-<div id="section13" class="section"><h2><a name="section13">Changes for version 3.1.8</a></h2>
+<div id="section14" class="section"><h2><a name="section14">Changes for version 3.1.8</a></h2>
 <ol class="enumerated">
 <li><p>Fixed issue with package indices generated for Tcl 8.4.
 	Join the list of commands with semi-colon, not newline.</p></li>
@@ -2591,7 +2683,7 @@ document about <i class="term">Using CriTcl</i>.</p>
 	consider while fixing bug #21 (see critcl 3.1.6).</p></li>
 </ol>
 </div>
-<div id="section14" class="section"><h2><a name="section14">Changes for version 3.1.7</a></h2>
+<div id="section15" class="section"><h2><a name="section15">Changes for version 3.1.7</a></h2>
 <ol class="enumerated">
 <li><p>Fixed issue #24. Extract and unconditionally display compiler
 	warnings found in the build log. Prevents users from missing
@@ -2604,7 +2696,7 @@ document about <i class="term">Using CriTcl</i>.</p>
 	inherit values from configurations defined before them.</p></li>
 </ol>
 </div>
-<div id="section15" class="section"><h2><a name="section15">Changes for version 3.1.6</a></h2>
+<div id="section16" class="section"><h2><a name="section16">Changes for version 3.1.6</a></h2>
 <ol class="enumerated">
 <li><p>Fixed issue #21. While the multi-definition of the stub-table
        pointer variables was ok with for all the C linkers seen so far
@@ -2626,7 +2718,7 @@ document about <i class="term">Using CriTcl</i>.</p>
 <li><p>Fixed issue #23.</p></li>
 </ol>
 </div>
-<div id="section16" class="section"><h2><a name="section16">Changes for version 3.1.5</a></h2>
+<div id="section17" class="section"><h2><a name="section17">Changes for version 3.1.5</a></h2>
 <ol class="enumerated">
 <li><p>Fixed issue #19. Made the regular expression extracting the
        MSVC version number more general to make it work on german
@@ -2636,7 +2728,7 @@ document about <i class="term">Using CriTcl</i>.</p>
        a unix emulation environment like msys/mingw.</p></li>
 </ol>
 </div>
-<div id="section17" class="section"><h2><a name="section17">Changes for version 3.1.4</a></h2>
+<div id="section18" class="section"><h2><a name="section18">Changes for version 3.1.4</a></h2>
 <ol class="enumerated">
 <li><p>Bugfix in package <b class="package"><a href="critcl_class.html">critcl::class</a></b>. Generate a dummy
        field in the class structure if the class has no class
@@ -2647,7 +2739,7 @@ document about <i class="term">Using CriTcl</i>.</p>
        <b class="cmd"><a href="critcl_class.html">critcl::class</a></b>.</p></li>
 </ol>
 </div>
-<div id="section18" class="section"><h2><a name="section18">Changes for version 3.1.3</a></h2>
+<div id="section19" class="section"><h2><a name="section19">Changes for version 3.1.3</a></h2>
 <ol class="enumerated">
 <li><p>Enhancement. In detail:</p></li>
 <li><p>Added new argument type &quot;pstring&quot;, for &quot;Pascal String&quot;, a
@@ -2663,7 +2755,7 @@ document about <i class="term">Using CriTcl</i>.</p>
        Versions bumped to 1.0.4 and 1.0.1 respectively.</p></li>
 </ol>
 </div>
-<div id="section19" class="section"><h2><a name="section19">Changes for version 3.1.2</a></h2>
+<div id="section20" class="section"><h2><a name="section20">Changes for version 3.1.2</a></h2>
 <ol class="enumerated">
 <li><p>Enhancement. In detail:</p></li>
 <li><p>Extended <b class="cmd">critcl::cproc</b> to be able to handle optional
@@ -2674,7 +2766,7 @@ document about <i class="term">Using CriTcl</i>.</p>
        emulation package <b class="package">lassign84</b> to 1.0.1.</p></li>
 </ol>
 </div>
-<div id="section20" class="section"><h2><a name="section20">Changes for version 3.1.1</a></h2>
+<div id="section21" class="section"><h2><a name="section21">Changes for version 3.1.1</a></h2>
 <ol class="enumerated">
 <li><p>Bugfixes all around. In detail:</p></li>
 <li><p>Fixed the generation of wrong#args errors for
@@ -2688,7 +2780,7 @@ separators. Bumped to version 1.0.1.</p></li>
 instance creation for clarity. Bumped to version 1.0.2.</p></li>
 </ol>
 </div>
-<div id="section21" class="section"><h2><a name="section21">Changes for version 3.1</a></h2>
+<div id="section22" class="section"><h2><a name="section22">Changes for version 3.1</a></h2>
 <ol class="enumerated">
 <li><p>Added a new higher-level package <b class="package"><a href="critcl_iassoc.html">critcl::iassoc</a></b>.</p>
 <p>This package simplifies the creation of code associating data
@@ -2747,7 +2839,7 @@ define custom argument and result types for <b class="cmd">::critcl::cproc</b>.<
 details of the provided commands.</p></li>
 </ol>
 </div>
-<div id="section22" class="section"><h2><a name="section22">Changes for version 3.0.7</a></h2>
+<div id="section23" class="section"><h2><a name="section23">Changes for version 3.0.7</a></h2>
 <ol class="enumerated">
 <li><p>Fixed the code generated by <b class="cmd">critcl::c++command</b>.
         The emitted code handed a non-static string table to
@@ -2757,7 +2849,7 @@ details of the provided commands.</p></li>
 	us to the general problem.</p></li>
 </ol>
 </div>
-<div id="section23" class="section"><h2><a name="section23">Changes for version 3.0.6</a></h2>
+<div id="section24" class="section"><h2><a name="section24">Changes for version 3.0.6</a></h2>
 <ol class="enumerated">
 <li><p>Fixed github issue 10. The critcl application now delivers a
 	proper exit code (1) on build failure, instead of always
@@ -2770,7 +2862,7 @@ details of the provided commands.</p></li>
 	the README.md shown by github</p></li>
 </ol>
 </div>
-<div id="section24" class="section"><h2><a name="section24">Changes for version 3.0.5</a></h2>
+<div id="section25" class="section"><h2><a name="section25">Changes for version 3.0.5</a></h2>
 <ol class="enumerated">
 <li><p>Fixed bug in the new code for #line pragmas triggered when
 	specifying C code without leading whitespace.</p></li>
@@ -2778,7 +2870,7 @@ details of the provided commands.</p></li>
 	source retrieval, installer, and developer's guides.</p></li>
 </ol>
 </div>
-<div id="section25" class="section"><h2><a name="section25">Changes for version 3.0.4</a></h2>
+<div id="section26" class="section"><h2><a name="section26">Changes for version 3.0.4</a></h2>
 <ol class="enumerated">
 <li><p>Fixed generation of the package's initname when the incoming
 	code is read from stdin and has no proper path.</p></li>
@@ -2808,7 +2900,7 @@ details of the provided commands.</p></li>
 	release.</p></li>
 </ol>
 </div>
-<div id="section26" class="section"><h2><a name="section26">Changes for version 3.0.3</a></h2>
+<div id="section27" class="section"><h2><a name="section27">Changes for version 3.0.3</a></h2>
 <ol class="enumerated">
 <li><p>Fixed github issues 5 and 8, for the example build.tcl
 scripts. Working around a missing variable ::errorInfo. It should
@@ -2816,7 +2908,7 @@ always be present, however there seem to be revisions of Tcl around
 which violate this assumption.</p></li>
 </ol>
 </div>
-<div id="section27" class="section"><h2><a name="section27">Changes for version 3.0.2</a></h2>
+<div id="section28" class="section"><h2><a name="section28">Changes for version 3.0.2</a></h2>
 <ol class="enumerated">
 <li><p>Fixed issue in compile-and-run mode where commands put into the
 auto_index are not found by Tcl's [unknown] command.</p></li>
@@ -2829,7 +2921,7 @@ option <b class="option">-I</b>, just for library search paths.</p></li>
 revisions of Tcl around which violate this assumption.</p></li>
 </ol>
 </div>
-<div id="section28" class="section"><h2><a name="section28">Changes for version 3.0.1</a></h2>
+<div id="section29" class="section"><h2><a name="section29">Changes for version 3.0.1</a></h2>
 <ol class="enumerated">
 <li><p>Bugfixes all around. In detail:</p></li>
 <li><p>Fixed recording of Tcl version requirements. Keep package name
@@ -2860,7 +2952,7 @@ for the library in the paths specified by the environment variable
 LIB.</p></li>
 </ol>
 </div>
-<div id="section29" class="section"><h2><a name="section29">Changes for version 3</a></h2>
+<div id="section30" class="section"><h2><a name="section30">Changes for version 3</a></h2>
 <ol class="enumerated">
 <li><p>The command <b class="cmd">critcl::platform</b> was deprecated in version
 2.1, superceded by <b class="cmd">critcl::targetplatform</b>, yet kept for
@@ -2927,7 +3019,7 @@ for/about the package.</p>
 <b class="package">critcl</b> package documentation for details.</p></li>
 </ol>
 </div>
-<div id="section30" class="section"><h2><a name="section30">Changes for version 2.1</a></h2>
+<div id="section31" class="section"><h2><a name="section31">Changes for version 2.1</a></h2>
 <ol class="enumerated">
 <li><p>Fixed bug where <b class="cmd">critcl::tsources</b> interpreted relative
 paths as relative to the current working directory instead of
@@ -3024,10 +3116,10 @@ still using proper path names and init function.</p></li>
 <li><p>Dropped remnants of support for Tcl 8.3 and before.</p></li>
 </ol>
 </div>
-<div id="section31" class="section"><h2><a name="section31">Authors</a></h2>
+<div id="section32" class="section"><h2><a name="section32">Authors</a></h2>
 <p>Jean Claude Wippler, Steve Landers, Andreas Kupries</p>
 </div>
-<div id="section32" class="section"><h2><a name="section32">Bugs, Ideas, Feedback</a></h2>
+<div id="section33" class="section"><h2><a name="section33">Bugs, Ideas, Feedback</a></h2>
 <p>This document, and the package it describes, will undoubtedly contain
 bugs and other problems.
 Please report them at <a href="https://github.com/andreas-kupries/critcl/issues">https://github.com/andreas-kupries/critcl/issues</a>.
