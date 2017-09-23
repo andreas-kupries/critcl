@@ -448,7 +448,8 @@ proc _install {args} {
     return
 }
 proc Huninstall {} { Hdrop }
-proc _uninstall {{dst {}}} { _drop $dst }
+proc _uninstall {args} { _drop {*}$args }
+
 proc Hdrop {} { return "?destination?\n\tRemove packages.\n\tdestination = path of package directory, default \[info library\]." }
 proc _drop {{dst {}}} {
     global packages
@@ -462,8 +463,8 @@ proc _drop {{dst {}}} {
     }
 
     # Add the special package (see install). Not special with regard
-    # to removal.
-    lappend packages [list critcl-md5c md5c.tcl]
+    # to removal. Except for the name
+    lappend packages [list critcl-md5c md5c.tcl critcl_md5c]
 
     foreach item $packages {
 	# Package: /name/
