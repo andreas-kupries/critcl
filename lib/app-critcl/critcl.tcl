@@ -1280,14 +1280,16 @@ proc ::critcl::app::PlaceTclCompanionFiles {pkgdir} {
     set tcldir [file join $pkgdir tcl]
     file mkdir $tcldir
     set files {}
+    set id 0
     foreach t $v::tsources {
-	file copy -force $t $tcldir
+	set dst [file tail $t]
+	set dst [file rootname $dst]_[incr id][file extension $dst]
 
-	set t [file tail $t]
-	lappend files $t
+	file copy -force $t $tcldir/$dst
+	lappend files $dst
 
 	# Metadata management
-	lappend v::meta [list included tcl/$t]
+	lappend v::meta [list included tcl/$dst]
     }
     return $files
 }
