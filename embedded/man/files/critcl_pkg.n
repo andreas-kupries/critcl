@@ -725,30 +725,42 @@ settings with prefix arguments which are not directly seen by the
 function, but influence argument counting and extraction\&.
 .RE
 .IP
-The list below shows the values which are legal for \fIresulttype\fR,
-and details their semantics:
+Below is the list of predefined types legal for \fIresulttype\fR, plus
+the details of their semantics\&. Note that it is possible to extend
+this list with custom types if the standard does not support what is
+needed\&. See section \fBAdvanced: Extending cproc\fR for details\&.
 .RS
 .TP
 Tcl_Obj*
 .TP
 object
-The function returns a value of type "Tcl_Obj*"\&.
-This value becomes the interpreter result, if not \fB0\fR\&.
-The Tcl status is TCL_ERROR when a \fB0\fR is returned, and TCL_OK otherwise\&.
+The function returns a value of type \fBTcl_Obj*\fR\&.
+This value becomes the interpreter result, if not \fB0\fR\&. The Tcl
+status is \fBTCL_ERROR\fR when a \fB0\fR is returned, and
+\fBTCL_OK\fR otherwise\&.
+.sp
+\fINote\fR how it is the responsibility of the function to set
+the interpreter result to an appropriate error message when returning
+\fB0\fR\&.
 .sp
 \fIAttention\fR: The conversion assumes that the value belonged
 to the function, with an associated reference count, and decrements
 the reference count to indicate the loss of ownership by the
 function\&. This means that it is an error to return a value whose
-reference count is zero\&. The system will crash at some point after due
-to reuse of the freed memory\&.
+reference count is zero\&. The system will crash at some point after the
+return due to reuse of the freed memory\&.
 .TP
 Tcl_Obj*0
 .TP
 object0
-The function returns a value of type "Tcl_Obj*"\&.
-This value becomes the interpreter result, if not \fB0\fR\&.
-The Tcl status is TCL_ERROR when a \fB0\fR is returned, and TCL_OK otherwise\&.
+The function returns a value of type \fBTcl_Obj*\fR\&.
+This value becomes the interpreter result, if not \fB0\fR\&. The Tcl
+status is \fBTCL_ERROR\fR when a \fB0\fR is returned, and
+\fBTCL_OK\fR otherwise\&.
+.sp
+\fINote\fR how it is the responsibility of the function to set
+the interpreter result to an appropriate error message when returning
+\fB0\fR\&.
 .sp
 \fIAttention\fR: Contrary to \fBTcl_Obj*\fR above this
 conversion assumes that the returned value has a reference count of
@@ -758,66 +770,78 @@ reference count is greater than zero will likely cause a memory leak\&.
 char*
 .TP
 vstring
-The function returns a value of type "char*"\&.
-This value becomes the interpreter result, wrapped in a String\&.
+The function returns a value of type \fBchar*\fR\&.
+This value becomes the interpreter result, wrapped in a \fBString\fR\&.
 It is assumed that the string is volatile in some way, with the
-wrapping in a String duplicating it before making it the result,
-ensuring that we will not access a dangling pointer in the future\&.
-The Tcl status is always TCL_OK\&.
+wrapping in a \fBString\fR duplicating it before making it the
+result, ensuring that we will not access a dangling pointer in the
+future\&.
+The Tcl status is \fIalways\fR \fBTCL_OK\fR\&.
 .TP
 const char*
-Like type \fBchar*\fR above, except that the returned string is const-qualified\&.
+Like type \fBchar*\fR above, except that the returned string is
+\fBconst\fR-qualified\&.
 .TP
 string
 .TP
 dstring
-The function returns a value of type "char*"\&.
+The function returns a value of type \fBchar*\fR\&.
 Contrary to the previous string types here it is assumed that the
 value is dynamically allocated, via \fBTcl_Alloc\fR\&.
-This value becomes the interpreter result, as usual, but is \fInot\fR copied\&.
-The Tcl status is always TCL_OK\&.
+This value becomes the interpreter result, as usual, but is \fInot\fR
+copied\&.
+The Tcl status is \fIalways\fR \fBTCL_OK\fR\&.
 .TP
 double
-The function returns a value of type "double"\&.
-This value becomes the interpreter result, properly wrapped (Int)\&.
-The Tcl status is always TCL_OK\&.
+The function returns a value of type \fBdouble\fR\&.
+This value becomes the interpreter result, properly wrapped as a
+\fBDouble\fR\&.
+The Tcl status is \fIalways\fR \fBTCL_OK\fR\&.
 .TP
 float
-The function returns a value of type "float"\&.
-This value becomes the interpreter result, properly wrapped (Double)\&.
-The Tcl status is always TCL_OK\&.
+The function returns a value of type \fBfloat\fR\&.
+This value becomes the interpreter result, properly wrapped as a
+\fBDouble\fR\&.
+The Tcl status is \fIalways\fR \fBTCL_OK\fR\&.
 .TP
 boolean
 .TP
 bool
-The function returns a value of type "int", interpreted as boolean\&.
-This value becomes the interpreter result, properly wrapped (Int)\&.
-The Tcl status is always TCL_OK\&.
+The function returns a value of type \fBint\fR, interpreted as boolean\&.
+This value becomes the interpreter result, properly wrapped as a
+\fBInt\fR\&.
+The Tcl status is \fIalways\fR \fBTCL_OK\fR\&.
 .TP
 int
-The function returns a value of type "int"\&.
-This value becomes the interpreter result, properly wrapped (Int)\&.
-The Tcl status is always TCL_OK\&.
+The function returns a value of type \fBint\fR\&.
+This value becomes the interpreter result, properly wrapped as a
+\fBInt\fR\&.
+The Tcl status is \fIalways\fR \fBTCL_OK\fR\&.
 .TP
 long
-The function returns a value of type "long int"\&.
-This value becomes the interpreter result, properly wrapped (Long)\&.
-The Tcl status is always TCL_OK\&.
+The function returns a value of type \fBlong int\fR\&.
+This value becomes the interpreter result, properly wrapped as a
+\fBLong\fR\&.
+The Tcl status is \fIalways\fR \fBTCL_OK\fR\&.
+.TP
+wideint
+The function returns a value of type \fBTcl_WideInt\fR\&.
+This value becomes the interpreter result, properly wrapped as a
+\fBWideInt\fR\&.
+The Tcl status is \fIalways\fR \fBTCL_OK\fR\&.
 .TP
 ok
-The function returns a value of type "int"\&.
+The function returns a value of type \fBint\fR\&.
 It is interpreted as the Tcl status code\&.
-The interpreter result is left untouched (empty)\&.
+The interpreter result is left untouched (empty)\&.  For a different
+outcome the function has to set the interpreter result by itself\&.
 .TP
 void
 The function does not return a value\&.
-The interpreter result is left untouched (empty)\&.
-The Tcl status is always TCL_OK\&.
+The interpreter result is left untouched (empty)\&. For a different
+outcome the function has to set the interpreter result by itself\&.
+The Tcl status is \fIalways\fR \fBTCL_OK\fR\&.
 .RE
-.sp
-Please note that it is possible to extend the above with custom
-types if these types are not enough\&. See section
-\fBAdvanced: Extending cproc\fR for details\&.
 .sp
 The \fIarguments\fR parameter has the overall syntax of a Tcl
 dictionary value, except that keys (argument names) and values
@@ -852,21 +876,27 @@ in the procedure body\&. The argument conversion cannot do it as it is
 completely bypassed when the argument is not present\&. Overcoming this
 requires the separation of argument conversion and validation code\&.
 .sp
-The list below shows the values which are legal for argument
-types, and details their semantics:
+Below is the list of predefined types legal for arguments, plus
+the details of their semantics\&. Note that it is possible to extend
+this list with custom types if the standard does not support what is
+needed\&. See section \fBAdvanced: Extending cproc\fR for details\&.
+.sp
+Further note that the type of the first argument is allowed to
+be \fBTcl_Interp*\fR\&. In that case the argument in question is
+\fInot\fR counted as an argument of the new Tcl command\&.
 .RS
 .TP
 Tcl_Obj*
 .TP
 object
-The function takes an argument of type "Tcl_Obj*"\&.
+The function takes an argument of type \fBTcl_Obj*\fR\&.
 No argument checking is done\&.
 The Tcl level word is passed to the argument as-is\&.
 .TP
 pstring
-The function takes an argument of type "critcl_pstring" containing the
-original Tcl_Obj* reference of the Tcl argument, plus the length of
-the string and pointer to the characters\&.
+The function takes an argument of type \fBcritcl_pstring\fR
+containing the original \fBTcl_Obj*\fR reference of the Tcl argument,
+plus the length of the string and a pointer to the character array\&.
 .CS
 
 
@@ -879,9 +909,10 @@ typedef struct critcl_pstring {
 .CE
 .TP
 list
-The function takes an argument of type "critcl_list" containing the
-original Tcl_Obj* reference of the Tcl argument, plus the length of
-the Tcl list and pointer to the list elements\&.
+The function takes an argument of type \fBcritcl_list\fR containing
+the original \fBTcl_Obj*\fR reference of the Tcl argument, plus the
+length of the Tcl list and a pointer to the array of the list
+elements\&.
 .CS
 
 
@@ -893,50 +924,75 @@ typedef struct critcl_list {
 
 .CE
 .IP
-The Tcl argument must be convertible to List, an error is thrown
-otherwise\&.
+The Tcl argument must be convertible to \fBList\fR, an error is
+thrown otherwise\&.
 .TP
 bytearray
 .TP
 rawchar*
 .TP
 rawchar
-The function takes an argument of type "char*"\&.
-The Tcl argument must be convertible to ByteArray, an error is thrown
-otherwise\&.
-\fINote\fR that the length of the ByteArray is \fInot\fR passed to
-the function\&.
+The function takes an argument of type \fBchar*\fR\&.
+The Tcl argument must be convertible to \fBByteArray\fR, an error is
+thrown otherwise\&.
+\fINote\fR that the length of the \fBByteArray\fR is \fInot\fR
+passed to the function, making this type not very usable\&.
+.TP
+bytes
+This is the \fInew\fR and usable \fBByteArray\fR type\&.
+.sp
+The function takes an argument of type \fBcritcl_bytes\fR
+containing the original \fBTcl_Obj*\fR reference of the Tcl argument,
+plus the length of the byte array and a pointer to the byte data\&.
+.CS
+
+
+typedef struct critcl_bytes {
+    Tcl_Obj* o;
+    char*    s;
+    int      len;
+} critcl_list;
+
+.CE
+.IP
+The Tcl argument must be convertible to \fBByteArray\fR, an error is
+thrown otherwise\&.
 .TP
 char*
-The function takes an argument of type "char*"\&.
+The function takes an argument of type \fBchar*\fR\&.
 The string representation of the Tcl argument is passed in\&.
 .TP
 double
-The function takes an argument of type "double"\&.
-The Tcl argument must be convertible to Double, an error is thrown
-otherwise\&.
+The function takes an argument of type \fBdouble\fR\&.
+The Tcl argument must be convertible to \fBDouble\fR, an error is
+thrown otherwise\&.
 .TP
 float
-The function takes an argument of type "float"\&.
-The Tcl argument must be convertible to Double, an error is thrown
-otherwise\&.
+The function takes an argument of type \fBfloat\fR\&.
+The Tcl argument must be convertible to \fBDouble\fR, an error is
+thrown otherwise\&.
 .TP
 boolean
 .TP
 bool
-The function takes an argument of type "int"\&.
-The Tcl argument must be convertible to Boolean, an error is thrown
-otherwise\&.
+The function takes an argument of type \fBint\fR\&.
+The Tcl argument must be convertible to \fBBoolean\fR, an error is
+thrown otherwise\&.
 .TP
 int
-The function takes an argument of type "int"\&.
-The Tcl argument must be convertible to Int, an error is thrown
+The function takes an argument of type \fBint\fR\&.
+The Tcl argument must be convertible to \fBInt\fR, an error is thrown
 otherwise\&.
 .TP
 long
-The function takes an argument of type "long int"\&.
-The Tcl argument must be convertible to Long, an error is thrown
-otherwise\&.
+The function takes an argument of type \fBlong int\fR\&.
+The Tcl argument must be convertible to \fBLong\fR, an error is
+thrown otherwise\&.
+.TP
+wideint
+The function takes an argument of type \fBTcl_WideInt\fR\&.
+The Tcl argument must be convertible to \fBWideInt\fR, an error is
+thrown otherwise\&.
 .TP
 void*
 .TP
@@ -949,8 +1005,8 @@ The function takes an argument of the same-named C type\&.
 The Tcl argument must be convertible to ByteArray, an error is thrown
 otherwise\&.
 The bytes in the ByteArray are then re-interpreted as the raw
-representation of a C pointer of the given type which is then passed
-as argument to the function\&.
+representation of a single C pointer of the given type which is then
+passed as argument to the function\&.
 In other words, this is for Tcl values somehow holding raw C pointers,
 i\&.e\&. memory addresses\&.
 .sp
@@ -959,10 +1015,6 @@ It is planned to remove their documentation in release 3\&.2, and their
 implementation in release 3\&.3\&.  Their deprecation can be undone if
 good use cases are shown\&.
 .RE
-.sp
-Further note that the type of the first argument is allowed to
-be \fBTcl_Interp*\fR\&. In that case the argument in question is
-\fInot\fR counted as an argument of the new Tcl command\&.
 .TP
 \fB::critcl::cproc\fR \fIname\fR \fIarguments\fR \fIresulttype\fR
 This variant of \fBcritcl::cproc\fR assumes that the functionality to
@@ -975,10 +1027,10 @@ arguments and result\&.
 \fB::critcl::cinit\fR \fItext\fR \fIexternals\fR
 This command compiles the C code in \fItext\fR and \fIexternals\fR\&.
 .sp
-Both have access to all definitions created by the previously
-listed commands, regardless of their and its placement in the
-"\fI\&.critcl\fR" file\&. See section \fBRuntime Behaviour\fR for
-more details\&.
+Both arguments have access to all definitions created by the
+previously listed commands, regardless of their placement in the
+"\fI\&.critcl\fR" file relative to this command\&.
+See section \fBRuntime Behaviour\fR for more details\&.
 .sp
 The C code in \fItext\fR is put into the body of the
 initialization function of the shared library backing the
@@ -993,6 +1045,9 @@ The code in \fIexternals\fR on the other hand is placed outside
 and just before the initialization function, making this is a good
 place for any external symbols required by initialization function
 which should not be accessible by any other parts of the C code\&.
+.sp
+Multiple invokations of this command are allowed, and a later
+call has access to the information of all preceding ones\&.
 .sp
 The result of the command is the empty string\&.
 .TP
@@ -2241,8 +2296,8 @@ enough\&.
 .PP
 To get around this limitation the commands in this section
 enable users of \fBcritcl\fR to extend the set of argument and
-result types understood by \fBcritcl::cproc\fR\&. In other words, to
-define their own custom types\&.
+result types understood by \fBcritcl::cproc\fR\&. In other words, they
+allow them to define their own, custom, types\&.
 .TP
 \fB::critcl::has-resulttype\fR \fIname\fR
 This command tests if the named result-type is known or not\&.
@@ -2259,7 +2314,7 @@ it is not specified\&.
 If \fIname\fR is declared already an error will be thrown\&.
 \fIAttention!\fR The standard result type \fBvoid\fR is special as
 it has no accompanying result variable\&. This cannot be expressed
-by the this extension command\&.
+by this extension command\&.
 .sp
 The \fIbody\fR's responsibility is the conversion of the
 functions result into a Tcl result and a Tcl status\&. The first has to
@@ -3093,37 +3148,45 @@ document about \fIUsing CriTcl\fR\&.
 The latest changes are found at the top\&.
 .SH "CHANGES FOR VERSION 3\&.1\&.17"
 .IP [1]
+Bugfix: Fixed issue #76\&.
+Support installation directories which are not in the \fBauto_path\fR\&.
+Without the patch the installed \fBcritcl\fR will not find its
+own packages and fail\&. Thank you to
+\fISimon Bachmann\fR [https://github\&.com/lupylucke] for the
+report and patch, and then his patience with me to getting to
+actually apply it\&.
+.IP [2]
 Bugfix: Fixed issue #75\&.
 Extended \fBcritcl::include\fR to now take multiple paths\&.
-.IP [2]
-Added new compatibility package \fBlmap84\fR\&.
 .IP [3]
-Fixed typos in various documentation files\&.
+Added new compatibility package \fBlmap84\fR\&.
 .IP [4]
+Fixed typos in various documentation files\&.
+.IP [5]
 Fixed bug introduced by commit 86f415dd30 (3\&.1\&.16 release)\&. The
 separation of \fBcritcl::ccode\fR into user and work layers
 means that location retrieval has to go one more level up to
 find the user location\&.
-.IP [5]
+.IP [6]
 New supporting package \fBcritcl::cutil\fR\&. Provides common
 C level facilities useful to packages (assertions, tracing,
 memory allocation shorthands)\&.
-.IP [6]
+.IP [7]
 Modified package \fBcritcl\fR to make use of the new
 tracing facilities to provide tracing of arguments and results
 for \fBcritcl::ccommand\fR and \fBcritcl::cproc\fR invokations\&.
-.IP [7]
+.IP [8]
 Modified packages \fBcritcl\fR and \fBcritcl::class\fR
 to provide better function names for (class) method tracing\&.
 Bumped package \fBcritcl::class\fR to version 1\&.0\&.7\&.
-.IP [8]
+.IP [9]
 Extended the support package \fBcritcl::literals\fR with
 limited configurability\&. It is now able to generate code for
 C-level access to the pool without Tcl types (Mode \fBc\fR)\&.
 The previously existing functionality is accesssible under mode
 \fBtcl\fR, which also is the default\&. Both modes can be used
 together\&.
-.IP [9]
+.IP [10]
 Extended the support package \fBcritcl::emap\fR with
 limited configurability\&. It is now able to generate code for
 C-level access to the mapping without Tcl types

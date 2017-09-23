@@ -276,6 +276,9 @@ doc
 \fBcritcl\fR
 \fIfiles/critcl_pkg\&.n\fR: Critcl - Package Reference
 .TP
+\fBcritcl-cproc-types\fR
+\fIfiles/critcl_cproc\&.n\fR: Critcl - cproc Type Reference
+.TP
 \fBcritcl::app\fR
 \fIfiles/critcl_apppkg\&.n\fR: Critcl - Application Package Reference
 .TP

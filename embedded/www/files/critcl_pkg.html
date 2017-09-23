@@ -465,27 +465,37 @@ This is useful to higher-order code generator using the command in
 settings with prefix arguments which are not directly seen by the
 function, but influence argument counting and extraction.</p></dd>
 </dl>
-<p>The list below shows the values which are legal for <i class="arg">resulttype</i>,
-and details their semantics:</p>
+<p>Below is the list of predefined types legal for <i class="arg">resulttype</i>, plus
+the details of their semantics. Note that it is possible to extend
+this list with custom types if the standard does not support what is
+needed. See section <span class="sectref"><a href="#subsection15">Advanced: Extending cproc</a></span> for details.</p>
 <dl class="definitions">
 <dt>Tcl_Obj*</dt>
 <dd></dd>
 <dt>object</dt>
-<dd><p>The function returns a value of type &quot;Tcl_Obj*&quot;.
-This value becomes the interpreter result, if not <b class="const">0</b>.
-The Tcl status is TCL_ERROR when a <b class="const">0</b> is returned, and TCL_OK otherwise.</p>
+<dd><p>The function returns a value of type <b class="type">Tcl_Obj*</b>.
+This value becomes the interpreter result, if not <b class="const">0</b>. The Tcl
+status is <b class="const">TCL_ERROR</b> when a <b class="const">0</b> is returned, and
+<b class="const">TCL_OK</b> otherwise.</p>
+<p><em>Note</em> how it is the responsibility of the function to set
+the interpreter result to an appropriate error message when returning
+<b class="const">0</b>.</p>
 <p><em>Attention</em>: The conversion assumes that the value belonged
 to the function, with an associated reference count, and decrements
 the reference count to indicate the loss of ownership by the
 function. This means that it is an error to return a value whose
-reference count is zero. The system will crash at some point after due
-to reuse of the freed memory.</p></dd>
+reference count is zero. The system will crash at some point after the
+return due to reuse of the freed memory.</p></dd>
 <dt>Tcl_Obj*0</dt>
 <dd></dd>
 <dt>object0</dt>
-<dd><p>The function returns a value of type &quot;Tcl_Obj*&quot;.
-This value becomes the interpreter result, if not <b class="const">0</b>.
-The Tcl status is TCL_ERROR when a <b class="const">0</b> is returned, and TCL_OK otherwise.</p>
+<dd><p>The function returns a value of type <b class="type">Tcl_Obj*</b>.
+This value becomes the interpreter result, if not <b class="const">0</b>. The Tcl
+status is <b class="const">TCL_ERROR</b> when a <b class="const">0</b> is returned, and
+<b class="const">TCL_OK</b> otherwise.</p>
+<p><em>Note</em> how it is the responsibility of the function to set
+the interpreter result to an appropriate error message when returning
+<b class="const">0</b>.</p>
 <p><em>Attention</em>: Contrary to <b class="const">Tcl_Obj*</b> above this
 conversion assumes that the returned value has a reference count of
 <b class="const">0</b> and performs <em>no</em> decrement. Returning a value whose
@@ -493,56 +503,68 @@ reference count is greater than zero will likely cause a memory leak.</p></dd>
 <dt>char*</dt>
 <dd></dd>
 <dt>vstring</dt>
-<dd><p>The function returns a value of type &quot;char*&quot;.
-This value becomes the interpreter result, wrapped in a String.
+<dd><p>The function returns a value of type <b class="type">char*</b>.
+This value becomes the interpreter result, wrapped in a <b class="type">String</b>.
 It is assumed that the string is volatile in some way, with the
-wrapping in a String duplicating it before making it the result,
-ensuring that we will not access a dangling pointer in the future.
-The Tcl status is always TCL_OK.</p></dd>
+wrapping in a <b class="type">String</b> duplicating it before making it the
+result, ensuring that we will not access a dangling pointer in the
+future.
+The Tcl status is <em>always</em> <b class="const">TCL_OK</b>.</p></dd>
 <dt>const char*</dt>
-<dd><p>Like type <b class="const">char*</b> above, except that the returned string is const-qualified.</p></dd>
+<dd><p>Like type <b class="const">char*</b> above, except that the returned string is
+<b class="const">const</b>-qualified.</p></dd>
 <dt>string</dt>
 <dd></dd>
 <dt>dstring</dt>
-<dd><p>The function returns a value of type &quot;char*&quot;.
+<dd><p>The function returns a value of type <b class="type">char*</b>.
 Contrary to the previous string types here it is assumed that the
 value is dynamically allocated, via <b class="function">Tcl_Alloc</b>.
-This value becomes the interpreter result, as usual, but is <em>not</em> copied.
-The Tcl status is always TCL_OK.</p></dd>
+This value becomes the interpreter result, as usual, but is <em>not</em>
+copied.
+The Tcl status is <em>always</em> <b class="const">TCL_OK</b>.</p></dd>
 <dt>double</dt>
-<dd><p>The function returns a value of type &quot;double&quot;.
-This value becomes the interpreter result, properly wrapped (Int).
-The Tcl status is always TCL_OK.</p></dd>
+<dd><p>The function returns a value of type <b class="type">double</b>.
+This value becomes the interpreter result, properly wrapped as a
+<b class="type">Double</b>.
+The Tcl status is <em>always</em> <b class="const">TCL_OK</b>.</p></dd>
 <dt>float</dt>
-<dd><p>The function returns a value of type &quot;float&quot;.
-This value becomes the interpreter result, properly wrapped (Double).
-The Tcl status is always TCL_OK.</p></dd>
+<dd><p>The function returns a value of type <b class="type">float</b>.
+This value becomes the interpreter result, properly wrapped as a
+<b class="type">Double</b>.
+The Tcl status is <em>always</em> <b class="const">TCL_OK</b>.</p></dd>
 <dt>boolean</dt>
 <dd></dd>
 <dt>bool</dt>
-<dd><p>The function returns a value of type &quot;int&quot;, interpreted as boolean.
-This value becomes the interpreter result, properly wrapped (Int).
-The Tcl status is always TCL_OK.</p></dd>
+<dd><p>The function returns a value of type <b class="type">int</b>, interpreted as boolean.
+This value becomes the interpreter result, properly wrapped as a
+<b class="type">Int</b>.
+The Tcl status is <em>always</em> <b class="const">TCL_OK</b>.</p></dd>
 <dt>int</dt>
-<dd><p>The function returns a value of type &quot;int&quot;.
-This value becomes the interpreter result, properly wrapped (Int).
-The Tcl status is always TCL_OK.</p></dd>
+<dd><p>The function returns a value of type <b class="type">int</b>.
+This value becomes the interpreter result, properly wrapped as a
+<b class="type">Int</b>.
+The Tcl status is <em>always</em> <b class="const">TCL_OK</b>.</p></dd>
 <dt>long</dt>
-<dd><p>The function returns a value of type &quot;long int&quot;.
-This value becomes the interpreter result, properly wrapped (Long).
-The Tcl status is always TCL_OK.</p></dd>
+<dd><p>The function returns a value of type <b class="type">long int</b>.
+This value becomes the interpreter result, properly wrapped as a
+<b class="type">Long</b>.
+The Tcl status is <em>always</em> <b class="const">TCL_OK</b>.</p></dd>
+<dt>wideint</dt>
+<dd><p>The function returns a value of type <b class="type">Tcl_WideInt</b>.
+This value becomes the interpreter result, properly wrapped as a
+<b class="type">WideInt</b>.
+The Tcl status is <em>always</em> <b class="const">TCL_OK</b>.</p></dd>
 <dt>ok</dt>
-<dd><p>The function returns a value of type &quot;int&quot;.
+<dd><p>The function returns a value of type <b class="type">int</b>.
 It is interpreted as the Tcl status code.
-The interpreter result is left untouched (empty).</p></dd>
+The interpreter result is left untouched (empty).  For a different
+outcome the function has to set the interpreter result by itself.</p></dd>
 <dt>void</dt>
 <dd><p>The function does not return a value.
-The interpreter result is left untouched (empty).
-The Tcl status is always TCL_OK.</p></dd>
+The interpreter result is left untouched (empty). For a different
+outcome the function has to set the interpreter result by itself.
+The Tcl status is <em>always</em> <b class="const">TCL_OK</b>.</p></dd>
 </dl>
-<p>Please note that it is possible to extend the above with custom
-types if these types are not enough. See section
-<span class="sectref"><a href="#subsection15">Advanced: Extending cproc</a></span> for details.</p>
 <p>The <i class="arg">arguments</i> parameter has the overall syntax of a Tcl
 dictionary value, except that keys (argument names) and values
 (argument types) are specified in reverse order. Consider the
@@ -566,19 +588,24 @@ be invalid according to it, then the relevant checks have to be done
 in the procedure body. The argument conversion cannot do it as it is
 completely bypassed when the argument is not present. Overcoming this
 requires the separation of argument conversion and validation code.</p>
-<p>The list below shows the values which are legal for argument
-types, and details their semantics:</p>
+<p>Below is the list of predefined types legal for arguments, plus
+the details of their semantics. Note that it is possible to extend
+this list with custom types if the standard does not support what is
+needed. See section <span class="sectref"><a href="#subsection15">Advanced: Extending cproc</a></span> for details.</p>
+<p>Further note that the type of the first argument is allowed to
+be <b class="const">Tcl_Interp*</b>. In that case the argument in question is
+<em>not</em> counted as an argument of the new Tcl command.</p>
 <dl class="definitions">
 <dt>Tcl_Obj*</dt>
 <dd></dd>
 <dt>object</dt>
-<dd><p>The function takes an argument of type &quot;Tcl_Obj*&quot;.
+<dd><p>The function takes an argument of type <b class="type">Tcl_Obj*</b>.
 No argument checking is done.
 The Tcl level word is passed to the argument as-is.</p></dd>
 <dt>pstring</dt>
-<dd><p>The function takes an argument of type &quot;critcl_pstring&quot; containing the
-original Tcl_Obj* reference of the Tcl argument, plus the length of
-the string and pointer to the characters.</p>
+<dd><p>The function takes an argument of type <b class="type">critcl_pstring</b>
+containing the original <b class="type">Tcl_Obj*</b> reference of the Tcl argument,
+plus the length of the string and a pointer to the character array.</p>
 <pre class="example">
 typedef struct critcl_pstring {
     Tcl_Obj* o;
@@ -588,9 +615,10 @@ typedef struct critcl_pstring {
 </pre>
 </dd>
 <dt>list</dt>
-<dd><p>The function takes an argument of type &quot;critcl_list&quot; containing the
-original Tcl_Obj* reference of the Tcl argument, plus the length of
-the Tcl list and pointer to the list elements.</p>
+<dd><p>The function takes an argument of type <b class="type">critcl_list</b> containing
+the original <b class="type">Tcl_Obj*</b> reference of the Tcl argument, plus the
+length of the Tcl list and a pointer to the array of the list
+elements.</p>
 <pre class="example">
 typedef struct critcl_list {
     Tcl_Obj*  o;
@@ -598,43 +626,61 @@ typedef struct critcl_list {
     int       c;
 } critcl_list;
 </pre>
-<p>The Tcl argument must be convertible to List, an error is thrown
-otherwise.</p></dd>
+<p>The Tcl argument must be convertible to <b class="type">List</b>, an error is
+thrown otherwise.</p></dd>
 <dt>bytearray</dt>
 <dd></dd>
 <dt>rawchar*</dt>
 <dd></dd>
 <dt>rawchar</dt>
-<dd><p>The function takes an argument of type &quot;char*&quot;.
-The Tcl argument must be convertible to ByteArray, an error is thrown
-otherwise.
-<em>Note</em> that the length of the ByteArray is <em>not</em> passed to
-the function.</p></dd>
+<dd><p>The function takes an argument of type <b class="type">char*</b>.
+The Tcl argument must be convertible to <b class="type">ByteArray</b>, an error is
+thrown otherwise.
+<em>Note</em> that the length of the <b class="type">ByteArray</b> is <em>not</em>
+passed to the function, making this type not very usable.</p></dd>
+<dt>bytes</dt>
+<dd><p>This is the <em>new</em> and usable <b class="type">ByteArray</b> type.</p>
+<p>The function takes an argument of type <b class="type">critcl_bytes</b>
+containing the original <b class="type">Tcl_Obj*</b> reference of the Tcl argument,
+plus the length of the byte array and a pointer to the byte data.</p>
+<pre class="example">
+typedef struct critcl_bytes {
+    Tcl_Obj* o;
+    char*    s;
+    int      len;
+} critcl_list;
+</pre>
+<p>The Tcl argument must be convertible to <b class="type">ByteArray</b>, an error is
+thrown otherwise.</p></dd>
 <dt>char*</dt>
-<dd><p>The function takes an argument of type &quot;char*&quot;.
+<dd><p>The function takes an argument of type <b class="type">char*</b>.
 The string representation of the Tcl argument is passed in.</p></dd>
 <dt>double</dt>
-<dd><p>The function takes an argument of type &quot;double&quot;.
-The Tcl argument must be convertible to Double, an error is thrown
-otherwise.</p></dd>
+<dd><p>The function takes an argument of type <b class="type">double</b>.
+The Tcl argument must be convertible to <b class="type">Double</b>, an error is
+thrown otherwise.</p></dd>
 <dt>float</dt>
-<dd><p>The function takes an argument of type &quot;float&quot;.
-The Tcl argument must be convertible to Double, an error is thrown
-otherwise.</p></dd>
+<dd><p>The function takes an argument of type <b class="type">float</b>.
+The Tcl argument must be convertible to <b class="type">Double</b>, an error is
+thrown otherwise.</p></dd>
 <dt>boolean</dt>
 <dd></dd>
 <dt>bool</dt>
-<dd><p>The function takes an argument of type &quot;int&quot;.
-The Tcl argument must be convertible to Boolean, an error is thrown
-otherwise.</p></dd>
+<dd><p>The function takes an argument of type <b class="type">int</b>.
+The Tcl argument must be convertible to <b class="type">Boolean</b>, an error is
+thrown otherwise.</p></dd>
 <dt>int</dt>
-<dd><p>The function takes an argument of type &quot;int&quot;.
-The Tcl argument must be convertible to Int, an error is thrown
+<dd><p>The function takes an argument of type <b class="type">int</b>.
+The Tcl argument must be convertible to <b class="type">Int</b>, an error is thrown
 otherwise.</p></dd>
 <dt>long</dt>
-<dd><p>The function takes an argument of type &quot;long int&quot;.
-The Tcl argument must be convertible to Long, an error is thrown
-otherwise.</p></dd>
+<dd><p>The function takes an argument of type <b class="type">long int</b>.
+The Tcl argument must be convertible to <b class="type">Long</b>, an error is
+thrown otherwise.</p></dd>
+<dt>wideint</dt>
+<dd><p>The function takes an argument of type <b class="type">Tcl_WideInt</b>.
+The Tcl argument must be convertible to <b class="type">WideInt</b>, an error is
+thrown otherwise.</p></dd>
 <dt>void*</dt>
 <dd></dd>
 <dt>double*</dt>
@@ -646,18 +692,15 @@ otherwise.</p></dd>
 The Tcl argument must be convertible to ByteArray, an error is thrown
 otherwise.
 The bytes in the ByteArray are then re-interpreted as the raw
-representation of a C pointer of the given type which is then passed
-as argument to the function.
+representation of a single C pointer of the given type which is then
+passed as argument to the function.
 In other words, this is for Tcl values somehow holding raw C pointers,
 i.e. memory addresses.</p>
 <p><em>Attention</em>: These types are considered <em>DEPRECATED</em>.
 It is planned to remove their documentation in release 3.2, and their
 implementation in release 3.3.  Their deprecation can be undone if
 good use cases are shown.</p></dd>
-</dl>
-<p>Further note that the type of the first argument is allowed to
-be <b class="const">Tcl_Interp*</b>. In that case the argument in question is
-<em>not</em> counted as an argument of the new Tcl command.</p></dd>
+</dl></dd>
 <dt><a name="8"><b class="cmd">::critcl::cproc</b> <i class="arg">name</i> <i class="arg">arguments</i> <i class="arg">resulttype</i></a></dt>
 <dd><p>This variant of <b class="cmd">critcl::cproc</b> assumes that the functionality to
 connect to is implemented by the C function <i class="arg">name</i> which has the
@@ -666,10 +709,10 @@ signature described by the <i class="arg">arguments</i> and <i class="arg">resul
 arguments and result.</p></dd>
 <dt><a name="9"><b class="cmd">::critcl::cinit</b> <i class="arg">text</i> <i class="arg">externals</i></a></dt>
 <dd><p>This command compiles the C code in <i class="arg">text</i> and <i class="arg">externals</i>.</p>
-<p>Both have access to all definitions created by the previously
-listed commands, regardless of their and its placement in the
-&quot;<b class="file">.critcl</b>&quot; file. See section <span class="sectref"><a href="#subsection17">Runtime Behaviour</a></span> for
-more details.</p>
+<p>Both arguments have access to all definitions created by the
+previously listed commands, regardless of their placement in the
+&quot;<b class="file">.critcl</b>&quot; file relative to this command.
+See section <span class="sectref"><a href="#subsection17">Runtime Behaviour</a></span> for more details.</p>
 <p>The C code in <i class="arg">text</i> is put into the body of the
 initialization function of the shared library backing the
 &quot;<b class="file">.critcl</b>&quot; file, and is executed when this library is loaded into
@@ -681,6 +724,8 @@ initialized.</p>
 and just before the initialization function, making this is a good
 place for any external symbols required by initialization function
 which should not be accessible by any other parts of the C code.</p>
+<p>Multiple invokations of this command are allowed, and a later
+call has access to the information of all preceding ones.</p>
 <p>The result of the command is the empty string.</p></dd>
 <dt><a name="10"><b class="cmd">::critcl::include</b> <i class="arg">path</i></a></dt>
 <dd><p>This command is a convenient shorthand for</p>
@@ -1701,8 +1746,8 @@ types (see section <span class="sectref"><a href="#subsection1">Embedded C Code<
 enough.</p>
 <p>To get around this limitation the commands in this section
 enable users of <b class="package">critcl</b> to extend the set of argument and
-result types understood by <b class="cmd">critcl::cproc</b>. In other words, to
-define their own custom types.</p>
+result types understood by <b class="cmd">critcl::cproc</b>. In other words, they
+allow them to define their own, custom, types.</p>
 <dl class="definitions">
 <dt><a name="94"><b class="cmd">::critcl::has-resulttype</b> <i class="arg">name</i></a></dt>
 <dd><p>This command tests if the named result-type is known or not.
@@ -1717,7 +1762,7 @@ it is not specified.</p>
 <p>If <i class="arg">name</i> is declared already an error will be thrown.
 <em>Attention!</em> The standard result type <b class="const">void</b> is special as
 it has no accompanying result variable. This cannot be expressed
-by the this extension command.</p>
+by this extension command.</p>
 <p>The <i class="arg">body</i>'s responsibility is the conversion of the
 functions result into a Tcl result and a Tcl status. The first has to
 be set into the interpreter we are in, and the second has to be
@@ -2374,6 +2419,13 @@ document about <i class="term">Using CriTcl</i>.</p>
 </div>
 <div id="section5" class="section"><h2><a name="section5">Changes for version 3.1.17</a></h2>
 <ol class="enumerated">
+<li><p>Bugfix: Fixed issue #76.
+       Support installation directories which are not in the <b class="variable">auto_path</b>.
+       Without the patch the installed <b class="cmd">critcl</b> will not find its
+       own packages and fail. Thank you to
+       <a href="https://github.com/lupylucke">Simon Bachmann</a> for the
+       report and patch, and then his patience with me to getting to
+       actually apply it.</p></li>
 <li><p>Bugfix: Fixed issue #75.
        Extended <b class="cmd">critcl::include</b> to now take multiple paths.</p></li>
 <li><p>Added new compatibility package <b class="package">lmap84</b>.</p></li>

@@ -481,6 +481,13 @@ targets. The result of such a merge would look like:</p>
 </div>
 <div id="section4" class="section"><h2><a name="section4">Changes for version 3.1.17</a></h2>
 <ol class="enumerated">
+<li><p>Bugfix: Fixed issue #76.
+       Support installation directories which are not in the <b class="variable">auto_path</b>.
+       Without the patch the installed <b class="cmd"><a href="critcl_pkg.html">critcl</a></b> will not find its
+       own packages and fail. Thank you to
+       <a href="https://github.com/lupylucke">Simon Bachmann</a> for the
+       report and patch, and then his patience with me to getting to
+       actually apply it.</p></li>
 <li><p>Bugfix: Fixed issue #75.
        Extended <b class="cmd">critcl::include</b> to now take multiple paths.</p></li>
 <li><p>Added new compatibility package <b class="package">lmap84</b>.</p></li>

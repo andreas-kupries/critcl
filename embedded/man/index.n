@@ -302,6 +302,9 @@ C code
 \fBfiles/critcl_pkg\&.n\fR
 critcl
 .TP
+\fBfiles/critcl_cproc\&.n\fR
+critcl-cproc-types
+.TP
 \fBfiles/critcl_apppkg\&.n\fR
 critcl::app
 .TP
@@ -371,6 +374,9 @@ code generator
 \fBfiles/critcl_pkg\&.n\fR
 critcl
 .TP
+\fBfiles/critcl_cproc\&.n\fR
+critcl-cproc-types
+.TP
 \fBfiles/critcl_apppkg\&.n\fR
 critcl::app
 .TP
@@ -428,6 +434,9 @@ compile & run
 \fBfiles/critcl_pkg\&.n\fR
 critcl
 .TP
+\fBfiles/critcl_cproc\&.n\fR
+critcl-cproc-types
+.TP
 \fBfiles/critcl_apppkg\&.n\fR
 critcl::app
 .TP
@@ -484,6 +493,9 @@ compiler
 .TP
 \fBfiles/critcl_pkg\&.n\fR
 critcl
+.TP
+\fBfiles/critcl_cproc\&.n\fR
+critcl-cproc-types
 .TP
 \fBfiles/critcl_apppkg\&.n\fR
 critcl::app
@@ -548,6 +560,9 @@ dynamic code generation
 \fBfiles/critcl_pkg\&.n\fR
 critcl
 .TP
+\fBfiles/critcl_cproc\&.n\fR
+critcl-cproc-types
+.TP
 \fBfiles/critcl_apppkg\&.n\fR
 critcl::app
 .TP
@@ -605,6 +620,9 @@ dynamic compilation
 \fBfiles/critcl_pkg\&.n\fR
 critcl
 .TP
+\fBfiles/critcl_cproc\&.n\fR
+critcl-cproc-types
+.TP
 \fBfiles/critcl_apppkg\&.n\fR
 critcl::app
 .TP
@@ -661,6 +679,9 @@ Embedded C Code
 .TP
 \fBfiles/critcl_pkg\&.n\fR
 critcl
+.TP
+\fBfiles/critcl_cproc\&.n\fR
+critcl-cproc-types
 .TP
 \fBfiles/critcl_apppkg\&.n\fR
 critcl::app
@@ -728,6 +749,9 @@ generate package
 \fBfiles/critcl_pkg\&.n\fR
 critcl
 .TP
+\fBfiles/critcl_cproc\&.n\fR
+critcl-cproc-types
+.TP
 \fBfiles/critcl_apppkg\&.n\fR
 critcl::app
 .TP
@@ -790,6 +814,9 @@ linker
 .TP
 \fBfiles/critcl_pkg\&.n\fR
 critcl
+.TP
+\fBfiles/critcl_cproc\&.n\fR
+critcl-cproc-types
 .TP
 \fBfiles/critcl_apppkg\&.n\fR
 critcl::app
@@ -857,6 +884,9 @@ on demand compilation
 \fBfiles/critcl_pkg\&.n\fR
 critcl
 .TP
+\fBfiles/critcl_cproc\&.n\fR
+critcl-cproc-types
+.TP
 \fBfiles/critcl_apppkg\&.n\fR
 critcl::app
 .TP
@@ -913,6 +943,9 @@ on-the-fly compilation
 .TP
 \fBfiles/critcl_pkg\&.n\fR
 critcl
+.TP
+\fBfiles/critcl_cproc\&.n\fR
+critcl-cproc-types
 .TP
 \fBfiles/critcl_apppkg\&.n\fR
 critcl::app

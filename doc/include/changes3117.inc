@@ -1,6 +1,14 @@
 [section {Changes for version 3.1.17}]
 [list_begin enumerated]
 
+[enum] Bugfix: Fixed issue #76.
+       Support installation directories which are not in the [var auto_path].
+       Without the patch the installed [cmd critcl] will not find its
+       own packages and fail. Thank you to
+       [uri https://github.com/lupylucke {Simon Bachmann}] for the
+       report and patch, and then his patience with me to getting to
+       actually apply it.
+
 [enum] Bugfix: Fixed issue #75.
        Extended [cmd critcl::include] to now take multiple paths.
 

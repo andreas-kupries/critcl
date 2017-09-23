@@ -379,8 +379,8 @@ uses the conversion code from the referenced types\&.
 Our example is pulled from an incomplete project of mine, a
 binding to \fIJeffrey Kegler\fR's \fIlibmarpa\fR library managing
 Earley parsers\&. Several custom types simply reflect the typedef's done
-by the library, to make the \fBcproc\fRs as self-documenting as the
-underlying library functions themselves\&.
+by the library, to make the \fBcritcl::cproc\fRs as self-documenting
+as the underlying library functions themselves\&.
 .CS
 
 
@@ -404,7 +404,7 @@ underlying library functions themselves\&.
 
 .CE
 .SS "CUSTOM TYPES, SEMI-TRIVIAL"
-A more involved custom argument type would be to map from Tcl stringas
+A more involved custom argument type would be to map from Tcl strings
 to some internal representation, like an integer code\&.
 .PP
 The first example is taken from the \fBtclyaml\fR package,
@@ -455,8 +455,8 @@ internal enumeration\&.
 
 .CE
 It should be noted that this code precedes the advent of the
-supporting generator package \fBcritcl:emap\fR\&. With it available
-we can simlply define the mapping via
+supporting generator package \fBcritcl::emap\fR\&. using the
+generator the definition of the mapping becomes much simpler:
 .CS
 
 
@@ -467,17 +467,17 @@ we can simlply define the mapping via
     }
 
 .CE
-and the generator will not only provide the conversions, but also
-define the argument and result types needed for their use by
-\fBcproc\fR\&.
+Note that the generator will not only provide the conversions, but
+also define the argument and result types needed for their use by
+\fBcritcl::cproc\fR\&.
 Another example of such a semi-trivial argument type can be found in
 the \fBCRIMP\fR package, which defines a \fBTcl_ObjType\fR for
 \fIimage\fR values\&. This not only provides a basic argument type for
-any image, but also types which check that the image has a specific
-format\&. Here we see for the first time non-integer arguments, and the
-need to define the C types used for variables holding the C level
-value, and the type of function parameters (Due to C promotion rules
-we may need different types)\&.
+any image, but also derived types which check that the image has a
+specific format\&. Here we see for the first time non-integer arguments,
+and the need to define the C types used for variables holding the C
+level value, and the type of function parameters (Due to C promotion
+rules we may need different types)\&.
 .CS
 
 
@@ -511,11 +511,12 @@ conversion needs additional definitions, for example a helper
 structure\&.
 .PP
 An example of this can be found among the standard types of
-critcl itself, the \fIpstring\fR type\&. This type provides the C
+critcl itself, the \fBpstring\fR type\&. This type provides the C
 function with not only the string pointer, but also the string length,
-and the \fITcl_Obj*\fR this data came from\&. As \fBcproc\fR's calling
-conventions allow us only one argument for the data of the parameter a
-structure is needed to convey these three pieces of information\&.
+and the \fBTcl_Obj*\fR this data came from\&. As \fBcritcl::cproc\fR's
+calling conventions allow us only one argument for the data of the
+parameter a structure is needed to convey these three pieces of
+information\&.
 .PP
 Thus the argument type is defined as
 .CS
@@ -541,11 +542,11 @@ allocate it on the heap instead of having it taking space on the
 stack\&. If we do that we need another adjunct command,
 \fBcritcl::argtyperelease\fR\&. This command specifies the code required
 to release dynamically allocated resources when the worker function
-returned, before the shim returns to the caller in Tcl\&.
+returns, before the shim returns to the caller in Tcl\&.
 To keep things simple our example is synthetic, a modification of
 \fBpstring\fR above, to demonstrate the technique\&. An actual, but
 more complex example is the code to support the variadic \fIargs\fR
-argument of \fBcproc\fR\&.
+argument of \fBcritcl::cproc\fR\&.
 .CS
 
 

@@ -722,37 +722,45 @@ targets\&. The result of such a merge would look like:
 The latest changes are found at the top\&.
 .SH "CHANGES FOR VERSION 3\&.1\&.17"
 .IP [1]
+Bugfix: Fixed issue #76\&.
+Support installation directories which are not in the \fBauto_path\fR\&.
+Without the patch the installed \fBcritcl\fR will not find its
+own packages and fail\&. Thank you to
+\fISimon Bachmann\fR [https://github\&.com/lupylucke] for the
+report and patch, and then his patience with me to getting to
+actually apply it\&.
+.IP [2]
 Bugfix: Fixed issue #75\&.
 Extended \fBcritcl::include\fR to now take multiple paths\&.
-.IP [2]
-Added new compatibility package \fBlmap84\fR\&.
 .IP [3]
-Fixed typos in various documentation files\&.
+Added new compatibility package \fBlmap84\fR\&.
 .IP [4]
+Fixed typos in various documentation files\&.
+.IP [5]
 Fixed bug introduced by commit 86f415dd30 (3\&.1\&.16 release)\&. The
 separation of \fBcritcl::ccode\fR into user and work layers
 means that location retrieval has to go one more level up to
 find the user location\&.
-.IP [5]
+.IP [6]
 New supporting package \fBcritcl::cutil\fR\&. Provides common
 C level facilities useful to packages (assertions, tracing,
 memory allocation shorthands)\&.
-.IP [6]
+.IP [7]
 Modified package \fBcritcl\fR to make use of the new
 tracing facilities to provide tracing of arguments and results
 for \fBcritcl::ccommand\fR and \fBcritcl::cproc\fR invokations\&.
-.IP [7]
+.IP [8]
 Modified packages \fBcritcl\fR and \fBcritcl::class\fR
 to provide better function names for (class) method tracing\&.
 Bumped package \fBcritcl::class\fR to version 1\&.0\&.7\&.
-.IP [8]
+.IP [9]
 Extended the support package \fBcritcl::literals\fR with
 limited configurability\&. It is now able to generate code for
 C-level access to the pool without Tcl types (Mode \fBc\fR)\&.
 The previously existing functionality is accesssible under mode
 \fBtcl\fR, which also is the default\&. Both modes can be used
 together\&.
-.IP [9]
+.IP [10]
 Extended the support package \fBcritcl::emap\fR with
 limited configurability\&. It is now able to generate code for
 C-level access to the mapping without Tcl types
