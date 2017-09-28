@@ -48,7 +48,7 @@ directory.
 
 
 [comment {* * ** *** ***** ******** ************* *********************}]
-[call [cmd ::critcl::util::locate] [arg path] [arg define]]
+[call [cmd ::critcl::util::undef] [arg path] [arg define]]
 
 This command extends the specified configuration file [arg path] with an
 [const \#undef] directive for the named [arg define].

@@ -284,7 +284,7 @@ package require \fBcritcl::util  ?1?\fR
 .sp
 \fB::critcl::util::def\fR \fIpath\fR \fIdefine\fR ?\fIvalue\fR?
 .sp
-\fB::critcl::util::locate\fR \fIpath\fR \fIdefine\fR
+\fB::critcl::util::undef\fR \fIpath\fR \fIdefine\fR
 .sp
 \fB::critcl::util::locate\fR \fIlabel\fR \fIpaths\fR ?\fIcmd\fR?
 .sp
@@ -345,7 +345,7 @@ The result of the command is an empty string\&.
 Note that the configuration file is maintained in the \fBcritcl::cache\fR
 directory\&.
 .TP
-\fB::critcl::util::locate\fR \fIpath\fR \fIdefine\fR
+\fB::critcl::util::undef\fR \fIpath\fR \fIdefine\fR
 This command extends the specified configuration file \fIpath\fR with an
 \fB#undef\fR directive for the named \fIdefine\fR\&.
 .sp
