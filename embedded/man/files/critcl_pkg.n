@@ -2165,7 +2165,7 @@ tuple of file name and linenumber\&. Any previously stored location is
 overwritten\&.
 The result of the command is the empty string\&.
 .sp
-In terms of \fB::critcl::at::caller\fR] this is equivalent to
+In terms of \fB::critcl::at::caller\fR this is equivalent to
 .CS
 
 
