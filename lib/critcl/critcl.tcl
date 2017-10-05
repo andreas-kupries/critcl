@@ -933,10 +933,6 @@ proc ::critcl::argtype {name conversion {ctype {}} {ctypeb {}}} {
     # ctype  Type of variable holding the argument.
     # ctypeb Type of formal C function argument.
 
-    if {[info exists aconv($name)]} {
-	return -code error "Illegal duplicate definition of '$name'."
-    }
-
     # Handle aliases by copying the original definition.
     if {$conversion eq "="} {
 	if {![info exists aconv($ctype)]} {
@@ -966,6 +962,15 @@ proc ::critcl::argtype {name conversion {ctype {}} {ctypeb {}}} {
     if {$ctypeb eq {}} {
 	set ctypeb $name
     }
+
+    if {[info exists aconv($name)] &&
+	(($aconv($name)   ne $conversion) ||
+	 ($actype($name)  ne $ctype) ||
+	 ($actypeb($name) ne $ctypeb))
+    } {
+	return -code error "Illegal duplicate definition of '$name'."
+    }
+
     set aconv($name)   $conversion
     set actype($name)  $ctype
     set actypeb($name) $ctypeb
@@ -978,9 +983,6 @@ proc ::critcl::argtypesupport {name code {guard {}}} {
     if {![info exists aconv($name)]} {
 	return -code error "No definition for '$name'."
     }
-    if {[info exists acsup($name)]} {
-	return -code error "Illegal duplicate support of '$name'."
-    }
     if {$guard eq {}} {
 	set guard $name ; # Handle non-identifier chars!
     }
@@ -988,8 +990,15 @@ proc ::critcl::argtypesupport {name code {guard {}}} {
     lappend lines "#define CRITCL_$guard"
     lappend lines $code
     lappend lines "#endif /* CRITCL_$guard _________ */"
+    set support [join $lines \n]\n
 
-    set acsup($name) [join $lines \n]\n
+    if {[info exists acsup($name)] &&
+	($acsup($name) ne $support)
+    } {
+	return -code error "Illegal duplicate support of '$name'."
+    }
+
+    set acsup($name) $support
     return
 }
 
@@ -999,7 +1008,9 @@ proc ::critcl::argtyperelease {name code} {
     if {![info exists aconv($name)]} {
 	return -code error "No definition for '$name'."
     }
-    if {[info exists acrel($name)]} {
+    if {[info exists acrel($name)] &&
+	($acrel($name) ne $code)
+    } {
 	return -code error "Illegal duplicate release of '$name'."
     }
 
@@ -1016,10 +1027,6 @@ proc ::critcl::resulttype {name conversion {ctype {}}} {
     variable v::rctype
     variable v::rconv
 
-    if {[info exists rconv($name)]} {
-	return -code error "Illegal duplicate definition of '$name'."
-    }
-
     # Handle aliases by copying the original definition.
     if {$conversion eq "="} {
 	if {![info exists rconv($ctype)]} {
@@ -1034,6 +1041,14 @@ proc ::critcl::resulttype {name conversion {ctype {}}} {
     if {$ctype eq {}} {
 	set ctype $name
     }
+
+    if {[info exists rconv($name)] &&
+	(($rconv($name)  ne $conversion) ||
+	 ($rctype($name) ne $ctype))
+    } {
+	return -code error "Illegal duplicate definition of '$name'."
+    }
+
     set rconv($name)  $conversion
     set rctype($name) $ctype
     return
