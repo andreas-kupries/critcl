@@ -130,7 +130,7 @@
 <ul class="syntax">
 <li><a href="#1"><b class="cmd">::critcl::util::checkfun</b> <i class="arg">name</i> <span class="opt">?<i class="arg">label</i>?</span></a></li>
 <li><a href="#2"><b class="cmd">::critcl::util::def</b> <i class="arg">path</i> <i class="arg">define</i> <span class="opt">?<i class="arg">value</i>?</span></a></li>
-<li><a href="#3"><b class="cmd">::critcl::util::locate</b> <i class="arg">path</i> <i class="arg">define</i></a></li>
+<li><a href="#3"><b class="cmd">::critcl::util::undef</b> <i class="arg">path</i> <i class="arg">define</i></a></li>
 <li><a href="#4"><b class="cmd">::critcl::util::locate</b> <i class="arg">label</i> <i class="arg">paths</i> <span class="opt">?<i class="arg">cmd</i>?</span></a></li>
 </ul>
 </div>
@@ -161,7 +161,7 @@ is not specified it will default to <b class="const">1</b>.</p>
 <p>The result of the command is an empty string.</p>
 <p>Note that the configuration file is maintained in the <b class="cmd">critcl::cache</b>
 directory.</p></dd>
-<dt><a name="3"><b class="cmd">::critcl::util::locate</b> <i class="arg">path</i> <i class="arg">define</i></a></dt>
+<dt><a name="3"><b class="cmd">::critcl::util::undef</b> <i class="arg">path</i> <i class="arg">define</i></a></dt>
 <dd><p>This command extends the specified configuration file <i class="arg">path</i> with an
 <b class="const">#undef</b> directive for the named <i class="arg">define</i>.</p>
 <p>The result of the command is an empty string.</p>
