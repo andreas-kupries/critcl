@@ -1,6 +1,21 @@
 [section {Changes for version 3.1.17}]
 [list_begin enumerated]
 
+[enum] Extension: Allow duplicate arg- and result-type definitions if
+       they are fully identical.
+
+[enum] Bugfix. The application mishandled the possibility of
+       identical-named [cmd critcl::tsource]s. Possible because
+       [cmd critcl::tsource]s can be in subdirectories, a structure
+       which is [emph not] retained in the assembled package, causing
+       such files to overwrite each other and at least one lost. Fixed
+       by adding a serial number to the file names in the assembled
+       package.
+
+[enum] Bugfix in the static scanner which made it loose requirement
+       information. Further added code to generally cleanup results at
+       the end (removal of duplicates, mainly).
+
 [enum] Bugfix: Fixed issue #76.
        Support installation directories which are not in the [var auto_path].
        Without the patch the installed [cmd critcl] will not find its

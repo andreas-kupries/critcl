@@ -4,7 +4,7 @@
 '\" Copyright (c) Steve Landers
 '\" Copyright (c) 2011-2015 Andreas Kupries
 '\"
-.TH "critcl_introduction" n 3\&.1\&.16 doc "C Runtime In Tcl (CriTcl)"
+.TH "critcl_introduction" n 3\&.1\&.17 doc "C Runtime In Tcl (CriTcl)"
 .\" The -*- nroff -*- definitions below are for supplemental macros used
 .\" in Tcl/Tk manual entries.
 .\"
@@ -463,6 +463,21 @@ paragraph\&.
 The latest changes are found at the top\&.
 .SH "CHANGES FOR VERSION 3\&.1\&.17"
 .IP [1]
+Extension: Allow duplicate arg- and result-type definitions if
+they are fully identical\&.
+.IP [2]
+Bugfix\&. The application mishandled the possibility of
+identical-named \fBcritcl::tsource\fRs\&. Possible because
+\fBcritcl::tsource\fRs can be in subdirectories, a structure
+which is \fInot\fR retained in the assembled package, causing
+such files to overwrite each other and at least one lost\&. Fixed
+by adding a serial number to the file names in the assembled
+package\&.
+.IP [3]
+Bugfix in the static scanner which made it loose requirement
+information\&. Further added code to generally cleanup results at
+the end (removal of duplicates, mainly)\&.
+.IP [4]
 Bugfix: Fixed issue #76\&.
 Support installation directories which are not in the \fBauto_path\fR\&.
 Without the patch the installed \fBcritcl\fR will not find its
@@ -470,38 +485,38 @@ own packages and fail\&. Thank you to
 \fISimon Bachmann\fR [https://github\&.com/lupylucke] for the
 report and patch, and then his patience with me to getting to
 actually apply it\&.
-.IP [2]
+.IP [5]
 Bugfix: Fixed issue #75\&.
 Extended \fBcritcl::include\fR to now take multiple paths\&.
-.IP [3]
+.IP [6]
 Added new compatibility package \fBlmap84\fR\&.
-.IP [4]
+.IP [7]
 Fixed typos in various documentation files\&.
-.IP [5]
+.IP [8]
 Fixed bug introduced by commit 86f415dd30 (3\&.1\&.16 release)\&. The
 separation of \fBcritcl::ccode\fR into user and work layers
 means that location retrieval has to go one more level up to
 find the user location\&.
-.IP [6]
+.IP [9]
 New supporting package \fBcritcl::cutil\fR\&. Provides common
 C level facilities useful to packages (assertions, tracing,
 memory allocation shorthands)\&.
-.IP [7]
+.IP [10]
 Modified package \fBcritcl\fR to make use of the new
 tracing facilities to provide tracing of arguments and results
 for \fBcritcl::ccommand\fR and \fBcritcl::cproc\fR invokations\&.
-.IP [8]
+.IP [11]
 Modified packages \fBcritcl\fR and \fBcritcl::class\fR
 to provide better function names for (class) method tracing\&.
 Bumped package \fBcritcl::class\fR to version 1\&.0\&.7\&.
-.IP [9]
+.IP [12]
 Extended the support package \fBcritcl::literals\fR with
 limited configurability\&. It is now able to generate code for
 C-level access to the pool without Tcl types (Mode \fBc\fR)\&.
 The previously existing functionality is accesssible under mode
 \fBtcl\fR, which also is the default\&. Both modes can be used
 together\&.
-.IP [10]
+.IP [13]
 Extended the support package \fBcritcl::emap\fR with
 limited configurability\&. It is now able to generate code for
 C-level access to the mapping without Tcl types

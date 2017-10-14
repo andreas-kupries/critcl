@@ -103,7 +103,7 @@
    <a href="../toc.html">Table Of Contents</a>
 | <a href="../index.html">Keyword Index</a>
  ] <hr>
-<h1 class="title">critcl(n) 3.1.16 doc &quot;C Runtime In Tcl (CriTcl)&quot;</h1>
+<h1 class="title">critcl(n) 3.1.17 doc &quot;C Runtime In Tcl (CriTcl)&quot;</h1>
 <div id="name" class="section"><h2><a name="name">Name</a></h2>
 <p>critcl - Critcl - Package Reference</p>
 </div>
@@ -181,7 +181,7 @@
 <div class="synopsis">
 <ul class="requirements">
 <li>package require <b class="pkgname">Tcl 8.4</b></li>
-<li>package require <b class="pkgname">critcl <span class="opt">?3.1.16?</span></b></li>
+<li>package require <b class="pkgname">critcl <span class="opt">?3.1.17?</span></b></li>
 <li>package require <b class="pkgname">platform <span class="opt">?1.0.2?</span></b></li>
 <li>package require <b class="pkgname">md5 <span class="opt">?2?</span></b></li>
 </ul>
@@ -2419,6 +2419,18 @@ document about <i class="term">Using CriTcl</i>.</p>
 </div>
 <div id="section5" class="section"><h2><a name="section5">Changes for version 3.1.17</a></h2>
 <ol class="enumerated">
+<li><p>Extension: Allow duplicate arg- and result-type definitions if
+       they are fully identical.</p></li>
+<li><p>Bugfix. The application mishandled the possibility of
+       identical-named <b class="cmd">critcl::tsource</b>s. Possible because
+       <b class="cmd">critcl::tsource</b>s can be in subdirectories, a structure
+       which is <em>not</em> retained in the assembled package, causing
+       such files to overwrite each other and at least one lost. Fixed
+       by adding a serial number to the file names in the assembled
+       package.</p></li>
+<li><p>Bugfix in the static scanner which made it loose requirement
+       information. Further added code to generally cleanup results at
+       the end (removal of duplicates, mainly).</p></li>
 <li><p>Bugfix: Fixed issue #76.
        Support installation directories which are not in the <b class="variable">auto_path</b>.
        Without the patch the installed <b class="cmd">critcl</b> will not find its
