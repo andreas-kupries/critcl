@@ -41,14 +41,14 @@ tcl__aproc0(ClientData cd, Tcl_Interp *interp, int oc, Tcl_Obj *CONST ov[])
   int idx_;
   int argc_;
 
-  TRACE_ARGS (ns__aproc0, oc, ov);
+  critcl_trace_cmd_args (ns__aproc0, oc, ov);
   idx_  = 1;
   argc_ = oc - 1;
 
   /* (int x, optional, default -1) - - -- --- ----- -------- */
   if (argc_ > 1) {
 	{
-	if (Tcl_GetIntFromObj(interp, ov[idx_], &_x) != TCL_OK) TRACE_RESULT (interp, TCL_ERROR); }
+	if (Tcl_GetIntFromObj(interp, ov[idx_], &_x) != TCL_OK) return critcl_trace_cmd_result (TCL_ERROR, interp); }
     idx_++;
     argc_--;
     _has_x = 1;
@@ -60,7 +60,7 @@ tcl__aproc0(ClientData cd, Tcl_Interp *interp, int oc, Tcl_Obj *CONST ov[])
   /* (int y, optional, default -1) - - -- --- ----- -------- */
   if (argc_ > 1) {
 	{
-	if (Tcl_GetIntFromObj(interp, ov[idx_], &_y) != TCL_OK) TRACE_RESULT (interp, TCL_ERROR); }
+	if (Tcl_GetIntFromObj(interp, ov[idx_], &_y) != TCL_OK) return critcl_trace_cmd_result (TCL_ERROR, interp); }
     idx_++;
     argc_--;
     _has_y = 1;
@@ -77,7 +77,7 @@ tcl__aproc0(ClientData cd, Tcl_Interp *interp, int oc, Tcl_Obj *CONST ov[])
 	    for (src = idx_, dst = 0; leftovers > 0; dst++, src++, leftovers--) {
 	       if (_critcl_variadic_int_item (interp, ov[src], &(_args.v[dst])) != TCL_OK) {
 		   ckfree ((char*) _args.v); /* Cleanup partial work */
-		   TRACE_RESULT (interp, TCL_ERROR);
+		   return critcl_trace_cmd_result (TCL_ERROR, interp);
 	       }
 	    } }
 
@@ -88,5 +88,5 @@ tcl__aproc0(ClientData cd, Tcl_Interp *interp, int oc, Tcl_Obj *CONST ov[])
 	    if (_args.c) { ckfree ((char*) _args.v); }
 	
   /* (void return) - - -- --- ----- -------- */
-	TRACE_RESULT (interp, TCL_OK);
+	return critcl_trace_cmd_result (TCL_OK, interp);
 }

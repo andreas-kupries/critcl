@@ -10,19 +10,19 @@ static int
 tcl__aproc0(ClientData cd, Tcl_Interp *interp, int oc, Tcl_Obj *CONST ov[])
 {
   Tcl_Obj* rv;
-  TRACE_ARGS (ns__aproc0, oc, ov);
+  critcl_trace_cmd_args (ns__aproc0, oc, ov);
 
   if (oc != 1) {
     Tcl_WrongNumArgs(interp, 1, ov, NULL);
-    TRACE_RESULT (interp, TCL_ERROR);
+    return critcl_trace_cmd_result (TCL_ERROR, interp);
   }
 
   /* Call - - -- --- ----- -------- */
   rv = c__aproc0();
 
   /* (object return) - - -- --- ----- -------- */
-	if (rv == NULL) { TRACE_RESULT (interp, TCL_ERROR); }
+	if (rv == NULL) { return critcl_trace_cmd_result (TCL_ERROR, interp); }
 	Tcl_SetObjResult(interp, rv);
 	Tcl_DecrRefCount(rv);
-	TRACE_RESULT (interp, TCL_OK);
+	return critcl_trace_cmd_result (TCL_OK, interp);
 }

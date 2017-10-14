@@ -9,16 +9,16 @@ static int
 snafu(ClientData cd, Tcl_Interp *interp, int oc, Tcl_Obj *CONST ov[])
 {
 
-  TRACE_ARGS ("snafu", oc, ov);
+  critcl_trace_cmd_args ("snafu", oc, ov);
 
   if (oc != 1) {
     Tcl_WrongNumArgs(interp, 1, ov, NULL);
-    TRACE_RESULT (interp, TCL_ERROR);
+    return critcl_trace_cmd_result (TCL_ERROR, interp);
   }
 
   /* Call - - -- --- ----- -------- */
   c_snafu();
 
   /* (void return) - - -- --- ----- -------- */
-	TRACE_RESULT (interp, TCL_OK);
+	return critcl_trace_cmd_result (TCL_OK, interp);
 }

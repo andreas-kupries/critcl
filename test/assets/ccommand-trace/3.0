@@ -9,9 +9,9 @@ static int
 tcl__command0(ClientData clientdata, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv\[\])
 {
   int _rv;
-  TRACE_ARGS (ns__command0, objc, objv);
+  critcl_trace_cmd_args (ns__command0, objc, objv);
   _rv = tcl__command0_actual (clientdata, interp, objc, objv);
-  TRACE_RESULT (interp, _rv);
+  return critcl_trace_cmd_result (_rv, interp);
 }
 *
 Fake_Init*

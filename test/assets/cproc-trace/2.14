@@ -22,7 +22,7 @@ tcl__aproc0(ClientData cd, Tcl_Interp *interp, int oc, Tcl_Obj *CONST ov[])
 {
   critcl_variadic_object _args;
 
-  TRACE_ARGS (ns__aproc0, oc, ov);
+  critcl_trace_cmd_args (ns__aproc0, oc, ov);
   /* (object args, ...) - - -- --- ----- -------- */
 	{
 	_args.c = (oc-1);
@@ -32,5 +32,5 @@ tcl__aproc0(ClientData cd, Tcl_Interp *interp, int oc, Tcl_Obj *CONST ov[])
   c__aproc0(_args);
 
   /* (void return) - - -- --- ----- -------- */
-	TRACE_RESULT (interp, TCL_OK);
+	return critcl_trace_cmd_result (TCL_OK, interp);
 }

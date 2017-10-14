@@ -35,7 +35,7 @@ tcl__aproc0(ClientData cd, Tcl_Interp *interp, int oc, Tcl_Obj *CONST ov[])
 {
   critcl_variadic_int _args;
 
-  TRACE_ARGS (ns__aproc0, oc, ov);
+  critcl_trace_cmd_args (ns__aproc0, oc, ov);
   /* (int args, ...) - - -- --- ----- -------- */
 	{
 	int src, dst, leftovers = (oc-1);
@@ -44,7 +44,7 @@ tcl__aproc0(ClientData cd, Tcl_Interp *interp, int oc, Tcl_Obj *CONST ov[])
 	    for (src = 1, dst = 0; leftovers > 0; dst++, src++, leftovers--) {
 	       if (_critcl_variadic_int_item (interp, ov[src], &(_args.v[dst])) != TCL_OK) {
 		   ckfree ((char*) _args.v); /* Cleanup partial work */
-		   TRACE_RESULT (interp, TCL_ERROR);
+		   return critcl_trace_cmd_result (TCL_ERROR, interp);
 	       }
 	    } }
 
@@ -55,5 +55,5 @@ tcl__aproc0(ClientData cd, Tcl_Interp *interp, int oc, Tcl_Obj *CONST ov[])
 	    if (_args.c) { ckfree ((char*) _args.v); }
 	
   /* (void return) - - -- --- ----- -------- */
-	TRACE_RESULT (interp, TCL_OK);
+	return critcl_trace_cmd_result (TCL_OK, interp);
 }

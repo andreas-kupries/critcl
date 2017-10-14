@@ -16,21 +16,21 @@ tcl__aproc0(ClientData cd, Tcl_Interp *interp, int oc, Tcl_Obj *CONST ov[])
   int idx_;
   int argc_;
 
-  TRACE_ARGS (ns__aproc0, oc, ov);
+  critcl_trace_cmd_args (ns__aproc0, oc, ov);
 
   if ((oc < 3) || (4 < oc)) {
     Tcl_WrongNumArgs(interp, 1, ov, "x y ?z?");
-    TRACE_RESULT (interp, TCL_ERROR);
+    return critcl_trace_cmd_result (TCL_ERROR, interp);
   }
 
   /* (int x) - - -- --- ----- -------- */
 	{
-	if (Tcl_GetIntFromObj(interp, ov[1], &_x) != TCL_OK) TRACE_RESULT (interp, TCL_ERROR); }
+	if (Tcl_GetIntFromObj(interp, ov[1], &_x) != TCL_OK) return critcl_trace_cmd_result (TCL_ERROR, interp); }
 
 
   /* (int y) - - -- --- ----- -------- */
 	{
-	if (Tcl_GetIntFromObj(interp, ov[2], &_y) != TCL_OK) TRACE_RESULT (interp, TCL_ERROR); }
+	if (Tcl_GetIntFromObj(interp, ov[2], &_y) != TCL_OK) return critcl_trace_cmd_result (TCL_ERROR, interp); }
 
 
   idx_  = 3;
@@ -39,7 +39,7 @@ tcl__aproc0(ClientData cd, Tcl_Interp *interp, int oc, Tcl_Obj *CONST ov[])
   /* (int z, optional, default -1) - - -- --- ----- -------- */
   if (argc_ > 0) {
 	{
-	if (Tcl_GetIntFromObj(interp, ov[idx_], &_z) != TCL_OK) TRACE_RESULT (interp, TCL_ERROR); }
+	if (Tcl_GetIntFromObj(interp, ov[idx_], &_z) != TCL_OK) return critcl_trace_cmd_result (TCL_ERROR, interp); }
     _has_z = 1;
   } else {
     _z = -1;
@@ -49,5 +49,5 @@ tcl__aproc0(ClientData cd, Tcl_Interp *interp, int oc, Tcl_Obj *CONST ov[])
   c__aproc0(_x, _y, _has_z, _z);
 
   /* (void return) - - -- --- ----- -------- */
-	TRACE_RESULT (interp, TCL_OK);
+	return critcl_trace_cmd_result (TCL_OK, interp);
 }

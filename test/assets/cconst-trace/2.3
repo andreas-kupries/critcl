@@ -6,11 +6,11 @@ static int
 tcl__the_alpha0(ClientData cd, Tcl_Interp *interp, int oc, Tcl_Obj *CONST ov[])
 {
   int rv;
-  TRACE_ARGS (ns__the_alpha0, oc, ov);
+  critcl_trace_cmd_args (ns__the_alpha0, oc, ov);
 
   if (oc != 1) {
     Tcl_WrongNumArgs(interp, 1, ov, NULL);
-    TRACE_RESULT (interp, TCL_ERROR);
+    return critcl_trace_cmd_result (TCL_ERROR, interp);
   }
 
   /* Const - - -- --- ----- -------- */
@@ -18,5 +18,5 @@ tcl__the_alpha0(ClientData cd, Tcl_Interp *interp, int oc, Tcl_Obj *CONST ov[])
 
   /* (bool return) - - -- --- ----- -------- */
 	Tcl_SetObjResult(interp, Tcl_NewIntObj(rv));
-	TRACE_RESULT (interp, TCL_OK);
+	return critcl_trace_cmd_result (TCL_OK, interp);
 }

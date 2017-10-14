@@ -15,7 +15,7 @@ static int
 tcl__alpha_x0(ClientData dummy, Tcl_Interp *ip, int objc, Tcl_Obj *CONST objv[])
 {
   int _rv;
-  TRACE_ARGS (ns__alpha_x0, objc, objv);
+  critcl_trace_cmd_args (ns__alpha_x0, objc, objv);
   _rv = tcl__alpha_x0_actual (dummy, ip, objc, objv);
-  TRACE_RESULT (ip, _rv);
+  return critcl_trace_cmd_result (_rv, ip);
 }
