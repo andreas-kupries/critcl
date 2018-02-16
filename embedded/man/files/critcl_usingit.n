@@ -1,77 +1,84 @@
 '\"
-'\" Generated from file '/home/aku/Projects/Critcl/dev-master/embedded/man/files/critcl_usingit\&.n' by tcllib/doctools with format 'nroff'
+'\" Generated from file 'critcl_usingit\&.man' by tcllib/doctools with format 'nroff'
 '\" Copyright (c) Jean-Claude Wippler
 '\" Copyright (c) Steve Landers
-'\" Copyright (c) 2011-2013 Andreas Kupries
+'\" Copyright (c) 2011-2015 Andreas Kupries
 '\"
-'\" The definitions below are for supplemental macros used in Tcl/Tk
-'\" manual entries.
-'\"
-'\" .AP type name in/out ?indent?
-'\"	Start paragraph describing an argument to a library procedure.
-'\"	type is type of argument (int, etc.), in/out is either "in", "out",
-'\"	or "in/out" to describe whether procedure reads or modifies arg,
-'\"	and indent is equivalent to second arg of .IP (shouldn't ever be
-'\"	needed;  use .AS below instead)
-'\"
-'\" .AS ?type? ?name?
-'\"	Give maximum sizes of arguments for setting tab stops.  Type and
-'\"	name are examples of largest possible arguments that will be passed
-'\"	to .AP later.  If args are omitted, default tab stops are used.
-'\"
-'\" .BS
-'\"	Start box enclosure.  From here until next .BE, everything will be
-'\"	enclosed in one large box.
-'\"
-'\" .BE
-'\"	End of box enclosure.
-'\"
-'\" .CS
-'\"	Begin code excerpt.
-'\"
-'\" .CE
-'\"	End code excerpt.
-'\"
-'\" .VS ?version? ?br?
-'\"	Begin vertical sidebar, for use in marking newly-changed parts
-'\"	of man pages.  The first argument is ignored and used for recording
-'\"	the version when the .VS was added, so that the sidebars can be
-'\"	found and removed when they reach a certain age.  If another argument
-'\"	is present, then a line break is forced before starting the sidebar.
-'\"
-'\" .VE
-'\"	End of vertical sidebar.
-'\"
-'\" .DS
-'\"	Begin an indented unfilled display.
-'\"
-'\" .DE
-'\"	End of indented unfilled display.
-'\"
-'\" .SO
-'\"	Start of list of standard options for a Tk widget.  The
-'\"	options follow on successive lines, in four columns separated
-'\"	by tabs.
-'\"
-'\" .SE
-'\"	End of list of standard options for a Tk widget.
-'\"
-'\" .OP cmdName dbName dbClass
-'\"	Start of description of a specific option.  cmdName gives the
-'\"	option's name as specified in the class command, dbName gives
-'\"	the option's name in the option database, and dbClass gives
-'\"	the option's class in the option database.
-'\"
-'\" .UL arg1 arg2
-'\"	Print arg1 underlined, then print arg2 normally.
-'\"
-'\" RCS: @(#) $Id: man.macros,v 1.1 2009/01/30 04:56:47 andreas_kupries Exp $
-'\"
-'\"	# Set up traps and other miscellaneous stuff for Tcl/Tk man pages.
+.TH "critcl_use" n 3\&.1\&.17 doc "C Runtime In Tcl (CriTcl)"
+.\" The -*- nroff -*- definitions below are for supplemental macros used
+.\" in Tcl/Tk manual entries.
+.\"
+.\" .AP type name in/out ?indent?
+.\"	Start paragraph describing an argument to a library procedure.
+.\"	type is type of argument (int, etc.), in/out is either "in", "out",
+.\"	or "in/out" to describe whether procedure reads or modifies arg,
+.\"	and indent is equivalent to second arg of .IP (shouldn't ever be
+.\"	needed;  use .AS below instead)
+.\"
+.\" .AS ?type? ?name?
+.\"	Give maximum sizes of arguments for setting tab stops.  Type and
+.\"	name are examples of largest possible arguments that will be passed
+.\"	to .AP later.  If args are omitted, default tab stops are used.
+.\"
+.\" .BS
+.\"	Start box enclosure.  From here until next .BE, everything will be
+.\"	enclosed in one large box.
+.\"
+.\" .BE
+.\"	End of box enclosure.
+.\"
+.\" .CS
+.\"	Begin code excerpt.
+.\"
+.\" .CE
+.\"	End code excerpt.
+.\"
+.\" .VS ?version? ?br?
+.\"	Begin vertical sidebar, for use in marking newly-changed parts
+.\"	of man pages.  The first argument is ignored and used for recording
+.\"	the version when the .VS was added, so that the sidebars can be
+.\"	found and removed when they reach a certain age.  If another argument
+.\"	is present, then a line break is forced before starting the sidebar.
+.\"
+.\" .VE
+.\"	End of vertical sidebar.
+.\"
+.\" .DS
+.\"	Begin an indented unfilled display.
+.\"
+.\" .DE
+.\"	End of indented unfilled display.
+.\"
+.\" .SO ?manpage?
+.\"	Start of list of standard options for a Tk widget. The manpage
+.\"	argument defines where to look up the standard options; if
+.\"	omitted, defaults to "options". The options follow on successive
+.\"	lines, in three columns separated by tabs.
+.\"
+.\" .SE
+.\"	End of list of standard options for a Tk widget.
+.\"
+.\" .OP cmdName dbName dbClass
+.\"	Start of description of a specific option.  cmdName gives the
+.\"	option's name as specified in the class command, dbName gives
+.\"	the option's name in the option database, and dbClass gives
+.\"	the option's class in the option database.
+.\"
+.\" .UL arg1 arg2
+.\"	Print arg1 underlined, then print arg2 normally.
+.\"
+.\" .QW arg1 ?arg2?
+.\"	Print arg1 in quotes, then arg2 normally (for trailing punctuation).
+.\"
+.\" .PQ arg1 ?arg2?
+.\"	Print an open parenthesis, arg1 in quotes, then arg2 normally
+.\"	(for trailing punctuation) and then a closing parenthesis.
+.\"
+.\"	# Set up traps and other miscellaneous stuff for Tcl/Tk man pages.
 .if t .wh -1.3i ^B
 .nr ^l \n(.l
 .ad b
-'\"	# Start an argument description
+.\"	# Start an argument description
 .de AP
 .ie !"\\$4"" .TP \\$4
 .el \{\
@@ -80,7 +87,7 @@
 .\}
 .ta \\n()Au \\n()Bu
 .ie !"\\$3"" \{\
-\&\\$1	\\fI\\$2\\fP	(\\$3)
+\&\\$1 \\fI\\$2\\fP (\\$3)
 .\".b
 .\}
 .el \{\
@@ -93,7 +100,7 @@
 .\}
 .\}
 ..
-'\"	# define tabbing values for .AP
+.\"	# define tabbing values for .AP
 .de AS
 .nr )A 10n
 .if !"\\$1"" .nr )A \\w'\\$1'u+3n
@@ -103,9 +110,9 @@
 .nr )C \\n()Bu+\\w'(in/out)'u+2n
 ..
 .AS Tcl_Interp Tcl_CreateInterp in/out
-'\"	# BS - start boxed text
-'\"	# ^y = starting y location
-'\"	# ^b = 1
+.\"	# BS - start boxed text
+.\"	# ^y = starting y location
+.\"	# ^b = 1
 .de BS
 .br
 .mk ^y
@@ -115,7 +122,7 @@
 .if n \l'\\n(.lu\(ul'
 .if n .fi
 ..
-'\"	# BE - end boxed text (draw box now)
+.\"	# BE - end boxed text (draw box now)
 .de BE
 .nf
 .ti 0
@@ -135,16 +142,16 @@
 .br
 .nr ^b 0
 ..
-'\"	# VS - start vertical sidebar
-'\"	# ^Y = starting y location
-'\"	# ^v = 1 (for troff;  for nroff this doesn't matter)
+.\"	# VS - start vertical sidebar
+.\"	# ^Y = starting y location
+.\"	# ^v = 1 (for troff;  for nroff this doesn't matter)
 .de VS
 .if !"\\$2"" .br
 .mk ^Y
 .ie n 'mc \s12\(br\s0
 .el .nr ^v 1u
 ..
-'\"	# VE - end of vertical sidebar
+.\"	# VE - end of vertical sidebar
 .de VE
 .ie n 'mc
 .el \{\
@@ -159,9 +166,9 @@
 .\}
 .nr ^v 0
 ..
-'\"	# Special macro to handle page bottom:  finish off current
-'\"	# box/sidebar if in box/sidebar mode, then invoked standard
-'\"	# page bottom macro.
+.\"	# Special macro to handle page bottom:  finish off current
+.\"	# box/sidebar if in box/sidebar mode, then invoked standard
+.\"	# page bottom macro.
 .de ^B
 .ev 2
 'ti 0
@@ -188,34 +195,36 @@
 .mk ^Y
 .\}
 ..
-'\"	# DS - begin display
+.\"	# DS - begin display
 .de DS
 .RS
 .nf
 .sp
 ..
-'\"	# DE - end display
+.\"	# DE - end display
 .de DE
 .fi
 .RE
 .sp
 ..
-'\"	# SO - start of list of standard options
+.\"	# SO - start of list of standard options
 .de SO
+'ie '\\$1'' .ds So \\fBoptions\\fR
+'el .ds So \\fB\\$1\\fR
 .SH "STANDARD OPTIONS"
 .LP
 .nf
-.ta 4c 8c 12c
+.ta 5.5c 11c
 .ft B
 ..
-'\"	# SE - end of list of standard options
+.\"	# SE - end of list of standard options
 .de SE
 .fi
 .ft R
 .LP
-See the \\fBoptions\\fR manual entry for details on the standard options.
+See the \\*(So manual entry for details on the standard options.
 ..
-'\"	# OP - start of full description for a single option
+.\"	# OP - start of full description for a single option
 .de OP
 .LP
 .nf
@@ -226,21 +235,43 @@ Database Class:	\\fB\\$3\\fR
 .fi
 .IP
 ..
-'\"	# CS - begin code excerpt
+.\"	# CS - begin code excerpt
 .de CS
 .RS
 .nf
 .ta .25i .5i .75i 1i
 ..
-'\"	# CE - end code excerpt
+.\"	# CE - end code excerpt
 .de CE
 .fi
 .RE
 ..
+.\"	# UL - underline word
 .de UL
 \\$1\l'|0\(ul'\\$2
 ..
-.TH "critcl_use" n 3\&.1\&.8 doc "C Runtime In Tcl (CriTcl)"
+.\"	# QW - apply quotation marks to word
+.de QW
+.ie '\\*(lq'"' ``\\$1''\\$2
+.\"" fix emacs highlighting
+.el \\*(lq\\$1\\*(rq\\$2
+..
+.\"	# PQ - apply parens and quotation marks to word
+.de PQ
+.ie '\\*(lq'"' (``\\$1''\\$2)\\$3
+.\"" fix emacs highlighting
+.el (\\*(lq\\$1\\*(rq\\$2)\\$3
+..
+.\"	# QR - quoted range
+.de QR
+.ie '\\*(lq'"' ``\\$1''\\-``\\$2''\\$3
+.\"" fix emacs highlighting
+.el \\*(lq\\$1\\*(rq\\-\\*(lq\\$2\\*(rq\\$3
+..
+.\"	# MT - "empty" string
+.de MT
+.QW ""
+..
 .BS
 .SH NAME
 critcl_use \- Using Critcl
@@ -306,11 +337,9 @@ slow\&. Converting this to C we get:
 .CS
 
 
-    package require critcl
-
     critcl::cproc math {double x double y double z} double {
         double up   = rand () * sin (x);
-	double down = pow(y, log (z);
+        double down = pow(y, log (z));
         return up/down;
     }
 
@@ -328,56 +357,341 @@ We now also have to declare the type of the result, here
 The reference manpage lists all the legal C types supported as
 arguments and results\&.
 .PP
+.SS "CUSTOM TYPES, INTRODUCTION"
+When writing bindings to external libraries \fBcritcl::cproc\fR is
+usually the most convenient way of writing the lower layers\&. This is
+however hampered by the fact that critcl on its own only supports a
+few standard (arguably the most import) standard types, whereas the
+functions we wish to bind most certainly will use much more, specific
+to the library's function\&.
+.PP
+The critcl commands \fBargtype\fR, \fBresulttype\fR and their
+adjuncts are provided to help here, by allowing a developer to extend
+critcl's type system with custom conversions\&.
+.PP
+This and the three following sections will demonstrate this,
+from trivial to complex\&.
+.PP
+The most trivial use is to create types which are aliases of
+existing types, standard or other\&. As an alias it simply copies and
+uses the conversion code from the referenced types\&.
+.PP
+Our example is pulled from an incomplete project of mine, a
+binding to \fIJeffrey Kegler\fR's \fIlibmarpa\fR library managing
+Earley parsers\&. Several custom types simply reflect the typedef's done
+by the library, to make the \fBcritcl::cproc\fRs as self-documenting
+as the underlying library functions themselves\&.
+.CS
+
+
+    critcl::argtype Marpa_Symbol_ID     = int
+    critcl::argtype Marpa_Rule_ID       = int
+    critcl::argtype Marpa_Rule_Int      = int
+    critcl::argtype Marpa_Rank          = int
+    critcl::argtype Marpa_Earleme       = int
+    critcl::argtype Marpa_Earley_Set_ID = int
+
+    \&.\&.\&.
+
+    method sym-rank: proc {
+        Marpa_Symbol_ID sym
+        Marpa_Rank      rank
+    } Marpa_Rank {
+        return marpa_g_symbol_rank_set (instance->grammar, sym, rank);
+    }
+
+    \&.\&.\&.
+
+.CE
+.SS "CUSTOM TYPES, SEMI-TRIVIAL"
+A more involved custom argument type would be to map from Tcl strings
+to some internal representation, like an integer code\&.
+.PP
+The first example is taken from the \fBtclyaml\fR package,
+a binding to the \fBlibyaml\fR library\&. In a few places we have to
+map readable names for block styles, scalar styles, etc\&. to the
+internal enumeration\&.
+.CS
+
+
+    critcl::argtype yaml_sequence_style_t {
+        if (!encode_sequence_style (interp, @@, &@A)) return TCL_ERROR;
+    }
+
+    \&.\&.\&.
+
+    critcl::ccode {
+        static const char* ty_block_style_names [] = {
+            "any", "block", "flow", NULL
+        };
+
+        static int
+        encode_sequence_style (Tcl_Interp* interp, Tcl_Obj* style,
+                               yaml_sequence_style_t* estyle)
+        {
+            int value;
+            if (Tcl_GetIndexFromObj (interp, style, ty_block_style_names,
+                                     "sequence style", 0, &value) != TCL_OK) {
+                return 0;
+            }
+            *estyle = value;
+            return 1;
+        }
+    }
+
+    \&.\&.\&.
+
+    method sequence_start proc {
+        pstring anchor
+        pstring tag
+        int implicit
+        yaml_sequence_style_t style
+    } ok {
+        /* Syntax: <instance> seq_start <anchor> <tag> <implicit> <style> */
+        \&.\&.\&.
+    }
+
+    \&.\&.\&.
+
+.CE
+It should be noted that this code precedes the advent of the
+supporting generator package \fBcritcl::emap\fR\&. using the
+generator the definition of the mapping becomes much simpler:
+.CS
+
+
+    critcl::emap::def yaml_sequence_style_t {
+        any   0
+        block 1
+        flow  2
+    }
+
+.CE
+Note that the generator will not only provide the conversions, but
+also define the argument and result types needed for their use by
+\fBcritcl::cproc\fR\&.
+Another example of such a semi-trivial argument type can be found in
+the \fBCRIMP\fR package, which defines a \fBTcl_ObjType\fR for
+\fIimage\fR values\&. This not only provides a basic argument type for
+any image, but also derived types which check that the image has a
+specific format\&. Here we see for the first time non-integer arguments,
+and the need to define the C types used for variables holding the C
+level value, and the type of function parameters (Due to C promotion
+rules we may need different types)\&.
+.CS
+
+
+    critcl::argtype image {
+        if (crimp_get_image_from_obj (interp, @@, &@A) != TCL_OK) {
+            return TCL_ERROR;
+        }
+    } crimp_image* crimp_image*
+
+    \&.\&.\&.
+
+        set map [list <<type>> $type]
+        critcl::argtype image_$type [string map $map {
+            if (crimp_get_image_from_obj (interp, @@, &@A) != TCL_OK) {
+                return TCL_ERROR;
+            }
+            if (@A->itype != crimp_imagetype_find ("crimp::image::<<type>>")) {
+                Tcl_SetObjResult (interp,
+                                  Tcl_NewStringObj ("expected image type <<type>>",
+                                                    -1));
+                return TCL_ERROR;
+            }
+        }] crimp_image* crimp_image*
+
+    \&.\&.\&.
+
+.CE
+.SS "CUSTOM TYPES, SUPPORT STRUCTURES"
+The adjunct command \fBcritcl::argtypesupport\fR is for when the
+conversion needs additional definitions, for example a helper
+structure\&.
+.PP
+An example of this can be found among the standard types of
+critcl itself, the \fBpstring\fR type\&. This type provides the C
+function with not only the string pointer, but also the string length,
+and the \fBTcl_Obj*\fR this data came from\&. As \fBcritcl::cproc\fR's
+calling conventions allow us only one argument for the data of the
+parameter a structure is needed to convey these three pieces of
+information\&.
+.PP
+Thus the argument type is defined as
+.CS
+
+
+    critcl::argtype pstring {
+        @A\&.s = Tcl_GetStringFromObj(@@, &(@A\&.len));
+        @A\&.o = @@;
+    } critcl_pstring critcl_pstring
+
+    critcl::argtypesupport pstring {
+        typedef struct critcl_pstring {
+            Tcl_Obj* o;
+            char*    s;
+            int      len;
+        } critcl_pstring;
+    }
+
+.CE
+.PP
+In the case of such a structure being large we may wish to
+allocate it on the heap instead of having it taking space on the
+stack\&. If we do that we need another adjunct command,
+\fBcritcl::argtyperelease\fR\&. This command specifies the code required
+to release dynamically allocated resources when the worker function
+returns, before the shim returns to the caller in Tcl\&.
+To keep things simple our example is synthetic, a modification of
+\fBpstring\fR above, to demonstrate the technique\&. An actual, but
+more complex example is the code to support the variadic \fIargs\fR
+argument of \fBcritcl::cproc\fR\&.
+.CS
+
+
+    critcl::argtype pstring {
+        @A = (critcl_pstring*) ckalloc(sizeof(critcl_pstring));
+        @A->s = Tcl_GetStringFromObj(@@, &(@A->len));
+        @A->o = @@;
+    } critcl_pstring* critcl_pstring*
+
+    critcl::argtypesupport pstring {
+        typedef struct critcl_pstring {
+            Tcl_Obj* o;
+            char*    s;
+            int      len;
+        } critcl_pstring;
+    }
+
+    critcl::argtyperelease pstring {
+        ckfree ((char*)) @A);
+    }
+
+.CE
+Note, the above example shows only the most simple case of an
+allocated argument, with a conversion that cannot fail (namely, string
+retrieval)\&. If the conversion can fail then either allocation has to
+be defered to happen only on successful conversion, or the conversion
+code has to release the allocated memory itself in the failure path,
+because it will never reach the code defined via
+\fBcritcl::argtyperelease\fR in that case\&.
+.SS "CUSTOM TYPES, RESULTS"
+All of the previous sections dealt with argument conversions,
+i\&.e\&. going from Tcl into C\&.
+Custom result types are for the reverse direction, from C to Tcl\&.
+This is usually easier, as most of the time errors should not be
+possible\&. Supporting structures, or allocating them on the heap are
+not really required and therefore not supported\&.
+.PP
+The example of a result type shown below was pulled from
+\fBKineTcl\fR\&. It is a variant of the builtin result type
+\fBTcl_Obj*\fR, aka \fBobject\fR\&. The builtin conversion assumes
+that the object returned by the function has a refcount of 1 (or
+higher), with the function having held the reference, and releases
+that reference after placing the value into the interp result\&. The
+conversion below on the other hand assumes that the value has a
+refcount of 0 and thus that decrementing it is forbidden, lest it be
+released much to early, and crashing the system\&.
+.CS
+
+
+    critcl::resulttype KTcl_Obj* {
+        if (rv == NULL) { return TCL_ERROR; }
+        Tcl_SetObjResult(interp, rv);
+        /* No refcount adjustment */
+        return TCL_OK;
+    } Tcl_Obj*
+
+.CE
+This type of definition is also found in \fBMarpa\fR and recent
+hacking hacking on \fBCRIMP\fR introduced it there as well\&. Which
+is why this definition became a builtin type starting with version
+3\&.1\&.16, under the names \fBTcl_Obj*0\fR and \fBobject0\fR\&.
+.PP
+Going back to errors and their handling, of course, if a
+function we are wrapping signals them in-band, then the conversion of
+such results has to deal with that\&. This happens for example in
+\fBKineTcl\fR, where we find
+.CS
+
+
+    critcl::resulttype XnStatus {
+        if (rv != XN_STATUS_OK) {
+            Tcl_AppendResult (interp, xnGetStatusString (rv), NULL);
+            return TCL_ERROR;
+        }
+        return TCL_OK;
+    }
+
+    critcl::resulttype XnDepthPixel {
+        if (rv == ((XnDepthPixel) -1)) {
+            Tcl_AppendResult (interp,
+                              "Inheritance error: Not a depth generator",
+                              NULL);
+            return TCL_ERROR;
+        }
+        Tcl_SetObjResult (interp, Tcl_NewIntObj (rv));
+        return TCL_OK;
+    }
+
+.CE
 .SS "HANDLING A VARIABLE NUMBER OF ARGUMENTS"
 In \fBA Simple Procedure\fR we demonstrated how easy a
 translation to C can be\&. Is it still as easy when we introduce
 something moderately complex like handling a variable number of
 arguments ? A feature which is needed to handle commands with options
-and optional arguments ? Unfortunately not\&.
-We can use \fBcritcl::cproc\fR only if the number of arguments is
-known beforehand, i\&.e\&. at the time of declaration\&. This of course also
-means that they do not support default arguments either\&.
+and optional arguments ?
 .PP
-Thus, to handle something like the example below
+Well, starting with version 3\&.1\&.16 \fBcritcl::cproc\fR does
+have full support for optional arguments, \fIargs\fR-style variadics,
+and default values, extending its range to everything covered by the
+builtin \fBproc\fR\&. The only thing not truly supported are options
+(i\&.e\&. flag arguments) of any kind\&.
+.PP
+For the moment, and the example, let us pretend that we can use
+\fBcritcl::cproc\fR only if the number of arguments is fully known
+beforehand, i\&.e\&. at the time of declaration\&.
+Then we have to use \fBcritcl::ccommand\fR to handle the translation
+of the procedure shown below:
 .CS
 
 
     proc math {args} {
         set sum 0
-        foreach y { set sum [expr {$sum + $y}] }
-	return $sum
+        foreach y $args { set sum [expr {$sum + $y}] }
+        return $sum
     }
 
 .CE
-we have to use \fBcritcl::ccommand\fR instead\&.
 .PP
 Its advantage: Access to the low-level C arguments representing
-the Tcl arguments of the command\&.
-That allows things like variable number of arguments, optional
-arguments, options, etc\&.
+the Tcl arguments of the command\&. Full control over argument
+conversion, argument validation, etc\&.
 .PP
 Its disadvantage: Access to the low-level C arguments
-representing the Tcl arguments of the command\&.
-Where \fBcritcl::cproc\fR handles the task of converting from Tcl to C
+representing the Tcl arguments of the command\&. Assuming the burden of
+having to write argument conversion, argument validation, etc\&. Where
+\fBcritcl::cproc\fR handles the task of converting from Tcl to C
 values (for arguments) and back (for the result), with
-\fBcritcl::command\fRs we have to do this on our own\&.
+\fBcritcl::command\fR it is the developer who has to write all this
+code\&.
 .PP
-Here is the translation of the example:
+Under our restriction the translation of the example is:
 .CS
 
-
-    package require critcl
 
     critcl::ccommand math {cd ip oc ov} {
         double sum = 0;
         double y;
 
+        oc --;
         while (oc) {
             if (Tcl_GetDoubleFromObj (ip, ov[oc], &y) != TCL_OK) {
-	        return TCL_ERROR;
+                return TCL_ERROR;
             }
             sum += y;
-	    oc --;
+            oc --;
         }
 
         Tcl_SetObjResult (ip, Tcl_NewDoubleObj (sum));
@@ -418,6 +732,26 @@ objc
 objv
 .RE
 .PP
+.PP
+Now, letting go of our pretenses regarding the limitations of
+\fBcritcl::cproc\fR, due to the support it does have for
+\fIargs\fR-style variadics (since version 3\&.1\&.16) we can write a much
+simpler translation:
+.CS
+
+
+    critcl::cproc math {double args} double {
+        double sum = 0;
+
+        args\&.c --;
+        while (args\&.c) {
+            sum += args\&.v[args\&.c];
+            args\&.c --;
+        }
+        return sum;
+    }
+
+.CE
 .SS "DATA AS A TCL COMMAND"
 Here we assume that we have a Tcl procedure which returns a fixed
 string\&. In the final product we are going to C to hide this string
@@ -482,6 +816,34 @@ As our example now an excerpt taken from real code, the top of the
 We see here the beginning of the C code defining a custom
 \fITcl_ObjType\fR holding the data of a SHA1 context used during the
 incremental calculation of sha1 hashes\&.
+.SS "CONSTANT VALUES"
+While one might believe that there is no need for commands which
+returns constant values that is not true\&. Commands reporting on
+compile-time configuration, like version numbers, available features,
+etc\&. are at least one use case for such commands\&.
+.PP
+The reason for creating critcl commands to support them ?
+Convenience to the user, yes, but further than that, the ability to
+optimize the internals, i\&.e\&. the generated code\&.
+.PP
+A \fBcproc\fR would be easy to write, but incurs overhead due
+to a superfluous work function\&. A \fBccommand\fR has no overhead,
+except that of the user having to write the argument checking and
+result conversion\&.
+.PP
+Using \fBcritcl::cconst\fR is both convenient and without code
+overhead\&.
+Our example is a function found in package \fBtcl-linenoise\fR,
+that is, if \fBcconst\fR had existed at the time of writing\&. It
+returns a configuration value reporting to the policy layer if an
+extended mode for hidden input is available from the bound
+\fBlinenoise\fR, or not\&.
+.CS
+
+
+    critcl::cconst linenoise::hidden_extended boolean 1
+
+.CE
 .SS "LIFTING CONSTANTS"
 When writing a critcl-based package to make a third-party library
 available to scripts we do not only have to make the relevant
@@ -902,7 +1264,7 @@ implementations of Tcllib's \fBstruct::queue\fR package:
     }
 
     ## Initialization: Choose an implementation,
-    ## most prefered first\&. Loads only one of the
+    ## most preferred first\&. Loads only one of the
     ## possible implementations\&. And activates it\&.
 
     namespace eval ::struct::queue {
@@ -1146,7 +1508,7 @@ learning Tk's C API and how to use it to make a widget work\&. Sorry\&.
 library\&. The headers for this library may be found in non-standard
 locations, ditto for the library/ies itself\&. We may not have the
 headers and/or library on the build host\&. Types with
-platform-dependent sizes and definitions\&. Endianess issues\&. Any number
+platform-dependent sizes and definitions\&. Endianness issues\&. Any number
 of things\&.
 .PP
 TEA-based packages can use \fBautoconf\fR and various
@@ -1539,6 +1901,6 @@ Glueing/Embedded C code
 .nf
 Copyright (c) Jean-Claude Wippler
 Copyright (c) Steve Landers
-Copyright (c) 2011-2013 Andreas Kupries
+Copyright (c) 2011-2015 Andreas Kupries
 
 .fi

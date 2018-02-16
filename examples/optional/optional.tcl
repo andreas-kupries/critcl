@@ -25,14 +25,30 @@ critcl::description {
 }
 
 critcl::subject demonstration {cproc optional arguments}
+#critcl::config lines 0
 
 # # ## ### ##### ######## ############# #####################
 ## C code.
 
-critcl::cproc fixed           {int a int b int c int d} void {}
-critcl::cproc optional_head   {int {a 1} int {b 2} int c int d} void {}
-critcl::cproc optional_tail   {int a int b int {c 1} int {d 2}} void {}
-critcl::cproc optional_middle {int a int {b 1} int {c 2} int d} void {}
+critcl::cproc fixed {int a int b int c int d} void {
+    printf ("F|%d|%d|%d|%d|\n", a,b,c,d);
+    fflush(stdout);
+}
+
+critcl::cproc optional_head {int {a 1} int {b 2} int c int d} void {
+    printf ("H|%d|%d|%d|%d|\n", a,b,c,d);
+    fflush(stdout);
+}
+
+critcl::cproc optional_tail {int a int b int {c 1} int {d 2}} void {
+    printf ("T|%d|%d|%d|%d|\n", a,b,c,d);
+    fflush(stdout);
+}
+
+critcl::cproc optional_middle {int a int {b 1} int {c 2} int d} void {
+    printf ("M|%d|%d|%d|%d|\n", a,b,c,d);
+    fflush(stdout);
+}
 
 # ### ### ### ######### ######### #########
 ## Ready

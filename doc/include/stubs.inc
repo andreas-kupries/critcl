@@ -34,7 +34,7 @@ generated and must contain (in the order specified):
 
 [enum] the declaration of structure "FooStubs" for the stub table,
 
-[enum] the C preprocessor macros which route the invokations of the
+[enum] the C preprocessor macros which route the invocations of the
 	public functions through the stubs table.
 [para] These macros must be defined if, and only if, the C preprocessor
 	macro USE_FOO_STUBS is defined. Package [package foo] does not

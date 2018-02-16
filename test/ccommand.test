@@ -1,101 +1,17 @@
-# -*- tcl -*-
+# critcl::ccommand -- Regular tests
 # -------------------------------------------------------------------------
-# critcl_ccommand.test
-# -------------------------------------------------------------------------
+# Setup
 
-source [file join \
-            [file dirname [file join [pwd] [info script]]] \
-            testutilities.tcl]
+source [file join [file dirname [info script]] support testutilities.tcl]
 
 testsNeedTcl     8.4
 testsNeedTcltest 2
 
-support {
-    useLocal lib/util84/lassign.tcl  lassign84
-    useLocal lib/util84/dict.tcl     dict84
-
-    useLocal lib/stubs/container.tcl stubs::container
-    useLocal lib/stubs/reader.tcl    stubs::reader
-    useLocal lib/stubs/genframe.tcl  stubs::gen
-}
-testing {
-    useLocal lib/critcl/critcl.tcl critcl
-}
-
-# -------------------------------------------------------------------------
-## ccommand syntax
-
-test critcl-ccommand-1.0 {ccommand, wrong\#args} -setup {
-} -body {
-    critcl::ccommand
-} -cleanup {
-} -returnCodes error -result {wrong # args: should be "critcl::ccommand name anames ..."}
-
-# -------------------------------------------------------------------------
-## Go through the various knobs we can use to configure the definition and output
-
-proc get {args} {
-    set t [string trim [critcl::collect $args]]
-    #regsub -all -- {#line \d+ } $t {#line XX } t
-    return $t
-}
-
-test critcl-ccommand-2.0 {basic ccommand} -body {
-    get critcl::ccommand command {} {
-        return TCL_OK;
-    }
-} -result {/* ---------------------------------------------------------------------- */
-
-#define ns__command0 "::command"
-static int tcl__command0(ClientData clientdata, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[])
-{
-return TCL_OK;
-}}
+useLocalFile test/support/crit_utils.tcl
 
 # -------------------------------------------------------------------------
 
-test critcl-ccommand-2.1 {basic ccommand, custom arguments} -body {
-    get critcl::ccommand command {CD IP OC OV} {
-        return TCL_OK;
-    }
-} -result {/* ---------------------------------------------------------------------- */
-
-#define ns__command0 "::command"
-static int tcl__command0(ClientData CD, Tcl_Interp *IP, int OC, Tcl_Obj *CONST OV[])
-{
-return TCL_OK;
-}}
-
-# -------------------------------------------------------------------------
-
-test critcl-ccommand-2.2 {basic ccommand, custom C name} -body {
-    get critcl::ccommand snafu {} {
-        return TCL_OK;
-    } -cname 1
-} -result {/* ---------------------------------------------------------------------- */
-
-static int snafu(ClientData clientdata, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[])
-{
-return TCL_OK;
-}}
-
-# -------------------------------------------------------------------------
-
-test critcl-ccommand-2.2 {basic ccommand, namespaced, and Tcl vs C} -body {
-    get critcl::ccommand the::command+max {} {
-        return TCL_OK;
-    }
-} -result {/* ---------------------------------------------------------------------- */
-
-#define ns__the_command_max0 "::the::command+max"
-static int tcl__the_command_max0(ClientData clientdata, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[])
-{
-return TCL_OK;
-}}
-
-# -------------------------------------------------------------------------
-
-testsuiteCleanup
+do ccommand
 
 # Local variables:
 # mode: tcl

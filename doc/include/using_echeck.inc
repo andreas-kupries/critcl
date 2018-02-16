@@ -4,7 +4,7 @@
 library. The headers for this library may be found in non-standard
 locations, ditto for the library/ies itself. We may not have the
 headers and/or library on the build host. Types with
-platform-dependent sizes and definitions. Endianess issues. Any number
+platform-dependent sizes and definitions. Endianness issues. Any number
 of things.
 
 [para] TEA-based packages can use [syscmd autoconf] and various

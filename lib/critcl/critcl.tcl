@@ -3,10 +3,17 @@
 # Pragmas for MetaData Scanner.
 # @mdgen OWNER: Config
 # @mdgen OWNER: critcl_c
+#
+# Copyright (c) 2001-20?? Jean-Claude Wippler
+# Copyright (c) 2002-20?? Steve Landers
+# Copyright (c) 20??-2017 Andreas Kupries <andreas_kupries@users.sourceforge.net>
 
+# # ## ### ##### ######## ############# #####################
 # CriTcl Core.
 
-package provide critcl 3.1.8
+package provide critcl 3.1.17
+
+namespace eval ::critcl {}
 
 # # ## ### ##### ######## ############# #####################
 ## Requirements.
@@ -15,61 +22,41 @@ package require Tcl 8.4 ; # Minimal supported Tcl runtime.
 if {[catch {
     package require platform 1.0.2 ; # Determine current platform.
 }]} {
-    # Fall back to our internal copy (currently at platform 1.0.11
-    # equivalent) if the environment does not have the official
+    # Fall back to our internal copy (currently equivalent to platform
+    # 1.0.14(+)) if the environment does not have the official
     # package.
+    package require critcl::platform
+} elseif {
+    [string match freebsd* [platform::generic]] &&
+    ([platform::generic] eq [platform::identify])
+} {
+    # Again fall back to the internal package if we are on FreeBSD and
+    # the official package does not properly identify the OS ABI
+    # version.
     package require critcl::platform
 }
 
+# # ## ### ##### ######## ############# #####################
 # Ensure forward compatibility of commands defined in 8.5+.
 package require lassign84
 package require dict84
+package require lmap84
+
+# # ## ### ##### ######## ############# #####################
+## Ensure that we have maximal 'info frame' data, if supported
 
 catch { interp debug {} -frame 1 }
 
-# md5 could be a cmd or a pkg, or be in a separate namespace
-if {[catch { md5 "" }]} {
-    # Do *not* use "package require md5c" since critcl is not loaded
-    # yet, but do look for a compiled one, in case object code already
-    # exists.
+# # ## ### ##### ######## ############# #####################
+# This is the md5 package bundled with critcl.
+# No need to look for fallbacks.
 
-    if {![catch { md5c "" }]} {
-	interp alias {} md5 {} md5c
-    } elseif {[catch {package require Trf 2.0}] || [catch {::md5 -- test}]} {
-	# Else try to load the Tcl version in tcllib
-	catch { package require md5 }
-	if {![catch { md5::md5 "" }]} {
-	    interp alias {} md5 {} md5::md5
-	} else {
-	    # Last resort: package require or source Don Libes'
-	    # md5pure script
-
-	    if {[catch { package require md5pure }]} {
-		if {[file exists md5pure.tcl]} {
-		    source md5pure.tcl
-		    interp alias {} md5 {} md5pure::md5
-		} else {
-		    # XXX: Note the assumption here, that the md5
-		    # XXX: package is found relative to critcl itself,
-		    # XXX: in the critcl starkit.
-
-		    source [file join [file dirname [info script]] ../md5/md5.tcl]
-		    interp alias {} md5 {} md5::md5
-		}
-	    } else {
-		interp alias {} md5 {} md5pure::md5
-	    }
-	}
+proc ::critcl::md5_hex {s} {
+    if {$v::uuidcounter} {
+	return [format %032d [incr v::uuidcounter]]
     }
-}
-
-namespace eval ::critcl {}
-
-# ouch, some md5 implementations return hex, others binary
-if {[string length [md5 ""]] == 32} {
-    proc ::critcl::md5_hex {s} { return [md5 $s] }
-} else {
-    proc ::critcl::md5_hex {s} { binary scan [md5 $s] H* md; return $md }
+    package require critcl_md5c
+    binary scan [md5c $s] H* md; return $md
 }
 
 # # ## ### ##### ######## ############# #####################
@@ -94,7 +81,7 @@ if {[package vsatisfies [package present Tcl] 8.5]} {
 }
 
 # # ## ### ##### ######## ############# #####################
-## 
+##
 
 proc ::critcl::buildrequirement {script} {
     # In regular code this does nothing. It is a marker for
@@ -165,12 +152,17 @@ proc ::critcl::Lines {text} {
 
 proc ::critcl::ccode {text} {
     set file [SkipIgnored [This]]
-    AbortWhenCalledAfterBuild
+    HandleDeclAfterBuild
+    CCodeCore $file $text
+    return
+}
+
+proc ::critcl::CCodeCore {file text} {
     set digest [UUID.extend $file .ccode $text]
 
     set block {}
     lassign [HeaderLines $text] leadoffset text
-    append block [at::CPragma $leadoffset -2 $file] $text \n
+    append block [at::CPragma $leadoffset -3 $file] $text \n
 
     dict update v::code($file) config c {
 	dict lappend c fragments $digest
@@ -182,7 +174,10 @@ proc ::critcl::ccode {text} {
 
 proc ::critcl::ccommand {name anames args} {
     SkipIgnored [set file [This]]
-    AbortWhenCalledAfterBuild
+    HandleDeclAfterBuild
+
+    # Basic key for the clientdata and delproc arrays.
+    set cname $name[UUID.serial $file]
 
     if {[llength $args]} {
 	set body [lindex $args 0]
@@ -191,31 +186,44 @@ proc ::critcl::ccommand {name anames args} {
 	set body {}
     }
 
-    set clientdata NULL
-    set delproc    0
+    set clientdata NULL ;# Default: ClientData expression
+    set delproc    NULL ;# Default: Function pointer expression
     set acname     0
+    set tname      ""
     while {[string match "-*" $args]} {
         switch -- [set opt [lindex $args 0]] {
 	    -clientdata { set clientdata [lindex $args 1] }
 	    -delproc    { set delproc    [lindex $args 1] }
 	    -cname      { set acname     [lindex $args 1] }
+	    -tracename  { set tname      [lindex $args 1] }
 	    default {
-		error "Unknown option $opt, expected one of -clientdata, -cname, or -delproc"
+		error "Unknown option $opt, expected one of -clientdata, -cname, -delproc"
 	    }
         }
         set args [lrange $args 2 end]
     }
 
+    # Put body back into args for integration into the MD5 uuid
+    # generated for mode compile&run. Bug and fix reported by Peter
+    # Spjuth.
+    lappend args $body
+
     if {$acname} {
 	BeginCommand static $name $anames $args
-	set ns  {}
-	set cns {}
-	set key $name
+	set ns    {}
+	set cns   {}
+	set key   $cname
 	set wname $name
+	if {$tname ne {}} {
+	    set traceref \"$tname\"
+	} else {
+	    set traceref \"$name\"
+	}
     } else {
 	lassign [BeginCommand public $name $anames $args] ns cns name cname
-	set key [string map {:: _} $ns$name]
+	set key   [string map {:: _} $ns$cname]
 	set wname tcl_$cns$cname
+	set traceref   ns_$cns$cname
     }
 
     # XXX clientdata/delproc, either note clashes, or keep information per-file.
@@ -234,7 +242,14 @@ proc ::critcl::ccommand {name anames args} {
 
 	set ca "(ClientData $cd, Tcl_Interp *$ip, int $oc, Tcl_Obj *CONST $ov\[])"
 
-	Emitln "static int $wname$ca"
+	if {$v::options(trace)} {
+	    # For ccommand tracing we will emit a shim after the implementation.
+	    # Give the implementation a different name.
+	    Emitln "static int\n${wname}_actual$ca"
+	} else {
+	    Emitln "static int\n$wname$ca"
+	}
+
 	Emit   \{\n
 	lassign [HeaderLines $body] leadoffset body
 	if {$v::options(lines)} {
@@ -242,6 +257,19 @@ proc ::critcl::ccommand {name anames args} {
 	}
 	Emit   $body
 	Emitln \n\}
+
+	# Now emit the call to the ccommand tracing shim. It simply
+	# calls the regular implementation and places the tracing
+	# around that.
+	if {$v::options(trace)} {
+	    Emitln "\nstatic int\n$wname$ca"
+	    Emitln \{
+	    Emitln "  int _rv;"
+	    Emitln "  critcl_trace_cmd_args ($traceref, $oc, $ov);"
+	    Emitln "  _rv = ${wname}_actual ($cd, $ip, $oc, $ov);"
+	    Emitln "  return critcl_trace_cmd_result (_rv, $ip);"
+	    Emitln \}
+	}
     } else {
 	# if no body is specified, then $anames is alias for the real cmd proc
 	Emitln "#define $wname $anames"
@@ -253,7 +281,7 @@ proc ::critcl::ccommand {name anames args} {
 
 proc ::critcl::cdata {name data} {
     SkipIgnored [This]
-    AbortWhenCalledAfterBuild
+    HandleDeclAfterBuild
     binary scan $data c* bytes ;# split as bytes, not (unicode) chars
 
     set inittext ""
@@ -280,7 +308,7 @@ proc ::critcl::cdata {name data} {
 
 proc ::critcl::cdefines {defines {namespace "::"}} {
     set file [SkipIgnored [This]]
-    AbortWhenCalledAfterBuild
+    HandleDeclAfterBuild
     set digest [UUID.extend $file .cdefines [list $defines $namespace]]
 
     dict update v::code($file) config c {
@@ -289,6 +317,391 @@ proc ::critcl::cdefines {defines {namespace "::"}} {
 	}
     }
     return
+}
+
+proc ::critcl::MakeVariadicTypeFor {type} {
+    # Note: The type "Tcl_Obj*" required special treatment and is
+    # directly defined as a builtin, see 'Initialize'. The has-argtype
+    # check below will prevent us from trying to create something
+    # generic, and wrong.
+
+    set ltype variadic_$type
+    if {![has-argtype $ltype]} {
+	# Generate a type representing a list/array of <type>
+	# elements, plus conversion code. Similar to the 'list' type,
+	# except for custom C types, and conversion assumes variadic,
+	# not single argument.
+
+	lappend one @@  src
+	lappend one &@A dst
+	lappend one @A  *dst
+	lappend one @A. dst->
+	lappend map @1conv@ [Deline [string map $one [ArgumentConversion $type]]]
+
+	lappend map @type@  [ArgumentCType $type]
+	lappend map @ltype@ $ltype
+
+	argtype $ltype [string map $map {
+	    int src, dst, leftovers = @C;
+	    @A.c = leftovers;
+	    @A.v = (@type@*) ((!leftovers) ? 0 : ckalloc (leftovers * sizeof (@type@)));
+	    for (src = @I, dst = 0; leftovers > 0; dst++, src++, leftovers--) {
+	       if (_critcl_variadic_@type@_item (interp, ov[src], &(@A.v[dst])) != TCL_OK) {
+		   ckfree ((char*) @A.v); /* Cleanup partial work */
+		   return TCL_ERROR;
+	       }
+	    }
+	}] critcl_$ltype critcl_$ltype
+
+	argtypesupport $ltype [string map $map {
+	    /* NOTE: Array 'v' is allocated on the heap. The argument
+	    // release code is used to free it after the worker
+	    // function returned. Depending on type and what is done
+	    // by the worker it may have to make copies of the data.
+	    */
+
+	    typedef struct critcl_@ltype@ {
+		int     c; /* Element count */
+		@type@* v; /* Allocated array of the elements */
+	    } critcl_@ltype@;
+
+	    static int
+	    _critcl_variadic_@type@_item (Tcl_Interp* interp, Tcl_Obj* src, @type@* dst) {
+		@1conv@
+		return TCL_OK;
+	    }
+	}]
+
+	argtyperelease $ltype [string map $map {
+	    if (@A.c) { ckfree ((char*) @A.v); }
+	}]
+    }
+    return $ltype
+}
+
+proc ::critcl::ArgsInprocess {adefs skip} {
+    # Convert the regular arg spec from the API into a dictionary
+    # containing all the derived data we need in the various places of
+    # the cproc implementation.
+
+    set db {}
+
+    set names    {} ; # list of raw argument names
+    set cnames   {} ; # list of C var names for the arguments.
+    set optional {} ; # list of flags signaling optional args.
+    set variadic {} ; # list of flags signaling variadic args.
+    set islast   {} ; # list of flags signaling the last arg.
+    set varargs  no ; # flag signaling 'args' collector.
+    set defaults {} ; # list of default values.
+    set csig     {} ; # C signature of worker function.
+    set tsig     {} ; # Tcl signature for frontend/shim command.
+    set vardecls {} ; # C variables for arg conversion in the shim.
+    set support  {} ; # Conversion support code for arguments.
+    set has      {} ; # Types for which we have emitted the support
+                      # code already. (dict: type -> '.' (presence))
+    set hasopt   no ; # Overall flag - Have optionals ...
+    set min      0  ; # Count required args - minimal needed.
+    set max      0  ; # Count all args      - maximal allowed.
+    set aconv    {} ; # list of the basic argument conversions.
+    set achdr    {} ; # list of arg conversion annotations.
+    set arel     {} ; # List of arg release code fragments, for those which have them.
+
+    # A 1st argument matching "Tcl_Interp*" does not count as a user
+    # visible command argument. But appears in both signature and
+    # actual list of arguments.
+    if {[lindex $adefs 0] eq "Tcl_Interp*"} {
+	lappend csig   [lrange $adefs 0 1]
+	lappend cnames interp;#Fixed name for cproc[lindex $adefs 1]
+	set adefs [lrange $adefs 2 end]
+    }
+
+    set last [expr {[llength $adefs]/2-1}]
+    set current 0
+
+    foreach {t a} $adefs {
+	# t = type
+	# a = name | {name default}
+
+	# Base type support
+	if {![dict exists $has $t]} {
+	    dict set has $t .
+	    lappend support "[ArgumentSupport $t]"
+	}
+
+	lassign $a name defaultvalue
+	set hasdefault [expr {[llength $a] == 2}]
+
+	lappend islast [expr {$current == $last}]
+
+	# Cases to consider:
+	# 1. 'args' as the last argument, without a default.
+	# 2. Any argument with a default value.
+	# 3. Any argument.
+
+	if {($current == $last) && ($name eq "args") && !$hasdefault} {
+	    set hdr  "  /* ($t $name, ...) - - -- --- ----- -------- */"
+	    lappend optional 0
+	    lappend variadic 1
+	    lappend defaults n/a
+	    lappend tsig ?${name}...?
+	    set varargs yes
+	    set max     Inf ; # No limit on the number of args.
+
+	    # Dynamically create an arg-type for "variadic list of T".
+	    set t [MakeVariadicTypeFor $t]
+	    # List support.
+	    if {![dict exists $has $t]} {
+		dict set has $t .
+		lappend support "[ArgumentSupport $t]"
+	    }
+
+	} elseif {$hasdefault} {
+	    incr max
+	    set hasopt yes
+	    set hdr  "  /* ($t $name, optional, default $defaultvalue) - - -- --- ----- -------- */"
+	    lappend tsig ?${name}?
+	    lappend optional 1
+	    lappend variadic 0
+	    lappend defaults $defaultvalue
+	    lappend cnames   _has_$name
+	    # Argument to signal if the optional argument was set
+	    # (true) or is the default (false).
+	    lappend csig     "int has_$name"
+	    lappend vardecls "int _has_$name = 0;"
+
+	} else {
+	    set hdr  "  /* ($t $name) - - -- --- ----- -------- */"
+	    lappend tsig $name
+	    incr max
+	    incr min
+	    lappend optional 0
+	    lappend variadic 0
+	    lappend defaults n/a
+	}
+
+        lappend achdr    $hdr
+	lappend csig     "[ArgumentCTypeB $t] $name"
+	lappend vardecls "[ArgumentCType  $t] _$name;"
+
+	lappend names  $name
+	lappend cnames _$name
+	lappend aconv  [TraceReturns "\"$t\" argument" [ArgumentConversion $t]]
+
+        set rel [ArgumentRelease $t]
+        if {$rel ne {}} {
+	    set rel [string map [list @A _$name] $rel]
+	    set hdr [string map {( {(Release: }} $hdr]
+	    lappend arel "$hdr$rel"
+	}
+
+	incr current
+    }
+
+    set thresholds {}
+    if {$hasopt} {
+	# Compute thresholds for optional arguments. The threshold T
+	# of an optional argument A is the number of required
+	# arguments _after_ A. If during arg processing more than T
+	# arguments are left then A can take the current word,
+	# otherwise A is left to its default. We compute them from the
+	# end.
+	set t 0
+	foreach o [lreverse $optional] {
+	    if {$o} {
+		lappend thresholds $t
+	    } else {
+		lappend thresholds -
+		incr t
+	    }
+	}
+	set thresholds [lreverse $thresholds]
+    }
+
+    set tsig [join $tsig { }]
+    if {$tsig eq {}} {
+	set tsig NULL
+    } else {
+	set tsig \"$tsig\"
+    }
+
+    # Generate code for wrong#args checking, based on the collected
+    # min/max information. Cases to consider:
+    #
+    # a. max == Inf && min == 0   <=> All argc allowed.
+    # b. max == Inf && min  > 0   <=> Fail argc < min.
+    # c. max  < Inf && min == max <=> Fail argc != min.
+    # d. max  < Inf && min  < max <=> Fail argc < min || max < argc
+
+    if {$max == Inf} {
+	# a, b
+	if {!$min} {
+	    # a: nothing to check.
+	    set wacondition {}
+	} else {
+	    # b: argc < min
+	    set wacondition {oc < MIN_ARGS}
+	}
+    } else {
+	# c, d
+	if {$min == $max} {
+	    # c: argc != min
+	    set wacondition {oc != MIN_ARGS}
+	} else {
+	    # d: argc < min || max < argc
+	    set wacondition {(oc < MIN_ARGS) || (MAX_ARGS < oc)}
+	}
+    }
+
+    # Generate conversion code for arguments. Use the threshold
+    # information to handle optional arguments at all positions.
+    # The code is executed after the wrong#args check.
+    # That means we have at least 'min' arguments, enough to fill
+    # all the required parameters.
+
+    set map {}
+    set conv   {}
+    set opt    no
+    set idx    $skip
+    set    prefix   "  idx_  = $idx;" ; # Start at skip offset!
+    append prefix "\n  argc_ = oc - $idx;"
+    foreach \
+	name $names \
+	t $thresholds \
+	o $optional \
+	v $variadic \
+	l $islast   \
+	h $achdr \
+	c $aconv \
+	d $defaults {
+
+	# Things to consider:
+	# 1. Required variables at the beginning.
+	#    We can access these using fixed indices.
+	# 2. Any other variable require access using a dynamic index
+	#    (idx_). During (1) we maintain the code initializing
+	#    this.
+
+	set useindex [expr {!$l}] ;# last arg => no need for idx/argc updates
+
+	if {$v} {
+	    # Variadic argument. Can only be last.
+	    # opt  => dynamic access at idx_..., collect argc_
+	    # !opt => static access at $idx ..., collect oc-$idx
+
+	    unset   map
+	    lappend map @A _$name
+	    if {$opt} {
+		lappend map @I idx_ @C argc_
+	    } else {
+		lappend map @I $idx @C (oc-$idx)
+	    }
+
+	    set c   [string map $map $c]
+
+	    lappend conv $h
+	    lappend conv $c
+	    lappend conv {}
+	    lappend conv {}
+	    break
+	}
+
+	if {$o} {
+	    # Optional argument. Anywhere. Check threshold.
+
+	    unset   map
+	    lappend map @@ "ov\[idx_\]"
+	    lappend map @A _$name
+
+	    set c   [string map $map $c]
+
+	    if {$prefix ne {}} { lappend conv $prefix\n }
+	    lappend conv $h
+	    lappend conv "  if (argc_ > $t) \{"
+	    lappend conv $c
+	    if {$useindex} {
+		lappend conv "    idx_++;"
+		lappend conv "    argc_--;"
+	    }
+	    lappend conv "    _has_$name = 1;"
+	    lappend conv "  \} else \{"
+	    lappend conv "    _$name = $d;"
+	    lappend conv "  \}"
+	    lappend conv {}
+	    lappend conv {}
+
+	    set prefix {}
+	    set opt    yes
+	    continue
+	}
+
+	if {$opt} {
+	    # Required argument, after one or more optional arguments
+	    # were processed. Access to current word is dynamic.
+
+	    unset   map
+	    lappend map @@ "ov\[idx_\]"
+	    lappend map @A _$name
+
+	    set c   [string map $map $c]
+
+	    lappend conv $h
+	    lappend conv $c
+	    lappend conv {}
+	    if {$useindex} {
+		lappend conv "  idx_++;"
+		lappend conv "  argc_--;"
+	    }
+	    lappend conv {}
+	    lappend conv {}
+	    continue
+	}
+
+	# Required argument. No optionals processed yet. Access to
+	# current word is via static index.
+
+        unset   map
+	lappend map @@ "ov\[$idx\]"
+        lappend map @A _$name
+
+	set c   [string map $map $c]
+
+	lappend conv $h
+	lappend conv $c
+	lappend conv {}
+	lappend conv {}
+
+	incr idx
+	set    prefix   "  idx_  = $idx;"
+	append prefix "\n  argc_ = oc - $idx;"
+    }
+    set conv [Deline [join $conv \n]]
+
+    # Save results ...
+
+    dict set db skip        $skip
+    dict set db aconv       $conv
+    dict set db arelease    $arel
+    dict set db thresholds  $thresholds
+    dict set db wacondition $wacondition
+    dict set db min         $min
+    dict set db max         $max
+    dict set db tsignature  $tsig
+    dict set db names       $names
+    dict set db cnames      $cnames
+    dict set db optional    $optional
+    dict set db variadic    $variadic
+    dict set db islast      $islast
+    dict set db defaults    $defaults
+    dict set db varargs     $varargs
+    dict set db csignature  $csig
+    dict set db vardecls    $vardecls
+    dict set db support     $support
+    dict set db hasoptional $hasopt
+
+    #puts ___________________________________________________________|$adefs
+    #array set __ $db ; parray __
+    #puts _______________________________________________________________\n
+    return $db
 }
 
 proc ::critcl::argoptional {adefs} {
@@ -359,6 +772,7 @@ proc ::critcl::argcnames {adefs {interp ip}} {
     foreach {t a} $adefs {
 	if {[llength $a] == 2} {
 	    set a [lindex $a 0]
+	    lappend cnames _has_$a
 	}
 	lappend cnames _$a
     }
@@ -382,6 +796,9 @@ proc ::critcl::argcsignature {adefs} {
     foreach {t a} $adefs {
 	if {[llength $a] == 2} {
 	    set a [lindex $a 0]
+	    # Argument to signal if the optional argument was set
+	    # (true) or is the default (false).
+	    lappend cargs "int has_$a"
 	}
 	lappend cargs  "[ArgumentCTypeB $t] $a"
     }
@@ -402,8 +819,10 @@ proc ::critcl::argvardecls {adefs} {
     foreach {t a} $adefs {
 	if {[llength $a] == 2} {
 	    set a [lindex $a 0]
+	    lappend result "[ArgumentCType $t] _$a;\n  int _has_$a = 0;"
+	} else {
+	    lappend result "[ArgumentCType $t] _$a;"
 	}
-	lappend result "[ArgumentCType $t] _$a;"
     }
 
     return $result
@@ -457,7 +876,7 @@ proc ::critcl::argconversion {adefs {n 1}} {
 	    set map [list @@ "ov\[idx_\]" @A _$a]
 	    set code [string map $map [ArgumentConversion $t]]
 
-	    set code "${prefix}  if (oc > $min) \{\n$code\n    idx_++;\n  \} else \{\n    _$a = $default;\n  \}"
+	    set code "${prefix}  if (oc > $min) \{\n$code\n    idx_++;\n    _has_$a = 1;\n  \} else \{\n    _$a = $default;\n  \}"
 	    incr min
 
 	    lappend result "  /* ($t $a, optional, default $default) - - -- --- ----- -------- */"
@@ -487,27 +906,50 @@ proc ::critcl::argconversion {adefs {n 1}} {
 	}
     }
 
-    return $result
+    return [Deline $result]
+}
+
+proc ::critcl::has-argtype {name} {
+    variable v::aconv
+    return [info exists aconv($name)]
+}
+
+proc ::critcl::argtype-def {name} {
+    lappend def [ArgumentCType      $name]
+    lappend def [ArgumentCTypeB     $name]
+    lappend def [ArgumentConversion $name]
+    lappend def [ArgumentRelease    $name]
+    lappend def [ArgumentSupport    $name]
+    return $def
 }
 
 proc ::critcl::argtype {name conversion {ctype {}} {ctypeb {}}} {
     variable v::actype
     variable v::actypeb
     variable v::aconv
+    variable v::acrel
+    variable v::acsup
 
     # ctype  Type of variable holding the argument.
     # ctypeb Type of formal C function argument.
-
-    if {[info exists aconv($name)]} {
-	return -code error "Illegal duplicate definition of '$name'."
-    }
 
     # Handle aliases by copying the original definition.
     if {$conversion eq "="} {
 	if {![info exists aconv($ctype)]} {
 	    return -code error "Unable to alias unknown type '$ctype'."
 	}
-	set conversion $aconv($ctype) 
+
+	# Do not forget to copy support and release code, if present.
+	if {[info exists acsup($ctype)]} {
+	    #puts COPY/S:$ctype
+	    set acsup($name) $acsup($ctype)
+	}
+	if {[info exists acrel($ctype)]} {
+	    #puts COPY/R:$ctype
+	    set acrel($name) $acrel($ctype)
+	}
+
+	set conversion $aconv($ctype)
 	set ctypeb     $actypeb($ctype)
 	set ctype      $actype($ctype)
     } else {
@@ -520,45 +962,77 @@ proc ::critcl::argtype {name conversion {ctype {}} {ctypeb {}}} {
     if {$ctypeb eq {}} {
 	set ctypeb $name
     }
-    set aconv($name)  $conversion
-    set actype($name) $ctype
+
+    if {[info exists aconv($name)] &&
+	(($aconv($name)   ne $conversion) ||
+	 ($actype($name)  ne $ctype) ||
+	 ($actypeb($name) ne $ctypeb))
+    } {
+	return -code error "Illegal duplicate definition of '$name'."
+    }
+
+    set aconv($name)   $conversion
+    set actype($name)  $ctype
     set actypeb($name) $ctypeb
     return
 }
 
-proc ::critcl::argtypesupport {name code} {
+proc ::critcl::argtypesupport {name code {guard {}}} {
     variable v::aconv
     variable v::acsup
     if {![info exists aconv($name)]} {
 	return -code error "No definition for '$name'."
     }
-    if {[info exists acsup($name)]} {
+    if {$guard eq {}} {
+	set guard $name ; # Handle non-identifier chars!
+    }
+    lappend lines "#ifndef CRITCL_$guard"
+    lappend lines "#define CRITCL_$guard"
+    lappend lines $code
+    lappend lines "#endif /* CRITCL_$guard _________ */"
+    set support [join $lines \n]\n
+
+    if {[info exists acsup($name)] &&
+	($acsup($name) ne $support)
+    } {
 	return -code error "Illegal duplicate support of '$name'."
     }
 
-    lappend lines "#ifndef CRITCL_$name"
-    lappend lines "#define CRITCL_$name"
-    lappend lines $code
-    lappend lines "#endif"
-
-    set acsup($name) [join $lines \n]
+    set acsup($name) $support
     return
+}
+
+proc ::critcl::argtyperelease {name code} {
+    variable v::aconv
+    variable v::acrel
+    if {![info exists aconv($name)]} {
+	return -code error "No definition for '$name'."
+    }
+    if {[info exists acrel($name)] &&
+	($acrel($name) ne $code)
+    } {
+	return -code error "Illegal duplicate release of '$name'."
+    }
+
+    set acrel($name) $code
+    return
+}
+
+proc ::critcl::has-resulttype {name} {
+    variable v::rconv
+    return [info exists rconv($name)]
 }
 
 proc ::critcl::resulttype {name conversion {ctype {}}} {
     variable v::rctype
     variable v::rconv
 
-    if {[info exists rconv($name)]} {
-	return -code error "Illegal duplicate definition of '$name'."
-    }
-
     # Handle aliases by copying the original definition.
     if {$conversion eq "="} {
 	if {![info exists rconv($ctype)]} {
 	    return -code error "Unable to alias unknown type '$ctype'."
 	}
-	set conversion $rconv($ctype) 
+	set conversion $rconv($ctype)
 	set ctype      $rctype($ctype)
     } else {
 	lassign [HeaderLines $conversion] leadoffset conversion
@@ -567,23 +1041,83 @@ proc ::critcl::resulttype {name conversion {ctype {}}} {
     if {$ctype eq {}} {
 	set ctype $name
     }
+
+    if {[info exists rconv($name)] &&
+	(($rconv($name)  ne $conversion) ||
+	 ($rctype($name) ne $ctype))
+    } {
+	return -code error "Illegal duplicate definition of '$name'."
+    }
+
     set rconv($name)  $conversion
     set rctype($name) $ctype
     return
 }
 
+proc ::critcl::cconst {name rtype rvalue} {
+    # The semantics are equivalent to
+    #
+    #   cproc $name {} $rtype { return $rvalue ; }
+    #
+    # The main feature of this new command is the knowledge of a
+    # constant return value, which allows the optimization of the
+    # generated code. Only the shim is emitted, with the return value
+    # in place. No need for a lower-level C function containing a
+    # function body.
+
+    SkipIgnored [set file [This]]
+    HandleDeclAfterBuild
+
+    # A void result does not make sense for constants.
+    if {$rtype eq "void"} {
+	error "Constants cannot be of type \"void\""
+    }
+
+    lassign [BeginCommand public $name $rtype $rvalue] ns cns name cname
+    set traceref ns_$cns$cname
+    set wname    tcl_$cns$cname
+    set cname    c_$cns$cname
+
+    # Construct the shim handling the conversion between Tcl and C
+    # realms.
+
+    set adb [ArgsInprocess {} 1]
+
+    EmitShimHeader         $wname
+    EmitShimVariables      $adb $rtype
+    EmitArgTracing         $traceref
+    EmitWrongArgsCheck     $adb
+    EmitConst              $rtype $rvalue
+    EmitShimFooter         $adb $rtype
+    EndCommand
+    return
+}
+
+proc ::critcl::CheckForTracing {} {
+    if {!$v::options(trace)} return
+    if {[info exists ::critcl::v::__trace__]} return
+
+    package require critcl::cutil
+    ::critcl::cutil::tracer on
+    set ::critcl::v::__trace__ marker ;# See above
+    return
+}
+
 proc ::critcl::cproc {name adefs rtype {body "#"} args} {
     SkipIgnored [set file [This]]
-    AbortWhenCalledAfterBuild
+    HandleDeclAfterBuild
+    CheckForTracing
 
     set acname 0
     set passcd 0
     set aoffset 0
+    set tname ""
     while {[string match "-*" $args]} {
         switch -- [set opt [lindex $args 0]] {
 	    -cname      { set acname  [lindex $args 1] }
 	    -pass-cdata { set passcd  [lindex $args 1] }
 	    -arg-offset { set aoffset [lindex $args 1] }
+	    -tracename  { set tname   [lindex $args 1] }
 	    default {
 		error "Unknown option $opt, expected one of -cname, or -pass-cdata"
 	    }
@@ -591,17 +1125,8 @@ proc ::critcl::cproc {name adefs rtype {body "#"} args} {
         set args [lrange $args 2 end]
     }
 
-    switch -regexp -- [join [argoptional $adefs] {}] {
-	^0*$ -
-	^0*1+0*$ {
-	    # no optional arguments, or a single optional block at the
-	    # beginning, middle, or end of the argument list is what
-	    # we are able to handle.
-	}
-	default {
-	    error "Unable to handle multiple segments of optional arguments"
-	}
-    }
+    incr aoffset ; # always include the command name.
+    set adb [ArgsInprocess $adefs $aoffset]
 
     if {$acname} {
 	BeginCommand static $name $adefs $rtype $body
@@ -609,22 +1134,30 @@ proc ::critcl::cproc {name adefs rtype {body "#"} args} {
 	set cns {}
 	set wname $name
 	set cname c_$name
+	if {$tname ne {}} {
+	    set traceref \"$tname\"
+	} else {
+	    set traceref \"$name\"
+	}
     } else {
 	lassign [BeginCommand public $name $adefs $rtype $body] ns cns name cname
-	set wname tcl_$cns$cname
-	set cname c_$cns$cname
+	set traceref ns_$cns$cname
+	set wname    tcl_$cns$cname
+	set cname    c_$cns$cname
     }
 
-    set names  [argnames      $adefs]
-    set cargs  [argcsignature $adefs]
-    set cnames [argcnames     $adefs]
+    set names  [dict get $adb names]
+    set cargs  [dict get $adb csignature]
+    set cnames [dict get $adb cnames]
 
     if {$passcd} {
 	set cargs  [linsert $cargs 0 {ClientData clientdata}]
 	set cnames [linsert $cnames 0 cd]
     }
 
-    Emit [join [argsupport $adefs] \n]
+    # Support code for argument conversions (i.e. structures, helper
+    # functions, etc. ...)
+    EmitSupport $adb
 
     # Emit either the low-level function, or, if it wasn't defined
     # here, a reference to the shim we can use.
@@ -647,19 +1180,24 @@ proc ::critcl::cproc {name adefs rtype {body "#"} args} {
     # realms.
 
     EmitShimHeader         $wname
-    EmitShimVariables      $adefs $rtype
-    EmitWrongArgsCheck     $adefs $aoffset
-    EmitArgumentConversion $adefs $aoffset
+    EmitShimVariables      $adb $rtype
+    EmitArgTracing         $traceref
+    EmitWrongArgsCheck     $adb
+    Emit    [dict get $adb aconv]
     EmitCall               $cname $cnames $rtype
-    EmitShimFooter         $rtype
+    EmitShimFooter         $adb $rtype
     EndCommand
     return
 }
 
 proc ::critcl::cinit {text edecls} {
     set file [SkipIgnored [set file [This]]]
-    AbortWhenCalledAfterBuild
+    HandleDeclAfterBuild
+    CInitCore $file $text $edecls
+    return
+}
 
+proc ::critcl::CInitCore {file text edecls} {
     set digesta [UUID.extend $file .cinit.f $text]
     set digestb [UUID.extend $file .cinit.e $edecls]
 
@@ -739,6 +1277,9 @@ proc ::critcl::at::get {} {
 
 proc ::critcl::at::get* {} {
     variable where
+    if {!$::critcl::v::options(lines)} {
+	return {}
+    }
     if {![info exists where]} {
 	return -code error "No location defined"
     }
@@ -842,12 +1383,33 @@ proc ::critcl::Dpop {} {
     return $slot
 }
 
+proc ::critcl::include {path args} {
+    # Include headers or other C files into the current code.
+    set args [linsert $args 0 $path]
+    msg -nonewline " (include <[join $args ">) (include <"]>)"
+    ccode "#include <[join $args ">\n#include <"]>"
+}
+
+proc ::critcl::make {path contents} {
+    # Generate a header or other C file for pickup by other parts of
+    # the current package. Stored in the cache dir, making it local.
+    file mkdir [cache]
+    set cname [file join [cache] $path]
+
+    set c [open $cname.[pid] w]
+    puts -nonewline $c $contents\n\n
+    close $c
+    file rename -force $cname.[pid] $cname
+
+    return $path
+}
+
 proc ::critcl::source {path} {
     # Source a critcl file in the context of the current file,
     # i.e. [This]. Enables the factorization of a large critcl
     # file into smaller, easier to read pieces.
     SkipIgnored [set file [This]]
-    AbortWhenCalledAfterBuild
+    HandleDeclAfterBuild
 
     msg -nonewline " (importing $path)"
 
@@ -900,56 +1462,67 @@ proc ::critcl::owns {args} {}
 
 proc ::critcl::cheaders {args} {
     SkipIgnored [This]
-    AbortWhenCalledAfterBuild
+    HandleDeclAfterBuild
     return [SetParam cheaders $args]
 }
 
 proc ::critcl::csources {args} {
     SkipIgnored [This]
-    AbortWhenCalledAfterBuild
-    return [SetParam csources $args 1 1]
+    HandleDeclAfterBuild
+    return [SetParam csources $args 1 1 1]
 }
 
 proc ::critcl::clibraries {args} {
     SkipIgnored [This]
-    AbortWhenCalledAfterBuild
+    HandleDeclAfterBuild
     return [SetParam clibraries $args]
 }
 
 proc ::critcl::cobjects {args} {
     SkipIgnored [This]
-    AbortWhenCalledAfterBuild
+    HandleDeclAfterBuild
     return [SetParam cobjects $args]
 }
 
 proc ::critcl::tsources {args} {
     set file [SkipIgnored [This]]
-    AbortWhenCalledAfterBuild
+    HandleDeclAfterBuild
     # This, 'license', 'meta?' and 'meta' are the only places where we
     # are not extending the UUID. Because the companion Tcl sources
     # (count, order, and content) have no bearing on the binary at
     # all.
     InitializeFile $file
 
+    set dfiles {}
     dict update v::code($file) config c {
 	foreach f $args {
 	    foreach e [Expand $file $f] {
 		dict lappend c tsources $e
-	        ScanDependencies $file $e
+		lappend dfiles $e
 	    }
 	}
+    }
+    # Attention: The actual scanning is done outside of the `dict
+    # update`, because it makes changes to the dictionary which would
+    # be revert on exiting the update.
+    foreach e $dfiles {
+	ScanDependencies $file $e
     }
     return
 }
 
 proc ::critcl::cflags {args} {
     set file [SkipIgnored [This]]
-    AbortWhenCalledAfterBuild
+    HandleDeclAfterBuild
     if {![llength $args]} return
+    CFlagsCore $file $args
+    return
+}
 
-    UUID.extend $file .cflags $args
+proc ::critcl::CFlagsCore {file flags} {
+    UUID.extend $file .cflags $flags
     dict update v::code($file) config c {
-	foreach flag $args {
+	foreach flag $flags {
 	    dict lappend c cflags $flag
 	}
     }
@@ -958,7 +1531,7 @@ proc ::critcl::cflags {args} {
 
 proc ::critcl::ldflags {args} {
     set file [SkipIgnored [This]]
-    AbortWhenCalledAfterBuild
+    HandleDeclAfterBuild
     if {![llength $args]} return
 
     UUID.extend $file .ldflags $args
@@ -975,7 +1548,7 @@ proc ::critcl::ldflags {args} {
 
 proc ::critcl::framework {args} {
     SkipIgnored [This]
-    AbortWhenCalledAfterBuild
+    HandleDeclAfterBuild
 
     # Check if we are building for OSX and ignore the command if we
     # are not. Our usage of "actualtarget" means that we allow for a
@@ -996,7 +1569,7 @@ proc ::critcl::framework {args} {
 
 proc ::critcl::tcl {version} {
     set file [SkipIgnored [This]]
-    AbortWhenCalledAfterBuild
+    HandleDeclAfterBuild
 
     UUID.extend $file .mintcl $version
     dict set v::code($file) config mintcl $version
@@ -1011,7 +1584,7 @@ proc ::critcl::tcl {version} {
 
 proc ::critcl::tk {} {
     set file [SkipIgnored [This]]
-    AbortWhenCalledAfterBuild
+    HandleDeclAfterBuild
 
     UUID.extend $file .tk 1
     dict set v::code($file) config tk 1
@@ -1028,7 +1601,7 @@ proc ::critcl::tk {} {
 # redundant when TIP #239 is widely available
 proc ::critcl::preload {args} {
     set file [SkipIgnored [This]]
-    AbortWhenCalledAfterBuild
+    HandleDeclAfterBuild
     if {![llength $args]} return
 
     UUID.extend $file .preload $args
@@ -1042,7 +1615,7 @@ proc ::critcl::preload {args} {
 
 proc ::critcl::license {who args} {
     set file [SkipIgnored [This]]
-    AbortWhenCalledAfterBuild
+    HandleDeclAfterBuild
 
     set who [string trim $who]
     if {$who ne ""} {
@@ -1089,7 +1662,7 @@ proc ::critcl::LicenseText {words} {
 
 proc ::critcl::description {text} {
     set file [SkipIgnored [This]]
-    AbortWhenCalledAfterBuild
+    HandleDeclAfterBuild
     InitializeFile $file
 
     ImetaSet $file description [Text2Words $text]
@@ -1098,7 +1671,7 @@ proc ::critcl::description {text} {
 
 proc ::critcl::summary {text} {
     set file [SkipIgnored [This]]
-    AbortWhenCalledAfterBuild
+    HandleDeclAfterBuild
     InitializeFile $file
 
     ImetaSet $file summary [Text2Words $text]
@@ -1107,7 +1680,7 @@ proc ::critcl::summary {text} {
 
 proc ::critcl::subject {args} {
     set file [SkipIgnored [This]]
-    AbortWhenCalledAfterBuild
+    HandleDeclAfterBuild
     InitializeFile $file
 
     ImetaAdd $file subject $args
@@ -1116,7 +1689,7 @@ proc ::critcl::subject {args} {
 
 proc ::critcl::meta {key args} {
     set file [SkipIgnored [This]]
-    AbortWhenCalledAfterBuild
+    HandleDeclAfterBuild
 
     # This, 'meta?', 'license', and 'tsources' are the only places
     # where we are not extending the UUID. Because the meta data has
@@ -1133,7 +1706,7 @@ proc ::critcl::meta {key args} {
 
 proc ::critcl::meta? {key} {
     set file [SkipIgnored [This]]
-    AbortWhenCalledAfterBuild
+    HandleDeclAfterBuild
 
     # This, 'meta', 'license', and 'tsources' are the only places
     # where we are not extending the UUID. Because the meta data has
@@ -1163,7 +1736,7 @@ proc ::critcl::ImetaAdd {file key words} {
 	    }
 	}
     }
-    #puts |||$key|+|[dict get $v::code($file) config package $key]|
+    #puts XXX|$file||$key|+|[dict get $v::code($file) config package $key]|
     return
 }
 
@@ -1203,6 +1776,24 @@ proc ::critcl::GetMeta {file} {
 	set result [dict merge $result [dict get $v::code($file) config package]]
     }
 
+    # A few keys need a cleanup, i.e. removal of duplicates, and the like
+    catch {
+	dict set result require         [lsort -dict -unique [dict get $result require]]
+    }
+    catch {
+	dict set result build::require  [lsort -dict -unique [dict get $result build::require]]
+    }
+    catch {
+	dict set result platform        [lindex [dict get $result platform] 0]
+    }
+    catch {
+	dict set result generated::by   [lrange [dict get $result generated::by] 0 1]
+    }
+    catch {
+	dict set result generated::date [lindex [dict get $result generated::by] 0]
+    }
+
+    #array set ___M $result ; parray ___M ; unset ___M
     return $result
 }
 
@@ -1211,7 +1802,7 @@ proc ::critcl::GetMeta {file} {
 
 proc ::critcl::userconfig {cmd args} {
     set file [SkipIgnored [This]]
-    AbortWhenCalledAfterBuild
+    HandleDeclAfterBuild
     InitializeFile $file
 
     if {![llength [info commands ::critcl::UC$cmd]]} {
@@ -1316,7 +1907,7 @@ proc ::critcl::UcDefault {otype} {
 
 proc ::critcl::api {cmd args} {
     set file [SkipIgnored [This]]
-    AbortWhenCalledAfterBuild
+    HandleDeclAfterBuild
 
     if {![llength [info commands ::critcl::API$cmd]]} {
 	return -code error "Unknown method \"$cmd\""
@@ -1478,10 +2069,10 @@ proc ::critcl::API_setup_import {file} {
 	    #include <$cname/${cname}Decls.h>
 	}]
 	append prefix \n$import
-	ccode $import
+	CCodeCore $file $import
 
 	# TODO :: DOCUMENT environment of the cinit code.
-	cinit [subst -nocommands {
+	CInitCore $file [subst -nocommands {
 	    if (!${capname}_InitStubs (ip, "$iversion", 0)) {
 		return TCL_ERROR;
 	    }
@@ -1522,7 +2113,7 @@ proc ::critcl::API_setup_export {file} {
 	#include <$cname/${cname}Decls.h>
     }]
     append prefix \n$import
-    ccode $import
+    CCodeCore $file $import
 
     # Generate the necessary header files.
 
@@ -1533,7 +2124,7 @@ proc ::critcl::API_setup_export {file} {
 
     if {[dict exists $v::code($file) config api_ehdrs]} {
 	append sdecls "\n"
-	file mkdir $v::cache/$cname
+	file mkdir [cache]/$cname
 	foreach hdr [dict get $v::code($file) config api_ehdrs] {
 	    append sdecls "\#include \"[file tail $hdr]\"\n"
 	}
@@ -1541,9 +2132,9 @@ proc ::critcl::API_setup_export {file} {
 
     if {[dict exists $v::code($file) config api_hdrs]} {
 	append sdecls "\n"
-	file mkdir $v::cache/$cname
+	file mkdir [cache]/$cname
 	foreach hdr [dict get $v::code($file) config api_hdrs] {
-	    Copy $hdr $v::cache/$cname
+	    Copy $hdr [cache]/$cname
 	    append sdecls "\#include \"[file tail $hdr]\"\n"
 	}
     }
@@ -1563,7 +2154,7 @@ proc ::critcl::API_setup_export {file} {
     package require stubs::writer
 
     # Implied .decls file. Not actually written, only implied in the
-    # stubs container invokations, as if read from such a file.
+    # stubs container invocations, as if read from such a file.
 
     set T [stubs::container::new]
     stubs::container::library   T $ename
@@ -1583,7 +2174,7 @@ proc ::critcl::API_setup_export {file} {
 	}
 	append sdecls "\n"
 	append sdecls [stubs::gen::header::gen $T $cname]
-    } 
+    }
 
     append sdecls "\#endif /* ${cname}_DECLS_H */\n"
 
@@ -1609,11 +2200,11 @@ proc ::critcl::API_setup_export {file} {
     WriteCache $cname/${cname}.decls    $thedecls
 
     dict update v::code($file) result r {
-	dict lappend r apiheader [file join $v::cache $cname]
+	dict lappend r apiheader [file join [cache] $cname]
     }
 
-    cinit $sinitrun $sinitstatic
-    cflags -DBUILD_$cname
+    CInitCore  $file $sinitrun $sinitstatic
+    CFlagsCore $file [list -DBUILD_$cname]
 
     return $prefix
 }
@@ -1623,7 +2214,7 @@ proc ::critcl::API_setup_export {file} {
 
 proc ::critcl::check {args} {
     set file [SkipIgnored [This] 0]
-    AbortWhenCalledAfterBuild
+    HandleDeclAfterBuild
 
     switch -exact -- [llength $args] {
 	1 {
@@ -1663,7 +2254,7 @@ proc ::critcl::check {args} {
 
 proc ::critcl::checklink {args} {
     set file [SkipIgnored [This] 0]
-    AbortWhenCalledAfterBuild
+    HandleDeclAfterBuild
 
     switch -exact -- [llength $args] {
 	1 {
@@ -1702,7 +2293,7 @@ proc ::critcl::checklink {args} {
 	return 0
     }
 
-    set out [file join $v::cache a_[pid].out]
+    set out [file join [cache] a_[pid].out]
     set cmdline [getconfigvalue link]
 
     if {$option::debug_symbols} {
@@ -1729,13 +2320,13 @@ proc ::critcl::checklink {args} {
 
 proc ::critcl::compiled {} {
     SkipIgnored [This] 1
-    AbortWhenCalledAfterBuild
+    HandleDeclAfterBuild
     return 0
 }
 
 proc ::critcl::compiling {} {
     SkipIgnored [This] 0
-    AbortWhenCalledAfterBuild
+    HandleDeclAfterBuild
     # Check that we can indeed run a compiler
     # Should only need to do this if we have to compile the code?
     if {[auto_execok [lindex [getconfigvalue compile] 0]] eq ""} {
@@ -1925,7 +2516,7 @@ proc ::critcl::readconfig {config} {
 	    #                                 PLATFORM.
             # (4c) PLATFORM copy PARENT...  - Copies the currently defined
             #                                 configuration variables and
-            #                                 values to the settings for 
+            #                                 values to the settings for
             #                                 this platform.
 	    # (5.) VAR VALUE............... - Default configuration
 	    #                                 variable, and value.
@@ -2081,7 +2672,7 @@ proc ::critcl::showconfig {{fd ""}} {
 	lappend out "Config: $plat (built on $gen)"
     }
     lappend out "Origin: $configfile"
-    lappend out "    [format %-15s cache] [critcl::cache]"
+    lappend out "    [format %-15s cache] [cache]"
     foreach var [lsort $v::configvars] {
 	set val [getconfigvalue $var]
 	set line "    [format %-15s $var]"
@@ -2096,7 +2687,7 @@ proc ::critcl::showconfig {{fd ""}} {
 	}
 	lappend out $line
     }
-    # Tcl variables
+    # Tcl variables - Combined LengthLongestWord (all), and filtering
     set vars [list]
     set max 0
     foreach idx [array names v::toolchain $v::targetplatform,*] {
@@ -2117,7 +2708,7 @@ proc ::critcl::showconfig {{fd ""}} {
 		# values - e.g. "Windows NT"
 		set val [lindex $val 0]
 	    }
-	    lappend out "    [format %-${max}s $var] $val"
+	    lappend out "    [PadRight $max $var] $val"
 	}
     }
     set out [join $out \n]
@@ -2193,9 +2784,19 @@ proc ::critcl::setconfig {targetconfig} {
 	set c::sharedlibext [info sharedlibextension]
     }
 
-    cache [file join ~ .critcl $v::targetplatform]
+    # The following definition of the cache directory is only relevant
+    # for mode "compile & run". The critcl application handling the
+    # package mode places the cache in a process-specific location
+    # without care about platforms. For here this means that we can
+    # ignore both cross-compilation, and the user choosing a target
+    # for us, as neither happens nor works for "compile & run". We can
+    # assume that build and target platforms will be the same, be the
+    # current platform, and we can make a simple choice for the
+    # directory.
 
-    #  set any Tcl variables
+    cache [file join ~ .critcl [platform::identify]]
+
+    # Initialize Tcl variables based on the chosen tooling
     foreach idx [array names v::toolchain $v::targetplatform,*] {
 	set var [lindex [split $idx ,] 1]
 	if {![info exists c::$var]} {
@@ -2323,6 +2924,11 @@ proc ::critcl::buildforpackage {{buildforpackage 1}} {
     return
 }
 
+proc ::critcl::fastuuid {} {
+    set v::uuidcounter 1 ;# Activates it.
+    return
+}
+
 proc ::critcl::cbuild {file {load 1}} {
     if {[info exists v::code($file,failed)] && !$load} {
 	set v::buildforpackage 0
@@ -2352,6 +2958,9 @@ proc ::critcl::cbuild {file {load 1}} {
     dict set v::code($file) result tsources   [GetParam $file tsources]
     dict set v::code($file) result mintcl     [MinTclVersion $file]
 
+    set emsg {}
+    set msgs {}
+
     if {$v::options(force) || ![file exists $shlib]} {
 	LogOpen $file
 	set base   [BaseOf              $file]
@@ -2362,7 +2971,7 @@ proc ::critcl::cbuild {file {load 1}} {
 	# Generate the main C file
 	CollectEmbeddedSources $file $base.c $object $initname $placestubs
 
-	# Set the marker for critcl::done and its user, AbortWhenCalledAfterBuild.
+	# Set the marker for critcl::done and its user, HandleDeclAfterBuild.
 	dict set v::code($file) result closed mark
 
 	# Compile main file
@@ -2395,16 +3004,17 @@ proc ::critcl::cbuild {file {load 1}} {
 	    Link $file
 	}
 
-	set msgs [LogClose]
+	lassign [LogClose] msgs emsg
 
-	dict set v::code($file) result warnings [CheckForWarnings $msgs]
+	dict set v::code($file) result warnings [CheckForWarnings $emsg]
     }
+
+    dict set v::code($file) result log $msgs
+    dict set v::code($file) result exl $emsg
 
     if {$v::failed} {
 	if {!$buildforpackage} {
 	    print stderr "$msgs\ncritcl build failed ($file)"
-	} else {
-	    dict set v::code($file) result log $msgs
 	}
     } elseif {$load && !$buildforpackage} {
 	Load $file
@@ -2772,7 +3382,9 @@ proc ::critcl::ScanDependencies {dfile file {mode plain}} {
 	    ImetaAdd $dfile $k $vlist
 
 	    if {$k ne "require"} continue
-	    msg -nonewline " ($k [join $vlist {}])"
+	    # vlist = package list, each element a package name,
+	    # and optional version.
+	    msg -nonewline " ([file tail $file]: require [join [lsort -dict -unique $vlist] {, }])"
 	}
 
 	# The above information also goes into the teapot meta data of
@@ -2784,7 +3396,7 @@ proc ::critcl::ScanDependencies {dfile file {mode plain}} {
     return
 }
 
-proc critcl::ScanCore {lines theconfig} {
+proc ::critcl::ScanCore {lines theconfig} {
     # config = dictionary
     # - <cmdname> => mode (ok, warn, sub)
     # Unlisted commands are ignored.
@@ -2993,7 +3605,7 @@ proc ::critcl::scan::critcl::license {who args} {
     variable ::critcl::scan::capture
     dict set capture org $who
 
-    print "\tOrganization: $who"
+    ::critcl::print "\tOrganization: $who"
 
     # Meta data.
     set elicense [::critcl::LicenseText $args]
@@ -3090,7 +3702,6 @@ proc ::critcl::scan::critcl::userconfig {cmd args} {
 ## Implementation -- Internals - cproc conversion helpers.
 
 proc ::critcl::EmitShimHeader {wname} {
-
     # Function head
     set ca "(ClientData cd, Tcl_Interp *interp, int oc, Tcl_Obj *CONST ov\[])"
     Emitln
@@ -3100,75 +3711,63 @@ proc ::critcl::EmitShimHeader {wname} {
     return
 }
 
-proc ::critcl::EmitShimVariables {adefs rtype} {
-    set opt 0
-    foreach d [argvardecls $adefs] o [argoptional $adefs] {
+proc ::critcl::EmitShimVariables {adb rtype} {
+    foreach d [dict get $adb vardecls] {
 	Emitln "  $d"
-	if {$o} {set opt 1}
     }
-    if {$opt} { Emitln "  int idx_;" }
+    if {[dict get $adb hasoptional]} {
+	Emitln "  int idx_;"
+	Emitln "  int argc_;"
+    }
 
     # Result variable, source for the C -> Tcl conversion.
     if {$rtype ne "void"} { Emit "  [ResultCType $rtype] rv;" }
     return
 }
 
-proc ::critcl::EmitWrongArgsCheck {adefs offset} {
+proc ::critcl::EmitArgTracing {fun} {
+    if {!$v::options(trace)} return
+    Emitln "\n  critcl_trace_cmd_args ($fun, oc, ov);"
+    return
+}
+
+proc ::critcl::EmitWrongArgsCheck {adb} {
     # Code checking for the correct count of arguments, and generating
     # the proper error if not.
 
-    # A 1st argument matching "Tcl_Interp*" does not count as a user
-    # visible command argument.
-    if {[lindex $adefs 0] eq "Tcl_Interp*"} {
-	set adefs [lrange $adefs 2 end]
-    }
+    set wac [dict get $adb wacondition]
+    if {$wac eq {}} return
 
-    set min 0 ; # count all non-optional argument. min required.
-    set max 0 ; # count all arguments. max allowed.
-    set names {}
-    foreach {t a} $adefs {
-	incr max
-	if {[llength $a] == 1} {
-	    incr min
-	    lappend names $a
-	} else {
-	    lappend names ?[lindex $a 0]?
-	}
-    }
+    # Have a check, put the pieces together.
 
-    incr min
-    incr max
+    set offset [dict get $adb skip]
+    set tsig   [dict get $adb tsignature]
+    set min    [dict get $adb min]
+    set max    [dict get $adb max]
+
     incr min $offset
-    incr max $offset
-
-    set keep 1
-    incr keep $offset
-
-    set  names [join $names { }]
-    if {$names eq {}} {
-	set names NULL
-    } else {
-	set names \"$names\"
+    if {$max != Inf} {
+	incr max $offset
     }
+
+    lappend map MIN_ARGS $min
+    lappend map MAX_ARGS $max
+    set wac [string map $map $wac]
 
     Emitln ""
-    if {$min == $max} {
-	Emitln "  if (oc != $min) \{"
-    } else {
-	Emitln "  if ((oc < $min) || ($max < oc)) \{"
-    }
-    Emitln "    Tcl_WrongNumArgs(interp, $keep, ov, $names);"
-    Emitln "    return TCL_ERROR;"
+    Emitln "  if ($wac) \{"
+    Emitln "    Tcl_WrongNumArgs(interp, $offset, ov, $tsig);"
+    Emitln [TraceReturns "wrong-arg-num check" "    return TCL_ERROR;"]
     Emitln "  \}"
     Emitln ""
     return
 }
 
-proc ::critcl::EmitArgumentConversion {adefs offset} {
-    incr offset
-    foreach c [argconversion $adefs $offset] {
-	Emitln $c
-    }
+proc ::critcl::EmitSupport {adb} {
+    set s [dict get $adb support]
+    if {![llength $s]} return
+    if {[join $s {}] eq {}} return
+    Emit [join $s \n]\n
     return
 }
 
@@ -3183,12 +3782,56 @@ proc ::critcl::EmitCall {cname cnames rtype} {
     return
 }
 
-proc ::critcl::EmitShimFooter {rtype} {
+proc ::critcl::EmitConst {rtype rvalue} {
+    # Assign the constant directly to the shim's result variable.
+
+    Emitln  "  /* Const - - -- --- ----- -------- */"
+    Emit "  "
+    if {$rtype ne "void"} { Emit "rv = " }
+    Emitln "${rvalue};"
+    Emitln
+    return
+}
+
+proc ::critcl::TraceReturns {label code} {
+    if {!$v::options(trace)} {
+	return $code
+    }
+
+    # Inject tracing into the 'return's.
+    regsub -all \
+	{return[[:space:]]*([^;]*);}           $code \
+	{return critcl_trace_cmd_result (\1, interp);} newcode
+    if {[string match {*return *} $code] && ($newcode eq $code)} {
+	error "Failed to inject tracing code into $label"
+    }
+    return $newcode
+}
+
+proc ::critcl::EmitShimFooter {adb rtype} {
+    # Run release code for arguments which allocated temp memory.
+    set arelease [dict get $adb arelease]
+    if {[llength $arelease]} {
+	Emit "[join $arelease "\n  "]\n"
+    }
+
     # Convert the returned low-level result from C to Tcl, if required.
     # Return a standard status, if required.
 
-    set code [ResultConversion $rtype]
-    if {$code ne {}} { Emitln $code }
+    set code [Deline [ResultConversion $rtype]]
+    if {$code ne {}} {
+	set code [TraceReturns "\"$rtype\" result" $code]
+	Emitln "  /* ($rtype return) - - -- --- ----- -------- */"
+	Emitln $code
+    } else {
+	if {$v::options(trace)} {
+	    Emitln "  critcl_trace_header (1, 0, 0);"
+	    Emitln "  critcl_trace_printf (1, \"RETURN (void)\");"
+	    Emitln "  critcl_trace_closer (1);"
+	    Emitln "  critcl_trace_pop();"
+	    Emitln "  return;"
+	}
+    }
     Emitln \}
     return
 }
@@ -3198,33 +3841,38 @@ proc ::critcl::ArgumentSupport {type} {
     return {}
 }
 
+proc ::critcl::ArgumentRelease {type} {
+    if {[info exists v::acrel($type)]} { return $v::acrel($type) }
+    return {}
+}
+
 proc ::critcl::ArgumentCType {type} {
     if {[info exists v::actype($type)]} { return $v::actype($type) }
-    return -code error "Unknown argument type $type"
+    return -code error "Unknown argument type \"$type\""
 }
 
 proc ::critcl::ArgumentCTypeB {type} {
     if {[info exists v::actypeb($type)]} { return $v::actypeb($type) }
-    return -code error "Unknown argument type $type"
+    return -code error "Unknown argument type \"$type\""
 }
 
 proc ::critcl::ArgumentConversion {type} {
     if {[info exists v::aconv($type)]} { return $v::aconv($type) }
-    return -code error "Unknown argument type $type"
+    return -code error "Unknown argument type \"$type\""
 }
 
 proc ::critcl::ResultCType {type} {
     if {[info exists v::rctype($type)]} {
 	return $v::rctype($type)
     }
-    return -code error "Unknown result type $type"
+    return -code error "Unknown result type \"$type\""
 }
 
 proc ::critcl::ResultConversion {type} {
     if {[info exists v::rconv($type)]} {
 	return $v::rconv($type)
     }
-    return -code error "Unknown result type $type"
+    return -code error "Unknown result type \"$type\""
 }
 
 # # ## ### ##### ######## ############# #####################
@@ -3239,7 +3887,7 @@ proc ::critcl::GetParam {file type {default {}}} {
     }
 }
 
-proc ::critcl::SetParam {type values {expand 1} {uuid 0}} {
+proc ::critcl::SetParam {type values {expand 1} {uuid 0} {unique 0}} {
     set file [This]
     if {![llength $values]} return
 
@@ -3249,22 +3897,30 @@ proc ::critcl::SetParam {type values {expand 1} {uuid 0}} {
 	# Process the list of flags, treat non-option arguments as
 	# glob patterns and expand them to a set of files, stored as
 	# absolute paths.
+
+	set have {}
+	if {$unique && [dict exists $v::code($file) config $type]} {
+	    foreach v [dict get $v::code($file) config $type] {
+		dict set have $v .
+	    }
+	}
+
 	set tmp {}
 	foreach v $values {
 	    if {[string match "-*" $v]} {
 		lappend tmp $v
 	    } else {
 		if {$expand} {
-		    if {$uuid} {
-			foreach f [Expand $file $v] {
-			    lappend tmp $f
-			    UUID.extend $file .$type.$f [Cat $f]
-			}
-		    } else {
-			lappendlist tmp [Expand $file $v]
+		    foreach f [Expand $file $v] {
+			if {$unique && [dict exists $have $f]} continue
+			lappend tmp $f
+			if {$unique} { dict set have $f . }
+			if {$uuid} { UUID.extend $file .$type.$f [Cat $f] }
 		    }
 		} else {
+		    if {$unique && [dict exists $have $v]} continue
 		    lappend tmp $v
+		    if {$unique} { dict set have $v . }
 		}
 	    }
 	}
@@ -3469,7 +4125,7 @@ proc ::critcl::at::Where {leadoffset level file} {
     #puts "XXX-WHERE-($leadoffset $level $file)"
     #set ::errorInfo {}
     if {[catch {
-	#SHOWFRAMES $level 0
+	#::critcl::msg [SHOWFRAMES $level 0]
 	array set loc [info frame $level]
 	#puts XXX-TYPE-$loc(type)
     }]} {
@@ -3542,19 +4198,20 @@ proc ::critcl::at::Format {loc} {
 }
 
 proc ::critcl::at::SHOWFRAMES {level {all 1}} {
+    set lines {}
     set n [info frame]
     set i 0
     set id 1
     while {$n} {
-	::critcl::msg "[expr {$level == $id ? "**" : "  "}] frame [format %3d $id]: [info frame $i]"
+	lappend lines "[expr {$level == $id ? "**" : "  "}] frame [format %3d $id]: [info frame $i]"
 	::incr i -1
 	::incr id -1
 	::incr n -1
 	if {($level > $id) && !$all} break
     }
-    return
+    return [join $lines \n]
 }
- 
+
 # # ## ### ##### ######## ############# #####################
 
 proc ::critcl::CollectEmbeddedSources {file destination libfile ininame placestubs} {
@@ -3591,16 +4248,18 @@ proc ::critcl::CollectEmbeddedSources {file destination libfile ininame placestu
 	# Put full stubs definitions into the code, which can be
 	# either the bracket generated for a -pkg, or the package
 	# itself, build in mode "compile & run".
-	puts -nonewline $fd [subst [Cat [Template stubs.c]]]
-	#                    ^=> mintcl
+	set stubs     [TclDecls     $file]
+	set platstubs [TclPlatDecls $file]
+	puts -nonewline $fd [Deline [subst [Cat [Template stubs.c]]]]
+	#                            ^=> mintcl, stubs, platstubs
     } else {
 	# Declarations only, for linking, in the sub-packages.
-	puts -nonewline $fd [subst [Cat [Template stubs_e.c]]]
-	#                    ^=> mintcl
+	puts -nonewline $fd [Deline [subst [Cat [Template stubs_e.c]]]]
+	#                            ^=> mintcl
     }
 
     if {[UsingTk $file]} {
-	SetupTkStubs $fd
+	SetupTkStubs $fd $mintcl
     }
 
     # Initialization boilerplate. This ends in the middle of the
@@ -3626,7 +4285,9 @@ proc ::critcl::CollectEmbeddedSources {file destination libfile ininame placestu
 
     # Take the names collected earlier and register them as Tcl
     # commands.
-    foreach name [lsort [GetParam $file functions]] {
+    set names [lsort [GetParam $file functions]]
+    set max   [LengthLongestWord $names]
+    foreach name $names {
 	if {[info exists v::clientdata($name)]} {
 	    set cd $v::clientdata($name)
 	} else {
@@ -3637,7 +4298,7 @@ proc ::critcl::CollectEmbeddedSources {file destination libfile ininame placestu
 	} else {
 	    set dp 0
 	}
-	puts $fd "  Tcl_CreateObjCommand(ip, ns_$name, tcl_$name, $cd, $dp);"
+	puts $fd "  Tcl_CreateObjCommand(interp, [PadRight [expr {$max+4}] ns_$name,] [PadRight [expr {$max+5}] tcl_$name,] $cd, $dp);"
     }
 
     # Complete the trailer and be done.
@@ -3647,7 +4308,13 @@ proc ::critcl::CollectEmbeddedSources {file destination libfile ininame placestu
 }
 
 proc ::critcl::MinTclVersion {file} {
-    return [GetParam $file mintcl 8.4]
+    set required [GetParam $file mintcl 8.4]
+    foreach version $v::hdrsavailable {
+	if {[package vsatisfies $version $required]} {
+	    return $version
+	}
+    }
+    return $required
 }
 
 proc ::critcl::UsingTk {file} {
@@ -3667,11 +4334,18 @@ proc ::critcl::TclIncludes {file} {
 	# The critcl package is wrapped. Copy the relevant headers out
 	# to disk and change the include path appropriately.
 
-	Copy $path $v::cache
-	set path [file join $v::cache $hdrs]
+	Copy $path [cache]
+	set path [file join [cache] $hdrs]
     }
 
     return [list $c::include$path]
+}
+
+proc ::critcl::TclHeader {file {header {}}} {
+    # Provide access to the Tcl/Tk headers in the critcl package
+    # directory hierarchy. No copying of files required.
+    set hdrs tcl[MinTclVersion $file]
+    return [file join $v::hdrdir $hdrs $header]
 }
 
 proc ::critcl::SystemIncludes {file} {
@@ -3694,7 +4368,7 @@ proc ::critcl::SystemIncludePaths {file} {
     }
 
     # Result cache.
-    lappend paths $v::cache
+    lappend paths [cache]
 
     # critcl::cheaders
     foreach flag [GetParam $file cheaders] {
@@ -3807,7 +4481,7 @@ proc ::critcl::MakePreloadLibrary {file} {
     # compile and link the preload support, if necessary, i.e. not yet
     # done.
 
-    set shlib [file join $v::cache preload[getconfigvalue sharedlibext]]
+    set shlib [file join [cache] preload[getconfigvalue sharedlibext]]
     if {[file exists $shlib]} return
 
     # Operate like TclIncludes. Use the template file directly, if
@@ -3816,14 +4490,14 @@ proc ::critcl::MakePreloadLibrary {file} {
 
     set src [Template preload.c]
     if {[file system $src] ne "native"} {
-	file mkdir $v::cache
-	file copy -force $src $v::cache
-	set src [file join $v::cache preload.c]
+	file mkdir [cache]
+	file copy -force $src [cache]
+	set src [file join [cache] preload.c]
     }
 
     # Build the object for the helper package, 'preload' ...
 
-    set obj [file join $v::cache preload.o]
+    set obj [file join [cache] preload.o]
     Compile $file $src $src $obj
 
     # ... and link it.
@@ -3913,11 +4587,11 @@ proc ::critcl::CompanionObject {src} {
     set tail    [file tail $src]
     set srcbase [file rootname $tail]
 
-    if {$v::cache ne [file dirname $src]} {
+    if {[cache] ne [file dirname $src]} {
 	set srcbase [file tail [file dirname $src]]_$srcbase
     }
 
-    return [file join $v::cache ${srcbase}[getconfigvalue object]]
+    return [file join [cache] ${srcbase}[getconfigvalue object]]
 }
 
 proc ::critcl::CompileResult {object} {
@@ -4008,8 +4682,15 @@ proc ::critcl::ResolveColonSpec {lpath name} {
     return -l:$name
 }
 
-proc ::critcl::SetupTkStubs {fd} {
-    puts -nonewline $fd [Cat [Template tkstubs.c]]
+proc ::critcl::SetupTkStubs {fd mintcl} {
+    if {[package vcompare $mintcl 8.6] != 0} {
+	# Not 8.6. tkStubsPtr and tkIntXlibStubsPtr are not const yet.
+	set contents [Cat [Template tkstubs_noconst.c]]
+    } else {
+	set contents [Cat [Template tkstubs.c]]
+    }
+
+    puts -nonewline $fd $contents
     return
 }
 
@@ -4032,7 +4713,7 @@ proc ::critcl::BuildDefines {fd file} {
     # For the command lines to be constructed we need all the include
     # information the regular files will get during their compilation.
 
-    set hdrs [GetParam $file cheaders]
+    set hdrs [SystemIncludes $file]
 
     # The result of the next two steps, a list of triples (namespace +
     # label + value) of the defines to export.
@@ -4161,24 +4842,21 @@ proc ::critcl::Load {f} {
     # 'compile & run' we now source the companion files directly.
     foreach t $tsrc {
 	Ignore $t
-	source $t
+	::source $t
     }
     return
 }
 
-proc ::critcl::AbortWhenCalledAfterBuild {} {
-    if {![done]} return
-    set cloc {}
-    if {![catch {
-	array set loc [info frame -2]
-    } msg]} {
-	if {$loc(type) eq "source"} {
-	    set cloc "@$loc(file):$loc(line)"
-	} else {
-	    set cloc " ([array get loc])"
-	}
-    } ;#else { set cloc " ($msg)" }
-    error "[lindex [info level -1] 0]$cloc: Illegal attempt to define C code in [This] after it was built."
+proc ::critcl::HandleDeclAfterBuild {} {
+    # Hook default, mode "compile & run". Clear existing build results
+    # for the file, make way for new declarations.
+
+    set fx [This]
+    if {[info exists v::code($fx)] &&
+	[dict exists $v::code($fx) result]} {
+	dict unset v::code($fx) result
+    }
+    return
 }
 
 # XXX Refactor to avoid duplication of the memoization code.
@@ -4267,7 +4945,8 @@ proc ::critcl::PkgInit {file} {
     if {$file eq {}} {
 	return Stdin
     } else {
-	regexp {^\w+} [file tail $file] ininame
+	set ininame [file rootname [file tail $file]]
+	regsub -all {[^[:alnum:]_]} $ininame {} ininame
 	return [string totitle $ininame]
     }
 }
@@ -4275,12 +4954,22 @@ proc ::critcl::PkgInit {file} {
 # # ## ### ##### ######## ############# #####################
 ## Implementation -- Internals - Access to the log file
 
-proc ::critcl::LogOpen {file} {
-    file mkdir $v::cache
+proc ::critcl::LogFile {} {
+    file mkdir [cache]
+    return [file join [cache] [pid].log]
+}
 
-    set   v::logfile [file join $v::cache [pid].log]
+proc ::critcl::LogFileExec {} {
+    file mkdir [cache]
+    return [file join [cache] [pid]_exec.log]
+}
+
+proc ::critcl::LogOpen {file} {
+    set   v::logfile [LogFile]
     set   v::log     [open $v::logfile w]
     puts $v::log "\n[clock format [clock seconds]] - $file"
+    # Create secondary file as well, leave empty, may not be used.
+    close [open ${v::logfile}_ w]
     return
 }
 
@@ -4306,11 +4995,14 @@ proc ::critcl::LogClose {} {
 
     close $v::log
     set msgs [Cat $v::logfile]
+    set emsg [Cat ${v::logfile}_]
+
     AppendCache $v::prefix.log $msgs
 
-    file delete -force $v::logfile
+    file delete -force $v::logfile ${v::logfile}_
     unset v::log v::logfile
-    return $msgs
+
+    return [list $msgs $emsg]
 }
 
 # # ## ### ##### ######## ############# #####################
@@ -4347,7 +5039,7 @@ proc ::critcl::BaseOf {f} {
     }
 
     set base [file normalize \
-		  [file join $v::cache ${v::prefix}_[UUID $f]]]
+		  [file join [cache] ${v::prefix}_[UUID $f]]]
 
     dict set v::code($f) result base $base
     return $base
@@ -4355,6 +5047,13 @@ proc ::critcl::BaseOf {f} {
 
 # # ## ### ##### ######## ############# #####################
 ## Implementation -- Internals - Miscellanea
+
+proc ::critcl::Deline {text} {
+    if {![config lines]} {
+	set text [join [GrepV "\#line*" [split $text \n]] \n]
+    }
+    return $text
+}
 
 proc ::critcl::Separator {} {
     return "/* [string repeat - 70] */"
@@ -4388,7 +5087,7 @@ proc ::critcl::Cat {path} {
 }
 
 proc ::critcl::WriteCache {name content} {
-    set dst [file join $v::cache $name]
+    set dst [file join [cache] $name]
     file mkdir [file dirname $dst] ;# just in case
     return [Write [file normalize $dst] $content]
 }
@@ -4401,8 +5100,8 @@ proc ::critcl::Write {path content} {
 }
 
 proc ::critcl::AppendCache {name content} {
-    file mkdir $v::cache ;# just in case
-    return [Append [file normalize [file join $v::cache $name]] $content]
+    file mkdir [cache] ;# just in case
+    return [Append [file normalize [file join [cache] $name]] $content]
 }
 
 proc ::critcl::Append {path content} {
@@ -4463,14 +5162,26 @@ proc ::critcl::ExecWithLogging {cmdline okmsg errmsg} {
     LogCmdline $cmdline
 
     # Extend the command, redirect all of its output (stdout and
-    # stderr) into the current log.
-    lappend cmdline >&@ $v::log
+    # stderr) into a temp log.
+    set elogfile [LogFileExec]
+    set elog     [open $elogfile w]
 
-    interp transfer {} $v::log $run
+    lappend cmdline >&@ $elog
+    interp transfer {}  $elog $run
 
     set ok [Exec $cmdline]
 
-    interp transfer $run $v::log {}
+    interp transfer $run $elog {}
+    close $elog
+
+    # Put the command output into the main log ...
+    set  msgs [Cat $elogfile]
+    Log $msgs
+
+    # ... as well as into a separate execution log.
+    Append ${v::logfile}_ $msgs
+
+    file delete -force $elogfile
 
     if {$ok} {
 	Log [uplevel 1 [list subst $okmsg]]
@@ -4485,7 +5196,7 @@ proc ::critcl::ExecWithLogging {cmdline okmsg errmsg} {
 proc ::critcl::BuildPlatform {} {
     set platform [::platform::generic]
 
-    # Behave like a autoconf generated configure
+    # Behave like an autoconf generated configure
     # - $CC (user's choice first)
     # - gcc, if available.
     # - cc/cl otherwise (without further check for availability)
@@ -4507,12 +5218,12 @@ proc ::critcl::BuildPlatform {} {
 	}
     }
 
-    # The cc may be a full path, through the CC environment variable,
-    # which is bad for use in the platform code. Use only the last
-    # element of said path, without extensions (.exe). And it may be
-    # followed by options too, so look for and strip these off as
-    # well. This last part assumes that the path of the compiler
-    # itself doesn't contain spaces.
+    # The cc may be specified with a full path, through the CC
+    # environment variable, which cannot be used as is in the platform
+    # code. Use only the last element of the path, without extensions
+    # (.exe). And it may be followed by options too, so look for and
+    # strip these off as well. This last part assumes that the path of
+    # the compiler itself doesn't contain spaces.
 
     regsub {( .*)$} [file tail $cc] {} cc
     append platform -[file rootname $cc]
@@ -4543,6 +5254,82 @@ proc ::critcl::Here {} {
     return [file dirname [This]]
 }
 
+proc ::critcl::TclDecls {file} {
+    return [TclDef $file tclDecls.h     tclStubsPtr    {tclStubsPtr    }]
+}
+
+proc ::critcl::TclPlatDecls {file} {
+    return [TclDef $file tclPlatDecls.h tclPlatStubsPtr tclPlatStubsPtr]
+}
+
+proc ::critcl::TclDef {file hdr var varlabel} {
+    #puts F|$file
+    set hdr [TclHeader $file $hdr]
+
+    if {![file exists   $hdr]} { error "Header file not found: $hdr" }
+    if {![file isfile   $hdr]} { error "Header not a file: $hdr" }
+    if {![file readable $hdr]} { error "Header not readable: $hdr (no permission)" }
+
+    #puts H|$hdr
+    if {[catch {
+	set hdrcontent [split [Cat $hdr] \n]
+    } msg]} {
+	error "Header not readable: $hdr ($msg)"
+    }
+
+    # Note, Danger: The code below is able to use declarations which
+    # are commented out in various ways (#if 0, /* ... */, and //
+    # ...), because it is performing a simple line-oriented search
+    # without context, and not matching against comment syntax either.
+
+    set ext [Grep *extern* $hdrcontent]
+    if {![llength $ext]} {
+	error "No extern declarations found in $hdr"
+    }
+
+    set vardecl [Grep *${var}* $ext]
+    if {![llength $vardecl]} {
+	error "No declarations for $var found in $hdr"
+    }
+
+    set def [string map {extern {}} [lindex $vardecl 0]]
+    msg " ($varlabel => $def)"
+    return $def
+}
+
+proc ::critcl::Grep {pattern lines} {
+    set r {}
+    foreach line $lines {
+	if {![string match $pattern $line]} continue
+	lappend r $line
+    }
+    return $r
+}
+
+proc ::critcl::GrepV {pattern lines} {
+    set r {}
+    foreach line $lines {
+	if {[string match $pattern $line]} continue
+	lappend r $line
+    }
+    return $r
+}
+
+proc ::critcl::PadRight {len w} {
+    # <=> Left justified
+    format %-${len}s $w
+}
+
+proc ::critcl::LengthLongestWord {words} {
+    set max 0
+    foreach w $words {
+	set n [string length $w]
+	if {$n <= $max} continue
+	set max $n
+    }
+    return $max
+}
+
 # # ## ### ##### ######## ############# #####################
 ## Initialization
 
@@ -4552,6 +5339,20 @@ proc ::critcl::Initialize {} {
     variable run              [interp create]
     variable v::buildplatform [BuildPlatform]
     variable v::hdrdir	      [file join $mydir critcl_c]
+    variable v::hdrsavailable
+    variable v::storageclass  [Cat [file join $hdrdir storageclass.c]]
+
+    # Scan the directory holding the C fragments and our copies of the
+    # Tcl header and determine for which versions of Tcl we actually
+    # have headers. This allows distributions to modify the directory,
+    # i.e. drop our copies and refer to the system headers instead, as
+    # much as are installed, and critcl adapts. The tcl versions are
+    # recorded in ascending order, making upcoming searches easier,
+    # the first satisfying version is also always the smallest.
+
+    foreach d [lsort -dict [glob -types {d r} -directory $hdrdir -tails tcl*]] {
+	lappend hdrsavailable [regsub {^tcl} $d {}]
+    }
 
     # The prefix is based on the package's version. This allows
     # multiple versions of the package to use the same cache without
@@ -4586,6 +5387,10 @@ proc ::critcl::Initialize {} {
 	if (Tcl_GetLongFromObj(interp, @@, &@A) != TCL_OK) return TCL_ERROR;
     }
 
+    argtype wideint {
+	if (Tcl_GetWideIntFromObj(interp, @@, &@A) != TCL_OK) return TCL_ERROR;
+    } Tcl_WideInt Tcl_WideInt
+
     argtype double {
 	if (Tcl_GetDoubleFromObj(interp, @@, &@A) != TCL_OK) return TCL_ERROR;
     }
@@ -4601,19 +5406,53 @@ proc ::critcl::Initialize {} {
 
     argtype pstring {
 	@A.s = Tcl_GetStringFromObj(@@, &(@A.len));
+	@A.o = @@;
     } critcl_pstring critcl_pstring
 
     argtypesupport pstring {
 	typedef struct critcl_pstring {
-	    char* s;
-	    int   len;
+	    Tcl_Obj* o;
+	    char*    s;
+	    int      len;
 	} critcl_pstring;
+    }
+
+    argtype list {
+	if (Tcl_ListObjGetElements (interp, @@, &(@A.c), &(@A.v)) != TCL_OK) return TCL_ERROR;
+	@A.o = @@;
+    } critcl_list critcl_list
+
+    argtypesupport list {
+	typedef struct critcl_list {
+	    Tcl_Obj*  o;
+	    Tcl_Obj** v;
+	    int       c;
+	} critcl_list;
     }
 
     argtype Tcl_Obj* {
 	@A = @@;
     }
     argtype object = Tcl_Obj*
+
+    # Predefined variadic type for the special Tcl_Obj*.
+    # - No actual conversion, nor allocation, copying, release needed.
+    # - Just point into and reuse the incoming ov[] array.
+    # This shortcuts the operation of 'MakeVariadicTypeFor'.
+
+    argtype variadic_object {
+	@A.c = @C;
+	@A.v = &ov[@I];
+    } critcl_variadic_object critcl_variadic_object
+
+    argtypesupport variadic_object {
+	typedef struct critcl_variadic_object {
+	    int             c;
+	    Tcl_Obj* const* v;
+	} critcl_variadic_object;
+    }
+
+    argtype variadic_Tcl_Obj* = variadic_object
 
     ## The next set of argument types looks to be very broken. We are
     ## keeping them for now, but declare them as DEPRECATED. Their
@@ -4633,13 +5472,31 @@ proc ::critcl::Initialize {} {
 	/* Raw pointer in binary Tcl value */
 	@A = (double*) Tcl_GetByteArrayFromObj(@@, NULL);
     }
+
+    # OLD Raw binary string. Length information is _NOT_ propagated
+
     argtype bytearray {
 	/* Raw binary string. Length information is _NOT_ propagated */
 	@A = (char*) Tcl_GetByteArrayFromObj(@@, NULL);
-	Tcl_InvalidateStringRep(@@);
     } char* char*
     argtype rawchar = bytearray
     argtype rawchar* = bytearray
+
+    # NEW Raw binary string _with_ length information.
+
+    argtype bytes {
+	/* Raw binary string _with_ length information */
+	@A.s = (char*) Tcl_GetByteArrayFromObj(@@, &(@A.len));
+	@A.o = @@;
+    } critcl_bytes critcl_bytes
+
+    argtypesupport bytes {
+	typedef struct critcl_bytes {
+	    Tcl_Obj* o;
+	    char*    s;
+	    int      len;
+	} critcl_bytes;
+    }
 
     # Declare the standard result types for cproc.
     # System still has special case code for:
@@ -4664,6 +5521,11 @@ proc ::critcl::Initialize {} {
 	Tcl_SetObjResult(interp, Tcl_NewLongObj(rv));
 	return TCL_OK;
     }
+
+    resulttype wideint {
+	Tcl_SetObjResult(interp, Tcl_NewWideIntObj(rv));
+	return TCL_OK;
+    } Tcl_WideInt
 
     resulttype double {
 	Tcl_SetObjResult(interp, Tcl_NewDoubleObj(rv));
@@ -4705,6 +5567,14 @@ proc ::critcl::Initialize {} {
 	return TCL_OK;
     }
     resulttype object = Tcl_Obj*
+
+    critcl::resulttype Tcl_Obj*0 {
+	if (rv == NULL) { return TCL_ERROR; }
+	Tcl_SetObjResult(interp, rv);
+	/* No refcount adjustment */
+	return TCL_OK;
+    } Tcl_Obj*
+    resulttype object0 = Tcl_Obj*0
 
     rename ::critcl::Initialize {}
     return
@@ -4753,12 +5623,12 @@ namespace eval ::critcl {
 	# similar to "target identifier".
 
 	variable targetconfig    ;# Target identifier. The chosen configuration.
-	variable targetplatform  ;# Platform identifier. We generate binaries for there.
+	variable targetplatform  ;# Platform identifier. Type of generated binaries.
 	variable buildplatform   ;# Platform identifier. We run here.
 
 	variable knowntargets {} ;# List of all target identifiers found
 	# in the configuration file last processed by "readconfig".
-	
+
 	variable xtargets        ;# Cross-compile targets. This array maps from
 	array set xtargets {}    ;# the target identifier to the actual platform
 	# identifier of the target platform in question. If a target identifier
@@ -4771,6 +5641,9 @@ namespace eval ::critcl {
 	variable hdrdir          ;# Path. Directory containing the helper
 				  # files of the package. A sub-
 				  # directory of 'mydir', see above.
+	variable hdrsavailable   ;# List. Of Tcl versions for which we have
+	                          # Tcl header files available. For details
+	                          # see procedure 'Initialize' above.
 	variable prefix          ;# String. The string to start all file names
 				  # generated by the package with. See
 				  # 'Initialize' for our choice and
@@ -4802,6 +5675,16 @@ namespace eval ::critcl {
 				  #   emit #line-directives to help locating
 				  #   C code in the .tcl in case of compile
 				  #   warnings and errors.
+	set options(trace)    0  ;# - Boolean. If set the generator will
+	                          #   emit code tracing command entry
+	                          #   and return, for all cprocs and
+	                          #   ccommands. The latter is done by
+	                          #   creating a shim function. For
+	                          #   cprocs their regular shim
+	                          #   function is used and modified.
+	                          #   The functionality is based on
+	                          #   'critcl::cutil's 'tracer'
+	                          #   command and C code.
 
 	# XXX clientdata() per-command (See ccommand). per-file+ccommand better?
 	# XXX delproc()    per-command (See ccommand). s.a
@@ -4848,34 +5731,7 @@ namespace eval ::critcl {
 	variable  rconv
 	array set rconv {}
 
-	variable storageclass {
-/*
- * These macros are used to control whether functions are being declared for
- * import or export. If a function is being declared while it is being built
- * to be included in a shared library, then it should have the DLLEXPORT
- * storage class. If is being declared for use by a module that is going to
- * link against the shared library, then it should have the DLLIMPORT storage
- * class. If the symbol is beind declared for a static build or for use from a
- * stub library, then the storage class should be empty.
- *
- * The convention is that a macro called BUILD_xxxx, where xxxx is the name of
- * a library we are building, is set on the compile line for sources that are
- * to be placed in the library. When this macro is set, the storage class will
- * be set to DLLEXPORT. At the end of the header file, the storage class will
- * be reset to DLLIMPORT.
- */
-
-#undef TCL_STORAGE_CLASS
-#ifdef BUILD_@cname@
-#   define TCL_STORAGE_CLASS DLLEXPORT
-#else
-#   ifdef USE_@up@_STUBS
-#      define TCL_STORAGE_CLASS
-#   else
-#      define TCL_STORAGE_CLASS DLLIMPORT
-#   endif
-#endif
-	}
+	variable storageclass {} ;# See Initialize for setup.
 
 	variable code	         ;# This array collects all code snippets and
 				  # data about them.
@@ -4957,6 +5813,9 @@ namespace eval ::critcl {
 				  # "Log*" and "ExecWithLogging".
 	variable failed  0       ;# Build status. Used by "Status*"
 	variable err     ""	 ;# and "Exec*". Build error text.
+
+	variable uuidcounter 0   ;# Counter for uuid generation in package mode.
+	                         ;# md5 is bypassed when used.
 
 	variable buildforpackage 0 ;# Boolean flag controlling
 				    # cbuild's behaviour. Named after
@@ -5051,7 +5910,8 @@ namespace eval ::critcl {
 	at cache ccode ccommand cdata cdefines cflags cheaders \
 	check cinit clibraries compiled compiling config cproc \
 	csources debug done failed framework ldflags platform \
-	tk tsources preload license load tcl api userconfig meta
+	tk tsources preload license load tcl api userconfig meta \
+	source include make
     # This is exported for critcl::app to pick up when generating the
     # dummy commands in the runtime support of a generated package.
     namespace export Ignore

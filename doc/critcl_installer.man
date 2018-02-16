@@ -34,6 +34,7 @@ Before Critcl can be build and used a number of requisites must be installed. Th
        For details see [sectref Tcl].
 [enum] Various packages from the Tcllib bundle for [syscmd Tcl].
        For details see [sectref Tcllib].
+[enum] A working C compiler and development environment.
 [list_end]
 
 This list assumes that the machine where Critcl is to be installed is
@@ -44,93 +45,14 @@ dependencies they talk about are indeed installed.
 
 [include include/rq_tcl.inc]
 [include include/rq_tcllib.inc]
+[include include/rq_cc.inc]
 
-[section {Build & Installation}]
+[comment {===================================================================}]
+[section {Build & Installation Instructions}]
 
-To install Critcl simply run
-
-[example {
-    /path/to/tclsh /path/to/critcl/build.tcl install
-}]
-
-where [file /path/to/tclsh] is the tclsh of your Tcl installation, and
-[file /path/to/critcl] the location of the Critcl sources on your system.
-
-[para]
-
-This builds all packages and then places them in a directory where the
-[cmd tclsh] will find them. 
-
-[para]
-
-It further creates a [file critcl] application script and places it
-into the directory [cmd tclsh] resides in, making it a sibling of that
-executable. The critcl application is written to use that executable
-as well, and not search for it in the [var PATH].
-
-[para]
-
-On Windows you can invoke the file [file build.tcl] with a
-double-click.  This will pop up a small graphical interface for
-entering the destination and performing the installation. This
-handling of a double-click is restricted to Windows only however.
-
-[para]
-
-On unix the same GUI is acessible by invoking [file build.tcl] without
-any arguments.
-
-[para]
-
-To get help about the methods of [file build.tcl], and their complete
-syntax, invoke  [file build.tcl] with argument [method help], i.e., like
-
-[example {
-    /path/to/tclsh /path/to/critcl/build.tcl help
-}]
-
-[section {First Use, Testing the Installation}]
-
-With critcl installed it is now the time to try at least one of the
-examples distributed with it. This will also test if the installation
-was successful.
-
-[para] Below I show the steps to generate and then use the low- and
-high-level stack example packages. I am intentionally bypassing the
-[file build.tcl] file the example is coming with, to show the use of
-[cmd critcl] itself.
-
-[para][example {
-
-    > cd examples/stack
-    > /path/to/critcl -keep -cache B -pkg cstack.tcl
-    > /path/to/critcl -keep -cache B -pkg stackc.tcl
-    > tclsh
-    % lappend auto_path [pwd]/lib
-    % package require stackc
-    % join [info loaded] \n
-    % stackc S
-    % S push FOO
-    % S size
-    % S destroy
-    % exit
-    >
-}]
-
-[para] Some explanations:
-[list_begin itemized]
-[item]	The example shows only the commands entered on the shell (and
-	tclsh) command line. Their responses are left out.
-[item]	Use of option [option -keep] causes critcl to leave the
-	generated .c files behind, for edification. Normally this
-	happens only in case of trouble.
-[item]	Use of option [option -cache] redirects the location of the
-	directory to hold generated and build files to a local
-	directory with a known name, for an easy look after.
-[item]	Both [package cstack] and [package stackc] have to use the
-	[emph same] [option -cache] so that [package stackc] will
-	find the stub table headers exported by [package cstack].
-[list_end]
+[include include/b_unix.inc]
+[include include/b_windows.inc]
+[include include/b_test.inc]
 
 [include include/feedback.inc]
 [manpage_end]

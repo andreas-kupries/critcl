@@ -92,17 +92,17 @@
     }
 --></style>
 </head>
-<! -- Generated from file '/home/aku/Projects/Critcl/dev-master/embedded/www/files/critcl_util.html' by tcllib/doctools with format 'html'
+<! -- Generated from file 'critcl_util.man' by tcllib/doctools with format 'html'
    -->
-<! -- Copyright &copy; 2011-2012 Andreas Kupries
+<! -- Copyright &copy; 2011-2015 Andreas Kupries
    -->
 <! -- CVS: $Id$ critcl::util.n
    -->
 <body><div class="doctools">
 <hr> [
-  <a href="../toc.html">Table Of Contents</a>
+   <a href="../toc.html">Table Of Contents</a>
 | <a href="../index.html">Keyword Index</a>
-] <hr>
+ ] <hr>
 <h1 class="title">critcl::util(n) 1 doc &quot;C Runtime In Tcl (CriTcl)&quot;</h1>
 <div id="name" class="section"><h2><a name="name">Name</a></h2>
 <p>critcl::util - CriTcl Utilities</p>
@@ -129,6 +129,9 @@
 </ul>
 <ul class="syntax">
 <li><a href="#1"><b class="cmd">::critcl::util::checkfun</b> <i class="arg">name</i> <span class="opt">?<i class="arg">label</i>?</span></a></li>
+<li><a href="#2"><b class="cmd">::critcl::util::def</b> <i class="arg">path</i> <i class="arg">define</i> <span class="opt">?<i class="arg">value</i>?</span></a></li>
+<li><a href="#3"><b class="cmd">::critcl::util::undef</b> <i class="arg">path</i> <i class="arg">define</i></a></li>
+<li><a href="#4"><b class="cmd">::critcl::util::locate</b> <i class="arg">label</i> <i class="arg">paths</i> <span class="opt">?<i class="arg">cmd</i>?</span></a></li>
 </ul>
 </div>
 </div>
@@ -151,6 +154,34 @@ packages with embedded C code.</p>
 <dd><p>This command checks the build-time environment for the existence of
 the C function <i class="arg">name</i>.
 It returns <b class="const">true</b> on success, and <b class="const">false</b> otherwise.</p></dd>
+<dt><a name="2"><b class="cmd">::critcl::util::def</b> <i class="arg">path</i> <i class="arg">define</i> <span class="opt">?<i class="arg">value</i>?</span></a></dt>
+<dd><p>This command extends the specified configuration file <i class="arg">path</i> with a
+<b class="const">#define</b> directive for the named <i class="arg">define</i>. If the <i class="arg">value</i>
+is not specified it will default to <b class="const">1</b>.</p>
+<p>The result of the command is an empty string.</p>
+<p>Note that the configuration file is maintained in the <b class="cmd">critcl::cache</b>
+directory.</p></dd>
+<dt><a name="3"><b class="cmd">::critcl::util::undef</b> <i class="arg">path</i> <i class="arg">define</i></a></dt>
+<dd><p>This command extends the specified configuration file <i class="arg">path</i> with an
+<b class="const">#undef</b> directive for the named <i class="arg">define</i>.</p>
+<p>The result of the command is an empty string.</p>
+<p>Note that the configuration file is maintained in the <b class="cmd">critcl::cache</b>
+directory.</p></dd>
+<dt><a name="4"><b class="cmd">::critcl::util::locate</b> <i class="arg">label</i> <i class="arg">paths</i> <span class="opt">?<i class="arg">cmd</i>?</span></a></dt>
+<dd><p>This command checks the build-time environment for the existence of a file
+in a set of possible <i class="arg">paths</i>.</p>
+<p>If the option <i class="arg">cmd</i> prefix is specified it will be called with
+the full path of a found file as its only argument to perform further checks.
+A return value of <b class="const">false</b> will reject the path and continue the search.</p>
+<p>The return value of the command is the found path, as listed in
+<i class="arg">paths</i>. As a side effect the command will also print the found path,
+prefixed with the <i class="arg">label</i>, using <b class="cmd">critcl::msg</b>.</p>
+<p>Failure to find the path is reported via <b class="cmd">critcl::error</b>, and a
+possible empty string as the result, if <b class="cmd">critcl::error</b> does not
+terminate execution.</p>
+<p>Relative paths are allowed as elements of <i class="arg">paths</i>, and are
+normalized relative to the directory containing the currently handled
+critcl file.</p></dd>
 </dl>
 </div>
 <div id="section3" class="section"><h2><a name="section3">Authors</a></h2>
@@ -170,6 +201,6 @@ package and/or documentation.</p>
 <p>Glueing/Embedded C code</p>
 </div>
 <div id="copyright" class="section"><h2><a name="copyright">Copyright</a></h2>
-<p>Copyright &copy; 2011-2012 Andreas Kupries</p>
+<p>Copyright &copy; 2011-2015 Andreas Kupries</p>
 </div>
 </div></body></html>

@@ -1,14 +1,18 @@
 
-While the [cmd critcl::cproc] command understands the most common C
-types (see section [sectref {Embedded C Code}]), sometimes this is not
-enough.
-
 [para] To get around this limitation the commands in this section
 enable users of [package critcl] to extend the set of argument and
-result types understood by [cmd critcl::cproc]. In other words, to
-define their own custom types.
+result types understood by [cmd critcl::cproc]. In other words, they
+allow them to define their own, custom, types.
 
 [list_begin definitions]
+
+[comment {- - -- --- ----- -------- ------------- ---------------------}]
+[call [cmd ::critcl::has-resulttype] [arg name]]
+
+This command tests if the named result-type is known or not.
+
+It returns a boolean value, [const true] if the type is known and
+[const false] otherwise.
 
 [comment {- - -- --- ----- -------- ------------- ---------------------}]
 [call [cmd ::critcl::resulttype] [arg name] [arg body] [opt [arg ctype]]]
@@ -24,7 +28,7 @@ it is not specified.
 
 [emph Attention!] The standard result type [const void] is special as
 it has no accompanying result variable. This cannot be expressed
-by the this extension command.
+by this extension command.
 
 [para] The [arg body]'s responsibility is the conversion of the
 functions result into a Tcl result and a Tcl status. The first has to
@@ -62,6 +66,15 @@ As examples here are the definitions of two standard result types:
 This form of the [cmd resulttype] command declares [arg name] as an
 alias of result type [arg origname], which has to be defined
 already. If this is not the case an error is thrown.
+
+
+[comment {- - -- --- ----- -------- ------------- ---------------------}]
+[call [cmd ::critcl::has-argtype] [arg name]]
+
+This command tests if the named argument-type is known or not.
+
+It returns a boolean value, [const true] if the type is known and
+[const false] otherwise.
 
 [comment {- - -- --- ----- -------- ------------- ---------------------}]
 [call [cmd ::critcl::argtype] [arg name] [arg body] [opt [arg ctype]] [opt [arg ctypefun]]]
@@ -116,16 +129,36 @@ of argument type [arg origname], which has to be defined already. If
 this is not the case an error is thrown.
 
 [comment ---------------------------------------------------------------------]
-[call [cmd ::critcl::argtypesupport] [arg name] [arg code]]
+[call [cmd ::critcl::argtypesupport] [arg name] [arg code] [opt [arg guard]]]
 
 This command defines a C code fragment for the already defined
 argument type [arg name] which will be inserted before all functions
 using that type. Its purpose is the definition of any supporting C
 types needed by the argument type.
 
-If the type is used by many functions the system ensure that only the
+If the type is used by many functions the system ensures that only the
 first of the multiple insertions of the code fragment is active, and
 the others disabled.
+
+The guard identifier is normally derived from [arg name], but can also
+be set explicitly, via [arg guard]. This latter allows different
+custom types to share a common support structure without having to
+perform their own guarding.
+
+[comment ---------------------------------------------------------------------]
+[call [cmd ::critcl::argtyperelease] [arg name] [arg code]]
+
+This command defines a C code fragment for the already defined
+argument type [arg name] which will be inserted whenever the worker
+function of a [cmd critcl::cproc] returns to the shim. It is the
+responsibility of this fragment to unconditionally release any
+resources the [cmd critcl::argtype] conversion code allocated.
+
+An example of this are the [emph variadic] types for the support of
+the special, variadic [arg args] argument to [cmd critcl::cproc]'s.
+They allocate a C array for the collected arguments which has to be
+released when the worker returns. This command defines the C code
+for doing that.
 
 [comment {- - -- --- ----- -------- ------------- ---------------------}]
 [list_end]

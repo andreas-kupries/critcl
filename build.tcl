@@ -1,6 +1,8 @@
 #!/bin/sh
 # -*- tcl -*- \
 exec tclsh "$0" ${1+"$@"}
+package require Tcl 8.4
+unset -nocomplain ::errorInfo
 set me [file normalize [info script]]
 proc main {} {
     global argv
@@ -11,14 +13,30 @@ proc main {} {
     exit 0
 }
 set packages {
-    {critcl        critcl.tcl}
-    {critcl-util   util.tcl}
-    {critcl-class  class.tcl}
-    {critcl-iassoc iassoc.tcl}
-    {app-critcl   ../critcl/critcl.tcl critcl-app}
-    util84
-    stubs
-    critcl-platform
+    {app-critcl       ../critcl/critcl.tcl critcl-app}
+    {critcl           critcl.tcl}
+    {critcl-bitmap    bitmap.tcl}
+    {critcl-class     class.tcl}
+    {critcl-cutil     cutil.tcl}
+    {critcl-emap      emap.tcl}
+    {critcl-enum      enum.tcl}
+    {critcl-iassoc    iassoc.tcl}
+    {critcl-literals  literals.tcl}
+    {critcl-platform  platform.tcl}
+    {critcl-util      util.tcl}
+    {dict84           dict.tcl}
+    {lassign84        lassign.tcl}
+    {lmap84           lmap.tcl}
+    {stubs_container  container.tcl}
+    {stubs_gen_decl   gen_decl.tcl}
+    {stubs_gen_header gen_header.tcl}
+    {stubs_gen_init   gen_init.tcl}
+    {stubs_gen_lib    gen_lib.tcl}
+    {stubs_gen_macro  gen_macro.tcl}
+    {stubs_gen_slot   gen_slot.tcl}
+    {stubs_genframe   genframe.tcl}
+    {stubs_reader     reader.tcl}
+    {stubs_writer     writer.tcl}
 }
 proc usage {{status 1}} {
     global errorInfo
@@ -47,6 +65,14 @@ proc usage {{status 1}} {
 proc +x {path} {
     catch { file attributes $path -permissions ugo+x }
     return
+}
+proc critapp {dst} {
+    global tcl_platform
+    set app $dst/critcl
+    if {$tcl_platform(platform) eq "windows"} {
+	append app .tcl
+    }
+    return $app
 }
 proc grep {file pattern} {
     set lines [split [read [set chan [open $file r]]] \n]
@@ -79,6 +105,22 @@ proc findlib {path} {
 	set path $new
     }
     return $path
+}
+proc dstlfromlib {path} {
+    # kinda the inverse of findlib above, it returns the path to
+    # dstlpath, relative the */lib path returned by findlib. The path
+    # is returned as a list of segments
+    set relpath {}
+    while {1} {
+        if {[file tail $path] eq "lib"} {
+            break
+        }
+        set new [file dirname $path]
+        set relpath [linsert $relpath 0 [file tail $path]]
+        if {$new eq $path} break
+        set path $new
+    }
+    return $relpath
 }
 proc id {cv vv} {
     upvar 1 $cv commit $vv version
@@ -123,6 +165,27 @@ proc _recipes {} {
 	lappend r [string range $c 1 end]
     }
     puts [lsort -dict $r]
+    return
+}
+proc Htest {} { return "\n\tRun the testsuite." }
+proc _test {} {
+    global argv
+    set    argv {} ;# clear -- tcltest shall see nothing
+    # Run all .test files in the test/ directory.
+    set selfdir [file dirname $::me]
+    foreach testsuite [lsort -dict [glob -directory $selfdir/test *.test]] {
+	puts ""
+	puts "_ _ __ ___ _____ ________ _____________ _____________________ *** [file tail $testsuite] ***"
+	if {[catch {
+	    exec >@ stdout 2>@ stderr [info nameofexecutable] $testsuite
+	}]} {
+	    puts $::errorInfo
+	}
+    }
+
+    puts ""
+    puts "_ _ __ ___ _____ ________ _____________ _____________________"
+    puts ""
     return
 }
 proc Hdoc {} { return "\n\t(Re)Generate the embedded documentation." }
@@ -182,6 +245,15 @@ proc _release {} {
     # Get scratchpad to assemble the release in.
     # Get version and hash of the commit to be released.
 
+    puts -nonewline "Have you run the tests ? "
+    flush stdout
+    set a [string tolower [gets stdin]]
+
+    if {($a ne "y" ) && ($a ne "yes")} {
+	puts "Please do"
+	exit 1
+    }
+
     set tmpdir [tmpdir]
     id commit version
 
@@ -240,17 +312,37 @@ proc _release-doc {} {
     # # ## ### ##### ######## #############
     return
 }
-proc Hinstall {} { return "?destination?\n\tInstall all packages, and application.\n\tdestination = path of package directory, default \[info library\]." }
-proc _install {{dst {}}} {
-    global packages
 
+proc Htargets {} { return "?destination?\n\tShow available targets.\n\tExpects critcl app to be installed in destination." }
+proc _targets {{dst {}}} {
     if {[llength [info level 0]] < 2} {
+	set dsta [file dirname [file dirname [file normalize [info nameofexecutable]/___]]]
+    } else {
+	set dsta [file dirname [findlib $dstl]]/bin
+    }
+    puts [join [split [exec $dsta/critcl -targets]] \n]
+    return
+}
+
+proc Hinstall {} { return "?-target T? ?destination?\n\tInstall all packages, and application.\n\tdestination = path of package directory, default \[info library\]." }
+proc _install {args} {
+    global packages me
+
+    set target {}
+    if {[lindex $args 0] eq "-target"} {
+	set target [lindex $args 1]
+	set args [lrange $args 2 end]
+    }
+
+    if {[llength $args] == 0} {
 	set dstl [info library]
 	set dsta [file dirname [file dirname [file normalize [info nameofexecutable]/___]]]
     } else {
-	set dstl $dst
+	set dstl [lindex $args 0]
 	set dsta [file dirname [findlib $dstl]]/bin
     }
+
+    set selfdir [file dirname $me]
 
     puts {Installing into:}
     puts \tPackages:\t$dstl
@@ -276,12 +368,12 @@ proc _install {{dst {}}} {
 	    }
 
 	    if {$vfile ne {}} {
-		set version  [version [file dirname $::me]/lib/$dir/$vfile]
+		set version  [version $selfdir/lib/$dir/$vfile]
 	    } else {
 		set version {}
 	    }
 
-	    file copy   -force [file dirname $::me]/lib/$dir     $dstl/${name}-new
+	    file copy   -force $selfdir/lib/$dir     $dstl/${name}-new
 	    file delete -force $dstl/$name$version
 	    file rename        $dstl/${name}-new     $dstl/$name$version
 	    puts "${prefix}Installed package:      $dstl/$name$version"
@@ -290,12 +382,62 @@ proc _install {{dst {}}} {
 
 	# Application: critcl
 
-	set    c [open $dsta/critcl w]
-	puts  $c "#!/bin/sh\n# -*- tcl -*- \\\nexec [file dirname [file normalize [info nameofexecutable]/___]] \"\$0\" \$\{1+\"\$@\"\}\npackage require critcl::app\ncritcl::app::main \$argv"
-	close $c
-	+x $dsta/critcl
+	set theapp  [critapp     $dsta]
+	set reldstl [dstlfromlib $dstl]
 
-	puts "${prefix}Installed application:  $dsta/critcl"
+	set c [open $theapp w]
+	lappend map @bs@   "\\"
+	lappend map @exe@  [file dirname [file normalize [info nameofexecutable]/___]]
+	lappend map @path@ $reldstl  ;# insert the dst path
+	lappend map "\t    " {} ;# de-dent
+	puts $c [string trimleft [string map $map {
+	    #!/bin/sh
+	    # -*- tcl -*- @bs@
+	    exec "@exe@" "$0" ${1+"$@"}
+
+	    set libpath [file normalize [file join [file dirname [info script]] .. lib]]
+	    set libpath [file join $libpath {@path@}]
+	    if {[lsearch -exact $auto_path $libpath] < 0} {lappend auto_path $libpath}
+
+	    package require critcl::app
+	    critcl::app::main $argv}]]
+	close $c
+	+x $theapp
+
+	puts "${prefix}Installed application:  $theapp"
+
+	# Special package: critcl_md5c
+	# Local MD5 hash implementation.
+
+	# It is special because it is a critcl-based package, not pure
+	# Tcl as everything else of critcl. Its installation makes it
+	# the first package which will be compiled with critcl on this
+	# machine. It uses the just-installed application for
+	# that. This is package-mode, where MD5 itself is not used, so
+	# there is no chicken vs. egg.
+
+	set src     $selfdir/lib/critcl-md5c/md5c.tcl
+	set version [version $src]
+	set name    critcl_md5c
+	set dst     $dstl/$name$version
+
+	lappend cmd exec >@ stdout 2>@ stderr
+	if {$::tcl_platform(platform) eq "windows"} {
+	    lappend cmd [info nameofexecutable]
+	}
+	lappend cmd $theapp
+	if {$target ne {}} {
+	    lappend cmd -target $target
+	}
+	lappend cmd -libdir $dstl/tmp -pkg $src
+	eval $cmd
+
+	file delete -force $dst
+	file rename        $dstl/tmp/md5c $dst
+	file delete -force $dstl/tmp
+
+	puts "${prefix}Installed package:      $dst"
+
     } msg]} {
 	if {![string match {*permission denied*} $msg]} {
 	    return -code error -errorcode $::errorCode -errorinfo $::errorInfo $msg
@@ -305,6 +447,9 @@ proc _install {{dst {}}} {
     }
     return
 }
+proc Huninstall {} { Hdrop }
+proc _uninstall {args} { _drop {*}$args }
+
 proc Hdrop {} { return "?destination?\n\tRemove packages.\n\tdestination = path of package directory, default \[info library\]." }
 proc _drop {{dst {}}} {
     global packages
@@ -316,6 +461,10 @@ proc _drop {{dst {}}} {
 	set dstl $dst
 	set dsta [file dirname $dst]/bin
     }
+
+    # Add the special package (see install). Not special with regard
+    # to removal. Except for the name
+    lappend packages [list critcl-md5c md5c.tcl critcl_md5c]
 
     foreach item $packages {
 	# Package: /name/
@@ -342,9 +491,9 @@ proc _drop {{dst {}}} {
     }
 
     # Application: critcl
-
-    file delete $dsta/critcl
-    puts "Removed application: $dsta/critcl"
+    set theapp [critapp $dsta]
+    file delete $theapp
+    puts "Removed application: $theapp"
     return
 }
 proc Hstarkit {} { return "?destination? ?interpreter?\n\tGenerate a starkit\n\tdestination = path of result file, default 'critcl.kit'\n\tinterpreter = (path) name of tcl shell to use for execution, default 'tclkit'" }

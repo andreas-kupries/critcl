@@ -104,18 +104,20 @@ behaviour of compiler and linker.
 [call [cmd ::critcl::failed]]
 
 This command returns a boolean value. It returns [const true] if
-critcl has failed to build the package. As part of this it forces the
-building of the package, but not its loading. Note that it will
-attempt to build the package only on the first call; future calls for
-the same package will return a cached result.
+critcl has failed to build the package, and [const false] otherwise,
+i.e. success. As part of this it forces the building of the package,
+but not its loading. Note that it will attempt to build the package
+only on the first call; future calls for the same package will return
+a cached result.
 
 [para] This enables a critcl-based package to check itself for
-availability and throw an error if it could not be built.
+availability and throw an error if it could not be built. [emph Note]
+that the command does [emph not] throw such an error itself.
 
-[para] [emph Note] that this command is only useful from within in a
-[file .critcl] file. The result is managed on a per-file basis, like
-is done for the commands embedding C code and controlling the
-behaviour of compiler and linker.
+[para] [emph Note] further that this command is only useful from
+within in a [file .critcl] file. The result is managed on a per-file
+basis, like is done for the commands embedding C code and controlling
+the behaviour of compiler and linker.
 
 [comment ---------------------------------------------------------------------]
 [call [cmd ::critcl::load]]
@@ -125,16 +127,18 @@ the loading of the generated shared library, if it was built, and that
 its result has reversed sense. 
 
 [para] It returns [const true] if critcl succeeded in building and
-loading the package.
+loading the package, and [const false] otherwise, i.e. build- or
+load-failure.
 
 [para] This enables a critcl-based package to to not only check itself
 for availability and throw an error if it could not be built, but also
 force an immediate load, circumventing the default behaviour, which is
-lazy. See also section [sectref {Runtime Behaviour}].
+lazy. See also section [sectref {Runtime Behaviour}]. [emph Note] that
+the command does [emph not] throw any error itself.
 
-[para] [emph Note] that this command is only useful from within in a
-[file .critcl] file. The result is managed on a per-file basis, like
-is done for the commands embedding C code and controlling the
-behaviour of compiler and linker.
+[para] [emph Note] further that this command is only useful from
+within in a [file .critcl] file. The result is managed on a per-file
+basis, like is done for the commands embedding C code and controlling
+the behaviour of compiler and linker.
 
 [list_end]

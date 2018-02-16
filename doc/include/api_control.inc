@@ -34,14 +34,15 @@ absolute path are interpreted relative to the directory containing the
 current [file .critcl] file.
 
 [para] [emph Note] further that this declaration does not cause the
-specified header files to be [const {#include}]'d automatically. This
-still has to be done via [cmd critcl::ccode] where necessary.
+specified header files to be automatically
+[const {#include}]'d. Inclusion still has to be done via either
+[cmd critcl::include] or [cmd critcl::ccode], where necessary.
 
 It does simply ensure that the compiler will be able to find these
 files when invoked, by providing the necessary command line flags
-extending the compiler's search paths.
+to extend the compiler's search paths.
 
-[para] Multiple invokations of this command accumulate their
+[para] Multiple invocations of this command accumulate their
 information.
 
 [comment ---------------------------------------------------------------------]
@@ -49,7 +50,7 @@ information.
 
 This command provides the compile step with additional C source files.
 
-[para] All arguments are intepreted as glob patterns. Patterns
+[para] All arguments are interpreted as glob patterns. Patterns
 matching no file or non-existing files cause the command to throw an
 error. The files matching the patterns are made available to the
 compiler when it is invoked for the current [file .critcl] file. This
@@ -60,7 +61,7 @@ means that the files in question are compiled together with the
 absolute path are interpreted relative to the directory containing the
 current [file .critcl] file.
 
-[para] Multiple invokations of this command accumulate their
+[para] Multiple invocations of this command accumulate their
 information.
 
 [comment ---------------------------------------------------------------------]
@@ -84,7 +85,7 @@ file backing the [file .critcl] file into a single shared library.
 absolute path are interpreted relative to the directory containing the
 current [file .critcl] file.
 
-[para] Multiple invokations of this command accumulate their
+[para] Multiple invocations of this command accumulate their
 information.
 
 [comment ---------------------------------------------------------------------]
@@ -117,7 +118,7 @@ non-existing files cause the command to throw an error.
 absolute path are interpreted relative to the directory containing the
 current [file .critcl] file.
 
-[para] Multiple invokations of this command accumulate their
+[para] Multiple invocations of this command accumulate their
 information.
 
 [para] The declared files are sourced after the shared library has
@@ -146,7 +147,7 @@ This command provides the compile step with additional compiler flags.
 [para] All arguments are forwarded to the compiler's command line when
 it is invoked for the current [file .critcl] file.
 
-[para] Multiple invokations of this command accumulate their
+[para] Multiple invocations of this command accumulate their
 information.
 
 [comment ---------------------------------------------------------------------]
@@ -157,7 +158,7 @@ This command provides the link step with additional linker flags.
 [para] All arguments are forwarded to the linkers's command line when
 it is invoked for the current [file .critcl] file.
 
-[para] Multiple invokations of this command accumulate their
+[para] Multiple invocations of this command accumulate their
 information.
 
 [comment ---------------------------------------------------------------------]
@@ -172,7 +173,7 @@ not use them when building for non-OS X platforms.
 [para] All arguments are forwarded to the linkers's command line when
 it is invoked for the current [file .critcl] file.
 
-[para] Multiple invokations of this command accumulate their
+[para] Multiple invocations of this command accumulate their
 information.
 
 [comment ---------------------------------------------------------------------]
@@ -195,7 +196,7 @@ stubs for linking.
 This command arranges that the named dependent external shared library is loaded
 before the generated package's shared library.
 
-[para] Multiple invokations of this command accumulate their
+[para] Multiple invocations of this command accumulate their
 information.
 
 [para][include preload_search.inc]

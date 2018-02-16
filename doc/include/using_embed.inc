@@ -27,9 +27,14 @@ Now, with these introductory words out of the way, lets jump into the
 meat of things.
 
 [include using_eproc.inc]        [comment {%% cproc}]
+[include using_eproctypes.inc]   [comment {%% cproc types, intro & trivial}]
+[include using_eproctypes2.inc]  [comment {%% cproc types, semi-trivial}]
+[include using_eproctypes3.inc]  [comment {%% cproc types, support (incl alloc'd)}]
+[include using_eproctypes4.inc]  [comment {%% cproc types, results}]
 [include using_ecommand.inc]     [comment {%% ccommand}]
 [include using_edata.inc]        [comment {%% cdata}]
 [include using_ecode.inc]        [comment {%% ccode}]
+[include using_econst.inc]       [comment {%% cconst}]
 [include using_edefines.inc]     [comment {%% cdefines}]
 [include using_eheaders.inc]     [comment {%% cheaders}]
 [include using_ecsources.inc]    [comment {%% csources}]
@@ -46,4 +51,5 @@ meat of things.
 
 [comment {
 	No examples for: cinit, compiling, compiled, preload, done
+	No examples for the supporting generator classes.
 }]

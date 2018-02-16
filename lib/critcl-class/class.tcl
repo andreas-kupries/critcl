@@ -7,15 +7,17 @@
 # class made easy, with code for object command and method dispatch
 # generated.
 
-package provide critcl::class 1.0.6
+package provide critcl::class 1.0.7
 
 # # ## ### ##### ######## ############# #####################
 ## Requirements.
 
-package require Tcl    8.4   ; # Min supported version.
-package require critcl 3.1.6 ; # Need 'meta?' to get the package name.
-                               # Need 'name2c' returning 4 values.
-package require critcl::util ; # Use the package's Get/Put commands.
+package require Tcl    8.4    ; # Min supported version.
+package require critcl 3.1.17 ; # Need 'meta?' to get the package name.
+                                # Need 'name2c' returning 4 values.
+                                # Need 'Deline' helper.
+                                # Need cproc -tracename
+package require critcl::util  ; # Use the package's Get/Put commands.
 
 namespace eval ::critcl::class {}
 
@@ -313,7 +315,7 @@ proc ::critcl::class::GenerateCode {} {
     set header   [file join [critcl::cache] $hdr]
 
     file mkdir [critcl::cache]
-    set template [Template class.h]
+    set template [critcl::Deline [Template class.h]]
     #puts T=[string length $template]
     critcl::util::Put $header [string map [MakeMap] $template]
 
@@ -525,11 +527,13 @@ proc ::critcl::class::MethodExternal {name function details} {
 proc ::critcl::class::MethodExplicit {name mtype arguments args} {
     # mtype in {proc, command}
     MethodCheck method instance $name
+    variable state
 
     set bloc     [critcl::at::get]
     set enum     [MethodEnum method $name]
     set function ${enum}_Cmd
     set cdimport "[critcl::at::here!]    @instancetype@ instance = (@instancetype@) clientdata;"
+    set tname    "[dict get $state class] M  $name"
 
     if {$mtype eq "proc"} {
 	# Method is cproc.
@@ -551,7 +555,8 @@ proc ::critcl::class::MethodExplicit {name mtype arguments args} {
 	set body   "\n    $syntax\n$cdimport\n    $body"
 
 	set code [critcl::collect {
-	    critcl::cproc $function $arguments $rtype $body -cname 1 -pass-cdata 1 -arg-offset 1
+	    critcl::cproc $function $arguments $rtype $body \
+		-cname 1 -pass-cdata 1 -arg-offset 1 -tracename $tname
 	}]
 
     } else {
@@ -565,7 +570,8 @@ proc ::critcl::class::MethodExplicit {name mtype arguments args} {
 	set body   "\n    $syntax\n$cdimport\n    $body"
 
 	set code [critcl::collect {
-	    critcl::ccommand $function {} $body -cname 1
+	    critcl::ccommand $function {} $body \
+		-cname 1 -tracename $tname
 	}]
     }
 
@@ -589,11 +595,13 @@ proc ::critcl::class::ClassMethodExternal {name function details} {
 proc ::critcl::class::ClassMethodExplicit {name mtype arguments args} {
     # mtype in {proc, command}
     MethodCheck classmethod class $name
+    variable state
 
     set bloc     [critcl::at::get]
     set enum     [MethodEnum classmethod $name]
     set function ${enum}_Cmd
     set cdimport "[critcl::at::here!]    @classtype@ class = (@classtype@) clientdata;"
+    set tname    "[dict get $state class] CM $name"
 
     if {$mtype eq "proc"} {
 	# Method is cproc.
@@ -615,7 +623,9 @@ proc ::critcl::class::ClassMethodExplicit {name mtype arguments args} {
 	set body   "\n    $syntax\n$cdimport\n    $body"
 
 	set code [critcl::collect {
-	    critcl::cproc $function $arguments $rtype $body -cname 1 -pass-cdata 1 -arg-offset 1
+	    critcl::cproc $function $arguments $rtype $body \
+		-cname 1 -pass-cdata 1 -arg-offset 1 \
+		-tracename $tname
 	}]
 
     } else {
@@ -629,7 +639,8 @@ proc ::critcl::class::ClassMethodExplicit {name mtype arguments args} {
 	set body   "\n    $syntax\n$cdimport\n    $body"
 
 	set code [critcl::collect {
-	    critcl::ccommand $function {} $body -cname 1
+	    critcl::ccommand $function {} $body \
+		-cname 1 -tracename $tname
 	}]
     }
 

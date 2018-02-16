@@ -197,7 +197,7 @@ implementations of Tcllib's [package struct::queue] package:
     }
 
     ## Initialization: Choose an implementation,
-    ## most prefered first. Loads only one of the
+    ## most preferred first. Loads only one of the
     ## possible implementations. And activates it.
 
     namespace eval ::struct::queue {

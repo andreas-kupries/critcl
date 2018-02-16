@@ -67,7 +67,7 @@ critcl::tsources [info script]
 # # ## ### ##### ######## ############# #####################
 ## C code.
 
-critcl::cdata self "self"
+critcl::cdata self "me"
 
 # ... And other parts of the C level ...
 

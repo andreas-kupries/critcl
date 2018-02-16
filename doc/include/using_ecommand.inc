@@ -4,54 +4,55 @@ In [sectref {A Simple Procedure}] we demonstrated how easy a
 translation to C can be. Is it still as easy when we introduce
 something moderately complex like handling a variable number of
 arguments ? A feature which is needed to handle commands with options
-and optional arguments ? Unfortunately not.
+and optional arguments ?
 
-We can use [cmd critcl::cproc] only if the number of arguments is
-known beforehand, i.e. at the time of declaration. This of course also
-means that they do not support default arguments either.
+[para] Well, starting with version 3.1.16 [cmd critcl::cproc] does
+have full support for optional arguments, [arg args]-style variadics,
+and default values, extending its range to everything covered by the
+builtin [cmd proc]. The only thing not truly supported are options
+(i.e. flag arguments) of any kind.
 
-[para]
+[para] For the moment, and the example, let us pretend that we can use
+[cmd critcl::cproc] only if the number of arguments is fully known
+beforehand, i.e. at the time of declaration.
 
-Thus, to handle something like the example below
+Then we have to use [cmd critcl::ccommand] to handle the translation
+of the procedure shown below:
 
 [example {
     proc math {args} {
         set sum 0
-        foreach y { set sum [expr {$sum + $y}] }
-	return $sum
+        foreach y $args { set sum [expr {$sum + $y}] }
+        return $sum
     }
 }]
 
-we have to use [cmd critcl::ccommand] instead.
-
 [para] Its advantage: Access to the low-level C arguments representing
-the Tcl arguments of the command.
-
-That allows things like variable number of arguments, optional
-arguments, options, etc.
+the Tcl arguments of the command. Full control over argument
+conversion, argument validation, etc.
 
 [para] Its disadvantage: Access to the low-level C arguments
-representing the Tcl arguments of the command.
-
-Where [cmd critcl::cproc] handles the task of converting from Tcl to C
+representing the Tcl arguments of the command. Assuming the burden of
+having to write argument conversion, argument validation, etc. Where
+[cmd critcl::cproc] handles the task of converting from Tcl to C
 values (for arguments) and back (for the result), with
-[cmd critcl::command]s we have to do this on our own.
+[cmd critcl::command] it is the developer who has to write all this
+code.
 
-[para] Here is the translation of the example:
+[para] Under our restriction the translation of the example is:
 
 [example {
-    package require critcl
-
     critcl::ccommand math {cd ip oc ov} {
         double sum = 0;
         double y;
 
+        oc --;
         while (oc) {
             if (Tcl_GetDoubleFromObj (ip, ov[oc], &y) != TCL_OK) {
-	        return TCL_ERROR;
+                return TCL_ERROR;
             }
             sum += y;
-	    oc --;
+            oc --;
         }
 
         Tcl_SetObjResult (ip, Tcl_NewDoubleObj (sum));
@@ -87,3 +88,21 @@ that critcl will supply standard names for the missing pieces, namely:
 [enum] objv
 [list_end]
 [list_end]
+
+[para] Now, letting go of our pretenses regarding the limitations of
+[cmd critcl::cproc], due to the support it does have for
+[arg args]-style variadics (since version 3.1.16) we can write a much
+simpler translation:
+
+[example {
+    critcl::cproc math {double args} double {
+        double sum = 0;
+
+        args.c --;
+        while (args.c) {
+            sum += args.v[args.c];
+            args.c --;
+        }
+        return sum;
+    }
+}]

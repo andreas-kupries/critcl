@@ -107,10 +107,34 @@ aforementioned flexibility is a higher complexity seen by the user.
 [comment ---------------------------------------------------------------------]
 [call [cmd ::critcl::cdata] [arg tclname] [arg data]]
 
-This command a new Tcl command named [arg tclname] which returns
+This command creates a new Tcl command named [arg tclname] which returns
 [arg data] as a ByteArray result.
 
 [para] The result of [cmd critcl::cdata] itself is the empty string.
+
+[comment ---------------------------------------------------------------------]
+[call [cmd ::critcl::cconst] [arg tclname] [arg resulttype] [arg value]]
+
+This command creates a new Tcl command named [arg tclname] which returns
+the constant [arg value] as its result, with Tcl type [arg resulttype].
+
+[para] The result of [cmd critcl::cconst] itself is the empty string.
+
+[para] The command is similar to [cmd critcl::cdata] in that it returns a
+constant value. Contrary to [cmd critcl::cdata] however it is not restricted
+to ByteArray results, but accepts all result-types known to [cmd critcl::cproc].
+Its semantics are actually equivalent to
+
+[example {
+    cproc $tclname {} $resulttype "return $value ;"
+}]
+
+[para] Contrary to [cmd critcl::cproc] however it is internally optimized to
+avoid generating a superfluous C function.
+
+[para] Note that nothing prevents the user from using a C define for the
+[arg value]. Any visible C function is actually also allowed, as long as
+it does not take arguments.
 
 [comment ---------------------------------------------------------------------]
 [call [cmd ::critcl::cdefines] [arg definitions] [opt [arg namespace]]]
@@ -190,100 +214,14 @@ function, but influence argument counting and extraction.
 
 [list_end]
 
-The list below shows the values which are legal for [arg resulttype],
-and details their semantics:
+Below is the list of predefined types legal for [arg resulttype], plus
+the details of their semantics. Note that it is possible to extend
+this list with custom types if the standard does not support what is
+needed. See section [sectref {Advanced: Extending cproc}] for details.
 
 [comment {% % %% %%% %%%%% %%%%%%%% %%%%%%%%%%%%% %%%%%%%%%%%%%%%%%%%%%}]
-[list_begin definitions]
-[comment {% % %% %%% %%%%% %%%%%%%% %%%%%%%%%%%%%}]
-[def Tcl_Obj*]
-[def object]
-The function returns a value of type "Tcl_Obj*".
-This value becomes the interpreter result, if not [const 0].
-The Tcl status is TCL_ERROR when a [const 0] is returned, and TCL_OK otherwise.
-
-[para][emph Attention]: The conversion assumes that the value belonged to
-the function, with an associated reference count, and decrements the
-reference count to indicate the loss of ownership by the
-function. This means that it is an error to return a value whose
-reference count is zero.
-
-[comment {% % %% %%% %%%%% %%%%%%%% %%%%%%%%%%%%%}]
-[def char*]
-[def vstring]
-The function returns a value of type "char*".
-This value becomes the interpreter result, wrapped in a String.
-
-It is assumed that the string is volatile in some way, with the
-wrapping in a String duplicating it before making it the result,
-ensuring that we will not access a dangling pointer in the future.
-
-The Tcl status is always TCL_OK.
-
-[comment {% % %% %%% %%%%% %%%%%%%% %%%%%%%%%%%%%}]
-[def {const char*}]
-Like type [const char*] above, except that the returned string is const-qualified.
-
-[comment {% % %% %%% %%%%% %%%%%%%% %%%%%%%%%%%%%}]
-[def string]
-[def dstring]
-The function returns a value of type "char*".
-
-Contrary to the previous string types here it is assumed that the
-value is dynamically allocated, via [fun Tcl_Alloc].
-
-This value becomes the interpreter result, as usual, but is [emph not] copied.
-The Tcl status is always TCL_OK.
-
-[comment {% % %% %%% %%%%% %%%%%%%% %%%%%%%%%%%%%}]
-[def double]
-The function returns a value of type "double".
-This value becomes the interpreter result, properly wrapped (Int).
-The Tcl status is always TCL_OK.
-
-[comment {% % %% %%% %%%%% %%%%%%%% %%%%%%%%%%%%%}]
-[def float]
-The function returns a value of type "float".
-This value becomes the interpreter result, properly wrapped (Double).
-The Tcl status is always TCL_OK.
-
-[comment {% % %% %%% %%%%% %%%%%%%% %%%%%%%%%%%%%}]
-[def boolean]
-[def bool]
-The function returns a value of type "int", interpreted as boolean.
-This value becomes the interpreter result, properly wrapped (Int).
-The Tcl status is always TCL_OK.
-
-[comment {% % %% %%% %%%%% %%%%%%%% %%%%%%%%%%%%%}]
-[def int]
-The function returns a value of type "int".
-This value becomes the interpreter result, properly wrapped (Int).
-The Tcl status is always TCL_OK.
-
-[comment {% % %% %%% %%%%% %%%%%%%% %%%%%%%%%%%%%}]
-[def long]
-The function returns a value of type "long int".
-This value becomes the interpreter result, properly wrapped (Long).
-The Tcl status is always TCL_OK.
-
-[comment {% % %% %%% %%%%% %%%%%%%% %%%%%%%%%%%%%}]
-[def ok]
-The function returns a value of type "int".
-It is interpreted as the Tcl status code.
-The interpreter result is left untouched (empty).
-
-[comment {% % %% %%% %%%%% %%%%%%%% %%%%%%%%%%%%%}]
-[def void]
-The function does not return a value.
-The interpreter result is left untouched (empty).
-The Tcl status is always TCL_OK.
-
-[list_end]
+[include api_stdrt_cproc.inc]
 [comment {% % %% %%% %%%%% %%%%%%%% %%%%%%%%%%%%% %%%%%%%%%%%%%%%%%%%%%}]
-
-[para] Please note that it is possible to extend the above with custom
-types if these types are not enough. See section
-[sectref {Advanced: Extending cproc}] for details.
 
 [para] The [arg arguments] parameter has the overall syntax of a Tcl
 dictionary value, except that keys (argument names) and values
@@ -302,127 +240,31 @@ a 2-element list containing the actual name, and the default value.
 For example, in the declaration [example { int {x 1} }] [arg x] is an
 optional argument of type [type int] and default value [const 1].
 
-[para] One limitation, and one caveat!
-
-[para] First, the set of optional arguments must be a single
-contiguous segment in the argument list. This limits them to a series
-of optional arguments at either the beginning, end, or middle of the
-list. Multiple segments separated by non-optional arguments are
-rejected, as the system cannot determine in these cases which
-arguments are present and what to set where.
-
-[para] Second, the default value is assigned unconditionally. If a
+[para] A caveat! The default value is assigned unconditionally. If a
 custom argument type uses more complex validation, and the default may
 be invalid according to it, then the relevant checks have to be done
 in the procedure body. The argument conversion cannot do it as it is
 completely bypassed when the argument is not present. Overcoming this
 requires the separation of argument conversion and validation code.
 
-[para] The list below shows the values which are legal for argument
-types, and details their semantics:
-
-[comment {% % %% %%% %%%%% %%%%%%%% %%%%%%%%%%%%% %%%%%%%%%%%%%%%%%%%%%}]
-[list_begin definitions]
-[comment {% % %% %%% %%%%% %%%%%%%% %%%%%%%%%%%%%}]
-[def Tcl_Obj*]
-[def object]
-The function takes an argument of type "Tcl_Obj*".
-No argument checking is done.
-The Tcl level word is passed to the argument as-is.
-
-[comment {% % %% %%% %%%%% %%%%%%%% %%%%%%%%%%%%%}]
-[def bytearray]
-[def rawchar*]
-[def rawchar]
-The function takes an argument of type "char*".
-
-The Tcl argument must be convertible to ByteArray, an error is thrown
-otherwise.
-
-[emph Note] that the length of the ByteArray is [emph not] passed to
-the function.
-
-[comment {% % %% %%% %%%%% %%%%%%%% %%%%%%%%%%%%%}]
-[def char*]
-The function takes an argument of type "char*".
-The string representation of the Tcl argument is passed in.
-
-[comment {% % %% %%% %%%%% %%%%%%%% %%%%%%%%%%%%%}]
-[def double]
-The function takes an argument of type "double".
-
-The Tcl argument must be convertible to Double, an error is thrown
-otherwise.
-
-[comment {% % %% %%% %%%%% %%%%%%%% %%%%%%%%%%%%%}]
-[def float]
-The function takes an argument of type "float".
-
-The Tcl argument must be convertible to Double, an error is thrown
-otherwise.
-
-[comment {% % %% %%% %%%%% %%%%%%%% %%%%%%%%%%%%%}]
-[def boolean]
-[def bool]
-The function takes an argument of type "int".
-
-The Tcl argument must be convertible to Boolean, an error is thrown
-otherwise.
-
-[comment {% % %% %%% %%%%% %%%%%%%% %%%%%%%%%%%%%}]
-[def int]
-The function takes an argument of type "int".
-
-The Tcl argument must be convertible to Int, an error is thrown
-otherwise.
-
-[comment {% % %% %%% %%%%% %%%%%%%% %%%%%%%%%%%%%}]
-[def long]
-The function takes an argument of type "long int".
-
-The Tcl argument must be convertible to Long, an error is thrown
-otherwise.
-
-[comment {% % %% %%% %%%%% %%%%%%%% %%%%%%%%%%%%%}]
-[def void*]
-
-[comment {% % %% %%% %%%%% %%%%%%%% %%%%%%%%%%%%%}]
-[def double*]
-[def float*]
-[def int*]
-
-The function takes an argument of the same-named C type.
-
-The Tcl argument must be convertible to ByteArray, an error is thrown
-otherwise.
-
-The bytes in the ByteArray are then re-interpreted as the raw
-representation of a C pointer of the given type which is then passed
-as argument to the function.
-
-In other words, this is for Tcl values somehow holding raw C pointers,
-i.e. memory addresses.
-
-[para] [emph Attention]: These types are considered [emph DEPRECATED].
-It is planned to remove their documentation in release 3.2, and their
-implementation in release 3.3.  Their deprecation can be undone if
-good use cases are shown.
-
-[list_end]
-[comment {% % %% %%% %%%%% %%%%%%%% %%%%%%%%%%%%% %%%%%%%%%%%%%%%%%%%%%}]
-
-[para] [emph Note] that optional arguments are not possible. This
-restriction is inherited from C.
+[para] Below is the list of predefined types legal for arguments, plus
+the details of their semantics. Note that it is possible to extend
+this list with custom types if the standard does not support what is
+needed. See section [sectref {Advanced: Extending cproc}] for details.
 
 [para] Further note that the type of the first argument is allowed to
 be [const Tcl_Interp*]. In that case the argument in question is
 [emph not] counted as an argument of the new Tcl command.
 
+[comment {% % %% %%% %%%%% %%%%%%%% %%%%%%%%%%%%% %%%%%%%%%%%%%%%%%%%%%}]
+[include api_stdat_cproc.inc]
+[comment {% % %% %%% %%%%% %%%%%%%% %%%%%%%%%%%%% %%%%%%%%%%%%%%%%%%%%%}]
+
 [comment ---------------------------------------------------------------------]
 [call [cmd ::critcl::cproc] [arg name] [arg arguments] [arg resulttype]]
 
 This variant of [cmd critcl::cproc] assumes that the functionality to
-connect is implemented by the C function [arg name] which has the
+connect to is implemented by the C function [arg name] which has the
 signature described by the [arg arguments] and [arg resulttype].
 
 [para] It creates only the shim performing the conversions required by
@@ -433,23 +275,41 @@ arguments and result.
 
 This command compiles the C code in [arg text] and [arg externals].
 
-[para] Both have access to all definitions created by the previously
-listed commands, regardless of their and its placement in the
-[file .critcl] file. See section [sectref {Runtime Behaviour}] for
-more details.
+[para] Both arguments have access to all definitions created by the
+previously listed commands, regardless of their placement in the
+[file .critcl] file relative to this command.
+See section [sectref {Runtime Behaviour}] for more details.
 
 [para] The C code in [arg text] is put into the body of the
 initialization function of the shared library backing the
 [file .critcl] file, and is executed when this library is loaded into
 the interpreter.
 
+[para] This code has access to a variable [var interp] of type
+[const Tcl_Interp*] referencing the Tcl interpreter currently being
+initialized.
+
 [para] The code in [arg externals] on the other hand is placed outside
 and just before the initialization function, making this is a good
 place for any external symbols required by initialization function
 which should not be accessible by any other parts of the C code.
 
+[para] Multiple invokations of this command are allowed, and a later
+call has access to the information of all preceding ones.
+
 [para]
 The result of the command is the empty string.
+
+[comment ---------------------------------------------------------------------]
+[call [cmd ::critcl::include] [arg path]]
+
+This command is a convenient shorthand for
+
+[example {
+critcl::code {
+  #include <${path}>
+}
+}]
 
 [comment ---------------------------------------------------------------------]
 [list_end]

@@ -62,7 +62,7 @@ overwritten.
 
 The result of the command is the empty string.
 
-[para] In terms of [cmd ::critcl::at::caller]] this is equivalent to
+[para] In terms of [cmd ::critcl::at::caller] this is equivalent to
 [example {
 	critcl::at::caller 0 1
 }]

@@ -1,103 +1,17 @@
-# -*- tcl -*-
+# critcl::cdata -- Regular tests
 # -------------------------------------------------------------------------
-# critcl_cdata.test
-# -------------------------------------------------------------------------
+# Setup
 
-source [file join \
-            [file dirname [file join [pwd] [info script]]] \
-            testutilities.tcl]
+source [file join [file dirname [info script]] support testutilities.tcl]
 
 testsNeedTcl     8.4
 testsNeedTcltest 2
 
-support {
-    useLocal lib/util84/lassign.tcl  lassign84
-    useLocal lib/util84/dict.tcl     dict84
-
-    useLocal lib/stubs/container.tcl stubs::container
-    useLocal lib/stubs/reader.tcl    stubs::reader
-    useLocal lib/stubs/genframe.tcl  stubs::gen
-}
-testing {
-    useLocal lib/critcl/critcl.tcl critcl
-}
-
-# -------------------------------------------------------------------------
-## cdata syntax
-
-test critcl-cdata-1.0 {cdata, wrong\#args} -setup {
-} -body {
-    critcl::cdata
-} -returnCodes error -result {wrong # args: should be "critcl::cdata name data"}
-
-test critcl-cdata-1.1 {cdata, wrong\#args} -setup {
-} -body {
-    critcl::cdata N
-} -returnCodes error -result {wrong # args: should be "critcl::cdata name data"}
-
-test critcl-cdata-1.2 {cdata, wrong\#args} -setup {
-} -body {
-    critcl::cdata N D X
-} -returnCodes error -result {wrong # args: should be "critcl::cdata name data"}
-
-# -------------------------------------------------------------------------
-## Go through the various knobs we can use to configure the definition and output
-
-proc get {args} {
-    set t [string trim [critcl::collect $args]]
-    #regsub -all -- {#line \d+ } $t {#line XX } t
-    return $t
-}
-
-test critcl-cdata-2.0 {basic cdata} -body {
-    get critcl::cdata alpha beta
-} -result {/* ---------------------------------------------------------------------- */
-
-#define ns__alpha0 "::alpha"
-static int tcl__alpha0(ClientData dummy, Tcl_Interp *ip, int objc, Tcl_Obj *CONST objv[])
-{
-static char script[4] = {
-        98,101,116,97,
-  };
-  Tcl_SetByteArrayObj(Tcl_GetObjResult(ip), (unsigned char*) script, 4);
-  return TCL_OK;
-}}
+useLocalFile test/support/crit_utils.tcl
 
 # -------------------------------------------------------------------------
 
-test critcl-cdata-2.1 {basic cdata, Tcl vs C identifiers} -body {
-    get critcl::cdata alpha-x beta
-} -result {/* ---------------------------------------------------------------------- */
-
-#define ns__alpha_x0 "::alpha-x"
-static int tcl__alpha_x0(ClientData dummy, Tcl_Interp *ip, int objc, Tcl_Obj *CONST objv[])
-{
-static char script[4] = {
-        98,101,116,97,
-  };
-  Tcl_SetByteArrayObj(Tcl_GetObjResult(ip), (unsigned char*) script, 4);
-  return TCL_OK;
-}}
-
-# -------------------------------------------------------------------------
-
-test critcl-cdata-2.1 {basic cdata, namespaced} -body {
-    get critcl::cdata the::alpha beta
-} -result {/* ---------------------------------------------------------------------- */
-
-#define ns__the_alpha0 "::the::alpha"
-static int tcl__the_alpha0(ClientData dummy, Tcl_Interp *ip, int objc, Tcl_Obj *CONST objv[])
-{
-static char script[4] = {
-        98,101,116,97,
-  };
-  Tcl_SetByteArrayObj(Tcl_GetObjResult(ip), (unsigned char*) script, 4);
-  return TCL_OK;
-}}
-
-# -------------------------------------------------------------------------
-
-testsuiteCleanup
+do cdata
 
 # Local variables:
 # mode: tcl

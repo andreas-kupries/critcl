@@ -33,9 +33,8 @@ package require cmdline
 namespace eval ::critcl::app {}
 
 # # ## ### ##### ######## ############# #####################
-
-# Intercept 'package' calls.
-
+## Intercept 'package' calls.
+#
 # This code is present to handle the possibility of building multiple
 # different versions of the same package, or of different packages
 # having dependencies on different versions of a 3rd party
@@ -100,6 +99,32 @@ proc ::critcl::msg {args} {
 }
 
 # # ## ### ##### ######## ############# #####################
+##
+# Rewrite the hook handling declarations found after the build.
+# The default of clearing state for a new build is not the right
+# thing to do in mode "precompile". Here we want to see an ERROR.
+
+proc ::critcl::HandleDeclAfterBuild {} {
+    if {![done]} return
+    set cloc {}
+    if {![catch {
+	array set loc [info frame -2]
+    } msg]} {
+	if {$loc(type) eq "source"} {
+	    set cloc "@$loc(file):$loc(line)"
+	} else {
+	    set cloc " ([array get loc])"
+	}
+    } ;#else { set cloc " ($msg)" }
+
+    append err [lindex [info level -1] 0]
+    append err $cloc
+    append err ": Illegal attempt to define C code in [This] after it was built."
+    append err \n [at::SHOWFRAMES] 
+    error $err
+}
+
+# # ## ### ##### ######## ############# #####################
 
 proc ::critcl::app::main {argv} {
     Cmdline $argv
@@ -111,6 +136,7 @@ proc ::critcl::app::main {argv} {
     if {$v::mode eq "pkg"} {
 	set pkgcache [PackageCache]
 	critcl::cache $pkgcache
+	critcl::fastuuid
     }
 
     ProcessInput
@@ -237,6 +263,12 @@ proc ::critcl::app::Cmdline {argv} {
 		critcl::config keepsrc 1
 		#critcl::config lines 0
 		set v::keep 1
+	    }
+	    trace-commands {
+		critcl::config trace 1
+	    }
+	    trace {
+		critcl::cflags -DCRITCL_TRACER
 	    }
 	    help       { incr help }
 	    libdir     {
@@ -368,6 +400,7 @@ proc ::critcl::app::Cmdline {argv} {
 
     if {$v::mode ne "cache"} {
 	set name [lindex $argv 0]
+	set addext 0
 
 	# Split a version number off the package name.
 	set ver {}
@@ -385,6 +418,7 @@ proc ::critcl::app::Cmdline {argv} {
 		# files.
 		set v::outname [file rootname $name]
 		set v::src     [lrange $v::src 1 end]
+		set addext 1
 	    }
 	    .tcl {
 		# We have no discernible result shlib, take
@@ -392,6 +426,7 @@ proc ::critcl::app::Cmdline {argv} {
 		# name
 
 		set v::outname [file rootname $name]
+		set addext 1
 	    }
 	    "" {
 		# See above for .tcl, except that there is no stem to
@@ -418,9 +453,10 @@ proc ::critcl::app::Cmdline {argv} {
 	    append v::outname $ver
 	}
 
-	if {[file extension $v::shlname] eq ""} {
+	if {$addext || ([file extension $v::shlname] eq "")} {
 	    append v::shlname [critcl::sharedlibext]
 	}
+
 	critcl::config combine dynamic
 
 	if {![llength $v::src]} {
@@ -734,7 +770,7 @@ proc ::critcl::app::ProcessInput {} {
 	array set r $results
 
 	append v::edecls    "extern Tcl_AppInitProc $r(initname)_Init;\n"
-	append v::initnames "    if ($r(initname)_Init(ip) != TCL_OK) return TCL_ERROR;\n"
+	append v::initnames "    if ($r(initname)_Init(interp) != TCL_OK) return TCL_ERROR;\n"
 	append v::license   [License $f $r(license)]
 
 	lappend v::pkgs  $r(pkgname)
@@ -814,7 +850,7 @@ proc ::critcl::app::BuildBracket {} {
     eval $lib
 
     set                 lib critcl::clibraries
-    critcl::lappendlist lib [lsort -unique $v::clibraries]
+    critcl::lappendlist lib $v::clibraries
     eval $lib
 
     eval [linsert [lsort -unique $v::ldflags] 0 critcl::ldflags]
@@ -907,7 +943,7 @@ proc ::critcl::app::AssemblePackage {} {
 
     set shl [file tail $v::shlname]
 
-    CreatePackageIndex     $shlibdir [file root $shl] \
+    CreatePackageIndex     $shlibdir [file rootname $shl] \
 	[PlaceTclCompanionFiles $pkgdir]
     CreateLicenseTerms     $pkgdir
     CreateRuntimeSupport   $pkgdir
@@ -1244,14 +1280,16 @@ proc ::critcl::app::PlaceTclCompanionFiles {pkgdir} {
     set tcldir [file join $pkgdir tcl]
     file mkdir $tcldir
     set files {}
+    set id 0
     foreach t $v::tsources {
-	file copy -force $t $tcldir
+	set dst [file tail $t]
+	set dst [file rootname $dst]_[incr id][file extension $dst]
 
-	set t [file tail $t]
-	lappend files $t
+	file copy -force $t $tcldir/$dst
+	lappend files $dst
 
 	# Metadata management
-	lappend v::meta [list included tcl/$t]
+	lappend v::meta [list included tcl/$dst]
     }
     return $files
 }

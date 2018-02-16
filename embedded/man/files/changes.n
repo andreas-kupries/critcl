@@ -1,77 +1,84 @@
 '\"
-'\" Generated from file '/home/aku/Projects/Critcl/dev-master/embedded/man/files/changes\&.n' by tcllib/doctools with format 'nroff'
+'\" Generated from file 'changes\&.man' by tcllib/doctools with format 'nroff'
 '\" Copyright (c) Jean-Claude Wippler
 '\" Copyright (c) Steve Landers
-'\" Copyright (c) 2011-2013 Andreas Kupries
+'\" Copyright (c) 2011-2015 Andreas Kupries
 '\"
-'\" The definitions below are for supplemental macros used in Tcl/Tk
-'\" manual entries.
-'\"
-'\" .AP type name in/out ?indent?
-'\"	Start paragraph describing an argument to a library procedure.
-'\"	type is type of argument (int, etc.), in/out is either "in", "out",
-'\"	or "in/out" to describe whether procedure reads or modifies arg,
-'\"	and indent is equivalent to second arg of .IP (shouldn't ever be
-'\"	needed;  use .AS below instead)
-'\"
-'\" .AS ?type? ?name?
-'\"	Give maximum sizes of arguments for setting tab stops.  Type and
-'\"	name are examples of largest possible arguments that will be passed
-'\"	to .AP later.  If args are omitted, default tab stops are used.
-'\"
-'\" .BS
-'\"	Start box enclosure.  From here until next .BE, everything will be
-'\"	enclosed in one large box.
-'\"
-'\" .BE
-'\"	End of box enclosure.
-'\"
-'\" .CS
-'\"	Begin code excerpt.
-'\"
-'\" .CE
-'\"	End code excerpt.
-'\"
-'\" .VS ?version? ?br?
-'\"	Begin vertical sidebar, for use in marking newly-changed parts
-'\"	of man pages.  The first argument is ignored and used for recording
-'\"	the version when the .VS was added, so that the sidebars can be
-'\"	found and removed when they reach a certain age.  If another argument
-'\"	is present, then a line break is forced before starting the sidebar.
-'\"
-'\" .VE
-'\"	End of vertical sidebar.
-'\"
-'\" .DS
-'\"	Begin an indented unfilled display.
-'\"
-'\" .DE
-'\"	End of indented unfilled display.
-'\"
-'\" .SO
-'\"	Start of list of standard options for a Tk widget.  The
-'\"	options follow on successive lines, in four columns separated
-'\"	by tabs.
-'\"
-'\" .SE
-'\"	End of list of standard options for a Tk widget.
-'\"
-'\" .OP cmdName dbName dbClass
-'\"	Start of description of a specific option.  cmdName gives the
-'\"	option's name as specified in the class command, dbName gives
-'\"	the option's name in the option database, and dbClass gives
-'\"	the option's class in the option database.
-'\"
-'\" .UL arg1 arg2
-'\"	Print arg1 underlined, then print arg2 normally.
-'\"
-'\" RCS: @(#) $Id: man.macros,v 1.1 2009/01/30 04:56:47 andreas_kupries Exp $
-'\"
-'\"	# Set up traps and other miscellaneous stuff for Tcl/Tk man pages.
+.TH "critcl_changes" n 3\&.1\&.17 doc "C Runtime In Tcl (CriTcl)"
+.\" The -*- nroff -*- definitions below are for supplemental macros used
+.\" in Tcl/Tk manual entries.
+.\"
+.\" .AP type name in/out ?indent?
+.\"	Start paragraph describing an argument to a library procedure.
+.\"	type is type of argument (int, etc.), in/out is either "in", "out",
+.\"	or "in/out" to describe whether procedure reads or modifies arg,
+.\"	and indent is equivalent to second arg of .IP (shouldn't ever be
+.\"	needed;  use .AS below instead)
+.\"
+.\" .AS ?type? ?name?
+.\"	Give maximum sizes of arguments for setting tab stops.  Type and
+.\"	name are examples of largest possible arguments that will be passed
+.\"	to .AP later.  If args are omitted, default tab stops are used.
+.\"
+.\" .BS
+.\"	Start box enclosure.  From here until next .BE, everything will be
+.\"	enclosed in one large box.
+.\"
+.\" .BE
+.\"	End of box enclosure.
+.\"
+.\" .CS
+.\"	Begin code excerpt.
+.\"
+.\" .CE
+.\"	End code excerpt.
+.\"
+.\" .VS ?version? ?br?
+.\"	Begin vertical sidebar, for use in marking newly-changed parts
+.\"	of man pages.  The first argument is ignored and used for recording
+.\"	the version when the .VS was added, so that the sidebars can be
+.\"	found and removed when they reach a certain age.  If another argument
+.\"	is present, then a line break is forced before starting the sidebar.
+.\"
+.\" .VE
+.\"	End of vertical sidebar.
+.\"
+.\" .DS
+.\"	Begin an indented unfilled display.
+.\"
+.\" .DE
+.\"	End of indented unfilled display.
+.\"
+.\" .SO ?manpage?
+.\"	Start of list of standard options for a Tk widget. The manpage
+.\"	argument defines where to look up the standard options; if
+.\"	omitted, defaults to "options". The options follow on successive
+.\"	lines, in three columns separated by tabs.
+.\"
+.\" .SE
+.\"	End of list of standard options for a Tk widget.
+.\"
+.\" .OP cmdName dbName dbClass
+.\"	Start of description of a specific option.  cmdName gives the
+.\"	option's name as specified in the class command, dbName gives
+.\"	the option's name in the option database, and dbClass gives
+.\"	the option's class in the option database.
+.\"
+.\" .UL arg1 arg2
+.\"	Print arg1 underlined, then print arg2 normally.
+.\"
+.\" .QW arg1 ?arg2?
+.\"	Print arg1 in quotes, then arg2 normally (for trailing punctuation).
+.\"
+.\" .PQ arg1 ?arg2?
+.\"	Print an open parenthesis, arg1 in quotes, then arg2 normally
+.\"	(for trailing punctuation) and then a closing parenthesis.
+.\"
+.\"	# Set up traps and other miscellaneous stuff for Tcl/Tk man pages.
 .if t .wh -1.3i ^B
 .nr ^l \n(.l
 .ad b
-'\"	# Start an argument description
+.\"	# Start an argument description
 .de AP
 .ie !"\\$4"" .TP \\$4
 .el \{\
@@ -80,7 +87,7 @@
 .\}
 .ta \\n()Au \\n()Bu
 .ie !"\\$3"" \{\
-\&\\$1	\\fI\\$2\\fP	(\\$3)
+\&\\$1 \\fI\\$2\\fP (\\$3)
 .\".b
 .\}
 .el \{\
@@ -93,7 +100,7 @@
 .\}
 .\}
 ..
-'\"	# define tabbing values for .AP
+.\"	# define tabbing values for .AP
 .de AS
 .nr )A 10n
 .if !"\\$1"" .nr )A \\w'\\$1'u+3n
@@ -103,9 +110,9 @@
 .nr )C \\n()Bu+\\w'(in/out)'u+2n
 ..
 .AS Tcl_Interp Tcl_CreateInterp in/out
-'\"	# BS - start boxed text
-'\"	# ^y = starting y location
-'\"	# ^b = 1
+.\"	# BS - start boxed text
+.\"	# ^y = starting y location
+.\"	# ^b = 1
 .de BS
 .br
 .mk ^y
@@ -115,7 +122,7 @@
 .if n \l'\\n(.lu\(ul'
 .if n .fi
 ..
-'\"	# BE - end boxed text (draw box now)
+.\"	# BE - end boxed text (draw box now)
 .de BE
 .nf
 .ti 0
@@ -135,16 +142,16 @@
 .br
 .nr ^b 0
 ..
-'\"	# VS - start vertical sidebar
-'\"	# ^Y = starting y location
-'\"	# ^v = 1 (for troff;  for nroff this doesn't matter)
+.\"	# VS - start vertical sidebar
+.\"	# ^Y = starting y location
+.\"	# ^v = 1 (for troff;  for nroff this doesn't matter)
 .de VS
 .if !"\\$2"" .br
 .mk ^Y
 .ie n 'mc \s12\(br\s0
 .el .nr ^v 1u
 ..
-'\"	# VE - end of vertical sidebar
+.\"	# VE - end of vertical sidebar
 .de VE
 .ie n 'mc
 .el \{\
@@ -159,9 +166,9 @@
 .\}
 .nr ^v 0
 ..
-'\"	# Special macro to handle page bottom:  finish off current
-'\"	# box/sidebar if in box/sidebar mode, then invoked standard
-'\"	# page bottom macro.
+.\"	# Special macro to handle page bottom:  finish off current
+.\"	# box/sidebar if in box/sidebar mode, then invoked standard
+.\"	# page bottom macro.
 .de ^B
 .ev 2
 'ti 0
@@ -188,34 +195,36 @@
 .mk ^Y
 .\}
 ..
-'\"	# DS - begin display
+.\"	# DS - begin display
 .de DS
 .RS
 .nf
 .sp
 ..
-'\"	# DE - end display
+.\"	# DE - end display
 .de DE
 .fi
 .RE
 .sp
 ..
-'\"	# SO - start of list of standard options
+.\"	# SO - start of list of standard options
 .de SO
+'ie '\\$1'' .ds So \\fBoptions\\fR
+'el .ds So \\fB\\$1\\fR
 .SH "STANDARD OPTIONS"
 .LP
 .nf
-.ta 4c 8c 12c
+.ta 5.5c 11c
 .ft B
 ..
-'\"	# SE - end of list of standard options
+.\"	# SE - end of list of standard options
 .de SE
 .fi
 .ft R
 .LP
-See the \\fBoptions\\fR manual entry for details on the standard options.
+See the \\*(So manual entry for details on the standard options.
 ..
-'\"	# OP - start of full description for a single option
+.\"	# OP - start of full description for a single option
 .de OP
 .LP
 .nf
@@ -226,21 +235,43 @@ Database Class:	\\fB\\$3\\fR
 .fi
 .IP
 ..
-'\"	# CS - begin code excerpt
+.\"	# CS - begin code excerpt
 .de CS
 .RS
 .nf
 .ta .25i .5i .75i 1i
 ..
-'\"	# CE - end code excerpt
+.\"	# CE - end code excerpt
 .de CE
 .fi
 .RE
 ..
+.\"	# UL - underline word
 .de UL
 \\$1\l'|0\(ul'\\$2
 ..
-.TH "critcl_changes" n 3\&.1\&.8 doc "C Runtime In Tcl (CriTcl)"
+.\"	# QW - apply quotation marks to word
+.de QW
+.ie '\\*(lq'"' ``\\$1''\\$2
+.\"" fix emacs highlighting
+.el \\*(lq\\$1\\*(rq\\$2
+..
+.\"	# PQ - apply parens and quotation marks to word
+.de PQ
+.ie '\\*(lq'"' (``\\$1''\\$2)\\$3
+.\"" fix emacs highlighting
+.el (\\*(lq\\$1\\*(rq\\$2)\\$3
+..
+.\"	# QR - quoted range
+.de QR
+.ie '\\*(lq'"' ``\\$1''\\-``\\$2''\\$3
+.\"" fix emacs highlighting
+.el \\*(lq\\$1\\*(rq\\-\\*(lq\\$2\\*(rq\\$3
+..
+.\"	# MT - "empty" string
+.de MT
+.QW ""
+..
 .BS
 .SH NAME
 critcl_changes \- CriTcl Changes
@@ -253,6 +284,734 @@ faster\&.
 .PP
 This document provides an overview of the changes \fBcritcl\fR
 underwent from version to version\&.
+.PP
+The latest changes are found at the top\&.
+.SH "CHANGES FOR VERSION 3\&.1\&.17"
+.IP [1]
+Extension: Allow duplicate arg- and result-type definitions if
+they are fully identical\&.
+.IP [2]
+Bugfix\&. The application mishandled the possibility of
+identical-named \fBcritcl::tsource\fRs\&. Possible because
+\fBcritcl::tsource\fRs can be in subdirectories, a structure
+which is \fInot\fR retained in the assembled package, causing
+such files to overwrite each other and at least one lost\&. Fixed
+by adding a serial number to the file names in the assembled
+package\&.
+.IP [3]
+Bugfix in the static scanner which made it loose requirement
+information\&. Further added code to generally cleanup results at
+the end (removal of duplicates, mainly)\&.
+.IP [4]
+Bugfix: Fixed issue #76\&.
+Support installation directories which are not in the \fBauto_path\fR\&.
+Without the patch the installed \fBcritcl\fR will not find its
+own packages and fail\&. Thank you to
+\fISimon Bachmann\fR [https://github\&.com/lupylucke] for the
+report and patch, and then his patience with me to getting to
+actually apply it\&.
+.IP [5]
+Bugfix: Fixed issue #75\&.
+Extended \fBcritcl::include\fR to now take multiple paths\&.
+.IP [6]
+Added new compatibility package \fBlmap84\fR\&.
+.IP [7]
+Fixed typos in various documentation files\&.
+.IP [8]
+Fixed bug introduced by commit 86f415dd30 (3\&.1\&.16 release)\&. The
+separation of \fBcritcl::ccode\fR into user and work layers
+means that location retrieval has to go one more level up to
+find the user location\&.
+.IP [9]
+New supporting package \fBcritcl::cutil\fR\&. Provides common
+C level facilities useful to packages (assertions, tracing,
+memory allocation shorthands)\&.
+.IP [10]
+Modified package \fBcritcl\fR to make use of the new
+tracing facilities to provide tracing of arguments and results
+for \fBcritcl::ccommand\fR and \fBcritcl::cproc\fR invokations\&.
+.IP [11]
+Modified packages \fBcritcl\fR and \fBcritcl::class\fR
+to provide better function names for (class) method tracing\&.
+Bumped package \fBcritcl::class\fR to version 1\&.0\&.7\&.
+.IP [12]
+Extended the support package \fBcritcl::literals\fR with
+limited configurability\&. It is now able to generate code for
+C-level access to the pool without Tcl types (Mode \fBc\fR)\&.
+The previously existing functionality is accesssible under mode
+\fBtcl\fR, which also is the default\&. Both modes can be used
+together\&.
+.IP [13]
+Extended the support package \fBcritcl::emap\fR with
+limited configurability\&. It is now able to generate code for
+C-level access to the mapping without Tcl types
+(Mode \fBc\fR)\&. The previously existing functionality is
+accessible under mode \fBtcl\fR, which also is the
+default\&. Both modes can be used together\&.
+.PP
+.SH "CHANGES FOR VERSION 3\&.1\&.16"
+.IP [1]
+New feature\&. Extended \fBcritcl::cproc\fR's argument handling
+to allow arbitrary mixing of required and optional arguments\&.
+.IP [2]
+New feature\&.
+\fIPotential Incompatibility\fR\&.
+.sp
+Extended \fBcritcl::cproc\fR's argument handling to treat an
+argument \fBargs\fR as variadic if it is the last argument of
+the procedure\&.
+.IP [3]
+New feature\&. Added two introspection commands,
+\fBcritcl::has-argtype\fR and \fBcritcl::has-resulttype\fR\&.
+These enable a user to test if a specific (named) type
+conversion is implemented or not\&.
+.IP [4]
+Added new result type \fBTcl_Obj*0\fR, with alias
+\fBobject0\fR\&. The difference to \fBTcl_Obj*\fR is in
+the reference counting\&.
+.IP [5]
+Extended the command \fBcritcl::argtypesupport\fR with new
+optional argument through which to explicitly specify the
+identifier for guarding against multiple definitions\&.
+.IP [6]
+Bugfix: Fixed problem with the implementation of issue #54 (See
+3\&.1\&.14)\&. Always create the secondary log file\&. Otherwise
+end-of-log handling may break, unconditionally assuming its
+existence\&.
+.IP [7]
+Bugfix: Fixed problem with the internal change to the hook
+\fBHandleDeclAfterBuild\fR\&. Corrected the forgotten
+\fBcritcl::cconst\fR\&.
+.IP [8]
+Debugging aid: Added comment holding the name of the result
+type when emitting result conversions\&.
+.IP [9]
+Bugfix: Fixed issue #60\&. Unbundled the package directories
+containing multiple packages\&. All directories under "\fIlib/\fR"
+now contain exactly one package\&.
+.IP [10]
+Bugfix: Fixed issue #62, a few \fBdict exists\fR commands
+operating on a fixed string instead of a variable\&.
+.IP [11]
+Bugfix: Fixed issue #56\&. Release builders are reminded to run
+the tests\&.
+.IP [12]
+Bugfix: Fixed issue #55\&. For FreeBSD critcl's platform package
+now identifies the Kernel ABI version\&. Initialization of the
+cache directory now also uses \fBplatform::identify\fR for the
+default path, instead of \fBplatform::generic\fR\&.
+.IP [13]
+Bugfix: Fixed issue #58\&. Simplified the setup and use of
+md5\&. Critcl now makes use of its own package for md5, using
+itself to built it\&. There is no chicken/egg problem with this
+as the \fB-pkg\fR mode used for this does not use md5\&. That
+is limited to mode \fIcompile & run\fR\&.
+.PP
+.SH "CHANGES FOR VERSION 3\&.1\&.15"
+.IP [1]
+Fixed version number bogosity with \fB3\&.1\&.14\fR\&.
+.PP
+.SH "CHANGES FOR VERSION 3\&.1\&.14"
+.IP [1]
+Fixed issue #36\&. Added message to target \fBall\fR of the
+Makefile generated for TEA mode\&. Additionally tweaked other
+parts of the output to be less noisy\&.
+.IP [2]
+Accepted request implied in issue #54\&. Unconditionally save
+the compiler/linker build log into key \fBlog\fR of the
+dictionary returned by \fBcresults\fR, and save a copy of only
+the execution output in the new key \fBexl\fR ("execution
+log")\&.
+.IP [3]
+Fixed issue #53\&. Clarified the documentation of commands
+\fBcritcl::load\fR and \fBcritcl::failed\fR with regard
+to their results and the throwing of errors (does not happen)\&.
+.IP [4]
+Fixed issue #48\&. Modified mode "compile & run" to allow new
+declarations in a file, after it was build, instead of
+erroring out\&. The new decls are build when needed\&. Mode
+"precompile" is unchanged and will continue to trap the
+situation\&.
+.IP [5]
+Fixed issue #52\&. Updated the local Tcl/Tk headers to
+8\&.4\&.20, 8\&.5\&.13, and 8\&.6\&.4\&.
+.IP [6]
+Fixed issue #45\&. New feature command \fBcritcl::cconst\fR\&.
+.IP [7]
+\fBcritcl::util\fR: New command \fBlocate\fR to find a
+file across a set of paths, and report an error when not
+found\&. This is for use in autoconf-like header-searches and
+similar configuration tests\&.
+.IP [8]
+Modified 'AbortWhenCalledAfterBuild' to dump the entire stack
+(info frame!)\&. This should make it easier to determine the
+location of the troubling declaration\&.
+.PP
+.SH "CHANGES FOR VERSION 3\&.1\&.13"
+.IP [1]
+Merged PR #43\&. Fixed bug loading adjunct Tcl sources\&.
+.IP [2]
+Fixes in documentation and generated code of package
+"critcl::enum"\&. Bumped to version 1\&.0\&.1\&.
+.IP [3]
+Fixes in documentation of package "critcl::bitmap"\&.
+.IP [4]
+New package "critcl::emap"\&. In essence a variant or cross of
+"critcl::bitmap" with behaviour like "critcl::enum"\&.
+.IP [5]
+Merged PR #49\&. Fixed documentation typo\&.
+.IP [6]
+Merged PR #46\&. Fixed documentation typo\&.
+.IP [7]
+Merged PR #47\&. Fixes to test results to match the accumulated
+code changes\&. Also made portable across Tcl versions (varying
+error syntax)\&.
+.IP [8]
+New predefined argument- and result-type "wideint" mapping to
+Tcl_WideInt\&.
+.IP [9]
+New predefined argument-type "bytes" mapping to tuple of
+byte-array data and length\&. Note: The existing "bytearray"
+type (and its aliases) was left untouched, to keep backward
+compatibility\&.
+.IP [10]
+Modified the internal interface between the Tcl shim and C
+function underneath "critcl::cproc" with respect to the
+handling of optional arguments\&.
+An optional argument "X" now induces the use of two C
+arguments, "X" and "has_X"\&.  The new argument "has_X" is of
+boolean (int) type\&. It is set to true when X is set, and set
+to false when X has the default value\&. C code which cares
+about knowing if the argument is default or not is now able to
+check that quickly, without having to code the default value
+inside\&.
+NOTE: This change is visible in the output of the advanced
+commands "argcnames", "argcsignature", "argvardecls",
+and "argconversion"\&.
+.IP [11]
+Fixed issue #50 and documented the availability of variable
+"interp" (type Tcl_Interp*) within "critcl::cinit" C code
+fragments\&.
+Note that while the old, undocumented name of the variable,
+"ip", is still usable, it is deprecated\&. It will be fully
+removed in two releases, i\&.e\&. for release 3\&.1\&.15\&.
+The variable name was changed to be consistent with other code
+environments\&.
+.IP [12]
+Fixed issue #51\&. Disabled the generation of #line directives
+for "critcl::config lines 0" coming from template files, or
+code generated with them before the final value of this
+setting was known\&.
+.IP [13]
+Fixed issue with handling of namespaced package names in
+"critcl::iassoc"\&. Equivalent to a bug in "critcl::class" fixed
+for critcl 3\&.1\&.1, critcl::class 1\&.0\&.1\&.
+Note: "literals", "enum", "emap", and "bitmap" do not require
+a fix as they are all built on top of "iassoc"\&.
+.PP
+.SH "CHANGES FOR VERSION 3\&.1\&.12"
+.IP [1]
+Fixed issue 42\&. Clear ::errorInfo immediately after startup to
+prevent leakage of irrelevant (caught) errors into our script
+and confusing the usage code\&.
+.IP [2]
+Fixed issue 40\&. Keep the order of libraries, and allow
+duplicates\&. Both are things which are occasionally required for
+proper linking\&.
+.IP [3]
+Extended the utility package \fBcritcl::literals\fR to
+declare a cproc result-type for a pool\&.
+.sp
+Further fixed the generated header to handle multiple inclusion\&.
+.sp
+Bumped version to 1\&.1\&.
+.IP [4]
+Fixed issue with utility package \fBcritcl::bitmap\fR\&.
+.sp
+Fixed the generated header to handle multiple inclusion\&.
+.sp
+Bumped version to 1\&.0\&.1\&.
+.IP [5]
+Created new utility package \fBcritcl::enum\fR for the
+quick and easy setup and use of mappings between C values
+and Tcl strings\&.
+Built on top of \fBcritcl::literals\fR\&.
+.IP [6]
+Added examples demonstrating the use of the utility packages
+\fBcritcl::literals\fR,
+\fBcritcl::bitmap\fR, and
+\fBcritcl::enum\fR
+.PP
+.SH "CHANGES FOR VERSION 3\&.1\&.11"
+.IP [1]
+Fixed issue #37, via pull request #38, with thanks to
+Jos DeCoster\&. Information was stored into the v::delproc
+and v::clientdata arrays using a different key than when
+retrieving the same information, thus failing the latter\&.
+.IP [2]
+New convenience command \fBcritcl::include\fR for easy
+inclusion of headers and other C files\&.
+.IP [3]
+New command \fBcritcl::make\fR to generate a local header of
+other C files for use by other parts of a package through
+inclusion\&.
+.IP [4]
+New utility package \fBcritcl::literals\fR for quick and
+easy setup of and access to pools of fixed Tcl_Obj* strings\&.
+Built on top of \fBcritcl::iassoc\fR\&.
+.IP [5]
+New utility package \fBcritcl::bitmap\fR for quick and easy
+setup and use of mappings between C bitsets and Tcl lists whose
+string elements represent that set\&.
+Built on top of \fBcritcl::iassoc\fR\&.
+.PP
+.SH "CHANGES FOR VERSION 3\&.1\&.10"
+.IP [1]
+Fixed code version numbering forgotten with 3\&.1\&.9\&.
+.IP [2]
+Fixed issue #35\&. In package mode (-pkg) the object cache
+directory is unique to the process, thus we do not need
+content-hashing to generate unique file names\&. A simple
+counter is sufficient and much faster\&.
+.sp
+Note that mode "compile & run" is not as blessed and still
+uses content-hasing with md5 to ensure unique file names
+in its per-user object cache\&.
+.IP [3]
+Fixed issue where the \fBccommand\fR forgot to use its body as
+input for the UUID generation\&. Thus ignoring changes to it in
+mode compile & run, and not rebuilding a library for changed
+sources\&. Bug and fix reported by Peter Spjuth\&.
+.PP
+.SH "CHANGES FOR VERSION 3\&.1\&.9"
+.IP [1]
+Fixed issue #27\&. Added missing platform definitions for
+various alternate linux and OS X targets\&.
+.IP [2]
+Fixed issue #28\&. Added missing -mXX flags for linking at the
+linux-{32,64}-* targets\&.
+.IP [3]
+Fixed issue #29\&. Replaced the use of raw "cheaders"
+information in the processing of "cdefines" with the proper
+include directives derived from it\&.
+.IP [4]
+Fixed the issue behind rejected pull request #30 by Andrew
+Shadura\&. Dynamically extract the stubs variable declarations
+from the Tcl header files and generate matching variable
+definitions for use in the package code\&. The generated code
+will now be always consistent with the headers, even when
+critcl's own copy of them is replaced by system headers\&.
+.IP [5]
+Fixed issue #31\&. Accepted patch by Andrew Shadura, with
+changes (comments), for easier integration of critcl with
+OS package systems, replacing critcl's copies of Tcl headers
+with their own\&.
+.IP [6]
+Fixed issue #32\&. Merged pull request by Andrew Shadura\&.
+Various typos in documentation and comments\&.
+.IP [7]
+Fixed issue #34\&. Handle files starting with a dot better\&.
+.PP
+.SH "CHANGES FOR VERSION 3\&.1\&.8"
+.IP [1]
+Fixed issue with package indices generated for Tcl 8\&.4\&.
+Join the list of commands with semi-colon, not newline\&.
+.IP [2]
+Fixed issue #26 which brought up use-cases I had forgotten to
+consider while fixing bug #21 (see critcl 3\&.1\&.6)\&.
+.PP
+.SH "CHANGES FOR VERSION 3\&.1\&.7"
+.IP [1]
+Fixed issue #24\&. Extract and unconditionally display compiler
+warnings found in the build log\&. Prevents users from missing
+warnings which, while not causing the build to fail, may
+still indicate problems\&.
+.IP [2]
+New feature\&. Output hook\&. All non-messaging user output is now
+routed through the command \fBcritcl::print\fR, and users are
+allowed to override it when using the critcl application-as-package\&.
+.IP [3]
+New feature, by Ashok P\&. Nadkarni\&. Platform configurations can
+inherit values from configurations defined before them\&.
+.PP
+.SH "CHANGES FOR VERSION 3\&.1\&.6"
+.IP [1]
+Fixed issue #21\&. While the multi-definition of the stub-table
+pointer variables was ok with for all the C linkers seen so far
+C++ linkers did not like this at all\&. Reworked the code to
+ensure that this set of variables is generated only once, in
+the wrapper around all the pieces to assemble\&.
+.IP [2]
+Fixed issue #22, the handling of the command identifier
+arguments of \fBcritcl::ccommand\fR, \fBcritcl::cproc\fR, and
+\fBcritcl::cdata\fR\&. We now properly allow any Tcl identifier
+and generate proper internal C identifiers from them\&.
+.sp
+As part of this the signature of command \fBcritcl::name2c\fR
+changed\&. The command now delivers a list of four values instead
+of three\&. The new value was added at the end\&.
+.sp
+Further adapted the implementation of package
+\fBcritcl::class\fR, a user of \fBcritcl::name2c\fR\&.
+This package is now at version 1\&.0\&.6 and requires critcl 3\&.1\&.6
+.sp
+Lastly fixed the mis-handling of option \fB-cname\fR in
+\fBcritcl::ccommand\fR, and \fBcritcl::cproc\fR\&.
+.IP [3]
+Fixed issue #23\&.
+.PP
+.SH "CHANGES FOR VERSION 3\&.1\&.5"
+.IP [1]
+Fixed issue #19\&. Made the regular expression extracting the
+MSVC version number more general to make it work on german
+language systems\&. This may have to be revisited in the future,
+for other Windows locales\&.
+.IP [2]
+Fixed issue #20\&. Made option -tea work on windows, at least in
+a unix emulation environment like msys/mingw\&.
+.PP
+.SH "CHANGES FOR VERSION 3\&.1\&.4"
+.IP [1]
+Bugfix in package \fBcritcl::class\fR\&. Generate a dummy
+field in the class structure if the class has no class
+variables\&. Without this change the structure would be empty,
+and a number of compilers are not able to handle such a type\&.
+.IP [2]
+Fixed a typo which broke the win64 configuration\&.
+.IP [3]
+Fixed issue #16, a typo in the documentation of command
+\fBcritcl::class\fR\&.
+.PP
+.SH "CHANGES FOR VERSION 3\&.1\&.3"
+.IP [1]
+Enhancement\&. In detail:
+.IP [2]
+Added new argument type "pstring", for "Pascal String", a
+counted string, i\&.e\&. a combination of string pointer and string
+length\&.
+.IP [3]
+Added new methods \fBcritcl::argtypesupport\fR and
+\fB::critcl::argsupport\fR to define and use additional
+supporting code for an argument type, here used by "pstring"
+above to define the necessary structure\&.
+.IP [4]
+Semi-bugfixes in the packages \fBcritcl::class\fR and
+\fBcritcl::iassoc\fR\&. Pragmas for the AS meta data scanner
+to ensure that the template files are made part of the package\&.
+Versions bumped to 1\&.0\&.4 and 1\&.0\&.1 respectively\&.
+.PP
+.SH "CHANGES FOR VERSION 3\&.1\&.2"
+.IP [1]
+Enhancement\&. In detail:
+.IP [2]
+Extended \fBcritcl::cproc\fR to be able to handle optional
+arguments, in a limited way\&. This is automatically available to
+\fBcritcl::class\fR cproc-based methods as well\&.
+.IP [3]
+Bugfix in \fBlassign\fR emulation for Tcl 8\&.4\&.  Properly set
+unused variables to the empty string\&.  Bumped version of
+emulation package \fBlassign84\fR to 1\&.0\&.1\&.
+.PP
+.SH "CHANGES FOR VERSION 3\&.1\&.1"
+.IP [1]
+Bugfixes all around\&. In detail:
+.IP [2]
+Fixed the generation of wrong#args errors for
+\fBcritcl::cproc\fR and derived code (\fBcritcl::class\fR
+cproc-based methods)\&. Use NULL if there are no arguments, and
+take the offset into account\&.
+.IP [3]
+Fixed the handling of package names by
+\fBcritcl::class\fR\&. Forgot that they may contain namespace
+separators\&. Bumped to version 1\&.0\&.1\&.
+.IP [4]
+Extended a \fBcritcl::class\fR generated error message in
+instance creation for clarity\&. Bumped to version 1\&.0\&.2\&.
+.PP
+.SH "CHANGES FOR VERSION 3\&.1"
+.IP [1]
+Added a new higher-level package \fBcritcl::iassoc\fR\&.
+.sp
+This package simplifies the creation of code associating data
+with an interpreter via Tcl's \fBTcl_(Get|Set)AssocData()\fR APIs\&. The
+user can concentrate on his data while all the necessary boilerplate
+C code to support this is generated by the package\&.
+.sp
+This package uses several of the new features which were added
+to the core \fBcritcl\fR package, see below\&.
+.IP [2]
+Added the higher-level package \fBcritcl::class\fR\&.
+.sp
+This package simplifies the creation of C level objects with
+class and instance commands\&. The user can write a class definition
+with class- and instance-variables and -methods similar to a TclOO
+class, with all the necessary boilerplate C code to support this
+generated by the package\&.
+.sp
+This package uses several of the new features which were added
+to the core \fBcritcl\fR package, see below\&.
+.IP [3]
+Extended the API for handling TEApot metadata\&. Added the
+command \fBcritcl::meta?\fR to query the stored information\&. Main use
+currently envisioned is retrieval of the current package's name by
+utility commands, for use in constructed names\&. This particular
+information is always available due to the static scan of the package
+file on execution of the first critcl command\&.
+.sp
+The new packages \fBcritcl::iassoc\fR and
+\fBcritcl::class\fR (see above) are users of this command\&.
+.IP [4]
+Extended the API with a command, \fBcritcl::name2c\fR, exposing
+the process of converting a Tcl name into base name, namespace, and C
+namespace\&. This enables higher-level code generators to generate the same
+type of C identifiers as \fBcritcl\fR itself\&.
+.sp
+The new package \fBcritcl::class\fR (see above) is a user
+of this command\&.
+.IP [5]
+Extended the API with a command, \fBcritcl::source\fR,
+executing critcl commands found in a separate file in the context of
+the current file\&. This enables easier management of larger bodies of
+code as it allows the user to split such up into easier to digest
+smaller chunks without causing the generation of multiple packages\&.
+.IP [6]
+Related to the previous item, extended the API with commands to
+divert collection of generated C code into memory\&. This makes it
+easier to use the commands for embedded C code in higher-level code
+generators\&.
+.sp
+See the section \fBAdvanced: Diversions\fR for details of
+the provided commands\&.
+.sp
+The new package \fBcritcl::class\fR (see above) is a user
+of these facilities\&.
+.IP [7]
+Extended the API with commands helping developers with the
+generation of proper C \fI#line\fR directives\&. This allows
+higher-level code generators to generate and insert their own
+directives, ensuring that compile errors in their code are properly
+attributed\&.
+.sp
+See the section \fBAdvanced: Location management\fR for
+details of the provided commands\&.
+.sp
+The new packages \fBcritcl::iassoc\fR and
+\fBcritcl::class\fR (see above) are users of these facilities\&.
+.IP [8]
+Extended the API with commands giving users the ability to
+define custom argument and result types for \fB::critcl::cproc\fR\&.
+.sp
+See the section \fBAdvanced: Extending cproc\fR for
+details of the provided commands\&.
+.PP
+.SH "CHANGES FOR VERSION 3\&.0\&.7"
+.IP [1]
+Fixed the code generated by \fBcritcl::c++command\fR\&.
+The emitted code handed a non-static string table to
+\fBTcl_GetIndexFromObj\fR, in violation of the contract, which
+requires the table to have a fixed address\&. This was a memory
+smash waiting to happen\&. Thanks to Brian Griffin for alrerting
+us to the general problem\&.
+.PP
+.SH "CHANGES FOR VERSION 3\&.0\&.6"
+.IP [1]
+Fixed github issue 10\&. The critcl application now delivers a
+proper exit code (1) on build failure, instead of always
+indicating success (status 0)\&.
+.IP [2]
+Fixed github issue 13\&. Handling of bufferoverflowU\&.lib for
+release builds was inconsistent with handling for debug
+builds\&. It is now identically handled (conditional) by
+both cases\&.
+.IP [3]
+Documentation cleanup, mainly in the installation guide, and
+the README\&.md shown by github
+.PP
+.SH "CHANGES FOR VERSION 3\&.0\&.5"
+.IP [1]
+Fixed bug in the new code for #line pragmas triggered when
+specifying C code without leading whitespace\&.
+.IP [2]
+Extended the documentation to have manpages for the license,
+source retrieval, installer, and developer's guides\&.
+.PP
+.SH "CHANGES FOR VERSION 3\&.0\&.4"
+.IP [1]
+Fixed generation of the package's initname when the incoming
+code is read from stdin and has no proper path\&.
+.IP [2]
+Fixed github issue 11\&. Now using /LIBPATH instead of -L
+on Windows (libinclude configuration setting)\&.
+.IP [3]
+Extended critcl to handle -l:path format of -l options\&.
+GNU ld 2\&.22+ handles this by searching for the path as
+is\&. Good when specifying static libraries, as plain -l looks
+for shared libraries in preference over static\&. critcl handles
+it now, as older GNU ld's do not understand it, nor the
+various vendor-specific linkers\&.
+.IP [4]
+Fixed github issue #12\&. Critcl now determines the version of
+MSVC in use and uses it to switch between various link debug
+options\&. Simplified the handling of bufferoverflowU\&.lib also,
+making use of the same mechanism and collapsing the two
+configurations sections we had back into one\&.
+.IP [5]
+Reworked the insertion of #line pragmas into the generated C
+code to avoid limitations on the line number argument imposed
+by various compilers, and be more accurate\&.
+.IP [6]
+Modified argument processing\&. Option -libdir now also
+implies -L for its argument\&.
+.IP [7]
+Extended handling of option -show (\fBcritcl::showconfig\fR)
+to list the path of the configuration file the data is coming
+from\&. Good for debugging configuration processing\&.
+.IP [8]
+Extended the build script with targets to regenerate the
+embedded documentation, and diagrams, and to generate a
+release\&.
+.PP
+.SH "CHANGES FOR VERSION 3\&.0\&.3"
+.IP [1]
+Fixed github issues 5 and 8, for the example build\&.tcl
+scripts\&. Working around a missing variable ::errorInfo\&. It should
+always be present, however there seem to be revisions of Tcl around
+which violate this assumption\&.
+.PP
+.SH "CHANGES FOR VERSION 3\&.0\&.2"
+.IP [1]
+Fixed issue in compile-and-run mode where commands put into the
+auto_index are not found by Tcl's [unknown] command\&.
+.IP [2]
+Fixed an array key mismatch breaking usage of client data and
+delete function for procedure\&. Reported by Jos DeCoster, with patch\&.
+.IP [3]
+Implemented a command line option \fB-L\fR, an equivalent of
+option \fB-I\fR, just for library search paths\&.
+.IP [4]
+Fixed github issues 5 and 8\&. Working around a missing variable
+::errorInfo\&. It should always be present, however there seem to be
+revisions of Tcl around which violate this assumption\&.
+.PP
+.SH "CHANGES FOR VERSION 3\&.0\&.1"
+.IP [1]
+Bugfixes all around\&. In detail:
+.IP [2]
+Fixed recording of Tcl version requirements\&. Keep package name
+and version together, unbreaking generated meta data and generated
+package load command\&.
+.IP [3]
+Fixed the build scripts: When installing, or wrapping for TEA,
+generate any missing directories
+.IP [4]
+Modified the build scripts to properly exit the application
+when the window of their GUI is closed through the (X) button\&.
+.IP [5]
+Removed an 8\&.5-ism (open wb) which had slipped into the main
+build script\&.
+.IP [6]
+Modified the example build scripts to separate the output for
+the different examples (and packages) by adding empty lines\&.
+.IP [7]
+stack::c example bugfix: Include API declarations for use in
+the companion files\&.
+.IP [8]
+Extended the documentation: Noted the need for a working
+installation of a C compiler\&.
+.IP [9]
+Extended the Windows target definitions and code to handle the
+manifest files used by modern MS development environments\&. Note that
+this code handles both possibilities, environment using manifests, and
+(old(er)) environments without\&.
+.IP [10]
+Extended the Windows 64bit target definitions and code to
+auto-detect the need for the helper library "bufferoverflowU\&.lib" and
+reconfigure the compile and link commands appropriately\&. We assume
+that the library must be linked when present\&. This should be no harm
+if the library is present, yet not needed\&. Just superfluous\&. We search
+for the library in the paths specified by the environment variable
+LIB\&.
+.PP
+.SH "CHANGES FOR VERSION 3"
+.IP [1]
+The command \fBcritcl::platform\fR was deprecated in version
+2\&.1, superceded by \fBcritcl::targetplatform\fR, yet kept for
+compatibility\&. Now it has been removed\&.
+.IP [2]
+The command \fBcritcl::compiled\fR was kept with in version 2\&.1
+with semantics in contradiction to its, for compatibility\&. This
+contradiction has been removed, changing the visible semantics of the
+command to be in line with its name\&.
+.IP [3]
+The change to version 3 became necessary because of the two
+incompatible visible changes above\&.
+.IP [4]
+Extended the application package with code handling a new
+option \fB-tea\fR\&. Specifying this option invokes a special mode
+where critcl generates a TEA package, i\&.e\&. wraps the input into a
+directory hierarchy and support files which provide it TEA-lookalike
+buildsystem\&.
+.sp
+This new option, and \fB-pkg\fR, exclude each other\&. If
+both are specified the last used option takes precedence\&.
+.sp
+The generated package directory hierarchy is mostly
+self-contained, but not fully\&. It requires not only a working
+installation of Tcl, but also working installations of the packages
+\fBmd5\fR and \fBcmdline\fR\&. Both of these are provided by the
+\fBTcllib\fR bundle\&. Not required, but recommended to have
+installed are any of the packages which can accelerate md5's
+operation, i\&.e\&. \fBcryptkit\fR, \fBtcllibc\fR, or
+\fBTrf\fR\&.
+.IP [5]
+Extended the critcl package with a new command
+\fBcritcl::scan\fR taking the path to a "\fI\&.critcl\fR" file,
+statically scanning it, and returning license, version, a list of its
+companion files, list of imported APIs, and list of
+developer-specified custom configuration options\&. This data is the
+foundation for the TEA wrapping described above\&.
+.sp
+Note that this is a \fIstatic\fR scan\&. While the other build
+modes can (must) execute the "\fI\&.critcl\fR" file and make
+platform-specific decisions regarding the assembled C code, companion
+files, etc\&. the TEA wrap mode is not in a position to make
+platform-specific decisions\&. It has to wrap everything which might
+conceivably be needed when actually building\&. Hence the static scan\&.
+This has however its own set of problems, namely the inability to
+figure out any dynamic construction of companion file paths, at least
+on its own\&. Thus:
+.IP [6]
+Extended the API used by critcl-based packages with the command
+\fBcritcl::owns\fR\&. While this command is ignored by the regular build
+modes the static scanner described above takes its arguments as the
+names of companion files which have to be wrapped into the TEA package
+and could not be figured by the scanner otherwise, like because of
+dynamic paths to \fBcritcl::tsources\fR, \fBcritcl::csources\fR,
+getting sourced directly, or simply being adjunct datafiles\&.
+.IP [7]
+Extended the API used by critcl-based packages with the command
+\fBcritcl::api\fR for the management of stubs tables, be it their use,
+and/or declaration and export\&.
+.sp
+Please see section \fIStubs Table Management\fR of the
+\fBcritcl\fR package documentation for details\&.
+.IP [8]
+Extended the API used by critcl-based packages with the command
+\fBcritcl::userconfig\fR for the management of developer-specified
+custom configuration options, be it their use and/or declaration\&.
+.sp
+Please see section \fICustom Build Configuration\fR of the
+\fBcritcl\fR package documentation for details\&.
+.IP [9]
+Extended the API used by critcl-based packages with the
+commands \fBcritcl::description\fR, \fBcritcl::summary\fR,
+\fBcritcl::subject\fR, \fBcritcl::meta\fR, and
+\fBcritcl::buildrequirement\fR for the declaration of TEApot meta data
+for/about the package\&.
+.sp
+Please see section \fIPackage Meta Data\fR of the
+\fBcritcl\fR package documentation for details\&.
+.PP
 .SH "CHANGES FOR VERSION 2\&.1"
 .IP [1]
 Fixed bug where \fBcritcl::tsources\fR interpreted relative
@@ -382,406 +1141,6 @@ Dropped \fB-lib\fR mode from the critcl application\&.
 .IP [26]
 Dropped remnants of support for Tcl 8\&.3 and before\&.
 .PP
-.SH "CHANGES FOR VERSION 3"
-.IP [1]
-The command \fBcritcl::platform\fR was deprecated in version
-2\&.1, superceded by \fBcritcl::targetplatform\fR, yet kept for
-compatibility\&. Now it has been removed\&.
-.IP [2]
-The command \fBcritcl::compiled\fR was kept with in version 2\&.1
-with semantics in contradiction to its, for compatibility\&. This
-contradiction has been removed, changing the visible semantics of the
-command to be in line with its name\&.
-.IP [3]
-The change to version 3 became necessary because of the two
-incompatible visible changes above\&.
-.IP [4]
-Extended the application package with code handling a new
-option \fB-tea\fR\&. Specifying this option invokes a special mode
-where critcl generates a TEA package, i\&.e\&. wraps the input into a
-directory hierarchy and support files which provide it TEA-lookalike
-buildsystem\&.
-.sp
-This new option, and \fB-pkg\fR, exclude each other\&. If
-both are specified the last used option takes precedence\&.
-.sp
-The generated package directory hierarchy is mostly
-self-contained, but not fully\&. It requires not only a working
-installation of Tcl, but also working installations of the packages
-\fBmd5\fR and \fBcmdline\fR\&. Both of these are provided by the
-\fBTcllib\fR bundle\&. Not required, but recommended to have
-installed are any of the packages which can accelerate md5's
-operation, i\&.e\&. \fBcryptkit\fR, \fBtcllibc\fR, or
-\fBTrf\fR\&.
-.IP [5]
-Extended the critcl package with a new command
-\fBcritcl::scan\fR taking the path to a "\fI\&.critcl\fR" file,
-statically scanning it, and returning license, version, a list of its
-companion files, list of imported APIs, and list of
-developer-specified custom configuration options\&. This data is the
-foundation for the TEA wrapping described above\&.
-.sp
-Note that this is a \fIstatic\fR scan\&. While the other build
-modes can (must) execute the "\fI\&.critcl\fR" file and make
-platform-specific decisions regarding the assembled C code, companion
-files, etc\&. the TEA wrap mode is not in a position to make
-platform-specific decisions\&. It has to wrap everything which might
-conceivably be needed when actually building\&. Hence the static scan\&.
-This has however its own set of problems, namely the inability to
-figure out any dynamic construction of companion file paths, at least
-on its own\&. Thus:
-.IP [6]
-Extended the API used by critcl-based packages with the command
-\fBcritcl::owns\fR\&. While this command is ignored by the regular build
-modes the static scanner described above takes its arguments as the
-names of companion files which have to be wrapped into the TEA package
-and could not be figured by the scanner otherwise, like because of
-dynamic paths to \fBcritcl::tsources\fR, \fBcritcl::csources\fR,
-getting sourced directly, or simply being adjunct datafiles\&.
-.IP [7]
-Extended the API used by critcl-based packages with the command
-\fBcritcl::api\fR for the management of stubs tables, be it their use,
-and/or declaration and export\&.
-.sp
-Please see section \fIStubs Table Management\fR of the
-\fBcritcl\fR package documentation for details\&.
-.IP [8]
-Extended the API used by critcl-based packages with the command
-\fBcritcl::userconfig\fR for the management of developer-specified
-custom configuration options, be it their use and/or declaration\&.
-.sp
-Please see section \fICustom Build Configuration\fR of the
-\fBcritcl\fR package documentation for details\&.
-.IP [9]
-Extended the API used by critcl-based packages with the
-commands \fBcritcl::description\fR, \fBcritcl::summary\fR,
-\fBcritcl::subject\fR, \fBcritcl::meta\fR, and
-\fBcritcl::buildrequirement\fR for the declaration of TEApot meta data
-for/about the package\&.
-.sp
-Please see section \fIPackage Meta Data\fR of the
-\fBcritcl\fR package documentation for details\&.
-.PP
-.SH "CHANGES FOR VERSION 3\&.0\&.1"
-.IP [1]
-Bugfixes all around\&. In detail:
-.IP [2]
-Fixed recording of Tcl version requirements\&. Keep package name
-and version together, unbreaking generated meta data and generated
-package load command\&.
-.IP [3]
-Fixed the build scripts: When installing, or wrapping for TEA,
-generate any missing directories
-.IP [4]
-Modified the build scripts to properly exit the application
-when the window of their GUI is closed through the (X) button\&.
-.IP [5]
-Removed an 8\&.5-ism (open wb) which had slipped into the main
-build script\&.
-.IP [6]
-Modified the example build scripts to separate the output for
-the different examples (and packages) by adding empty lines\&.
-.IP [7]
-stack::c example bugfix: Include API declarations for use in
-the companion files\&.
-.IP [8]
-Extended the documentation: Noted the need for a working
-installation of a C compiler\&.
-.IP [9]
-Extended the Windows target definitions and code to handle the
-manifest files used by modern MS development environments\&. Note that
-this code handles both possibilities, environment using manifests, and
-(old(er)) environments without\&.
-.IP [10]
-Extended the Windows 64bit target definitions and code to
-auto-detect the need for the helper library "bufferoverflowU\&.lib" and
-reconfigure the compile and link commands appropriately\&. We assume
-that the library must be linked when present\&. This should be no harm
-if the library is present, yet not needed\&. Just superfluous\&. We search
-for the library in the paths specified by the environment variable
-LIB\&.
-.PP
-.SH "CHANGES FOR VERSION 3\&.0\&.2"
-.IP [1]
-Fixed issue in compile-and-run mode where commands put into the
-auto_index are not found by Tcl's [unknown] command\&.
-.IP [2]
-Fixed an array key mismatch breaking usage of client data and
-delete function for procedure\&. Reported by Jos DeCoster, with patch\&.
-.IP [3]
-Implemented a command line option \fB-L\fR, an equivalent of
-option \fB-I\fR, just for library search paths\&.
-.IP [4]
-Fixed github issues 5 and 8\&. Working around a missing variable
-::errorInfo\&. It should always be present, however there seem to be
-revisions of Tcl around which violate this assumption\&.
-.PP
-.SH "CHANGES FOR VERSION 3\&.0\&.3"
-.IP [1]
-Fixed github issues 5 and 8, for the example build\&.tcl
-scripts\&. Working around a missing variable ::errorInfo\&. It should
-always be present, however there seem to be revisions of Tcl around
-which violate this assumption\&.
-.PP
-.SH "CHANGES FOR VERSION 3\&.0\&.4"
-.IP [1]
-Fixed generation of the package's initname when the incoming
-code is read from stdin and has no proper path\&.
-.IP [2]
-Fixed github issue 11\&. Now using /LIBPATH instead of -L
-on Windows (libinclude configuration setting)\&.
-.IP [3]
-Extended critcl to handle -l:path format of -l options\&.
-GNU ld 2\&.22+ handles this by searching for the path as
-is\&. Good when specifying static libraries, as plain -l looks
-for shared libraries in preference over static\&. critcl handles
-it now, as older GNU ld's do not understand it, nor the
-various vendor-specific linkers\&.
-.IP [4]
-Fixed github issue #12\&. Critcl now determines the version of
-MSVC in use and uses it to switch between various link debug
-options\&. Simplified the handling of bufferoverflowU\&.lib also,
-making use of the same mechanism and collapsing the two
-configurations sections we had back into one\&.
-.IP [5]
-Reworked the insertion of #line pragmas into the generated C
-code to avoid limitations on the line number argument imposed
-by various compilers, and be more accurate\&.
-.IP [6]
-Modified argument processing\&. Option -libdir now also
-implies -L for its argument\&.
-.IP [7]
-Extended handling of option -show (\fBcritcl::showconfig\fR)
-to list the path of the configuration file the data is coming
-from\&. Good for debugging configuration processing\&.
-.IP [8]
-Extended the build script with targets to regenerate the
-embedded documentation, and diagrams, and to generate a
-release\&.
-.PP
-.SH "CHANGES FOR VERSION 3\&.0\&.5"
-.IP [1]
-Fixed bug in the new code for #line pragmas triggered when
-specifying C code without leading whitespace\&.
-.IP [2]
-Extended the documentation to have manpages for the license,
-source retrieval, installer, and developer's guides\&.
-.PP
-.SH "CHANGES FOR VERSION 3\&.0\&.6"
-.IP [1]
-Fixed github issue 10\&. The critcl application now delivers a
-proper exit code (1) on build failure, instead of always
-indicating success (status 0)\&.
-.IP [2]
-Fixed github issue 13\&. Handling of bufferoverflowU\&.lib for
-release builds was inconsistent with handling for debug
-builds\&. It is now identically handled (conditional) by
-both cases\&.
-.IP [3]
-Documentation cleanup, mainly in the installation guide, and
-the README\&.md shown by github
-.PP
-.SH "CHANGES FOR VERSION 3\&.0\&.7"
-.IP [1]
-Fixed the code generated by \fBcritcl::c++command\fR\&.
-The emitted code handed a non-static string table to
-\fBTcl_GetIndexFromObj\fR, in violation of the contract, which
-requires the table to have a fixed address\&. This was a memory
-smash waiting to happen\&. Thanks to Brian Griffin for alrerting
-us to the general problem\&.
-.PP
-.SH "CHANGES FOR VERSION 3\&.1"
-.IP [1]
-Added a new higher-level package \fBcritcl::iassoc\fR\&.
-.sp
-This package simplifies the creation of code associating data
-with an interpreter via Tcl's \fBTcl_(Get|Set)AssocData()\fR APIs\&. The
-user can concentrate on his data while all the neccessary boilerplate
-C code to support this is generated by the package\&.
-.sp
-This package uses several of the new features which were added
-to the core \fBcritcl\fR package, see below\&.
-.IP [2]
-Added the higher-level package \fBcritcl::class\fR\&.
-.sp
-This package simplifies the creation of C level objects with
-class and instance commands\&. The user can write a class definition
-with class- and instance-variables and -methods similar to a TclOO
-class, with all the necessary boilerplate C code to support this
-generated by the package\&.
-.sp
-This package uses several of the new features which were added
-to the core \fBcritcl\fR package, see below\&.
-.IP [3]
-Extended the API for handling TEApot metadata\&. Added the
-command \fBcritcl::meta?\fR to query the stored information\&. Main use
-currently envisioned is retrieval of the current package's name by
-utility commands, for use in constructed names\&. This particular
-information is always available due to the static scan of the package
-file on execution of the first critcl command\&.
-.sp
-The new packages \fBcritcl::iassoc\fR and
-\fBcritcl::class\fR (see above) are users of this command\&.
-.IP [4]
-Extended the API with a command, \fBcritcl::name2c\fR, exposing
-the process of converting a Tcl name into base name, namespace, and C
-namespace\&. This enables higher-level code generators to generate the same
-type of C identifiers as \fBcritcl\fR itself\&.
-.sp
-The new package \fBcritcl::class\fR (see above) is a user
-of this command\&.
-.IP [5]
-Extended the API with a command, \fBcritcl::source\fR,
-executing critcl commands found in a separate file in the context of
-the current file\&. This enables easier management of larger bodies of
-code as it allows the user to split such up into easier to digest
-smaller chunks without causing the generation of multiple packages\&.
-.IP [6]
-Related to the previous item, extended the API with commands to
-divert collection of generated C code into memory\&. This makes it
-easier to use the commands for embedded C code in higher-level code
-generators\&.
-.sp
-See the section \fBAdvanced: Diversions\fR for details of
-the provided commands\&.
-.sp
-The new package \fBcritcl::class\fR (see above) is a user
-of these facilities\&.
-.IP [7]
-Extended the API with commands helping developers with the
-generation of proper C \fI#line\fR directives\&. This allows
-higher-level code generators to generate and insert their own
-directives, ensuring that compile errors in their code are properly
-attributed\&.
-.sp
-See the section \fBAdvanced: Location management\fR for
-details of the provided commands\&.
-.sp
-The new packages \fBcritcl::iassoc\fR and
-\fBcritcl::class\fR (see above) are users of these facilities\&.
-.IP [8]
-Extended the API with commands giving users the ability to
-define custom argument and result types for \fB::critcl::cproc\fR\&.
-.sp
-See the section \fBAdvanced: Extending cproc\fR for
-details of the provided commands\&.
-.PP
-.SH "CHANGES FOR VERSION 3\&.1\&.1"
-.IP [1]
-Bugfixes all around\&. In detail:
-.IP [2]
-Fixed the generation of wrong#args errors for
-\fBcritcl::cproc\fR and derived code (\fBcritcl::class\fR
-cproc-based methods)\&. Use NULL if there are no arguments, and
-take the offset into account\&.
-.IP [3]
-Fixed the handling of package names by
-\fBcritcl::class\fR\&. Forgot that they may contain namespace
-separators\&. Bumped to version 1\&.0\&.1\&.
-.IP [4]
-Extended a \fBcritcl::class\fR generated error message in
-instance creation for clarity\&. Bumped to version 1\&.0\&.2\&.
-.PP
-.SH "CHANGES FOR VERSION 3\&.1\&.2"
-.IP [1]
-Enhancement\&. In detail:
-.IP [2]
-Extended \fBcritcl::cproc\fR to be able to handle optional
-arguments, in a limited way\&. This is automatically available to
-\fBcritcl::class\fR cproc-based methods as well\&.
-.IP [3]
-Bugfix in \fBlassign\fR emulation for Tcl 8\&.4\&.  Properly set
-unused variables to the empty string\&.  Bumped version of
-emulation package \fBlassign84\fR to 1\&.0\&.1\&.
-.PP
-.SH "CHANGES FOR VERSION 3\&.1\&.3"
-.IP [1]
-Enhancement\&. In detail:
-.IP [2]
-Added new argument type "pstring", for "Pascal String", a
-counted string, i\&.e\&. a combination of string pointer and string
-length\&.
-.IP [3]
-Added new methods \fBcritcl::argtypesupport\fR and
-\fB::critcl::argsupport\fR to define and use additional
-supporting code for an argument type, here used by "pstring"
-above to define the necessary structure\&.
-.IP [4]
-Semi-bugfixes in the packages \fBcritcl::class\fR and
-\fBcritcl::iassoc\fR\&. Pragmas for the AS meta data scanner
-to ensure that the template files are made part of the package\&.
-Versions bumped to 1\&.0\&.4 and 1\&.0\&.1 respectively\&.
-.PP
-.SH "CHANGES FOR VERSION 3\&.1\&.4"
-.IP [1]
-Bugfix in package \fBcritcl::class\fR\&. Generate a dummy
-field in the class structure if the class has no class
-variables\&. Without this change the structure would be empty,
-and a number of compilers are not able to handle such a type\&.
-.IP [2]
-Fixed a typo which broke the win64 configuration\&.
-.IP [3]
-Fixed issue #16, a typo in the documentation of command
-\fBcritcl::class\fR\&.
-.PP
-.SH "CHANGES FOR VERSION 3\&.1\&.5"
-.IP [1]
-Fixed issue #19\&. Made the regular expression extracting the
-MSVC version number more general to make it work on german
-language systems\&. This may have to be revisited in the future,
-for other Windows locales\&.
-.IP [2]
-Fixed issue #20\&. Made option -tea work on windows, at least in
-a unix emulation environment like msys/mingw\&.
-.PP
-.SH "CHANGES FOR VERSION 3\&.1\&.6"
-.IP [1]
-Fixed issue #21\&. While the multi-definition of the stub-table
-pointer variables was ok with for all the C linkers seen so far
-C++ linkers did not like this at all\&. Reworked the code to
-ensure that this set of variables is generated only once, in
-the wrapper around all the pieces to assemble\&.
-.IP [2]
-Fixed issue #22, the handling of the command identifier
-arguments of \fBcritcl::ccommand\fR, \fBcritcl::cproc\fR, and
-\fBcritcl::cdata\fR\&. We now properly allow any Tcl identifier
-and generate proper internal C identifiers from them\&.
-.sp
-As part of this the signature of command \fBcritcl::name2c\fR
-changed\&. The command now delivers a list of four values instead
-of three\&. The new value was added at the end\&.
-.sp
-Further adapted the implementation of package
-\fBcritcl::class\fR, a user of \fBcritcl::name2c\fR\&.
-This package is now at version 1\&.0\&.6 and requires critcl 3\&.1\&.6
-.sp
-Lastly fixed the mis-handling of option \fB-cname\fR in
-\fBcritcl::ccommand\fR, and \fBcritcl::cproc\fR\&.
-.IP [3]
-Fixed issue #23\&.
-.PP
-.SH "CHANGES FOR VERSION 3\&.1\&.7"
-.IP [1]
-Fixed issue #24\&. Extract and unconditionally display compiler
-warnings found in the build log\&. Prevents users from missing
-warnings which, while not causing the build to fail, may
-still indicate problems\&.
-.IP [2]
-New feature\&. Output hook\&. All non-messaging user output is now
-routed through the command \fBcritcl::print\fR, and users are
-allowed to override it when using the critcl application-as-package\&.
-.IP [3]
-New feature, by Ashok P\&. Nadkarni\&. Platform configurations can
-inherit values from configurations defined before them\&.
-.PP
-.SH "CHANGES FOR VERSION 3\&.1\&.8"
-.IP [1]
-Fixed issue with package indices generated for Tcl 8\&.4\&.
-Join the list of commands with semi-colon, not newline\&.
-.IP [2]
-Fixed issue #26 which brought up use-cases I had forgotten to
-consider while fixing bug #21 (see critcl 3\&.1\&.6)\&.
-.PP
 .SH AUTHORS
 Jean Claude Wippler, Steve Landers, Andreas Kupries
 .SH "BUGS, IDEAS, FEEDBACK"
@@ -799,6 +1158,6 @@ Glueing/Embedded C code
 .nf
 Copyright (c) Jean-Claude Wippler
 Copyright (c) Steve Landers
-Copyright (c) 2011-2013 Andreas Kupries
+Copyright (c) 2011-2015 Andreas Kupries
 
 .fi
