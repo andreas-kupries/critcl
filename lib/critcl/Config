@@ -322,13 +322,32 @@ if {[string match win32-* $platform]} {
 	    # VC9 or higher. -debug:full is not supported anymore.
 	    # VC9 - warning, VC10 - error
 	    set msvclinkdebug -debug
+            # Enable local stack checks for buffer overflow
+            set msvcstackchecks -GS
+            # -GZ deprecated in favor of -RTC1
+            set msvcdebugchecks -RTC1
+            set msvclinkglobaloptimize -ltcg
 	} else {
 	    set msvclinkdebug -debug:full
+            set msvcdebugchecks -GZ
+            set msvcstackchecks ""
+            set msvclinkglobaloptimize ""
 	}
+
+	if {[package vcompare $msvcversion 14] >= 0} {
+            # -Op not supported or needed.  Use -fp instead to match Tcl
+            set msvcfpopt -fp:strict
+            set msvclinkworkingset ""
+        } else {
+            # -Op -> floating point consistency
+            set msvcfpopt -Op
+            # Working set optimization
+            set msvclinkworkingset -ws:aggressive
+        }
     }
 }
 
-# Windows - using MSVC++ 6.0
+# Windows - using 32-bit MS VC++
 #
 # Note: the language option for cl is -TC for c and -TP for c++ or
 #       it can treat single files -Tc<filename>
@@ -341,18 +360,18 @@ win32-ix86-cl  preproc_define  cl -nologo -E
 win32-ix86-cl  preproc_enum    cl -nologo -E
 win32-ix86-cl  libinclude      /LIBPATH:
 win32-ix86-cl  object          .obj
-win32-ix86-cl  debug_symbols   -W3 -Od -Zi -GZ -MDd -D_DEBUG
-win32-ix86-cl  optimize        -W3 -O2 -Op -MD
+win32-ix86-cl  debug_symbols   -W3 -Od -Zi $msvcstackchecks $msvcdebugchecks -MDd -D_DEBUG $msvcfpopt
+win32-ix86-cl  optimize        -W3 -O2 -MD $msvcstackchecks $msvcfpopt
 win32-ix86-cl  output          [list -Fo$outfile]
 win32-ix86-cl  ldoutput        -dll [list -out:$outfile]
 win32-ix86-cl  link_debug      $msvclinkdebug -debugtype:cv -verbose:lib -nodefaultlib:libc
-win32-ix86-cl  link_release    -release -opt:ref -opt:icf,3 -ws:aggressive -verbose:lib
+win32-ix86-cl  link_release    -release -opt:ref -opt:icf,3 $msvclinkworkingset  -verbose:lib $msvclinkglobaloptimize
 win32-ix86-cl  link_preload
 win32-ix86-cl  strip
 win32-ix86-cl  version         cl
 win32-ix86-cl  platform        win32-ix86
 
-# Windows 64 - using Platform SDK
+# Windows - using 64-bit MS VC++
 #
 # Note: the language option for cl is -TC for c and -TP for c++ or
 #       it can treat single files -Tc<filename>
@@ -360,10 +379,8 @@ win32-ix86-cl  platform        win32-ix86
 
 win32-x86_64-cl  when            $msvc
 win32-x86_64-cl  copy            win32-ix86-cl
-# XXX - Override inherited "optimize" with a view to remove -Op in the future
-win32-x86_64-cl  optimize        -W3 -O2 -Op -MD
 win32-x86_64-cl  link_debug      $msvclinkdebug -debugtype:cv -verbose:lib $msvcbufferoverflowlib
-win32-x86_64-cl  link_release    -release -opt:ref -opt:icf,3 -ws:aggressive -verbose:lib $msvcbufferoverflowlib
+win32-x86_64-cl  link_release    -release -opt:ref -opt:icf,3 $msvclinkworkingset -verbose:lib $msvclinkglobaloptimize $msvcbufferoverflowlib
 win32-x86_64-cl  platform        win32-x86_64
 
 # Cross-compile for Windows using Xmingwin
