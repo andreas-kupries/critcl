@@ -44,8 +44,9 @@ test critcl-cache-1.0.4 {cache, wrong\#args, too many} -constraints tcl8.4 -body
 ##
 
 test critcl-cache-2.0 {cache, default, home directory} -body {
+    # Note file join below is to not fail because of \ vs / separators
     critcl::cache
-} -match glob -result $::env(HOME)/.critcl/*
+} -match glob -result [file join $::env(HOME) .critcl *]
 
 test critcl-cache-2.1 {cache, redirecting cache} -setup {
     set here [critcl::cache]
@@ -54,7 +55,7 @@ test critcl-cache-2.1 {cache, redirecting cache} -setup {
 } -cleanup {
     critcl::cache $here
     unset here
-} -match glob -result $::env(HOME)/FOO
+} -match glob -result [file join $::env(HOME) FOO]
 
 # -------------------------------------------------------------------------
 testsuiteCleanup
