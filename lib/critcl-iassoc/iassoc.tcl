@@ -6,7 +6,7 @@
 # CriTcl Utility Commands. Specification of a C function and structure
 # associated with an interpreter made easy.
 
-package provide critcl::iassoc 1.0.2
+package provide critcl::iassoc 1.1
 
 # # ## ### ##### ######## ############# #####################
 ## Requirements.
@@ -47,7 +47,7 @@ proc ::critcl::iassoc::def {name arguments struct constructor destructor} {
     # Pull the package we are working on out of the system.
 
     set package  [critcl::meta? name]
-    set qpackage [expr {[string match ::* $package] 
+    set qpackage [expr {[string match ::* $package]
 			? "$package"
 			: "::$package"}]
     lassign [uplevel 1 [list ::critcl::name2c $qpackage]] pns pcns package cpackage
@@ -56,9 +56,7 @@ proc ::critcl::iassoc::def {name arguments struct constructor destructor} {
     #puts "%%% Pkg  |$package|"
     #puts "%%% pCNS |$pcns|"
     #puts "%%% cPkg |$cpackage|"
-
     #puts "%%% Name |$name|"
-
     #puts "@@@ <<$data>>"
 
     set stem  ${pcns}${cpackage}_iassoc_${name}
@@ -75,6 +73,7 @@ proc ::critcl::iassoc::def {name arguments struct constructor destructor} {
 	set anames ", [join $anames {, }]"
     }
 
+    lappend map "\t" {}
     lappend map @package@     $package
     lappend map @name@        $name
     lappend map @stem@        $stem
@@ -86,42 +85,88 @@ proc ::critcl::iassoc::def {name arguments struct constructor destructor} {
     lappend map @constructor@ $constructor
     lappend map @destructor@  $destructor
 
-    set hdr      ${stem}.h
-    set header   [file join [critcl::cache] $hdr]
-    set template [critcl::Deline [Template iassoc.h]]
-
     #puts T=[string length $template]
 
-    file mkdir [critcl::cache]
-    critcl::util::Put $header [string map $map $template]
+    critcl::include [critcl::make ${name}.h \n[critcl::at::here!][string map $map {
+	#ifndef @name@_HEADER
+	#define @name@_HEADER
 
-    critcl::ccode "#include <$hdr>"
+	#include <tcl.h>
+
+	typedef struct @type@__ {
+	@struct@
+	} @type@__;
+	typedef struct @type@__* @type@;
+
+	extern @type@
+	@name@ (Tcl_Interp* interp@argdecls@);
+
+	#endif
+    }]]
+
+    # Note: Making the .c code a `csources` instead of including it
+    # directly is a backward incompatible API change (The C code does
+    # not see any preceding includes. Which may define things used
+    # in/by the user's constructor. Breaks the users of iassoc, like
+    # bitmap, emap, etc. -- change defered --
+    critcl::include [critcl::make ${name}.c \n[critcl::at::here!][string map $map {
+	/*
+	 * For package "@package@".
+	 * Implementation of Tcl Interpreter Association "@name@".
+	 *
+	 * Support functions for structure creation and destruction.
+	 */
+
+	static void
+	@stem@_Release (@type@ data, Tcl_Interp* interp)
+	{
+	    @destructor@
+	    ckfree((char*) data);
+	}
+
+	static @type@
+	@stem@_Init (Tcl_Interp* interp@argdecls@)
+	{
+	    @type@ data = (@type@) ckalloc (sizeof (@type@__));
+
+	    @constructor@
+	    return data;
+
+	error:
+	    ckfree ((char*) data);
+	    return NULL;
+	}
+
+	/*
+	 * Structure accessor, automatically creating it if the
+	 * interpreter does not have it already, setting it up for
+	 * destruction on interpreter shutdown.
+	 */
+
+	@type@
+	@name@ (Tcl_Interp* interp@argdecls@)
+	{
+	    #define KEY "@label@"
+
+	    Tcl_InterpDeleteProc* proc = (Tcl_InterpDeleteProc*) @stem@_Release;
+	    @type@ data;
+
+	    data = Tcl_GetAssocData (interp, KEY, &proc);
+	    if (data) {
+		return data;
+	    }
+
+	    data = @stem@_Init (interp@argnames@);
+
+	    if (data) {
+		Tcl_SetAssocData (interp, KEY, proc, (ClientData) data);
+	    }
+
+	    return data;
+	    #undef KEY
+	}
+    }]]
     return
-}
-
-proc ::critcl::iassoc::Template {path} {
-    variable selfdir
-    set path $selfdir/$path
-    #puts T=$path
-    return [critcl::util::Get $path]
-}
-
-# # ## ### ##### ######## ############# #####################
-##
-# Internal: Namespace holding the specification commands and related
-# state. Treat like a sub-package, with a proper API.
-##
-# # ## ### ##### ######## ############# #####################
-
-namespace eval ::critcl::iassoc::spec {}
-
-# # ## ### ##### ######## ############# #####################
-
-# # ## ### ##### ######## ############# #####################
-## State
-
-namespace eval ::critcl::iassoc {
-    variable selfdir [file dirname [file normalize [info script]]]
 }
 
 # # ## ### ##### ######## ############# #####################

@@ -2,6 +2,7 @@
 #define __CRITCL_UTIL_ASSERT_H 1
 
 /*
+ * Copyright (c) 2017-2018 Andreas Kupries <andreas_kupries@users.sourceforge.net>
  * = = == === ===== ======== ============= =====================
  */
 

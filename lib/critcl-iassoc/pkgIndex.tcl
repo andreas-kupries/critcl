@@ -1,1 +1,1 @@
-package ifneeded critcl::iassoc 1.0.2 [list source [file join $dir iassoc.tcl]]
+package ifneeded critcl::iassoc 1.1 [list source [file join $dir iassoc.tcl]]
