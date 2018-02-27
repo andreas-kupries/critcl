@@ -2,9 +2,11 @@
 #define __CRITCL_UTIL_ALLOC_H 1
 
 /*
+ * Copyright (c) 2017-2018 Andreas Kupries <andreas_kupries@users.sourceforge.net>
  * = = == === ===== ======== ============= =====================
  */
 
+#include <string.h> /* memcpy - See STREP */
 #include <tcl.h>
 
 /*

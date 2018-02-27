@@ -2,6 +2,8 @@
 #define __CRITCL_UTIL_TRACE_H 1
 
 /*
+ * Copyright (c) 2017-2018 Andreas Kupries <andreas_kupries@users.sourceforge.net>
+ *
  * Narrative tracing support, controlled by CRITCL_TRACER
  * = = == === ===== ======== ============= =====================
  *
