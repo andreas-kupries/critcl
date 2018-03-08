@@ -94,7 +94,7 @@ if {[string match macosx-* $platform]} {
 			    -directory $base/SDKs MacOSX*] {
             set ver [string trimright \
                         [file rootname [string range $dir $pos end]] u]
-            if {[package vcompare $ver 10.4] >= 0}  {
+            if {"$ver" != "" && [package vcompare $ver 10.4] >= 0}  {
                 # 10.4 is earliest supporting universal that we support
                 set path($ver) $dir
                 lappend sdklist $ver
