@@ -1634,11 +1634,30 @@ proc ::critcl::app::PlaceCritclSupport {pkgdir} {
     # support packages, and copy them into the TEA hierarchy for use
     # by the generated Makefile.
     foreach {pkg dir} {
-	critcl           critcl
-	critcl::app      app-critcl
-	critcl::util     critcl-util
-	dict84           util84
-	stubs::container stubs
+	critcl            critcl
+	critcl::app       app-critcl
+	critcl::util      critcl-util
+        critcl::class     critcl-class
+        critcl::iassoc    critcl-iassoc
+        critcl::bitmap    critcl-bitmap
+        critcl::cutil     critcl-cutil
+        critcl::emap      critcl-emap
+        critcl::enum      critcl-enum
+        critcl::literals  critcl-literals
+        critcl::platform  critcl-platform
+	dict84            dict84
+        lassign84         lassign84
+        lmap84            lmap84
+	stubs::container  stubs_container
+        stubs::gen        stubs_genframe
+        stubs::gen::decl  stubs_gen_decl
+        stubs::gen::lib   stubs_gen_lib
+        stubs::gen::macro stubs_gen_macro
+        stubs::gen::slot  stubs_gen_slot
+        stubs::gen::header stubs_gen_header
+        stubs::gen::init  stubs_gen_init
+        stubs::reader     stubs_reader
+        stubs::writer     stubs_writer
     } {
 	set cmd      [package ifneeded $pkg [package require $pkg]]
 	set location [file dirname [lindex $cmd end]]
@@ -1654,12 +1673,17 @@ proc ::critcl::app::PlaceCritclSupport {pkgdir} {
     # by whatever is installed outside.
 
     set     pfiles {}
-    lappend pfiles util84/lassign util84/dict
-    lappend pfiles stubs/container  stubs/reader    stubs/genframe
-    lappend pfiles stubs/gen_decl   stubs/gen_macro stubs/gen_slot
-    lappend pfiles stubs/gen_header stubs/gen_init  stubs/gen_lib
-    lappend pfiles stubs/writer
+    lappend pfiles lassign84/lassign dict84/dict lmap84/lmap
+    lappend pfiles stubs_container/container stubs_reader/reader
+    lappend pfiles stubs_genframe/genframe stubs_gen_decl/gen_decl
+    lappend pfiles stubs_gen_macro/gen_macro stubs_gen_slot/gen_slot
+    lappend pfiles stubs_gen_header/gen_header stubs_gen_init/gen_init
+    lappend pfiles stubs_gen_lib/gen_lib stubs_writer/writer
     lappend pfiles critcl/critcl app-critcl/critcl critcl-util/util
+    lappend pfiles critcl-class/class critcl-iassoc/iassoc
+    lappend pfiles critcl-bitmap/bitmap critcl-cutil/cutil
+    lappend pfiles critcl-literals/literals critcl-platform/platform
+    lappend pfiles critcl-emap/emap critcl-enum/enum
 
     set fd [open [file join $pkgdir critcl main.tcl] w]
     puts $fd [join \
