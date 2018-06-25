@@ -51,10 +51,10 @@ initialized what other fields.
 
 [list_end]
 
-[para] The C code in [arg postbody] is responsible construction action
-to be done after the primary construction was done and the Tcl-level
-instance command was successfully created. It has access to a slightly
-different environment:
+[para] The C code in [arg postbody] is responsible for construction
+actions to be done after the primary construction was done and the
+Tcl-level instance command was successfully created. It has access to
+a slightly different environment:
 
 [list_begin definitions]
 
