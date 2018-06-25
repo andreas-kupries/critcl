@@ -335,11 +335,15 @@ proc _install {args} {
     }
 
     if {[llength $args] == 0} {
+	set exe  [file dirname [file normalize [info nameofexecutable]/___]]]
 	set dstl [info library]
-	set dsta [file dirname [file dirname [file normalize [info nameofexecutable]/___]]]
+	set dsta [file dirname $exe]
+	set dsti [file dirname $dsta]/include
+
     } else {
 	set dstl [lindex $args 0]
 	set dsta [file dirname [findlib $dstl]]/bin
+	set dsti [file dirname [findlib $dstl]]/include
     }
 
     set selfdir [file dirname $me]
@@ -347,6 +351,7 @@ proc _install {args} {
     puts {Installing into:}
     puts \tPackages:\t$dstl
     puts \tApplication:\t$dsta
+    puts \tHeaders:\t$dsti
 
     if {[catch {
 	# Create directories, might not exist.
@@ -409,6 +414,8 @@ proc _install {args} {
 	# Special package: critcl_md5c
 	# Local MD5 hash implementation.
 
+	puts "\nInstalled C package:\tcritcl::md5c"
+	
 	# It is special because it is a critcl-based package, not pure
 	# Tcl as everything else of critcl. Its installation makes it
 	# the first package which will be compiled with critcl on this
@@ -420,6 +427,7 @@ proc _install {args} {
 	set version [version $src]
 	set name    critcl_md5c
 	set dst     $dstl/$name$version
+	set cmd     {}
 
 	lappend cmd exec >@ stdout 2>@ stderr
 	if {$::tcl_platform(platform) eq "windows"} {
@@ -430,6 +438,7 @@ proc _install {args} {
 	    lappend cmd -target $target
 	}
 	lappend cmd -libdir $dstl/tmp -pkg $src
+	puts $cmd
 	eval $cmd
 
 	file delete -force $dst
@@ -437,6 +446,46 @@ proc _install {args} {
 	file delete -force $dstl/tmp
 
 	puts "${prefix}Installed package:      $dst"
+
+	# Special package: critcl::callback
+	# C/Tcl callback utility code.
+
+	puts "\nInstalled C package:\tcritcl::callback"
+
+	# It is special because it is a critcl-based package, not pure
+	# Tcl as everything else of critcl. Its installation makes it
+	# the second package which will be compiled with critcl on this
+	# machine. It uses the just-installed application for
+	# that.
+	
+	set src     $selfdir/lib/critcl-callback/callback.tcl
+	set version [version $src]
+	set name    critcl_callback
+	set dst     $dstl/$name$version
+	set dsth    $dsti/$name
+	set cmd     {}
+
+	lappend cmd exec >@ stdout 2>@ stderr
+	if {$::tcl_platform(platform) eq "windows"} {
+	    lappend cmd [info nameofexecutable]
+	}
+	lappend cmd $theapp
+	if {$target ne {}} {
+	    lappend cmd -target $target
+	}
+	lappend cmd -libdir     $dstl/tmp
+	lappend cmd -includedir $dstl/tmp
+	lappend cmd -pkg $src
+	puts $cmd
+	eval $cmd
+
+	file delete -force $dst $dsth
+	file rename        $dstl/tmp/callback        $dst
+	file rename        $dstl/tmp/critcl_callback $dsth
+	file delete -force $dstl/tmp
+
+	puts "${prefix}Installed package:      $dst"
+	puts "${prefix}Installed headers:      $dsti/critcl_callback"
 
     } msg]} {
 	if {![string match {*permission denied*} $msg]} {
