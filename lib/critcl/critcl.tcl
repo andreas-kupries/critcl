@@ -1944,9 +1944,9 @@ proc ::critcl::APIimport {file name version} {
 
     set cname [string map {:: _} $name]
 
-    set at [API_locate $cname]
+    set at [API_locate $cname searched]
     if {$at eq {}} {
-	error "Headers for API $name not found"
+	error "Headers for API $name not found in \n-\t[join $searched \n-\t]"
     } else {
 	msg -nonewline " (stubs import $name $version @ $at/$cname)"
     }
@@ -2014,8 +2014,10 @@ proc ::critcl::APIfunction {file rtype name arguments} {
     return
 }
 
-proc ::critcl::API_locate {name} {
+proc ::critcl::API_locate {name sv} {
+    upvar 1 $sv searched
     foreach dir [SystemIncludePaths [This]] {
+	    lappend searched $dir
 	if {[API_at $dir $name]} { return $dir }
     }
     return {}
