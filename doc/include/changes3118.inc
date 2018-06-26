@@ -23,4 +23,7 @@
 [enum] Merged pull request #85 from snoe925/issue-84
        to fix Issue #84 breaking installation on OSX.
 
+[enum] Merged pull request #87 from apnadkarni/tea-fixes to fix Issue
+       #86, broken -tea option, generating an incomplete package.
+
 [list_end]

@@ -743,6 +743,9 @@ running tests\&. Handles all but critcl::md5\&.
 .IP [6]
 Merged pull request #85 from snoe925/issue-84
 to fix Issue #84 breaking installation on OSX\&.
+.IP [7]
+Merged pull request #87 from apnadkarni/tea-fixes to fix Issue
+#86, broken -tea option, generating an incomplete package\&.
 .PP
 .SH "CHANGES FOR VERSION 3\&.1\&.17"
 .IP [1]
