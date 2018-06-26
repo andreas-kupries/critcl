@@ -286,6 +286,30 @@ This document provides an overview of the changes \fBcritcl\fR
 underwent from version to version\&.
 .PP
 The latest changes are found at the top\&.
+.SH "CHANGES FOR VERSION 3\&.1\&.18 (UNRELEASED)"
+.IP [1]
+Bugfix\&. Package \fBcritcl::cutil\fR bumped to version 0\&.1\&.1\&.
+Fixed missing inclusion of header "\fIstring\&.h\fR" in
+"\fIcritcl_alloc\&.h\fR", needed for \fBmemcpy\fR in macro \fBSTREP\fR\&.
+.IP [2]
+Merged pull request #83 from apnadkarni/vc-fixes\&.
+Removed deprecated -Gs for MSVC builds, and other Windows fixups\&.
+.IP [3]
+Feature\&. Package \fBcritcl::iassoc\fR bumped to vresion 1\&.1\&.
+Refactored internals to generate an include header for use by \&.c files\&.
+This now matches what other generator packages do\&.
+The template file is inlined and removed\&.
+.IP [4]
+Merged pull request #82 from gahr/home-symlink
+Modified tests to handle possibility of $HOME a symlink\&.
+.IP [5]
+Merged pull request #81 from gahr/test-not-installed
+Modified test support to find uninstalled critcl packages when
+running tests\&. Handles all but critcl::md5\&.
+.IP [6]
+Merged pull request #85 from snoe925/issue-84
+to fix Issue #84 breaking installation on OSX\&.
+.PP
 .SH "CHANGES FOR VERSION 3\&.1\&.17"
 .IP [1]
 Extension: Allow duplicate arg- and result-type definitions if

@@ -539,10 +539,10 @@ knowledge which other constructors have already been run and
 initialized what other fields\&.
 .RE
 .sp
-The C code in \fIpostbody\fR is responsible construction action
-to be done after the primary construction was done and the Tcl-level
-instance command was successfully created\&. It has access to a slightly
-different environment:
+The C code in \fIpostbody\fR is responsible for construction
+actions to be done after the primary construction was done and the
+Tcl-level instance command was successfully created\&. It has access to
+a slightly different environment:
 .RS
 .TP
 \fBinterp\fR

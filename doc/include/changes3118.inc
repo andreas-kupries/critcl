@@ -20,4 +20,7 @@
        Modified test support to find uninstalled critcl packages when
        running tests. Handles all but critcl::md5.
 
+[enum] Merged pull request #85 from snoe925/issue-84
+       to fix Issue #84 breaking installation on OSX.
+
 [list_end]

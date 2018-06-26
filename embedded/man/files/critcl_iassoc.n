@@ -2,7 +2,7 @@
 '\" Generated from file 'critcl_iassoc\&.man' by tcllib/doctools with format 'nroff'
 '\" Copyright (c) 2011-2015 Andreas Kupries
 '\"
-.TH "critcl::iassoc" n 1 doc "C Runtime In Tcl (CriTcl)"
+.TH "critcl::iassoc" n 1\&.1 doc "C Runtime In Tcl (CriTcl)"
 .\" The -*- nroff -*- definitions below are for supplemental macros used
 .\" in Tcl/Tk manual entries.
 .\"
@@ -278,7 +278,7 @@ package require \fBTcl  8\&.4\fR
 .sp
 package require \fBcritcl  ?3\&.1?\fR
 .sp
-package require \fBcritcl::iassoc  ?1?\fR
+package require \fBcritcl::iassoc  ?1\&.1?\fR
 .sp
 \fB::critcl::iassoc::def\fR \fIname\fR \fIarguments\fR \fIstruct\fR \fIconstructor\fR \fIdestructor\fR
 .sp
