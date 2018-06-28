@@ -311,6 +311,9 @@ critcl::app
 \fBfiles/critcl_bitmap\&.n\fR
 critcl::bitmap
 .TP
+\fBfiles/critcl_callback\&.n\fR
+critcl::callback
+.TP
 \fBfiles/critcl_class\&.n\fR
 critcl::class
 .TP
@@ -383,6 +386,9 @@ critcl::app
 \fBfiles/critcl_bitmap\&.n\fR
 critcl::bitmap
 .TP
+\fBfiles/critcl_callback\&.n\fR
+critcl::callback
+.TP
 \fBfiles/critcl_class\&.n\fR
 critcl::class
 .TP
@@ -443,6 +449,9 @@ critcl::app
 \fBfiles/critcl_bitmap\&.n\fR
 critcl::bitmap
 .TP
+\fBfiles/critcl_callback\&.n\fR
+critcl::callback
+.TP
 \fBfiles/critcl_class\&.n\fR
 critcl::class
 .TP
@@ -502,6 +511,9 @@ critcl::app
 .TP
 \fBfiles/critcl_bitmap\&.n\fR
 critcl::bitmap
+.TP
+\fBfiles/critcl_callback\&.n\fR
+critcl::callback
 .TP
 \fBfiles/critcl_class\&.n\fR
 critcl::class
@@ -569,6 +581,9 @@ critcl::app
 \fBfiles/critcl_bitmap\&.n\fR
 critcl::bitmap
 .TP
+\fBfiles/critcl_callback\&.n\fR
+critcl::callback
+.TP
 \fBfiles/critcl_class\&.n\fR
 critcl::class
 .TP
@@ -629,6 +644,9 @@ critcl::app
 \fBfiles/critcl_bitmap\&.n\fR
 critcl::bitmap
 .TP
+\fBfiles/critcl_callback\&.n\fR
+critcl::callback
+.TP
 \fBfiles/critcl_class\&.n\fR
 critcl::class
 .TP
@@ -688,6 +706,9 @@ critcl::app
 .TP
 \fBfiles/critcl_bitmap\&.n\fR
 critcl::bitmap
+.TP
+\fBfiles/critcl_callback\&.n\fR
+critcl::callback
 .TP
 \fBfiles/critcl_class\&.n\fR
 critcl::class
@@ -758,6 +779,9 @@ critcl::app
 \fBfiles/critcl_bitmap\&.n\fR
 critcl::bitmap
 .TP
+\fBfiles/critcl_callback\&.n\fR
+critcl::callback
+.TP
 \fBfiles/critcl_class\&.n\fR
 critcl::class
 .TP
@@ -823,6 +847,9 @@ critcl::app
 .TP
 \fBfiles/critcl_bitmap\&.n\fR
 critcl::bitmap
+.TP
+\fBfiles/critcl_callback\&.n\fR
+critcl::callback
 .TP
 \fBfiles/critcl_class\&.n\fR
 critcl::class
@@ -893,6 +920,9 @@ critcl::app
 \fBfiles/critcl_bitmap\&.n\fR
 critcl::bitmap
 .TP
+\fBfiles/critcl_callback\&.n\fR
+critcl::callback
+.TP
 \fBfiles/critcl_class\&.n\fR
 critcl::class
 .TP
@@ -952,6 +982,9 @@ critcl::app
 .TP
 \fBfiles/critcl_bitmap\&.n\fR
 critcl::bitmap
+.TP
+\fBfiles/critcl_callback\&.n\fR
+critcl::callback
 .TP
 \fBfiles/critcl_class\&.n\fR
 critcl::class

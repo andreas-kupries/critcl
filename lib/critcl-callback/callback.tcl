@@ -1,8 +1,10 @@
 # callback.tcl -
 #
-# C support package for management of callbacks.
-# Note, this package does not expose anything at Tcl level.
-# It only provides stubs to manage C-level callback managers.
+# C support package for the management of callbacks into Tcl.
+#
+# __Note__, this package does not expose anything at Tcl level.  It
+# only provides stubs (i.e. functions) and data structures providing
+# C-level callback managers.
 
 package provide critcl::callback 1
 
@@ -24,7 +26,8 @@ critcl::cutil::assertions on
 critcl::cutil::tracer     off
 
 critcl::debug symbols
-#critcl::debug memory
+
+#Activate when in need of memory debugging - Valgrind is an alternative
 #critcl::debug symbols memory
 
 critcl::config lines 1
@@ -38,14 +41,13 @@ critcl::license \
     {Under a BSD license.}
 
 critcl::summary \
-    {Critcl utility package providing Tcl callbacks}
+    {Critcl utility package providing functions and structures to manage callbacks into Tcl, from C}
 
-critcl::description {
-    Part of Critcl
-}
+critcl::description \
+    {Part of Critcl}
 
-critcl::subject libmarpa marpa parser lexer {c runtime} earley aycock horspool
-critcl::subject {joop leo} table-parsing chart-parsing top-down
+critcl::subject critcl callbacks {management of callbacks}
+critcl::subject {Tcl callbacks from C}
 
 # # ## ### ##### ######## #############
 ## Implementation.
@@ -73,6 +75,15 @@ critcl::api function critcl_callback_p critcl_callback_new {
     int         objc
     Tcl_Obj**   objv
     int         nargs
+}
+
+# Modify the specified callback by placing the argument into the first
+# free argument slot. This extends the prefix part of the callback,
+# and reduces the argument part, by one.
+
+critcl::api function void critcl_callback_extend {
+    critcl_callback_p callback
+    Tcl_Obj*          argument
 }
 
 # Release all memory associated with the callback instance. For the

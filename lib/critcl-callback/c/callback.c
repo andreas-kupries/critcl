@@ -38,13 +38,28 @@ critcl_callback_new (Tcl_Interp* interp, int objc, Tcl_Obj** objv, int nargs)
 }
 
 void
+critcl_callback_extend (critcl_callback_p callback, Tcl_Obj* argument)
+{
+    TRACE_FUNC ("((critcl_callback_p) %p, (Tcl_Obj*) %p)", callback, argument);
+    ASSERT (callback->nargs > 0, "No arguments left to use for extension");
+
+    callback->command [callback->nfixed] = argument;
+    Tcl_IncrRefCount (argument);
+
+    callback->nargs  --;
+    callback->nfixed ++;
+    
+    TRACE_RETURN_VOID;
+}
+
+void
 critcl_callback_destroy (critcl_callback_p callback)
 {
     TRACE_FUNC ("((critcl_callback_p) %p)", callback);
 
     int i;
     for (i = callback->nfixed-1; i > 0; i--) {
-	Tcl_IncrRefCount (callback->command [i]);
+	Tcl_DecrRefCount (callback->command [i]);
     }
     FREE (callback->command);
     FREE (callback);
