@@ -8,7 +8,7 @@
 #
 # Copyright (c) 20??-2017 Andreas Kupries <andreas_kupries@users.sourceforge.net>
 
-package provide critcl::literals 1.2
+package provide critcl::literals 1.3
 
 # # ## ### ##### ######## ############# #####################
 ## Requirements.
@@ -26,11 +26,15 @@ proc critcl::literals::def {name dict {use tcl}} {
     # dict :: map (C symbolic name -> string)
     Use $use
     Header             $name $dict
+
     C ConstStringTable $name $dict
     C AccessorC        $name
+
     Tcl Iassoc         $name $dict
     Tcl AccessorTcl    $name
     Tcl ResultType     $name
+
+    Multi AccessorTclMulti $name
     return
 }
 
@@ -38,13 +42,15 @@ proc critcl::literals::def {name dict {use tcl}} {
 ## Internals
 
 proc critcl::literals::Use {use} {
-    # Use cases: tcl, c, both
+    # Use cases: tcl, c, both, multi-mode
     upvar 1 mode mode
     set uses 0
-    foreach u {c tcl} { set mode($u) 0 }
+    foreach u {c tcl multi} { set mode($u) 0 }
     foreach u $use    { set mode($u) 1 ; incr uses }
+    # multi-mode is an extension of tcl mode, thus implies it
+    if {$mode(multi)} { set mode(tcl) 1 }
     if {$uses} return
-    return -code error "Need at least one use case (c, or tcl)"
+    return -code error "Need at least one use case (c, multi, or tcl)"
 }
 
 proc critcl::literals::ConstStringTable {name dict} {
@@ -182,9 +188,40 @@ proc critcl::literals::AccessorTcl {name} {
 	@NAME@ (Tcl_Interp* interp, @NAME@_names literal)
 	{
 	    if ((literal < 0) || (literal >= @NAME@_name_LAST)) {
-		Tcl_Panic ("Bad @NAME@ literal");
+		Tcl_Panic ("Bad @NAME@ literal index %d outside [0...%d]",
+			   literal, @NAME@_name_LAST-1);
 	    }
 	    return @NAME@_iassoc (interp)->literal [literal];
+	}
+    }]
+    return
+}
+
+proc critcl::literals::AccessorTclMulti {name} {
+    lappend map @NAME@ $name
+    critcl::ccode [critcl::at::here!][string map $map {
+	Tcl_Obj*
+	@NAME@_multi (Tcl_Interp* interp, int c, @NAME@_names* literal)
+	{
+	    int k;
+	    for (k=0; k < c; k++) {
+		if ((literal[k] < 0) || (literal[k] >= @NAME@_name_LAST)) {
+		    Tcl_Panic ("Bad @NAME@ literal index %d outside [0...%d]",
+			       literal[k], @NAME@_name_LAST-1);
+		}
+	    }
+
+	    Tcl_Obj* result = Tcl_NewListObj (0, 0);
+	    if (!result) return result;
+
+	    for (k=0; k < c; k++) {
+		if (TCL_OK == Tcl_ListObjAppendElement (result, @NAME@_iassoc (interp)->literal [literal])) continue;
+		/* Failed to append, release and abort */
+		Tcl_DecrRefCount (result);
+		return 0;
+	    }
+
+	    return result;
 	}
     }]
     return
@@ -247,6 +284,18 @@ proc critcl::literals::Tcl {args} {
 proc critcl::literals::!Tcl {args} {
     upvar 1 mode mode
     if {$mode(tcl)} return
+    return [uplevel 1 $args]
+}
+
+proc critcl::literals::Multi {args} {
+    upvar 1 mode mode
+    if {!$mode(multi)} return
+    return [uplevel 1 $args]
+}
+
+proc critcl::literals::!Multi {args} {
+    upvar 1 mode mode
+    if {$mode(multi)} return
     return [uplevel 1 $args]
 }
 

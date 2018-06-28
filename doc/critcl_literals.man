@@ -1,5 +1,5 @@
 [comment {-*- tcl -*- doctools manpage}]
-[vset literal_version 1.2]
+[vset literal_version 1.3]
 [manpage_begin critcl::literals n [vset literal_version]]
 [include include/module2.inc]
 [keywords singleton {Tcl Interp Association}]
@@ -20,7 +20,7 @@ and package [package critcl::iassoc].
 
 [para] Many packages will have a fixed set of string constants
 occuring in one or places. Most of them will be coded to create a new
-string [const Tcl_Obj*] from a C [const char*] every time the constant
+string [type Tcl_Obj*] from a C [type char*] every time the constant
 is needed, as this is easy to to, despite the inherent waste of
 memory.
 
@@ -47,20 +47,32 @@ provides access to a pool of constant strings with a Tcl interpreter.
 [para] The [arg definition] dictionary provides the mapping from the
 C-level symbolic names to the string themselves.
 
-[para] The [arg mode]-list configures the output somewhat. The two
-allowed modes are [const c] and [const tcl]. Both modes can be used
-together. The default mode is [const tcl].
+[para]
+The [arg mode]-list configures the output somewhat.
+The three allowed modes are [const c], [const multi] and [const tcl].
+All modes can be used together.
+The default mode is [const tcl].
+Using mode [const multi] implies [const tcl] as well.
 
 [para] For mode [const tcl] the new function has two arguments, a
-[const Tcl_Interp*] pointer refering to the interpreter holding the
+[type Tcl_Interp*] pointer refering to the interpreter holding the
 string pool, and a code of type "[arg name]_names" (see below), the
 symbolic name of the literal to return. The result of the function is
-a [const Tcl_Obj*] pointer to the requested string constant.
+a [type Tcl_Obj*] pointer to the requested string constant.
 
 [para] For mode [const c] the new function has one argument, a code of
 type "[arg name]_names" (see below), the symbolic name of the literal
-to return. The result of the function is a [const {const char*}]
+to return. The result of the function is a [type {const char*}]
 pointer to the requested string constant.
+
+[para] For mode [const multi] all of [const tcl] applies, plus an
+additional function with three arguments is generated, in order: a
+[type Tcl_Interp*] pointer refering to the interpreter holding the
+string pool, an [type int] holding the size of the last argument, and
+an array of type "[arg name]_names" holding the codes (see below), the
+symbolic names of the literals to return. The result of the function
+is a [type Tcl_Obj*] pointer to a Tcl list holding the requested
+string constants.
 
 [para] The underlying string pool is automatically initialized on
 first access, and finalized on interpreter destruction.
@@ -76,6 +88,14 @@ The mode [const tcl] function providing access to the string pool.
 Its signature is
 [para][example_begin]
 Tcl_Obj* [arg name] (Tcl_Interp* interp, [arg name]_names literal);
+[example_end]
+
+[def [arg name]_multi]
+The mode [const multi] function providing multi-access to the string pool.
+
+Its signature is
+[para][example_begin]
+Tcl_Obj* [arg name]_multi (Tcl_Interp* interp, int c, [arg name]_names* literal);
 [example_end]
 
 [def [arg name]_cstr]
