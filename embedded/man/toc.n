@@ -285,6 +285,9 @@ doc
 \fBcritcl::bitmap\fR
 \fIfiles/critcl_bitmap\&.n\fR: CriTcl Utilities: Bitset en- and decoding
 .TP
+\fBcritcl::callback\fR
+\fIfiles/critcl_callback\&.n\fR: CriTcl C-level Callback Utilities
+.TP
 \fBcritcl::class\fR
 \fIfiles/critcl_class\&.n\fR: CriTcl Utilities: C Classes
 .TP
