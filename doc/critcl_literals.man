@@ -66,13 +66,13 @@ to return. The result of the function is a [type {const char*}]
 pointer to the requested string constant.
 
 [para] For mode [const multi] all of [const tcl] applies, plus an
-additional function with three arguments is generated, in order: a
-[type Tcl_Interp*] pointer refering to the interpreter holding the
-string pool, an [type int] holding the size of the last argument, and
-an array of type "[arg name]_names" holding the codes (see below), the
-symbolic names of the literals to return. The result of the function
-is a [type Tcl_Obj*] pointer to a Tcl list holding the requested
-string constants.
+additional function is generated which takes three arguments, in
+order, a [type Tcl_Interp*] pointer refering to the interpreter
+holding the string pool, an [type int] holding the size of the last
+argument, and an array of type "[arg name]_names" holding the codes
+(see below), the symbolic names of the literals to return. The result
+of the function is a [type Tcl_Obj*] pointer to a Tcl list holding the
+requested string constants.
 
 [para] The underlying string pool is automatically initialized on
 first access, and finalized on interpreter destruction.

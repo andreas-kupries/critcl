@@ -7,7 +7,7 @@
 # from and to a C enum. Not a full Tcl_ObjType. Based on
 # Tcl_GetIndexFromObj() instead.
 
-package provide critcl::enum 1.0.1
+package provide critcl::enum 1.1
 
 # # ## ### ##### ######## ############# #####################
 ## Requirements.
@@ -21,7 +21,7 @@ namespace eval ::critcl::enum {}
 # # ## ### ##### ######## ############# #####################
 ## API: Generate the declaration and implementation files for the enum.
 
-proc ::critcl::enum::def {name dict} {
+proc ::critcl::enum::def {name dict {use tcl}} {
     # Arguments are 
     # - the C name of the enumeration, and
     # - dict of strings to convert. Key is the symbolic C name, value
@@ -35,7 +35,19 @@ proc ::critcl::enum::def {name dict} {
 	    "Expected an enum definition, got empty string"
     }
 
-    critcl::literals::def ${name}_pool $dict
+    set multi 0
+    foreach m $use {
+	switch $m {
+	    tcl   {}
+	    multi { set multi 1 }
+	    default {
+		return -code error -errorcode {CRITCL ENUM DEF MODE INVALID} \
+		    "Unknown mode $m, expected one of \"multi\", or \"tcl\""
+	    }
+	}
+    }
+
+    critcl::literals::def ${name}_pool $dict $use
 
     # <name>_pool_names = C enum of symbolic names, and implied numeric values.
     # <name>_pool.h     = Header
@@ -44,8 +56,11 @@ proc ::critcl::enum::def {name dict} {
     # Exporting:
     # Header    <name>.h
     # Function  <name>_ToObj      (interp, code) -> obj
+    # Function  <name>_ToObjList  (interp, count, code*) -> obj (**)
     # Function  <name>_GetFromObj (interp, obj, flags, &code) -> Tcl code
     # Enum type <name>_names
+    #
+    # (**) Mode multi only.
 
     dict for {sym str} $dict {
 	lappend table "\t\t\"$str\","
@@ -55,6 +70,12 @@ proc ::critcl::enum::def {name dict} {
     lappend map @TABLE@  \n[join $table \n]
     lappend map @TSIZE@  [llength $table]
     lappend map @TSIZE1@ [expr {1 + [llength $table]}]
+
+    if {$multi} {
+	lappend map @MULTI@ "\n	#define ${name}_ToObjList(i,c,l) (@NAME@_pool_multi(i,c,l))"
+    } else {
+	lappend map @MULTI@ ""
+    }
 
     critcl::include [critcl::make ${name}.h \n[critcl::at::here!][string map $map {
 	#ifndef @NAME@_HEADER
@@ -67,7 +88,7 @@ proc ::critcl::enum::def {name dict} {
 			   int           flags,
 			   int*          literal);
 
-	#define @NAME@_ToObj(i,l) (@NAME@_pool(i,l))
+	#define @NAME@_ToObj(i,l) (@NAME@_pool(i,l))@MULTI@
 	#endif
     }]]
 
