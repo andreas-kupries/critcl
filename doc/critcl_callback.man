@@ -170,8 +170,8 @@ open to us due to [fun critcl_callback_extend].
     critcl_callback_p cb_a = critcl_callback_new (interp, oc, ov, 2);
     critcl_callback_p cb_b = critcl_callback_new (interp, oc, ov, 2);
 
-    critcl_callback_extend (cb_a, Tcl_NewStringObj ("method1"));
-    critcl_callback_extend (cb_b, Tcl_NewStringObj ("method2"));
+    critcl_callback_extend (cb_a, Tcl_NewStringObj ("method1", -1));
+    critcl_callback_extend (cb_b, Tcl_NewStringObj ("method2", -1));
 
     // After the extension we have one free argument left, for use in
     // the invokations.

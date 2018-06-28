@@ -243,8 +243,8 @@ open to us due to <b class="function">critcl_callback_extend</b>.</p>
     // with the different methods.
     critcl_callback_p cb_a = critcl_callback_new (interp, oc, ov, 2);
     critcl_callback_p cb_b = critcl_callback_new (interp, oc, ov, 2);
-    critcl_callback_extend (cb_a, Tcl_NewStringObj (&quot;method1&quot;));
-    critcl_callback_extend (cb_b, Tcl_NewStringObj (&quot;method2&quot;));
+    critcl_callback_extend (cb_a, Tcl_NewStringObj (&quot;method1&quot;, -1));
+    critcl_callback_extend (cb_b, Tcl_NewStringObj (&quot;method2&quot;, -1));
     // After the extension we have one free argument left, for use in
     // the invokations.
     critcl_callback_invoke (cb_a, 1, &amp;dataX);
