@@ -31,7 +31,12 @@
        C to Tcl.
 
 [enum] Feature. Package [package critcl::literals] bumped to version
-       1.3.  Added mode [const multi] enabling the conversion of
+       1.3.  Added mode [const +list] enabling the conversion of
        multiple literals into a list of their strings.
+
+[enum] Feature. Package [package critcl::enum] bumped to version 1.1.
+       Added basic mode handling, supporting [const tcl] (default) and
+       [const +list] (extension enabling the conversion of multiple
+       enum values into a list of their strings).
 
 [list_end]

@@ -94,7 +94,7 @@
 </head>
 <!-- Generated from file 'critcl_literals.man' by tcllib/doctools with format 'html'
    -->
-<!-- Copyright &amp;copy; 2011-2015 Andreas Kupries
+<!-- Copyright &amp;copy; 2011-2018 Andreas Kupries
    -->
 <!-- critcl::literals.n
    -->
@@ -103,7 +103,7 @@
 | <a href="../index.html">Keyword Index</a>
  ] <hr>
 <div class="doctools">
-<h1 class="doctools_title">critcl::literals(n) 1.2 doc &quot;C Runtime In Tcl (CriTcl)&quot;</h1>
+<h1 class="doctools_title">critcl::literals(n) 1.3 doc &quot;C Runtime In Tcl (CriTcl)&quot;</h1>
 <div id="name" class="doctools_section"><h2><a name="name">Name</a></h2>
 <p>critcl::literals - CriTcl Utilities: Constant string pools</p>
 </div>
@@ -126,7 +126,7 @@
 <ul class="doctools_requirements">
 <li>package require <b class="pkgname">Tcl 8.4</b></li>
 <li>package require <b class="pkgname">critcl <span class="opt">?3.1.11?</span></b></li>
-<li>package require <b class="pkgname">critcl::literals <span class="opt">?1.2?</span></b></li>
+<li>package require <b class="pkgname">critcl::literals <span class="opt">?1.3?</span></b></li>
 </ul>
 <ul class="doctools_syntax">
 <li><a href="#1"><b class="cmd">::critcl::literals::def</b> <i class="arg">name</i> <i class="arg">definition</i> <span class="opt">?<i class="arg">mode</i>?</span></a></li>
@@ -144,7 +144,7 @@ commands for advanced functionality built on top of both critcl core
 and package <b class="package"><a href="critcl_iassoc.html">critcl::iassoc</a></b>.</p>
 <p>Many packages will have a fixed set of string constants
 occuring in one or places. Most of them will be coded to create a new
-string <b class="const">Tcl_Obj*</b> from a C <b class="const">char*</b> every time the constant
+string <b class="type">Tcl_Obj*</b> from a C <b class="type">char*</b> every time the constant
 is needed, as this is easy to to, despite the inherent waste of
 memory.</p>
 <p>This package was written to make declaration and management of
@@ -162,18 +162,28 @@ Tcl packages with embedded C code.</p>
 provides access to a pool of constant strings with a Tcl interpreter.</p>
 <p>The <i class="arg">definition</i> dictionary provides the mapping from the
 C-level symbolic names to the string themselves.</p>
-<p>The <i class="arg">mode</i>-list configures the output somewhat. The two
-allowed modes are <b class="const">c</b> and <b class="const">tcl</b>. Both modes can be used
-together. The default mode is <b class="const">tcl</b>.</p>
+<p>The <i class="arg">mode</i>-list configures the output somewhat.
+The three allowed modes are <b class="const">c</b>, <b class="const">+list</b> and <b class="const">tcl</b>.
+All modes can be used together.
+The default mode is <b class="const">tcl</b>.
+Using mode <b class="const">+list</b> implies <b class="const">tcl</b> as well.</p>
 <p>For mode <b class="const">tcl</b> the new function has two arguments, a
-<b class="const">Tcl_Interp*</b> pointer refering to the interpreter holding the
+<b class="type">Tcl_Interp*</b> pointer refering to the interpreter holding the
 string pool, and a code of type &quot;<i class="arg">name</i>_names&quot; (see below), the
 symbolic name of the literal to return. The result of the function is
-a <b class="const">Tcl_Obj*</b> pointer to the requested string constant.</p>
+a <b class="type">Tcl_Obj*</b> pointer to the requested string constant.</p>
 <p>For mode <b class="const">c</b> the new function has one argument, a code of
 type &quot;<i class="arg">name</i>_names&quot; (see below), the symbolic name of the literal
-to return. The result of the function is a <b class="const">const char*</b>
+to return. The result of the function is a <b class="type">const char*</b>
 pointer to the requested string constant.</p>
+<p>For mode <b class="const">+list</b> all of <b class="const">tcl</b> applies, plus an
+additional function is generated which takes three arguments, in
+order, a <b class="type">Tcl_Interp*</b> pointer refering to the interpreter
+holding the string pool, an <b class="type">int</b> holding the size of the last
+argument, and an array of type &quot;<i class="arg">name</i>_names&quot; holding the codes
+(see below), the symbolic names of the literals to return. The result
+of the function is a <b class="type">Tcl_Obj*</b> pointer to a Tcl list holding the
+requested string constants.</p>
 <p>The underlying string pool is automatically initialized on
 first access, and finalized on interpreter destruction.</p>
 <p>The package generates multiple things (declarations and
@@ -185,6 +195,13 @@ proper C identifier.</p>
 Its signature is</p>
 <pre class="doctools_example">
 Tcl_Obj* <i class="arg">name</i> (Tcl_Interp* interp, <i class="arg">name</i>_names literal);
+</pre>
+</dd>
+<dt><i class="arg">name</i>_list</dt>
+<dd><p>The mode <b class="const">+list</b> function providing multi-access to the string pool.
+Its signature is</p>
+<pre class="doctools_example">
+Tcl_Obj* <i class="arg">name</i>_list (Tcl_Interp* interp, int c, <i class="arg">name</i>_names* literal);
 </pre>
 </dd>
 <dt><i class="arg">name</i>_cstr</dt>
@@ -255,6 +272,6 @@ package and/or documentation.</p>
 <p>Glueing/Embedded C code</p>
 </div>
 <div id="copyright" class="doctools_section"><h2><a name="copyright">Copyright</a></h2>
-<p>Copyright &copy; 2011-2015 Andreas Kupries</p>
+<p>Copyright &copy; 2011-2018 Andreas Kupries</p>
 </div>
 </div></body></html>

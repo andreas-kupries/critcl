@@ -2,7 +2,7 @@
 '\" Generated from file 'critcl_sources\&.man' by tcllib/doctools with format 'nroff'
 '\" Copyright (c) Jean-Claude Wippler
 '\" Copyright (c) Steve Landers
-'\" Copyright (c) 2011-2015 Andreas Kupries
+'\" Copyright (c) 2011-2018 Andreas Kupries
 '\"
 .TH "critcl_sources" n 3\&.1\&.17 doc "C Runtime In Tcl (CriTcl)"
 .\" The -*- nroff -*- definitions below are for supplemental macros used
@@ -343,6 +343,6 @@ Glueing/Embedded C code
 .nf
 Copyright (c) Jean-Claude Wippler
 Copyright (c) Steve Landers
-Copyright (c) 2011-2015 Andreas Kupries
+Copyright (c) 2011-2018 Andreas Kupries
 
 .fi

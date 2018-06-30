@@ -34,7 +34,7 @@ proc critcl::literals::def {name dict {use tcl}} {
     Tcl AccessorTcl    $name
     Tcl ResultType     $name
 
-    Multi AccessorTclMulti $name
+    +List AccessorTcl+List $name
     return
 }
 
@@ -42,15 +42,15 @@ proc critcl::literals::def {name dict {use tcl}} {
 ## Internals
 
 proc critcl::literals::Use {use} {
-    # Use cases: tcl, c, both, multi-mode
+    # Use cases: tcl, c, both, +list-mode
     upvar 1 mode mode
     set uses 0
-    foreach u {c tcl multi} { set mode($u) 0 }
+    foreach u {c tcl +list} { set mode($u) 0 }
     foreach u $use    { set mode($u) 1 ; incr uses }
-    # multi-mode is an extension of tcl mode, thus implies it
-    if {$mode(multi)} { set mode(tcl) 1 }
+    # +list-mode is an extension of tcl mode, thus implies it
+    if {$mode(+list)} { set mode(tcl) 1 }
     if {$uses} return
-    return -code error "Need at least one use case (c, multi, or tcl)"
+    return -code error "Need at least one use case (c, +list, or tcl)"
 }
 
 proc critcl::literals::ConstStringTable {name dict} {
@@ -125,10 +125,11 @@ proc critcl::literals::Header {name dict} {
     #    Declarations of an enum of the symbolic names, plus the
     #    accessor function.
     upvar 1 mode mode
-    append h [HeaderIntro   $name $dict]
-    append h [Tcl HeaderTcl $name]
-    append h [C HeaderC     $name]
-    append h [HeaderEnd     $name]
+    append h [HeaderIntro          $name $dict]
+    append h [Tcl HeaderTcl        $name]
+    append h [+List HeaderTcl+List $name]
+    append h [C HeaderC            $name]
+    append h [HeaderEnd            $name]
     critcl::include [critcl::make ${name}.h $h]
     return
 }
@@ -161,6 +162,15 @@ proc critcl::literals::HeaderTcl {name} {
 	/* Tcl Accessor function for the literals */
 	extern Tcl_Obj*
 	@NAME@ (Tcl_Interp* interp, @NAME@_names literal);
+    }]
+}
+
+proc critcl::literals::HeaderTcl+List {name} {
+    lappend map @NAME@ $name
+    return \n[critcl::at::here!][string map $map {
+	/* Tcl "+list" Accessor function for the literals */
+	extern Tcl_Obj*
+	@NAME@_list (Tcl_Interp* interp, int c, @NAME@_names* literal);
     }]
 }
 
@@ -197,11 +207,11 @@ proc critcl::literals::AccessorTcl {name} {
     return
 }
 
-proc critcl::literals::AccessorTclMulti {name} {
+proc critcl::literals::AccessorTcl+List {name} {
     lappend map @NAME@ $name
     critcl::ccode [critcl::at::here!][string map $map {
 	Tcl_Obj*
-	@NAME@_multi (Tcl_Interp* interp, int c, @NAME@_names* literal)
+	@NAME@_list (Tcl_Interp* interp, int c, @NAME@_names* literal)
 	{
 	    int k;
 	    for (k=0; k < c; k++) {
@@ -215,7 +225,8 @@ proc critcl::literals::AccessorTclMulti {name} {
 	    if (!result) return result;
 
 	    for (k=0; k < c; k++) {
-		if (TCL_OK == Tcl_ListObjAppendElement (result, @NAME@_iassoc (interp)->literal [literal])) continue;
+		if (TCL_OK == Tcl_ListObjAppendElement (interp, result, @NAME@_iassoc (interp)->literal [literal [k]]))
+		    continue;
 		/* Failed to append, release and abort */
 		Tcl_DecrRefCount (result);
 		return 0;
@@ -287,15 +298,15 @@ proc critcl::literals::!Tcl {args} {
     return [uplevel 1 $args]
 }
 
-proc critcl::literals::Multi {args} {
+proc critcl::literals::+List {args} {
     upvar 1 mode mode
-    if {!$mode(multi)} return
+    if {!$mode(+list)} return
     return [uplevel 1 $args]
 }
 
-proc critcl::literals::!Multi {args} {
+proc critcl::literals::!+List {args} {
     upvar 1 mode mode
-    if {$mode(multi)} return
+    if {$mode(+list)} return
     return [uplevel 1 $args]
 }
 

@@ -1,8 +1,8 @@
 '\"
 '\" Generated from file 'critcl_enum\&.man' by tcllib/doctools with format 'nroff'
-'\" Copyright (c) 2011-2015 Andreas Kupries
+'\" Copyright (c) 2011-2018 Andreas Kupries
 '\"
-.TH "critcl::enum" n 1\&.0\&.1 doc "C Runtime In Tcl (CriTcl)"
+.TH "critcl::enum" n 1\&.1 doc "C Runtime In Tcl (CriTcl)"
 .\" The -*- nroff -*- definitions below are for supplemental macros used
 .\" in Tcl/Tk manual entries.
 .\"
@@ -278,9 +278,9 @@ package require \fBTcl  8\&.4\fR
 .sp
 package require \fBcritcl  ?3\&.1\&.11?\fR
 .sp
-package require \fBcritcl::enum  ?1\&.0\&.1?\fR
+package require \fBcritcl::enum  ?1\&.1?\fR
 .sp
-\fB::critcl::enum::def\fR \fIname\fR \fIdefinition\fR
+\fB::critcl::enum::def\fR \fIname\fR \fIdefinition\fR ?\fImode\fR?
 .sp
 .BE
 .SH DESCRIPTION
@@ -340,12 +340,36 @@ This package resides in the Core Package Layer of CriTcl\&.
 .PP
 .SH API
 .TP
-\fB::critcl::enum::def\fR \fIname\fR \fIdefinition\fR
+\fB::critcl::enum::def\fR \fIname\fR \fIdefinition\fR ?\fImode\fR?
 This command defines two C functions for the conversion between
 C values and Tcl_Obj'ects, with named derived from \fIname\fR\&.
 .sp
 The \fIdefinition\fR dictionary provides the mapping from the
 specified C-level symbolic names to the strings themselves\&.
+.sp
+The \fImode\fR-list configures the output somewhat\&.
+The two allowed modes are \fB+list\fR and \fBtcl\fR\&.
+All modes can be used together\&.
+The default mode is \fBtcl\fR\&.
+Using mode \fB+list\fR implies \fBtcl\fR as well\&.
+.sp
+For mode \fBtcl\fR the new function has two arguments, a
+\fBTcl_Interp*\fR pointer refering to the interpreter holding the
+string pool, and a code of type "\fIname\fR_pool_names" (see below),
+the symbolic name of the string to return\&. The result of the function
+is a \fBTcl_Obj*\fR pointer to the requested string constant\&.
+.sp
+For mode \fB+list\fR all of \fBtcl\fR applies, plus an
+additional function is generated which takes three arguments, in
+order: a \fBTcl_Interp*\fR pointer refering to the interpreter
+holding the string pool, an \fBint\fR holding the size of the last
+argument, and an array of type "\fIname\fR_pool_names" holding the
+codes (see below), the symbolic names of the strings to return\&. The
+result of the function is a \fBTcl_Obj*\fR pointer to a Tcl list
+holding the requested string constants\&.
+.sp
+The underlying string pool is automatically initialized on
+first access, and finalized on interpreter destruction\&.
 .sp
 The package generates multiple things (declarations and
 definitions) with names derived from \fIname\fR, which has to be a
@@ -363,6 +387,18 @@ Its signature is
 
 
 Tcl_Obj* \fIname\fR_ToObj (Tcl_Interp* interp, \fIname\fR_names literal);
+
+.CE
+.TP
+\fIname\fR_ToObjList
+The mode \fB+list\fR function converting from integer array to Tcl
+list of strings\&.
+Its signature is
+.sp
+.CS
+
+
+Tcl_Obj* \fIname\fR_ToObjList (Tcl_Interp* interp, int c, \fIname\fR_names* literal);
 
 .CE
 .TP
@@ -442,6 +478,6 @@ C code, Embedded C Code, Tcl Interp Association, code generator, compile & run, 
 Glueing/Embedded C code
 .SH COPYRIGHT
 .nf
-Copyright (c) 2011-2015 Andreas Kupries
+Copyright (c) 2011-2018 Andreas Kupries
 
 .fi

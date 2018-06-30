@@ -49,10 +49,10 @@ C-level symbolic names to the string themselves.
 
 [para]
 The [arg mode]-list configures the output somewhat.
-The three allowed modes are [const c], [const multi] and [const tcl].
+The three allowed modes are [const c], [const +list] and [const tcl].
 All modes can be used together.
 The default mode is [const tcl].
-Using mode [const multi] implies [const tcl] as well.
+Using mode [const +list] implies [const tcl] as well.
 
 [para] For mode [const tcl] the new function has two arguments, a
 [type Tcl_Interp*] pointer refering to the interpreter holding the
@@ -65,7 +65,7 @@ type "[arg name]_names" (see below), the symbolic name of the literal
 to return. The result of the function is a [type {const char*}]
 pointer to the requested string constant.
 
-[para] For mode [const multi] all of [const tcl] applies, plus an
+[para] For mode [const +list] all of [const tcl] applies, plus an
 additional function is generated which takes three arguments, in
 order, a [type Tcl_Interp*] pointer refering to the interpreter
 holding the string pool, an [type int] holding the size of the last
@@ -90,12 +90,12 @@ Its signature is
 Tcl_Obj* [arg name] (Tcl_Interp* interp, [arg name]_names literal);
 [example_end]
 
-[def [arg name]_multi]
-The mode [const multi] function providing multi-access to the string pool.
+[def [arg name]_list]
+The mode [const +list] function providing multi-access to the string pool.
 
 Its signature is
 [para][example_begin]
-Tcl_Obj* [arg name]_multi (Tcl_Interp* interp, int c, [arg name]_names* literal);
+Tcl_Obj* [arg name]_list (Tcl_Interp* interp, int c, [arg name]_names* literal);
 [example_end]
 
 [def [arg name]_cstr]

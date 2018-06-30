@@ -38,10 +38,10 @@ critcl::literals::def demo {
     comes "comes"
     the   "the"
     sun   "sun"
-} multi
+} +list
 
 critcl::cproc strs {Tcl_Interp* ip int args} object {
-    Tcl_Obj* res = demo_multi (ip, args.c, args.v);
+    Tcl_Obj* res = demo_list (ip, args.c, args.v);
     Tcl_IncrRefCount (res);
     return res;
 }

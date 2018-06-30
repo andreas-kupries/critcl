@@ -1,8 +1,8 @@
 '\"
 '\" Generated from file 'critcl_literals\&.man' by tcllib/doctools with format 'nroff'
-'\" Copyright (c) 2011-2015 Andreas Kupries
+'\" Copyright (c) 2011-2018 Andreas Kupries
 '\"
-.TH "critcl::literals" n 1\&.2 doc "C Runtime In Tcl (CriTcl)"
+.TH "critcl::literals" n 1\&.3 doc "C Runtime In Tcl (CriTcl)"
 .\" The -*- nroff -*- definitions below are for supplemental macros used
 .\" in Tcl/Tk manual entries.
 .\"
@@ -278,7 +278,7 @@ package require \fBTcl  8\&.4\fR
 .sp
 package require \fBcritcl  ?3\&.1\&.11?\fR
 .sp
-package require \fBcritcl::literals  ?1\&.2?\fR
+package require \fBcritcl::literals  ?1\&.3?\fR
 .sp
 \fB::critcl::literals::def\fR \fIname\fR \fIdefinition\fR ?\fImode\fR?
 .sp
@@ -343,9 +343,11 @@ provides access to a pool of constant strings with a Tcl interpreter\&.
 The \fIdefinition\fR dictionary provides the mapping from the
 C-level symbolic names to the string themselves\&.
 .sp
-The \fImode\fR-list configures the output somewhat\&. The two
-allowed modes are \fBc\fR and \fBtcl\fR\&. Both modes can be used
-together\&. The default mode is \fBtcl\fR\&.
+The \fImode\fR-list configures the output somewhat\&.
+The three allowed modes are \fBc\fR, \fB+list\fR and \fBtcl\fR\&.
+All modes can be used together\&.
+The default mode is \fBtcl\fR\&.
+Using mode \fB+list\fR implies \fBtcl\fR as well\&.
 .sp
 For mode \fBtcl\fR the new function has two arguments, a
 \fBTcl_Interp*\fR pointer refering to the interpreter holding the
@@ -357,6 +359,15 @@ For mode \fBc\fR the new function has one argument, a code of
 type "\fIname\fR_names" (see below), the symbolic name of the literal
 to return\&. The result of the function is a \fBconst char*\fR
 pointer to the requested string constant\&.
+.sp
+For mode \fB+list\fR all of \fBtcl\fR applies, plus an
+additional function is generated which takes three arguments, in
+order, a \fBTcl_Interp*\fR pointer refering to the interpreter
+holding the string pool, an \fBint\fR holding the size of the last
+argument, and an array of type "\fIname\fR_names" holding the codes
+(see below), the symbolic names of the literals to return\&. The result
+of the function is a \fBTcl_Obj*\fR pointer to a Tcl list holding the
+requested string constants\&.
 .sp
 The underlying string pool is automatically initialized on
 first access, and finalized on interpreter destruction\&.
@@ -374,6 +385,17 @@ Its signature is
 
 
 Tcl_Obj* \fIname\fR (Tcl_Interp* interp, \fIname\fR_names literal);
+
+.CE
+.TP
+\fIname\fR_list
+The mode \fB+list\fR function providing multi-access to the string pool\&.
+Its signature is
+.sp
+.CS
+
+
+Tcl_Obj* \fIname\fR_list (Tcl_Interp* interp, int c, \fIname\fR_names* literal);
 
 .CE
 .TP
@@ -453,6 +475,6 @@ C code, Embedded C Code, Tcl Interp Association, code generator, compile & run, 
 Glueing/Embedded C code
 .SH COPYRIGHT
 .nf
-Copyright (c) 2011-2015 Andreas Kupries
+Copyright (c) 2011-2018 Andreas Kupries
 
 .fi

@@ -94,7 +94,7 @@
 </head>
 <!-- Generated from file 'critcl_enum.man' by tcllib/doctools with format 'html'
    -->
-<!-- Copyright &amp;copy; 2011-2015 Andreas Kupries
+<!-- Copyright &amp;copy; 2011-2018 Andreas Kupries
    -->
 <!-- critcl::enum.n
    -->
@@ -103,7 +103,7 @@
 | <a href="../index.html">Keyword Index</a>
  ] <hr>
 <div class="doctools">
-<h1 class="doctools_title">critcl::enum(n) 1.0.1 doc &quot;C Runtime In Tcl (CriTcl)&quot;</h1>
+<h1 class="doctools_title">critcl::enum(n) 1.1 doc &quot;C Runtime In Tcl (CriTcl)&quot;</h1>
 <div id="name" class="doctools_section"><h2><a name="name">Name</a></h2>
 <p>critcl::enum - CriTcl Utilities: String/Integer mapping</p>
 </div>
@@ -126,10 +126,10 @@
 <ul class="doctools_requirements">
 <li>package require <b class="pkgname">Tcl 8.4</b></li>
 <li>package require <b class="pkgname">critcl <span class="opt">?3.1.11?</span></b></li>
-<li>package require <b class="pkgname">critcl::enum <span class="opt">?1.0.1?</span></b></li>
+<li>package require <b class="pkgname">critcl::enum <span class="opt">?1.1?</span></b></li>
 </ul>
 <ul class="doctools_syntax">
-<li><a href="#1"><b class="cmd">::critcl::enum::def</b> <i class="arg">name</i> <i class="arg">definition</i></a></li>
+<li><a href="#1"><b class="cmd">::critcl::enum::def</b> <i class="arg">name</i> <i class="arg">definition</i> <span class="opt">?<i class="arg">mode</i>?</span></a></li>
 </ul>
 </div>
 </div>
@@ -160,11 +160,31 @@ Tcl packages with embedded C code.</p>
 </div>
 <div id="section2" class="doctools_section"><h2><a name="section2">API</a></h2>
 <dl class="doctools_definitions">
-<dt><a name="1"><b class="cmd">::critcl::enum::def</b> <i class="arg">name</i> <i class="arg">definition</i></a></dt>
+<dt><a name="1"><b class="cmd">::critcl::enum::def</b> <i class="arg">name</i> <i class="arg">definition</i> <span class="opt">?<i class="arg">mode</i>?</span></a></dt>
 <dd><p>This command defines two C functions for the conversion between
 C values and Tcl_Obj'ects, with named derived from <i class="arg">name</i>.</p>
 <p>The <i class="arg">definition</i> dictionary provides the mapping from the
 specified C-level symbolic names to the strings themselves.</p>
+<p>The <i class="arg">mode</i>-list configures the output somewhat.
+The two allowed modes are <b class="const">+list</b> and <b class="const">tcl</b>.
+All modes can be used together.
+The default mode is <b class="const">tcl</b>.
+Using mode <b class="const">+list</b> implies <b class="const">tcl</b> as well.</p>
+<p>For mode <b class="const">tcl</b> the new function has two arguments, a
+<b class="type">Tcl_Interp*</b> pointer refering to the interpreter holding the
+string pool, and a code of type &quot;<i class="arg">name</i>_pool_names&quot; (see below),
+the symbolic name of the string to return. The result of the function
+is a <b class="type">Tcl_Obj*</b> pointer to the requested string constant.</p>
+<p>For mode <b class="const">+list</b> all of <b class="const">tcl</b> applies, plus an
+additional function is generated which takes three arguments, in
+order: a <b class="type">Tcl_Interp*</b> pointer refering to the interpreter
+holding the string pool, an <b class="type">int</b> holding the size of the last
+argument, and an array of type &quot;<i class="arg">name</i>_pool_names&quot; holding the
+codes (see below), the symbolic names of the strings to return. The
+result of the function is a <b class="type">Tcl_Obj*</b> pointer to a Tcl list
+holding the requested string constants.</p>
+<p>The underlying string pool is automatically initialized on
+first access, and finalized on interpreter destruction.</p>
 <p>The package generates multiple things (declarations and
 definitions) with names derived from <i class="arg">name</i>, which has to be a
 proper C identifier.</p>
@@ -176,6 +196,14 @@ proper C identifier.</p>
 Its signature is</p>
 <pre class="doctools_example">
 Tcl_Obj* <i class="arg">name</i>_ToObj (Tcl_Interp* interp, <i class="arg">name</i>_names literal);
+</pre>
+</dd>
+<dt><i class="arg">name</i>_ToObjList</dt>
+<dd><p>The mode <b class="const">+list</b> function converting from integer array to Tcl
+list of strings.
+Its signature is</p>
+<pre class="doctools_example">
+Tcl_Obj* <i class="arg">name</i>_ToObjList (Tcl_Interp* interp, int c, <i class="arg">name</i>_names* literal);
 </pre>
 </dd>
 <dt><i class="arg">name</i>_GetFromObj</dt>
@@ -244,6 +272,6 @@ package and/or documentation.</p>
 <p>Glueing/Embedded C code</p>
 </div>
 <div id="copyright" class="doctools_section"><h2><a name="copyright">Copyright</a></h2>
-<p>Copyright &copy; 2011-2015 Andreas Kupries</p>
+<p>Copyright &copy; 2011-2018 Andreas Kupries</p>
 </div>
 </div></body></html>

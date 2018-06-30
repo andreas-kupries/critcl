@@ -1,6 +1,6 @@
 '\"
 '\" Generated from file 'critcl_class\&.man' by tcllib/doctools with format 'nroff'
-'\" Copyright (c) 2011-2015 Andreas Kupries
+'\" Copyright (c) 2011-2018 Andreas Kupries
 '\"
 .TH "critcl::class" n 1\&.0\&.6 doc "C Runtime In Tcl (CriTcl)"
 .\" The -*- nroff -*- definitions below are for supplemental macros used
@@ -975,6 +975,6 @@ C class, C code, C instance, C object, Embedded C Code, code generator, compile 
 Glueing/Embedded C code
 .SH COPYRIGHT
 .nf
-Copyright (c) 2011-2015 Andreas Kupries
+Copyright (c) 2011-2018 Andreas Kupries
 
 .fi

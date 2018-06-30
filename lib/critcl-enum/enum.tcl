@@ -22,7 +22,7 @@ namespace eval ::critcl::enum {}
 ## API: Generate the declaration and implementation files for the enum.
 
 proc ::critcl::enum::def {name dict {use tcl}} {
-    # Arguments are 
+    # Arguments are
     # - the C name of the enumeration, and
     # - dict of strings to convert. Key is the symbolic C name, value
     #   is the string. Numeric C value is in the order of the strings in
@@ -35,14 +35,14 @@ proc ::critcl::enum::def {name dict {use tcl}} {
 	    "Expected an enum definition, got empty string"
     }
 
-    set multi 0
+    set plist 0
     foreach m $use {
 	switch $m {
 	    tcl   {}
-	    multi { set multi 1 }
+	    +list { set plist 1 }
 	    default {
 		return -code error -errorcode {CRITCL ENUM DEF MODE INVALID} \
-		    "Unknown mode $m, expected one of \"multi\", or \"tcl\""
+		    "Unknown mode $m, expected one of \"+list\", or \"tcl\""
 	    }
 	}
     }
@@ -60,7 +60,7 @@ proc ::critcl::enum::def {name dict {use tcl}} {
     # Function  <name>_GetFromObj (interp, obj, flags, &code) -> Tcl code
     # Enum type <name>_names
     #
-    # (**) Mode multi only.
+    # (**) Mode +list only.
 
     dict for {sym str} $dict {
 	lappend table "\t\t\"$str\","
@@ -71,10 +71,11 @@ proc ::critcl::enum::def {name dict {use tcl}} {
     lappend map @TSIZE@  [llength $table]
     lappend map @TSIZE1@ [expr {1 + [llength $table]}]
 
-    if {$multi} {
-	lappend map @MULTI@ "\n	#define ${name}_ToObjList(i,c,l) (@NAME@_pool_multi(i,c,l))"
+    if {$plist} {
+	lappend map @PLIST@ \
+	    "\n	#define ${name}_ToObjList(i,c,l) (${name}_pool_list(i,c,l))"
     } else {
-	lappend map @MULTI@ ""
+	lappend map @PLIST@ ""
     }
 
     critcl::include [critcl::make ${name}.h \n[critcl::at::here!][string map $map {
@@ -88,7 +89,7 @@ proc ::critcl::enum::def {name dict {use tcl}} {
 			   int           flags,
 			   int*          literal);
 
-	#define @NAME@_ToObj(i,l) (@NAME@_pool(i,l))@MULTI@
+	#define @NAME@_ToObj(i,l) (@NAME@_pool(i,l))@PLIST@
 	#endif
     }]]
 

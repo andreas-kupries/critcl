@@ -1,7 +1,7 @@
-# bitmap.tcl --
+# enum.tcl --
 #
 #	A template demonstrating the handling of enum conversions.
-#	Configured for multi-access.
+#	Configured for to allow multi-access returning a list
 #
 # Copyright (c) 2018 Andreas Kupries <andreas_kupries@users.sourceforge.net>
 
@@ -35,7 +35,7 @@ critcl::enum::def demo {
     E_global global
     E_exact  exact
     E_filler filler
-}
+} +list
 
 critcl::cproc decode {Tcl_Interp* ip int args} object {
     Tcl_Obj* res = demo_ToObjList (ip, args.c, args.v);
