@@ -1,6 +1,6 @@
 '\"
 '\" Generated from file 'critcl_bitmap\&.man' by tcllib/doctools with format 'nroff'
-'\" Copyright (c) 2011-2015 Andreas Kupries
+'\" Copyright (c) 2011-2018 Andreas Kupries
 '\"
 .TH "critcl::bitmap" n 1\&.0\&.1 doc "C Runtime In Tcl (CriTcl)"
 .\" The -*- nroff -*- definitions below are for supplemental macros used
@@ -466,6 +466,6 @@ C code, Embedded C Code, Tcl Interp Association, bitmask, bitset, code generator
 Glueing/Embedded C code
 .SH COPYRIGHT
 .nf
-Copyright (c) 2011-2015 Andreas Kupries
+Copyright (c) 2011-2018 Andreas Kupries
 
 .fi

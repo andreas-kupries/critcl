@@ -28,7 +28,7 @@ proc critcl::bitmap::def {name dict {exclusions {}}} {
     #
     # (Ad exclusions)
     #        Excluded bit-masks cannot be converted back to Tcl
-    #        symbols.THese are usually masks with multiple bits
+    #        symbols. These are usually masks with multiple bits
     #        set. Conversion back delivers the individual elements
     #        instead of the combined mask.
     #

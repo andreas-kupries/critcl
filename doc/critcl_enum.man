@@ -1,5 +1,5 @@
 [comment {-*- tcl -*- doctools manpage}]
-[vset enum_version 1.0.1]
+[vset enum_version 1.1]
 [manpage_begin critcl::enum n [vset enum_version]]
 [include include/module2.inc]
 [keywords singleton {Tcl Interp Association}]
@@ -46,13 +46,38 @@ Tcl packages with embedded C code.
 [section API]
 
 [list_begin definitions]
-[call [cmd ::critcl::enum::def] [arg name] [arg definition]]
+[call [cmd ::critcl::enum::def] [arg name] [arg definition] [opt [arg mode]]]
 
 This command defines two C functions for the conversion between
 C values and Tcl_Obj'ects, with named derived from [arg name].
 
 [para] The [arg definition] dictionary provides the mapping from the
 specified C-level symbolic names to the strings themselves.
+
+[para]
+The [arg mode]-list configures the output somewhat.
+The two allowed modes are [const +list] and [const tcl].
+All modes can be used together.
+The default mode is [const tcl].
+Using mode [const +list] implies [const tcl] as well.
+
+[para] For mode [const tcl] the new function has two arguments, a
+[type Tcl_Interp*] pointer refering to the interpreter holding the
+string pool, and a code of type "[arg name]_pool_names" (see below),
+the symbolic name of the string to return. The result of the function
+is a [type Tcl_Obj*] pointer to the requested string constant.
+
+[para] For mode [const +list] all of [const tcl] applies, plus an
+additional function is generated which takes three arguments, in
+order: a [type Tcl_Interp*] pointer refering to the interpreter
+holding the string pool, an [type int] holding the size of the last
+argument, and an array of type "[arg name]_pool_names" holding the
+codes (see below), the symbolic names of the strings to return. The
+result of the function is a [type Tcl_Obj*] pointer to a Tcl list
+holding the requested string constants.
+
+[para] The underlying string pool is automatically initialized on
+first access, and finalized on interpreter destruction.
 
 [para] The package generates multiple things (declarations and
 definitions) with names derived from [arg name], which has to be a
@@ -68,6 +93,15 @@ The function converting from integer value to Tcl string.
 Its signature is
 [para][example_begin]
 Tcl_Obj* [arg name]_ToObj (Tcl_Interp* interp, [arg name]_names literal);
+[example_end]
+
+[def [arg name]_ToObjList]
+The mode [const +list] function converting from integer array to Tcl
+list of strings.
+
+Its signature is
+[para][example_begin]
+Tcl_Obj* [arg name]_ToObjList (Tcl_Interp* interp, int c, [arg name]_names* literal);
 [example_end]
 
 [def [arg name]_GetFromObj]

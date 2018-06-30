@@ -8,7 +8,7 @@
 [enum] Merged pull request #83 from apnadkarni/vc-fixes.
        Removed deprecated -Gs for MSVC builds, and other Windows fixups.
 
-[enum] Feature. Package [package critcl::iassoc] bumped to vresion 1.1.
+[enum] Feature. Package [package critcl::iassoc] bumped to version 1.1.
        Refactored internals to generate an include header for use by .c files.
        This now matches what other generator packages do.
        The template file is inlined and removed.
@@ -25,5 +25,18 @@
 
 [enum] Merged pull request #87 from apnadkarni/tea-fixes to fix Issue
        #86, broken -tea option, generating an incomplete package.
+
+[enum] Feature. New package [package critcl::callback] providing
+       C-level functions and data structures to manage callbacks from
+       C to Tcl.
+
+[enum] Feature. Package [package critcl::literals] bumped to version
+       1.3.  Added mode [const +list] enabling the conversion of
+       multiple literals into a list of their strings.
+
+[enum] Feature. Package [package critcl::enum] bumped to version 1.1.
+       Added basic mode handling, supporting [const tcl] (default) and
+       [const +list] (extension enabling the conversion of multiple
+       enum values into a list of their strings).
 
 [list_end]

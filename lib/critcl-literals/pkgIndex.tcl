@@ -1,1 +1,1 @@
-package ifneeded critcl::literals 1.2 [list source [file join $dir literals.tcl]]
+package ifneeded critcl::literals 1.3 [list source [file join $dir literals.tcl]]

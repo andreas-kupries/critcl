@@ -94,7 +94,7 @@
 </head>
 <!-- Generated from file 'critcl_apppkg.man' by tcllib/doctools with format 'html'
    -->
-<!-- Copyright &amp;copy; Jean-Claude Wippler   -- Copyright &amp;copy; Steve Landers   -- Copyright &amp;copy; 2011-2015 Andreas Kupries
+<!-- Copyright &amp;copy; Jean-Claude Wippler   -- Copyright &amp;copy; Steve Landers   -- Copyright &amp;copy; 2011-2018 Andreas Kupries
    -->
 <!-- critcl::app.n
    -->
@@ -532,7 +532,7 @@ targets. The result of such a merge would look like:</p>
        &quot;<b class="file">critcl_alloc.h</b>&quot;, needed for <b class="function">memcpy</b> in macro <b class="function">STREP</b>.</p></li>
 <li><p>Merged pull request #83 from apnadkarni/vc-fixes.
        Removed deprecated -Gs for MSVC builds, and other Windows fixups.</p></li>
-<li><p>Feature. Package <b class="package"><a href="critcl_iassoc.html">critcl::iassoc</a></b> bumped to vresion 1.1.
+<li><p>Feature. Package <b class="package"><a href="critcl_iassoc.html">critcl::iassoc</a></b> bumped to version 1.1.
        Refactored internals to generate an include header for use by .c files.
        This now matches what other generator packages do.
        The template file is inlined and removed.</p></li>
@@ -545,6 +545,16 @@ targets. The result of such a merge would look like:</p>
        to fix Issue #84 breaking installation on OSX.</p></li>
 <li><p>Merged pull request #87 from apnadkarni/tea-fixes to fix Issue
        #86, broken -tea option, generating an incomplete package.</p></li>
+<li><p>Feature. New package <b class="package"><a href="critcl_callback.html">critcl::callback</a></b> providing
+       C-level functions and data structures to manage callbacks from
+       C to Tcl.</p></li>
+<li><p>Feature. Package <b class="package"><a href="critcl_literals.html">critcl::literals</a></b> bumped to version
+       1.3.  Added mode <b class="const">+list</b> enabling the conversion of
+       multiple literals into a list of their strings.</p></li>
+<li><p>Feature. Package <b class="package"><a href="critcl_enum.html">critcl::enum</a></b> bumped to version 1.1.
+       Added basic mode handling, supporting <b class="const">tcl</b> (default) and
+       <b class="const">+list</b> (extension enabling the conversion of multiple
+       enum values into a list of their strings).</p></li>
 </ol>
 </div>
 <div id="section7" class="doctools_section"><h2><a name="section7">Changes for version 3.1.17</a></h2>
@@ -1278,6 +1288,6 @@ at <a href="https://github.com/andreas-kupries/critcl/issues">https://github.com
 <div id="copyright" class="doctools_section"><h2><a name="copyright">Copyright</a></h2>
 <p>Copyright &copy; Jean-Claude Wippler<br>
 Copyright &copy; Steve Landers<br>
-Copyright &copy; 2011-2015 Andreas Kupries</p>
+Copyright &copy; 2011-2018 Andreas Kupries</p>
 </div>
 </div></body></html>

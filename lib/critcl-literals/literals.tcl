@@ -8,7 +8,7 @@
 #
 # Copyright (c) 20??-2017 Andreas Kupries <andreas_kupries@users.sourceforge.net>
 
-package provide critcl::literals 1.2
+package provide critcl::literals 1.3
 
 # # ## ### ##### ######## ############# #####################
 ## Requirements.
@@ -26,11 +26,15 @@ proc critcl::literals::def {name dict {use tcl}} {
     # dict :: map (C symbolic name -> string)
     Use $use
     Header             $name $dict
+
     C ConstStringTable $name $dict
     C AccessorC        $name
+
     Tcl Iassoc         $name $dict
     Tcl AccessorTcl    $name
     Tcl ResultType     $name
+
+    +List AccessorTcl+List $name
     return
 }
 
@@ -38,13 +42,15 @@ proc critcl::literals::def {name dict {use tcl}} {
 ## Internals
 
 proc critcl::literals::Use {use} {
-    # Use cases: tcl, c, both
+    # Use cases: tcl, c, both, +list-mode
     upvar 1 mode mode
     set uses 0
-    foreach u {c tcl} { set mode($u) 0 }
+    foreach u {c tcl +list} { set mode($u) 0 }
     foreach u $use    { set mode($u) 1 ; incr uses }
+    # +list-mode is an extension of tcl mode, thus implies it
+    if {$mode(+list)} { set mode(tcl) 1 }
     if {$uses} return
-    return -code error "Need at least one use case (c, or tcl)"
+    return -code error "Need at least one use case (c, +list, or tcl)"
 }
 
 proc critcl::literals::ConstStringTable {name dict} {
@@ -119,10 +125,11 @@ proc critcl::literals::Header {name dict} {
     #    Declarations of an enum of the symbolic names, plus the
     #    accessor function.
     upvar 1 mode mode
-    append h [HeaderIntro   $name $dict]
-    append h [Tcl HeaderTcl $name]
-    append h [C HeaderC     $name]
-    append h [HeaderEnd     $name]
+    append h [HeaderIntro          $name $dict]
+    append h [Tcl HeaderTcl        $name]
+    append h [+List HeaderTcl+List $name]
+    append h [C HeaderC            $name]
+    append h [HeaderEnd            $name]
     critcl::include [critcl::make ${name}.h $h]
     return
 }
@@ -158,6 +165,15 @@ proc critcl::literals::HeaderTcl {name} {
     }]
 }
 
+proc critcl::literals::HeaderTcl+List {name} {
+    lappend map @NAME@ $name
+    return \n[critcl::at::here!][string map $map {
+	/* Tcl "+list" Accessor function for the literals */
+	extern Tcl_Obj*
+	@NAME@_list (Tcl_Interp* interp, int c, @NAME@_names* literal);
+    }]
+}
+
 proc critcl::literals::HeaderC {name} {
     lappend map @NAME@ $name
     return \n[critcl::at::here!][string map $map {
@@ -182,9 +198,41 @@ proc critcl::literals::AccessorTcl {name} {
 	@NAME@ (Tcl_Interp* interp, @NAME@_names literal)
 	{
 	    if ((literal < 0) || (literal >= @NAME@_name_LAST)) {
-		Tcl_Panic ("Bad @NAME@ literal");
+		Tcl_Panic ("Bad @NAME@ literal index %d outside [0...%d]",
+			   literal, @NAME@_name_LAST-1);
 	    }
 	    return @NAME@_iassoc (interp)->literal [literal];
+	}
+    }]
+    return
+}
+
+proc critcl::literals::AccessorTcl+List {name} {
+    lappend map @NAME@ $name
+    critcl::ccode [critcl::at::here!][string map $map {
+	Tcl_Obj*
+	@NAME@_list (Tcl_Interp* interp, int c, @NAME@_names* literal)
+	{
+	    int k;
+	    for (k=0; k < c; k++) {
+		if ((literal[k] < 0) || (literal[k] >= @NAME@_name_LAST)) {
+		    Tcl_Panic ("Bad @NAME@ literal index %d outside [0...%d]",
+			       literal[k], @NAME@_name_LAST-1);
+		}
+	    }
+
+	    Tcl_Obj* result = Tcl_NewListObj (0, 0);
+	    if (!result) return result;
+
+	    for (k=0; k < c; k++) {
+		if (TCL_OK == Tcl_ListObjAppendElement (interp, result, @NAME@_iassoc (interp)->literal [literal [k]]))
+		    continue;
+		/* Failed to append, release and abort */
+		Tcl_DecrRefCount (result);
+		return 0;
+	    }
+
+	    return result;
 	}
     }]
     return
@@ -247,6 +295,18 @@ proc critcl::literals::Tcl {args} {
 proc critcl::literals::!Tcl {args} {
     upvar 1 mode mode
     if {$mode(tcl)} return
+    return [uplevel 1 $args]
+}
+
+proc critcl::literals::+List {args} {
+    upvar 1 mode mode
+    if {!$mode(+list)} return
+    return [uplevel 1 $args]
+}
+
+proc critcl::literals::!+List {args} {
+    upvar 1 mode mode
+    if {$mode(+list)} return
     return [uplevel 1 $args]
 }
 
