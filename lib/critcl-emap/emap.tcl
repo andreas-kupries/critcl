@@ -3,10 +3,10 @@
 # Pragmas for MetaData Scanner.
 # n/a
 
-# CriTcl Utility Package for emap en- and decoder.
+# CriTcl Utility Package for en- and decoding an external enum.
 # Based on i-assoc.
 #
-# Copyright (c) 2014-2017 Andreas Kupries <andreas_kupries@users.sourceforge.net>
+# Copyright (c) 2014-2018 Andreas Kupries <andreas_kupries@users.sourceforge.net>
 
 package provide critcl::emap 1.2
 
