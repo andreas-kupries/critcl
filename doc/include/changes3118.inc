@@ -39,4 +39,9 @@
        [const +list] (extension enabling the conversion of multiple
        enum values into a list of their strings).
 
+[enum] Feature. Package [package critcl::emap] bumped to version 1.2.
+       Extended existing mode handling with [const +list] extension
+       enabling the conversion of multiple emap values into a list of
+       their strings.
+
 [list_end]

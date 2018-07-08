@@ -82,6 +82,10 @@ proc ::critcl::enum::def {name dict {use tcl}} {
 	#ifndef @NAME@_HEADER
 	#define @NAME@_HEADER
 	#include <@NAME@_pool.h>
+	#include <tcl.h>
+
+	typedef @NAME@_pool_names @NAME@;
+	#define @NAME@_LAST @NAME@_pool_name_LAST
 
 	extern int
 	@NAME@_GetFromObj (Tcl_Interp*   interp,

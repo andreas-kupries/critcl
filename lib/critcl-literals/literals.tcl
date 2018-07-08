@@ -141,6 +141,8 @@ proc critcl::literals::HeaderIntro {name dict} {
 	#ifndef @NAME@_LITERALS_HEADER
 	#define @NAME@_LITERALS_HEADER
 
+	#include <tcl.h>
+
 	/* Symbolic names for the literals */
 	typedef enum @NAME@_names {
 	    @CODES@

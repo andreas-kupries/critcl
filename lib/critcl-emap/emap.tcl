@@ -8,7 +8,7 @@
 #
 # Copyright (c) 2014-2017 Andreas Kupries <andreas_kupries@users.sourceforge.net>
 
-package provide critcl::emap 1.1
+package provide critcl::emap 1.2
 
 # # ## ### ##### ######## ############# #####################
 ## Requirements.
@@ -44,13 +44,14 @@ proc critcl::emap::def {name dict args} {
     if {$isdirect} {
 	DecodeDirect $name $min $max id direct
     }
-    Tcl Iassoc       $name $symbols $dict $nocase $last
-    Tcl EncoderTcl   $name                $nocase
-    Tcl DecoderTcl   $name $isdirect              $last
-    Tcl ArgType      $name
-    Tcl ResultType   $name
-    C   EncoderC     $name                $nocase $last
-    C   DecoderC     $name $isdirect              $last
+    Tcl  Iassoc       $name $symbols $dict $nocase $last
+    Tcl  EncoderTcl   $name                $nocase
+    Tcl  DecoderTcl   $name $isdirect              $last
+    List Decoder+List $name
+    Tcl  ArgType      $name
+    Tcl  ResultType   $name
+    C    EncoderC     $name                $nocase $last
+    C    DecoderC     $name $isdirect              $last
     return
 }
 
@@ -150,6 +151,40 @@ proc critcl::emap::DecoderTclDirect {name} {
 	    Tcl_AppendResult (interp, "Invalid @NAME@ state code ", buf, NULL);
 	    Tcl_SetErrorCode (interp, "@UNAME@", "STATE", NULL);
 	    return NULL;
+	}
+    }]
+    return
+}
+
+proc critcl::emap::Decoder+List {name} {
+    lappend map @NAME@      $name
+    lappend map @UNAME@     [string toupper $name]
+
+    # Note on perf: O(mc), for m states in the definition, and c
+    # states to convert. As the number of declared states is however
+    # fixed, and small, we can say O(c) for some larger constant
+    # factor.
+
+    critcl::ccode \n[critcl::at::here!][string map $map {
+	Tcl_Obj*
+	@NAME@_decode_list (Tcl_Interp* interp, int c, int* state)
+	{
+	    int k;
+	    Tcl_Obj* result = Tcl_NewListObj (0, 0);
+	    /* Failed to create, abort immediately */
+	    if (!result) {
+		return result;
+	    }
+	    for (k=0; k < c; k++) {
+		Tcl_Obj* lit = @NAME@_decode (interp, state[k]);
+		if (lit && (TCL_OK == Tcl_ListObjAppendElement (interp, result, lit))) {
+		    continue;
+		}
+		/* Failed to translate or append; release and abort */
+		Tcl_DecrRefCount (result);
+		return NULL;
+	    }
+	    return result;
 	}
     }]
     return
@@ -420,10 +455,11 @@ proc critcl::emap::Header {name} {
     #
     #    Declaration of the en- and decoder functions.
     upvar 1 mode mode
-    append h [HeaderIntro   $name]
-    append h [Tcl HeaderTcl $name]
-    append h [C   HeaderC   $name]
-    append h [HeaderEnd     $name]
+    append h [HeaderIntro      $name]
+    append h [Tcl  HeaderTcl   $name]
+    append h [List Header+List $name]
+    append h [C    HeaderC     $name]
+    append h [HeaderEnd        $name]
     critcl::include [critcl::make ${name}.h $h]
     return
 }
@@ -433,6 +469,8 @@ proc critcl::emap::HeaderIntro {name} {
     return \n[critcl::at::here!][string map $map {
 	#ifndef @NAME@_EMAP_HEADER
 	#define @NAME@_EMAP_HEADER
+
+	#include <tcl.h>
     }]
 }
 
@@ -446,21 +484,33 @@ proc critcl::emap::HeaderEnd {name} {
 proc critcl::emap::HeaderTcl {name} {
     lappend map @NAME@ $name
     return \n[critcl::at::here!][string map $map {
-	/* Encode a Tcl string into the corresponding state code */
-	extern int @NAME@_encode (Tcl_Interp* interp, Tcl_Obj* state, int* result);
-
-	/* Decode a state into the corresponding Tcl string */
+	/* "tcl"
+	 * Encode a Tcl string into the corresponding state code
+	 * Decode a state into the corresponding Tcl string
+	 */
+	extern int      @NAME@_encode (Tcl_Interp* interp, Tcl_Obj* state, int* result);
 	extern Tcl_Obj* @NAME@_decode (Tcl_Interp* interp, int state);
+    }]
+}
+
+proc critcl::emap::Header+List {name} {
+    lappend map @NAME@ $name
+    return \n[critcl::at::here!][string map $map {
+	/* "+list"
+	 * Decode a set of states into a list of the corresponding Tcl strings
+	 */
+	extern Tcl_Obj* @NAME@_decode_list (Tcl_Interp* interp, int c, int* state);
     }]
 }
 
 proc critcl::emap::HeaderC {name} {
     lappend map @NAME@ $name
     return \n[critcl::at::here!][string map $map {
-	/* Encode a C string into the corresponding state code */
-	extern int @NAME@_encode_cstr (const char* state);
-
-	/* Decode a state into the corresponding C string */
+	/* "c"
+	 * Encode a C string into the corresponding state code
+	 * Decode a state into the corresponding C string
+	 */
+	extern int         @NAME@_encode_cstr (const char* state);
 	extern const char* @NAME@_decode_cstr (int state);
     }]
 }
@@ -562,6 +612,18 @@ proc critcl::emap::!Tcl {args} {
     return [uplevel 1 $args]
 }
 
+proc critcl::emap::List {args} {
+    upvar 1 mode mode
+    if {!$mode(+list)} return
+    return [uplevel 1 $args]
+}
+
+proc critcl::emap::!List {args} {
+    upvar 1 mode mode
+    if {$mode(+list)} return
+    return [uplevel 1 $args]
+}
+
 proc critcl::emap::Index {dict iv sv lv} {
     upvar 1 $iv id $sv symbols $lv last
     # For the C level search we want lexicographically sorted elements
@@ -609,10 +671,11 @@ proc critcl::emap::Use {use} {
     # Use cases: tcl, c, both
     upvar 1 mode mode
     set uses 0
-    foreach u {c tcl} { set mode($u) 0 }
-    foreach u $use    { set mode($u) 1 ; incr uses }
+    foreach u {c tcl +list} { set mode($u) 0 }
+    foreach u $use          { set mode($u) 1 ; incr uses }
+    if {$mode(+list)} { set mode(tcl) 1 }
     if {$uses} return
-    return -code error "Need at least one use case (c, or tcl)"
+    return -code error "Need at least one use case (c, tcl, or +list)"
 }
 
 # # ## ### ##### ######## ############# #####################
