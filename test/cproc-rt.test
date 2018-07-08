@@ -1,0 +1,64 @@
+# -*- tcl -*-
+# -------------------------------------------------------------------------
+# cproc-rt.test
+##
+# cproc examples to verify actual execution.
+# -------------------------------------------------------------------------
+
+source [file join [file dirname [info script]] support testutilities.tcl]
+
+testsNeedTcl     8.4
+testsNeedTcltest 2
+
+support {
+    useLocal lib/lassign84/lassign.tcl  lassign84
+    useLocal lib/dict84/dict.tcl        dict84
+
+    useLocal lib/stubs_container/container.tcl stubs::container
+    useLocal lib/stubs_reader/reader.tcl       stubs::reader
+    useLocal lib/stubs_genframe/genframe.tcl   stubs::gen
+}
+testing {
+    useLocal lib/critcl/critcl.tcl            critcl
+    localcache-setup
+}
+
+# -------------------------------------------------------------------------
+##
+
+test iassoc-counter-1.0 {critcl, cproc, runtime} -setup {
+    make-demo TL {
+        critcl::ccode {
+            static void plus (Tcl_Interp* ip, int x) {
+                int r; char buf [60];
+                sprintf(buf, "::lappend ::result %d", x);
+                r = Tcl_Eval (ip, buf);
+                /* fprintf (stdout, "plus = %d, '%s'\n", r, buf);fflush(stdout); */
+            }
+            #define PLUS plus (ip, a); plus (ip, b); plus (ip, c); plus (ip, d)
+        }
+        critcl::cproc oargs_head   {Tcl_Interp* ip  int {a 1} int {b 2} int c     int d}     void { PLUS; }
+        critcl::cproc oargs_tail   {Tcl_Interp* ip  int a     int b     int {c 1} int {d 2}} void { PLUS; }
+        critcl::cproc oargs_middle {Tcl_Interp* ip  int a     int {b 1} int {c 2} int d}     void { PLUS; }
+    }
+} -body {
+    res!
+    foreach a {
+        {6 7}
+        {6 7 8}
+        {6 7 8 9}
+    } {
+        oargs_head   {*}$a
+        oargs_middle {*}$a
+        oargs_tail   {*}$a
+    }
+    res?
+} -result {1 2 6 7 6 1 2 7 6 7 1 2 6 2 7 8 6 7 2 8 6 7 8 2 6 7 8 9 6 7 8 9 6 7 8 9}
+
+# -------------------------------------------------------------------------
+testsuiteCleanup
+
+# Local variables:
+# mode: tcl
+# indent-tabs-mode: nil
+# End:

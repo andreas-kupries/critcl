@@ -412,6 +412,7 @@ proc localcache-setup {} {
     #puts "Cache assign $cache"
     file mkdir $cache
     critcl::cache $cache
+    critcl::fastuuid
     return
 }
 
