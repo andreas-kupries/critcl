@@ -1,18 +1,20 @@
 # -*- tcl -*-
 # Testsuite utilities / boilerplate
-# Copyright (c) 2006-2016, Andreas Kupries <andreas_kupries@users.sourceforge.net>
+
+# Copyright (c) 2006-2018, Andreas Kupries <andreas_kupries@users.sourceforge.net>
 #                                          <akupries@shaw.ca>
 #                                          <andreas.kupries@gmail.com>
 
 set auto_path [linsert $auto_path 0 \
     [file join [file dirname [file dirname [file dirname [info script]]]] lib]]
 
-namespace eval ::tcllib::testutils {
+namespace eval ::testutils {
     variable version 1.2
     variable self    [file dirname [file join [pwd] [info script]]]
-    variable tcllib  [file dirname $self]
+    variable selfdir [file dirname $self]
     variable tag     ""
-    variable theEnv  ; # Saved environment.
+    variable theEnv      ; # Saved environment.
+    variable cache   {}  ; # Path to local critcl cache.
 }
 
 # ### ### ### ######### ######### #########
@@ -108,24 +110,29 @@ proc testsNeed {name version} {
 ## environment cleanup, and the regular one. All .test files are
 ## modified to use the new cleanup.
 
-proc ::tcllib::testutils::SaveEnvironment {} {
+proc ::testutils::SaveEnvironment {} {
     global env
     variable theEnv [array get env]
     return
 }
 
-proc ::tcllib::testutils::RestoreEnvironment {} {
+proc ::testutils::RestoreEnvironment {} {
     global env
     variable theEnv
+    variable cache
     foreach k [array names env] {
 	unset env($k)
     }
     array set env $theEnv
+    #
+    if {$cache eq {}} return
+    #puts "Cache remove $cache"
+    file delete -force $cache
     return
 }
 
 proc testsuiteCleanup {} {
-    ::tcllib::testutils::RestoreEnvironment
+    ::testutils::RestoreEnvironment
     ::tcltest::cleanupTests
     return
 }
@@ -395,25 +402,34 @@ proc snitErrors {} {
 
 # ### ### ### ######### ######### #########
 ## Commands to load files from various locations within the local
-## Tcllib, and the loading of local Tcllib packages. None of them goes
+## package, and the loading of local packages. None of them goes
 ## through the auto-loader, nor the regular package management, to
 ## avoid contamination of the testsuite by packages and code outside
-## of the Tcllib under test.
+## of the package under test.
+
+proc localcache-setup {} {
+    variable ::testutils::cache [selfPath tmp.[pid].[clock seconds]]
+    #puts "Cache assign $cache"
+    file mkdir $cache
+    critcl::cache $cache
+    critcl::fastuuid
+    return
+}
 
 proc localPath {fname} {
     return [file join $::tcltest::testsDirectory $fname]
 }
 
-proc tcllibPath {fname} {
-    return [file join $::tcllib::testutils::tcllib $fname]
+proc selfPath {fname} {
+    return [file join $::testutils::selfdir $fname]
 }
 
 proc useLocalFile {fname} {
     return [uplevel 1 [list source [localPath $fname]]]
 }
 
-proc useTcllibFile {fname} {
-    return [uplevel 1 [list source [tcllibPath $fname]]]
+proc useSelfFile {fname} {
+    return [uplevel 1 [list source [selfPath $fname]]]
 }
 
 proc use {fname pname args} {
@@ -424,14 +440,14 @@ proc use {fname pname args} {
     catch {namespace delete $nsname}
 
     if {[catch {
-	uplevel 1 [list useTcllibFile $fname]
+	uplevel 1 [list useSelfFile $fname]
     } msg]} {
 	puts "    Aborting the tests found in \"[file tail [info script]]\""
 	puts "    Error in [file tail $fname]: $msg"
 	return -code error ""
     }
 
-    puts "$::tcllib::testutils::tag [list $pname] [package present $pname]"
+    puts "$::testutils::tag [list $pname] [package present $pname]"
     return
 }
 
@@ -450,14 +466,14 @@ proc useKeep {fname pname args} {
     ## catch {namespace delete $nsname}
 
     if {[catch {
-	uplevel 1 [list useTcllibFile $fname]
+	uplevel 1 [list useSelfFile $fname]
     } msg]} {
 	puts "    Aborting the tests found in \"[file tail [info script]]\""
 	puts "    Error in [file tail $fname]: $msg"
 	return -code error ""
     }
 
-    puts "$::tcllib::testutils::tag [list $pname] [package present $pname]"
+    puts "$::testutils::tag [list $pname] [package present $pname]"
     return
 }
 
@@ -476,7 +492,7 @@ proc useLocal {fname pname args} {
 	return -code error ""
     }
 
-    puts "$::tcllib::testutils::tag [list $pname] [package present $pname]"
+    puts "$::testutils::tag [list $pname] [package present $pname]"
     return
 }
 
@@ -502,7 +518,7 @@ proc useLocalKeep {fname pname args} {
 	return -code error ""
     }
 
-    puts "$::tcllib::testutils::tag [list $pname] [package present $pname]"
+    puts "$::testutils::tag [list $pname] [package present $pname]"
     return
 }
 
@@ -513,7 +529,7 @@ proc useAccel {acc fname pname args} {
 
 proc support {script} {
     InitializeTclTest
-    set ::tcllib::testutils::tag "-"
+    set ::testutils::tag "-"
     if {[catch {
 	uplevel 1 $script
     } msg]} {
@@ -527,7 +543,7 @@ proc support {script} {
 
 proc testing {script} {
     InitializeTclTest
-    set ::tcllib::testutils::tag "*"
+    set ::testutils::tag "*"
     if {[catch {
 	uplevel 1 $script
     } msg]} {
@@ -537,32 +553,6 @@ proc testing {script} {
 	return -code return
     }
     return
-}
-
-proc useTcllibC {} {
-    set index [tcllibPath tcllibc/pkgIndex.tcl]
-    if {![file exists $index]} {
-	# Might have an external tcllibc
-	if {![catch {
-	    package require tcllibc
-	}]} {
-	    puts "$::tcllib::testutils::tag tcllibc [package present tcllibc]"
-	    puts "$::tcllib::testutils::tag tcllibc = [package ifneeded tcllibc [package present tcllibc]]"
-	    return 1
-	}
-
-	return 0
-    }
-
-    set ::dir [file dirname $index]
-    uplevel #0 [list source $index]
-    unset ::dir
-
-    package require tcllibc
-
-    puts "$::tcllib::testutils::tag tcllibc [package present tcllibc]"
-    puts "$::tcllib::testutils::tag tcllibc = [package ifneeded tcllibc [package present tcllibc]]"
-    return 1
 }
 
 # ### ### ### ######### ######### #########
@@ -720,9 +710,28 @@ proc TestFilesGlob {pattern} {
 # ### ### ### ######### ######### #########
 ##
 
-::tcllib::testutils::SaveEnvironment
+proc make-demo {name script} {
+    variable ::testutils::cache
+    set saved [info script]
+    set scache $cache
+    set cache {}
+    info script $name
+    critcl::meta name $name
+    critcl::config lines 0
+    critcl::config keepsrc 1
+    uplevel 1 $script
+    critcl::load
+    info script $saved
+    set cache $scache
+    return
+}
 
 # ### ### ### ######### ######### #########
-package provide tcllib::testutils $::tcllib::testutils::version
-puts "- tcllib::testutils [package present tcllib::testutils]"
+##
+
+::testutils::SaveEnvironment
+
+# ### ### ### ######### ######### #########
+package provide testutils $testutils::version
+puts "- testutils [package present testutils]"
 return
