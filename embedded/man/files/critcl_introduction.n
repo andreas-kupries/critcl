@@ -500,6 +500,11 @@ Feature\&. Package \fBcritcl::enum\fR bumped to version 1\&.1\&.
 Added basic mode handling, supporting \fBtcl\fR (default) and
 \fB+list\fR (extension enabling the conversion of multiple
 enum values into a list of their strings)\&.
+.IP [11]
+Feature\&. Package \fBcritcl::emap\fR bumped to version 1\&.2\&.
+Extended existing mode handling with \fB+list\fR extension
+enabling the conversion of multiple emap values into a list of
+their strings\&.
 .PP
 .SH "CHANGES FOR VERSION 3\&.1\&.17"
 .IP [1]
