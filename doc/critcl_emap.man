@@ -1,5 +1,5 @@
 [comment {-*- tcl -*- doctools manpage}]
-[vset emap_version 1]
+[vset emap_version 1.2]
 [manpage_begin critcl::emap n [vset emap_version]]
 [include include/module2.inc]
 [keywords singleton {Tcl Interp Association}]

@@ -1,1 +1,1 @@
-package ifneeded critcl::emap 1.1 [list source [file join $dir emap.tcl]]
+package ifneeded critcl::emap 1.2 [list source [file join $dir emap.tcl]]
