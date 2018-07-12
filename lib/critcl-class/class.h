@@ -206,13 +206,15 @@ static int
 
 @cconscmd@
 #line 209 "class.h"
-@tclconscmd@
+@capiclassvaraccess@
 #line 211 "class.h"
+@tclconscmd@
+#line 213 "class.h"
 /* # # ## ### ##### ######## User: Class Methods */
 @class_method_implementations@
-#line 214 "class.h"
-@classcommand@
 #line 216 "class.h"
+@classcommand@
+#line 218 "class.h"
 /* # # ## ### ##### ######## ############# ##################### */
 #endif /* @stem@_IMPLEMENTATION */
 
@@ -224,7 +226,7 @@ static int
  * End:
  */
 
-#line 228 "class.h"
+#line 230 "class.h"
 	const char*   name;                       /* Class name, for debugging */
 	long int      counter;                    /* Id generation counter */
 	char          buf [sizeof("@class@")+20]; /* Stash for the auto-generated object names. */
@@ -232,7 +234,7 @@ static int
 	classmgr->name = "@stem@";
 	classmgr->counter = 0;
 
-#line 236 "class.h"
+#line 238 "class.h"
 static CONST char*
 @stem@_NewInstanceName (@classtype@_mgr classmgr)
 {
@@ -241,7 +243,7 @@ static CONST char*
     return classmgr->buf;
 }
 
-#line 245 "class.h"
+#line 247 "class.h"
 /* # # ## ### ##### ######## */
 /*
  * Tcl API :: Class command, class method, especially instance construction.
@@ -282,13 +284,13 @@ int
     switch ((@stem@_classmethods) mcode) {
     case @stem@_CM_create: return @stem@_CM_createCmd (classmgr, interp, objc, objv); break;
     case @stem@_CM_new:    return @stem@_CM_newCmd    (classmgr, interp, objc, objv); break;@class_method_dispatch@
-#line 286 "class.h"
+#line 288 "class.h"
     }
     /* Not coming to this place */
     return TCL_ERROR;
 }
 
-#line 292 "class.h"
+#line 294 "class.h"
 /* # # ## ### ##### ########: Predefined class methods */
 static int
 @stem@_NewInstance (const char*     name,
@@ -408,7 +410,7 @@ static int
     return @stem@_NewInstance (name, classmgr, interp, 2, objc, objv);
 }
 
-#line 412 "class.h"
+#line 414 "class.h"
 /* # # ## ### ##### ######## */
 /*
  * C API :: Instance (de)construction, dispatch

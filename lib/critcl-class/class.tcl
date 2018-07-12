@@ -277,6 +277,8 @@ proc ::critcl::class::ProcessClassVariables {} {
     dict set state classmethod starte  ",\n"
     dict set state ctypedecl {}
 
+    dict set state capiclassvaraccess {}
+
     if {![dict exists $state classvariable]} {
 	# Some compilers are unable to handle a structure without
 	# members (notably ANSI C89 Solaris, AIX). Taking the easy way
@@ -292,6 +294,10 @@ proc ::critcl::class::ProcessClassVariables {} {
     set decl {}
     lappend decl "/* # # ## ### ##### ######## User: Class variables */"
 
+    if {[dict get $state c-api]} {
+	lappend acc  "/* # # ## ### ##### ######## User: C-API :: Class variable accessors */\n"
+    }
+
     foreach fname [dict get $state classvariable names] {
 	set ctype   [dict get $state classvariable def $fname ctype]
 	set vloc    [dict get $state classvariable def $fname loc]
@@ -302,11 +308,28 @@ proc ::critcl::class::ProcessClassVariables {} {
 	    append field " /* $comment */"
 	}
 	lappend decl $field
+
+	# If needed, generate accessor functions for all class variables,
+	# i.e setters and getters.
+
+	if {[dict get $state c-api]} {
+	    lappend acc "$ctype @capiprefix@_${fname}_get (Tcl_Interp* interp) \{"
+	    lappend acc "    return @stem@_Class (interp)->user.$fname;"
+	    lappend acc "\}"
+	    lappend acc ""
+	    lappend acc "void @capiprefix@_${fname}_set (Tcl_Interp* interp, $ctype v) \{"
+	    lappend acc "    @stem@_Class (interp)->user.$fname = v;"
+	    lappend acc "\}"
+	}
     }
 
     lappend decl "/* # # ## ### ##### ######## */"
 
     dict set state ctypedecl "    [join $decl "\n    "]\n"
+
+    if {[dict get $state c-api]} {
+	dict set state capiclassvaraccess [join $acc \n]
+    }
     return
 }
 
