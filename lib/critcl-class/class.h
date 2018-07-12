@@ -414,8 +414,8 @@ static int
  * C API :: Instance (de)construction, dispatch
  */
 
-typedef @instancetype@__ @capiprefix@;
-typedef @capiprefix@* @capiprefix@_p;
+typedef struct @instancetype@__ @capiprefix@;
+typedef struct @capiprefix@* @capiprefix@_p;
 
 @capiprefix@_p
 @capiprefix@_new (Tcl_Interp*	  interp,
@@ -436,7 +436,7 @@ typedef @capiprefix@* @capiprefix@_p;
 
     @stem@_PostConstructor (interp, instance, 0, 0);
 
-    return instance;
+    return (@capiprefix@_p) instance;
 }
 
 void
