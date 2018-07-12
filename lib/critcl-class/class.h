@@ -1,6 +1,8 @@
 /*
  * For package "@package@".
  * Implementation of Tcl Class "@class@".
+ *
+ * Flags: @buildflags@
  */
 
 #ifndef @stem@_IMPLEMENTATION
@@ -8,18 +10,20 @@
 /* # # ## ### ##### ######## ############# ##################### */
 
 @includes@
-
+#line 14 "class.h"
 /*
  * Instance method names and enumeration.
  */
 
 static CONST char* @stem@_methodnames [] = {
 @method_names@
+#line 21 "class.h"
     NULL
 };
 
 typedef enum @stem@_methods {
 @method_enumeration@
+#line 27 "class.h"
 } @stem@_methods;
 
 /*
@@ -29,26 +33,33 @@ typedef enum @stem@_methods {
 static CONST char* @stem@_class_methodnames [] = {
     "create",
     "new",@class_method_names@
+#line 37 "class.h"
     NULL
 };
 
 typedef enum @stem@_classmethods {
     @stem@_CM_create,
     @stem@_CM_new@class_method_enumeration@
+#line 44 "class.h"
 } @stem@_classmethods;
 
 /*
- * Class structures. Instance counter.
+ * Class structures I. Class variables.
  */
 
 typedef struct @classtype@__ {
-@ctypedecl@} @classtype@__;
+@ctypedecl@
+#line 53 "class.h"
+} @classtype@__;
 typedef struct @classtype@__* @classtype@;
 
+/*
+ * Class structures II. Creation management.
+ */
+
 typedef struct @classtype@_mgr_ {
-    const char*   name;                       /* Class name, for debugging */
-    long int      counter;                    /* Id generation counter */
-    char          buf [sizeof("@class@")+20]; /* Stash for the auto-generated object names. */
+@classmgrstruct@
+#line 63 "class.h"
     @classtype@__ user;                       /* User-specified class variables */
 } @classtype@_mgr_;
 typedef struct @classtype@_mgr_* @classtype@_mgr;
@@ -58,10 +69,11 @@ typedef struct @classtype@_mgr_* @classtype@_mgr;
  */
 
 @itypedecl@
+#line 73 "class.h"
 
 /* # # ## ### ##### ######## User: General support */
 @support@
-#line 65 "class.h"
+#line 77 "class.h"
 /* # # ## ### ##### ######## */
 
 /*
@@ -74,7 +86,7 @@ static void
     @classtype@_mgr classmgr = (@classtype@_mgr) cd;
     @classtype@     class    = &classmgr->user;
     @classdestructor@
-#line 78 "class.h"
+#line 90 "class.h"
     ckfree((char*) cd);
 }
 
@@ -93,12 +105,12 @@ static @classtype@_mgr
     }
 
     classmgr = (@classtype@_mgr) ckalloc (sizeof (@classtype@_mgr_));
-    classmgr->name = "@stem@";
-    classmgr->counter = 0;
+@classmgrsetup@
+#line 110 "class.h"
     class = &classmgr->user;
 
     @classconstructor@
-#line 102 "class.h"
+#line 114 "class.h"
 
     Tcl_SetAssocData (interp, KEY, proc, (ClientData) classmgr);
     return classmgr;
@@ -107,15 +119,8 @@ static @classtype@_mgr
     return NULL;
 #undef KEY
 }
-
-static CONST char*
-@stem@_NewInstanceName (@classtype@_mgr classmgr)
-{
-    classmgr->counter ++;
-    sprintf (classmgr->buf, "@class@%ld", classmgr->counter);
-    return classmgr->buf;
-}
-
+@classmgrnin@
+#line 124 "class.h"
 /* # # ## ### ##### ######## */
 
 static @instancetype@
@@ -128,10 +133,11 @@ static @instancetype@
 @ivardecl@;
     /* # # ## ### ##### ######## User: Constructor */
     @constructor@
-#line 131 "class.h"
+#line 137 "class.h"
     /* # # ## ### ##### ######## */
     return instance;
 @ivarerror@;
+#line 141 "class.h"
 }
 
 static void
@@ -142,7 +148,7 @@ static void
 {
     /* # # ## ### ##### ######## User: Post Constructor */
     @postconstructor@
-#line 145 "class.h"
+#line 152 "class.h"
     /* # # ## ### ##### ######## */
 }
 
@@ -152,14 +158,15 @@ static void
     @instancetype@ instance = (@instancetype@) clientData;
     /* # # ## ### ##### ######## User: Destructor */
     @destructor@
-#line 155 "class.h"
+#line 162 "class.h"
     /* # # ## ### ##### ######## */
 @ivarrelease@;
+#line 165 "class.h"
 }
 
 /* # # ## ### ##### ######## User: Methods */
 @method_implementations@
-#line 162 "class.h"
+#line 170 "class.h"
 /* # # ## ### ##### ######## */
 
 /*
@@ -191,13 +198,98 @@ static int
 
     switch ((@stem@_methods) mcode) {
 @method_dispatch@
+#line 202 "class.h"
     }
     /* Not coming to this place */
     return TCL_ERROR;
 }
 
-/* # # ## ### ##### ########: Predefined class methods */
+@cconscmd@
+#line 209 "class.h"
+@tclconscmd@
+#line 211 "class.h"
+/* # # ## ### ##### ######## User: Class Methods */
+@class_method_implementations@
+#line 214 "class.h"
+@classcommand@
+#line 216 "class.h"
+/* # # ## ### ##### ######## ############# ##################### */
+#endif /* @stem@_IMPLEMENTATION */
+
+/*
+ * Local Variables:
+ * mode: c
+ * c-basic-offset: 4
+ * fill-column: 78
+ * End:
+ */
+
+#line 228 "class.h"
+	const char*   name;                       /* Class name, for debugging */
+	long int      counter;                    /* Id generation counter */
+	char          buf [sizeof("@class@")+20]; /* Stash for the auto-generated object names. */
+
+	classmgr->name = "@stem@";
+	classmgr->counter = 0;
+
+#line 236 "class.h"
+static CONST char*
+@stem@_NewInstanceName (@classtype@_mgr classmgr)
+{
+    classmgr->counter ++;
+    sprintf (classmgr->buf, "@class@%ld", classmgr->counter);
+    return classmgr->buf;
+}
+
+#line 245 "class.h"
+/* # # ## ### ##### ######## */
+/*
+ * Tcl API :: Class command, class method, especially instance construction.
+ */
 
+int
+@stem@_ClassCommand (ClientData      clientData,
+		     Tcl_Interp*     interp,
+		     int             objc,
+		     Tcl_Obj* CONST* objv)
+{
+    @classtype@_mgr classmgr;
+    @classtype@     class;
+    int mcode;
+
+    if (objc < 2) {
+	Tcl_WrongNumArgs (interp, 0, objv, "method ?args...?");
+	return TCL_ERROR;
+    }
+
+    if (Tcl_GetIndexFromObj (interp, objv [1],
+			     (const char**) @stem@_class_methodnames,
+			     "option", 0, &mcode) != TCL_OK) {
+	return TCL_ERROR;
+    }
+
+    classmgr = @stem@_Class (interp);
+    if (!classmgr) {
+	return TCL_ERROR;
+    }
+    class = &classmgr->user;
+
+    /*
+     * Dispatch to methods. They check the #args in detail before performing
+     * the requested functionality
+     */
+
+    switch ((@stem@_classmethods) mcode) {
+    case @stem@_CM_create: return @stem@_CM_createCmd (classmgr, interp, objc, objv); break;
+    case @stem@_CM_new:    return @stem@_CM_newCmd    (classmgr, interp, objc, objv); break;@class_method_dispatch@
+#line 286 "class.h"
+    }
+    /* Not coming to this place */
+    return TCL_ERROR;
+}
+
+#line 292 "class.h"
+/* # # ## ### ##### ########: Predefined class methods */
 static int
 @stem@_NewInstance (const char*     name,
 		    @classtype@_mgr classmgr,
@@ -315,63 +407,49 @@ static int
     name = @stem@_NewInstanceName (classmgr);
     return @stem@_NewInstance (name, classmgr, interp, 2, objc, objv);
 }
-
-/* # # ## ### ##### ######## User: Class Methods */
-@class_method_implementations@
-#line 320 "class.h"
+
+#line 412 "class.h"
 /* # # ## ### ##### ######## */
-
 /*
- * Class command, class method, especially instance construction.
+ * C API :: Instance (de)construction, dispatch
  */
 
-int
-@stem@_ClassCommand (ClientData      clientData,
-		     Tcl_Interp*     interp,
-		     int             objc,
-		     Tcl_Obj* CONST* objv)
+typedef @instancetype@__ @capiprefix@;
+typedef @capiprefix@* @capiprefix@_p;
+
+@capiprefix@_p
+@capiprefix@_new (Tcl_Interp*	  interp,
+		  int		  objc,
+		  Tcl_Obj* CONST* objv)
 {
-    @classtype@_mgr classmgr;
-    @classtype@     class;
-    int mcode;
-
-    if (objc < 2) {
-	Tcl_WrongNumArgs (interp, 0, objv, "method ?args...?");
-	return TCL_ERROR;
-    }
-
-    if (Tcl_GetIndexFromObj (interp, objv [1],
-			     (const char**) @stem@_class_methodnames,
-			     "option", 0, &mcode) != TCL_OK) {
-	return TCL_ERROR;
-    }
-
-    classmgr = @stem@_Class (interp);
-    if (!classmgr) {
-	return TCL_ERROR;
-    }
-    class = &classmgr->user;
+    @classtype@_mgr classmgr = @stem@_Class (interp);
+    @instancetype@ instance;
 
     /*
-     * Dispatch to methods. They check the #args in detail before performing
-     * the requested functionality
+     * Construct instance state
      */
 
-    switch ((@stem@_classmethods) mcode) {
-	case @stem@_CM_create: return @stem@_CM_createCmd (classmgr, interp, objc, objv); break;
-	case @stem@_CM_new:    return @stem@_CM_newCmd    (classmgr, interp, objc, objv); break;@class_method_dispatch@
+    instance = @stem@_Constructor (interp, &classmgr->user, 0, objc, objv);
+    if (!instance) {
+	return NULL;
     }
-    /* Not coming to this place */
-    return TCL_ERROR;
+
+    @stem@_PostConstructor (interp, instance, 0, 0);
+
+    return instance;
 }
 
-/* # # ## ### ##### ######## ############# ##################### */
-#endif /* @stem@_IMPLEMENTATION */
-
-/*
- * Local Variables:
- * mode: c
- * c-basic-offset: 4
- * fill-column: 78
- * End:
- */
+void
+@capiprefix@_destroy (@capiprefix@_p instance)
+{
+    @stem@_Destructor (instance);
+}
+
+int
+@capiprefix@_invoke (@capiprefix@_p instance,
+		     Tcl_Interp*     interp,
+		     int	     objc,
+		     Tcl_Obj* CONST* objv)
+{
+    return @stem@_InstanceCommand (instance, interp, objc, objv);
+}

@@ -7,7 +7,7 @@
 # class made easy, with code for object command and method dispatch
 # generated.
 
-package provide critcl::class 1.0.7
+package provide critcl::class 1.1
 
 # # ## ### ##### ######## ############# #####################
 ## Requirements.
@@ -26,6 +26,73 @@ namespace eval ::critcl::class {}
 
 proc ::critcl::class::define {classname script} {
     variable state
+
+    # Structure of the specification database
+    #
+    # TODO: Separate the spec::Process results from the template placeholders.
+    # TODO: Explain the various keys
+    #
+    # NOTE: All toplevel keys go into the map
+    #       used to configure the template file (class.h).
+    #       See `GenerateCode` and `MakeMap`.
+    #
+    #       The various `Process*` procedures are responsible
+    #       for converting the base specification delivered by
+    #       `spec::Process` into the placeholders expected by
+    #       template
+    ##
+    # state = dict <<
+    #   tcl-api      -> bool
+    #   c-api        -> bool
+    #   capiprefix   -> string
+    #   buildflags   -> string
+    #   classmgrstruct -> string
+    #   classmgrsetup  -> string
+    #   classmgrnin    -> string
+    #   classcommand   -> string
+    #   tclconscmd     -> string
+    #   package      -> string
+    #   class        -> string
+    #   stem         -> string
+    #   classtype    -> string (C type class structure)
+    #   (class)method       -> dict <<
+    #     names   -> list (string)
+    #     def -> (name) -> <<
+    #       enum
+    #       case
+    #       code
+    #       syntax
+    #     >>
+    #     typedef -> ^instancetype
+    #     menum   -> 
+    #     typekey -> 
+    #     prefix  -> ''|'class_' (see *1*)
+    #     startn  -> 
+    #     starte  -> 
+    #   >>
+    #   (class)variable     -> dict <<
+    #     names   -> list (string)
+    #     def     -> (name) -> <<
+    #       ctype   ->
+    #       loc     ->
+    #       comment ->
+    #     >>
+    #   >>
+    #   stop         -> bool|presence
+    #   includes     -> string (C code fragment)
+    #   include      -> 
+    #   instancetype -> 
+    #   ivardecl     -> string (C code fragment)
+    #   ivarrelease  -> string (C code fragment)
+    #   ivarerror    -> string (C code fragment)
+    #   itypedecl    -> string (C code fragment, instance type)
+    #   ctypedecl    -> string (C code fragment, class type)
+    # *1*, (class_)method.prefix use
+    #   (class_)method_names
+    #   (class_)method_enumeration
+    #   (class_)method_dispatch
+    #   (class_)method_implementations
+    # >> 
 
     catch { unset state }
 
@@ -58,10 +125,13 @@ proc ::critcl::class::define {classname script} {
 
     set stem ${pcns}${cpackage}_$cns$cclassname
 
-    dict set state package     $pns$package
-    dict set state class       $ns$classname
-    dict set state stem        $stem
-    dict set state classtype   ${stem}_CLASS
+    dict set state tcl-api      1
+    dict set state c-api        0
+    dict set state capiprefix   $cns$cclassname
+    dict set state package      $pns$package
+    dict set state class        $ns$classname
+    dict set state stem         $stem
+    dict set state classtype    ${stem}_CLASS
     dict set state method      names {}
     dict set state classmethod names {}
 
@@ -70,6 +140,7 @@ proc ::critcl::class::define {classname script} {
 
     #puts "@@@ <<$state>>"
 
+    ProcessFlags
     ProcessIncludes
     ProcessExternalType
     ProcessInstanceVariables
@@ -88,6 +159,21 @@ proc ::critcl::class::define {classname script} {
     GenerateCode
 
     unset state
+    return
+}
+
+proc ::critcl::class::ProcessFlags {} {
+    variable state
+    set flags {}
+    foreach key {tcl-api c-api} {
+	if {![dict get $state $key]} continue
+	lappend flags $key
+    }
+    if {![llength $flags]} {
+	return -code error "No APIs to generate found. Please activate at least one API."
+    }
+
+    dict set state buildflags [join $flags {, }]
     return
 }
 
@@ -317,6 +403,34 @@ proc ::critcl::class::GenerateCode {} {
     file mkdir [critcl::cache]
     set template [critcl::Deline [Template class.h]]
     #puts T=[string length $template]
+
+    # Note, the template file is many files/parts, separated by ^Z
+    lassign [split $template \x1a] \
+	template mgrstruct mgrsetup newinsname classcmd tclconscmd \
+	cconscmd
+
+    # Configure the flag-dependent parts of the template
+
+    if {[dict get $state tcl-api]} {
+	dict set state classmgrstruct $mgrstruct
+	dict set state classmgrsetup  $mgrsetup
+	dict set state classmgrnin    $newinsname
+	dict set state classcommand   $classcmd
+	dict set state tclconscmd     $tclconscmd
+    } else {
+	dict set state classmgrstruct {}
+	dict set state classmgrsetup  {}
+	dict set state classmgrnin    {}
+	dict set state classcommand   {}
+	dict set state tclconscmd     {}
+    }
+
+    if {[dict get $state c-api]} {
+	dict set state cconscmd     $cconscmd
+    } else {
+	dict set state cconscmd     {}
+    }
+
     critcl::util::Put $header [string map [MakeMap] $template]
 
     critcl::ccode "#include <$hdr>"
@@ -364,6 +478,18 @@ proc ::critcl::class::Dedent {pfx text} {
 # state to the specification commands (see next section)
 ##
 # # ## ### ##### ######## ############# #####################
+
+proc ::critcl::class::CAPIPrefix {name} {
+    variable state
+    dict set state capiprefix $name
+    return
+}
+
+proc ::critcl::class::Flag {key flag} {
+    variable state
+    dict set state $key $flag
+    return
+}
 
 proc ::critcl::class::Include {header} {
     # Name of an API to include in the generated code.
@@ -730,6 +856,16 @@ proc ::critcl::class::spec::Process {script} {
 
     namespace eval :: {namespace path {}}
     return
+}
+
+proc ::critcl::class::spec::tcl-api {flag} {
+    ::critcl::class::Flag tcl-api $flag
+}
+
+proc ::critcl::class::spec::c-api {flag {name {}}} {
+    ::critcl::class::Flag c-api $flag
+    if {$name eq {}} return
+    ::critcl::class::CAPIPrefix $name
 }
 
 proc ::critcl::class::spec::include {header} {
