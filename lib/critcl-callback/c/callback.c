@@ -8,6 +8,8 @@
 #include <critcl_assert.h>
 #include <critcl_alloc.h>
 
+TRACE_ON;
+
 /*
  * API
  */
@@ -27,10 +29,12 @@ critcl_callback_new (Tcl_Interp* interp, int objc, Tcl_Obj** objv, int nargs)
 
     int i;
     for (i = 0; i < objc; i++) {
+	TRACE ("D [%3d] = (TclObj*) %p = '%s'", i, objv [i], Tcl_GetString (objv [i]));
 	c->command [i] = objv [i];
 	Tcl_IncrRefCount (objv [i]);
     }
     for (; i < total; i++) {
+	TRACE ("D [%3d] = n/a", i);
 	c->command [i] = 0;
     }
   
@@ -42,6 +46,8 @@ critcl_callback_extend (critcl_callback_p callback, Tcl_Obj* argument)
 {
     TRACE_FUNC ("((critcl_callback_p) %p, (Tcl_Obj*) %p)", callback, argument);
     ASSERT (callback->nargs > 0, "No arguments left to use for extension");
+
+    TRACE ("E [%3d] = (TclObj*) %p = '%s'", callback->nfixed, argument, Tcl_GetString (argument));
 
     callback->command [callback->nfixed] = argument;
     Tcl_IncrRefCount (argument);
@@ -76,9 +82,11 @@ critcl_callback_invoke (critcl_callback_p callback, int objc, Tcl_Obj** objv)
     int i, j;
 
     for (i = 0; i < callback->nfixed; i++) {
+	TRACE ("I [%3d] = (TclObj*) %p = '%s'", i, callback->command [i], Tcl_GetString (callback->command [i]));
 	Tcl_IncrRefCount (callback->command [i]);
     }
     for (i = callback->nfixed, j = 0 ; j < objc; i++, j++) {
+	TRACE ("I [%3d] = (TclObj*) %p = '%s'", i, objv [j], Tcl_GetString (objv [j]));
 	Tcl_IncrRefCount (objv [j]);
 	callback->command [i] = objv [j];
     }
@@ -92,6 +100,8 @@ critcl_callback_invoke (critcl_callback_p callback, int objc, Tcl_Obj** objv)
 	Tcl_DecrRefCount (objv [j]);
     }
     
+    TRACE ("R (Tcl_Obj*) %p = '%s'", Tcl_GetObjResult (callback->interp),
+	   Tcl_GetString (Tcl_GetObjResult (callback->interp)));
     TRACE_RETURN ("(int) %d", res);
 }
 
