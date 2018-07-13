@@ -457,7 +457,9 @@ proc ::critcl::class::GenerateCode {} {
     critcl::util::Put $header [string map [MakeMap] $template]
 
     critcl::ccode "#include <$hdr>"
-    uplevel 2 [list critcl::ccommand $class ${stem}_ClassCommand]
+    if {[dict get $state tcl-api]} {
+	uplevel 2 [list critcl::ccommand $class ${stem}_ClassCommand]
+    }
     return
 }
 
