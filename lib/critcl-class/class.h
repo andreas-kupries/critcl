@@ -453,5 +453,16 @@ int
 		     int	     objc,
 		     Tcl_Obj* CONST* objv)
 {
-    return @stem@_InstanceCommand (instance, interp, objc, objv);
+    Tcl_Obj** v = (Tcl_Obj**) ckalloc ((objc+1)*sizeof (Tcl_Obj*));
+    Tcl_Obj* i = Tcl_NewStringObj ("@capiprefix@", sizeof ("@capiprefix@"));
+    Tcl_IncrRefCount (i);
+
+    v[0] = i;
+    memcpy (v+1, objv, objc * sizeof (Tcl_Obj*));
+
+    int r = @stem@_InstanceCommand (instance, interp, objc+1, v);
+
+    Tcl_DecrRefCount (i);
+    ckfree ((char*) v);
+    return r;
 }
