@@ -454,7 +454,7 @@ int
 		     Tcl_Obj* CONST* objv)
 {
     Tcl_Obj** v = (Tcl_Obj**) ckalloc ((objc+1)*sizeof (Tcl_Obj*));
-    Tcl_Obj* i = Tcl_NewStringObj ("@capiprefix@", sizeof ("@capiprefix@"));
+    Tcl_Obj* i = Tcl_NewStringObj ("@capiprefix@", sizeof ("@capiprefix@")-1);
     Tcl_IncrRefCount (i);
 
     v[0] = i;
