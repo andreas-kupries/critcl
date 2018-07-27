@@ -44,4 +44,11 @@
        enabling the conversion of multiple emap values into a list of
        their strings.
 
+[enum] Feature. Extended the set of available types by applying a few
+       range restrictions to the scalar types ([term int],
+       [term long], [term wideint], [term double], [term float]).
+
+       [para] Example: [term {int > 0}] is now a viable type name.
+
+       [para] For details see the package reference.
 [list_end]

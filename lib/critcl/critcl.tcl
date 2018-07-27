@@ -332,6 +332,8 @@ proc ::critcl::MakeVariadicTypeFor {type} {
 	# except for custom C types, and conversion assumes variadic,
 	# not single argument.
 
+	# XXXA auto-create derived type from known base types.
+
 	lappend one @@  src
 	lappend one &@A dst
 	lappend one @A  *dst
@@ -935,6 +937,8 @@ proc ::critcl::argtype {name conversion {ctype {}} {ctypeb {}}} {
 
     # Handle aliases by copying the original definition.
     if {$conversion eq "="} {
+	# XXXA auto-create derived type from known base types.
+
 	if {![info exists aconv($ctype)]} {
 	    return -code error "Unable to alias unknown type '$ctype'."
 	}
@@ -1124,6 +1128,8 @@ proc ::critcl::cproc {name adefs rtype {body "#"} args} {
         }
         set args [lrange $args 2 end]
     }
+
+    # XXXA auto-create derived type from known base types.
 
     incr aoffset ; # always include the command name.
     set adb [ArgsInprocess $adefs $aoffset]
@@ -5400,6 +5406,33 @@ proc ::critcl::Initialize {} {
 	double t;
 	if (Tcl_GetDoubleFromObj(interp, @@, &t) != TCL_OK) return TCL_ERROR;
 	@A = (float) t;
+    }
+
+    # Premade scalar type derivations for common range restrictions.
+    # Look to marker XXXA for the places where auto-creation would
+    # need fitting in (future).
+    foreach type {
+	int long wideint double float
+    } {
+	set ctype [ArgumentCType $type]
+	set code  [ArgumentConversion $type]
+	foreach restriction {
+	    {> 0}	    {>= 0}	    {> 1}	    {>= 1}
+	    {< 0}	    {<= 0}	    {< 1}	    {<= 1}
+	} {
+	    set ntype "$type $restriction"
+	    set head  "expected $ntype, but got \\\""
+	    set tail  "\\\""
+	    set msg   "\"$head\", Tcl_GetString (@@), \"$tail\""
+	    set    new $code
+	    append new "\n/* Range check, assert (x $restriction) */"
+	    append new "\nif (!(@A $restriction)) \{" \
+		"\n    Tcl_AppendResult (interp, $msg, NULL);" \
+		"\n    return TCL_ERROR;" \
+		"\n\}"
+
+	    argtype $ntype $new $ctype $ctype
+	}
     }
 
     argtype char* {

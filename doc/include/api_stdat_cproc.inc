@@ -89,6 +89,22 @@ The function takes an argument of type [type double].
 The Tcl argument must be convertible to [type Double], an error is
 thrown otherwise.
 
+[def {double > 0}]
+[def {double >= 0}]
+[def {double < 0}]
+[def {double <= 0}]
+[def {double > 1}]
+[def {double >= 1}]
+[def {double < 1}]
+[def {double <= 1}]
+
+These are variants of [term double] above, restricting the argument
+value to the shown relation. An error is thrown for Tcl arguments
+outside of the specified range.
+
+[emph Note:] This is not a general range specification syntax. Only
+the listed types exist.
+
 [comment {% % %% %%% %%%%% %%%%%%%% %%%%%%%%%%%%%}]
 [def float]
 
@@ -96,6 +112,22 @@ The function takes an argument of type [type float].
 
 The Tcl argument must be convertible to [type Double], an error is
 thrown otherwise.
+
+[def {float > 0}]
+[def {float >= 0}]
+[def {float < 0}]
+[def {float <= 0}]
+[def {float > 1}]
+[def {float >= 1}]
+[def {float < 1}]
+[def {float <= 1}]
+
+These are variants of [term float] above, restricting the argument
+value to the shown relation. An error is thrown for Tcl arguments
+outside of the specified range.
+
+[emph Note:] This is not a general range specification syntax. Only
+the listed types exist.
 
 [comment {% % %% %%% %%%%% %%%%%%%% %%%%%%%%%%%%%}]
 [def boolean]
@@ -114,6 +146,22 @@ The function takes an argument of type [type int].
 The Tcl argument must be convertible to [type Int], an error is thrown
 otherwise.
 
+[def {int > 0}]
+[def {int >= 0}]
+[def {int < 0}]
+[def {int <= 0}]
+[def {int > 1}]
+[def {int >= 1}]
+[def {int < 1}]
+[def {int <= 1}]
+
+These are variants of [term int] above, restricting the argument value
+to the shown relation. An error is thrown for Tcl arguments outside of
+the specified range.
+
+[emph Note:] This is not a general range specification syntax. Only
+the listed types exist.
+
 [comment {% % %% %%% %%%%% %%%%%%%% %%%%%%%%%%%%%}]
 [def long]
 
@@ -122,6 +170,22 @@ The function takes an argument of type [type {long int}].
 The Tcl argument must be convertible to [type Long], an error is
 thrown otherwise.
 
+[def {long > 0}]
+[def {long >= 0}]
+[def {long < 0}]
+[def {long <= 0}]
+[def {long > 1}]
+[def {long >= 1}]
+[def {long < 1}]
+[def {long <= 1}]
+
+These are variants of [term long] above, restricting the argument
+value to the shown relation. An error is thrown for Tcl arguments
+outside of the specified range.
+
+[emph Note:] This is not a general range specification syntax. Only
+the listed types exist.
+
 [comment {% % %% %%% %%%%% %%%%%%%% %%%%%%%%%%%%%}]
 [def wideint]
 
@@ -129,6 +193,22 @@ The function takes an argument of type [type Tcl_WideInt].
 
 The Tcl argument must be convertible to [type WideInt], an error is
 thrown otherwise.
+
+[def {wideint > 0}]
+[def {wideint >= 0}]
+[def {wideint < 0}]
+[def {wideint <= 0}]
+[def {wideint > 1}]
+[def {wideint >= 1}]
+[def {wideint < 1}]
+[def {wideint <= 1}]
+
+These are variants of [term wideint] above, restricting the argument
+value to the shown relation. An error is thrown for Tcl arguments
+outside of the specified range.
+
+[emph Note:] This is not a general range specification syntax. Only
+the listed types exist.
 
 [comment {% % %% %%% %%%%% %%%%%%%% %%%%%%%%%%%%%}]
 [def void*]
