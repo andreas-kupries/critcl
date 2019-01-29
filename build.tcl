@@ -392,16 +392,17 @@ proc _install {args} {
 
 	set c [open $theapp w]
 	lappend map @bs@   "\\"
-	lappend map @exe@  [file dirname [file normalize [info nameofexecutable]/___]]
-	lappend map @path@ $reldstl  ;# insert the dst path
+	lappend map @path@ [list $reldstl]  ;# insert the dst path
 	lappend map "\t    " {} ;# de-dent
 	puts $c [string trimleft [string map $map {
 	    #!/bin/sh
 	    # -*- tcl -*- @bs@
-	    exec "@exe@" "$0" ${1+"$@"}
+	    exe=$1
+	    shift
+	    exec "$exe" "$0" ${1+"$@"}
 
 	    set libpath [file normalize [file join [file dirname [info script]] .. lib]]
-	    set libpath [file join $libpath {@path@}]
+	    set libpath [file join $libpath @path@]
 	    if {[lsearch -exact $auto_path $libpath] < 0} {lappend auto_path $libpath}
 
 	    package require critcl::app
@@ -429,7 +430,8 @@ proc _install {args} {
 	set dst     $dstl/$name$version
 	set cmd     {}
 
-	lappend cmd exec >@ stdout 2>@ stderr
+	lappend cmd exec >@ stdout 2>@ stderr [file dirname [file normalize [
+	    info nameofexecutable]/___]]
 	if {$::tcl_platform(platform) eq "windows"} {
 	    lappend cmd [info nameofexecutable]
 	}
