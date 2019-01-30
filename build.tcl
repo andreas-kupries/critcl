@@ -101,6 +101,7 @@ proc findlib {path} {
 	    return $path
 	}
 	set new [file dirname $path]
+	puts [list hey $new]
 	if {$new eq $path} break
 	set path $new
     }
@@ -335,15 +336,19 @@ proc _install {args} {
     }
 
     if {[llength $args] == 0} {
-	set exe  [file dirname [file normalize [info nameofexecutable]/___]]]
+	set exe  [file dirname [file normalize [info nameofexecutable]/___]]
 	set dstl [info library]
 	set dsta [file dirname $exe]
-	set dsti [file dirname $dsta]/include
+	set dsti [file join [file dirname $dsta] include]
 
     } else {
 	set dstl [lindex $args 0]
-	set dsta [file dirname [findlib $dstl]]/bin
-	set dsti [file dirname [findlib $dstl]]/include
+	if {![file exists [file dirname $dstl]]} {
+	    file mkdir $dstl/../bin
+	    file mkdir $dstl/../include
+	}
+	set dsta [file join [file dirname [findlib $dstl]] bin]
+	set dsti [file join [file dirname [findlib $dstl]] include]
     }
 
     set selfdir [file dirname $me]
@@ -378,12 +383,15 @@ proc _install {args} {
 		set version {}
 	    }
 
+	    set namevers [file join $dstl $name$version]
+
 	    file copy   -force $selfdir/lib/$dir     $dstl/${name}-new
-	    file delete -force $dstl/$name$version
-	    file rename        $dstl/${name}-new     $dstl/$name$version
-	    puts "${prefix}Installed package:      $dstl/$name$version"
+	    file delete -force $namevers
+	    file rename        $dstl/${name}-new     $namevers
+	    puts "${prefix}Installed package:      $namevers"
 	    set prefix {}
 	}
+
 
 	# Application: critcl
 
@@ -396,9 +404,11 @@ proc _install {args} {
 	lappend map "\t    " {} ;# de-dent
 	puts $c [string trimleft [string map $map {
 	    #!/bin/sh
-	    # -*- tcl -*- @bs@
+	    # -*- hide next line from tcl -*- @bs@
 	    exe=$1
+	    # -*- hide next line from tcl -*- @bs@
 	    shift
+	    # -*- hide next line from tcl -*- @bs@
 	    exec "$exe" "$0" ${1+"$@"}
 
 	    set libpath [file normalize [file join [file dirname [info script]] .. lib]]
@@ -427,15 +437,17 @@ proc _install {args} {
 	set src     $selfdir/lib/critcl-md5c/md5c.tcl
 	set version [version $src]
 	set name    critcl_md5c
-	set dst     $dstl/$name$version
+	set dst     $namevers
 	set cmd     {}
 
-	lappend cmd exec >@ stdout 2>@ stderr [file dirname [file normalize [
-	    info nameofexecutable]/___]]
+	lappend cmd exec >@ stdout 2>@ stderr
 	if {$::tcl_platform(platform) eq "windows"} {
 	    lappend cmd [info nameofexecutable]
+	    lappend cmd $theapp
+	} else {
+	    lappend cmd $theapp
+	    lappend cmd [info nameofexecutable]
 	}
-	lappend cmd $theapp
 	if {$target ne {}} {
 	    lappend cmd -target $target
 	}
@@ -470,13 +482,17 @@ proc _install {args} {
 	lappend cmd exec >@ stdout 2>@ stderr
 	if {$::tcl_platform(platform) eq "windows"} {
 	    lappend cmd [info nameofexecutable]
+	    lappend cmd $theapp
+	} else {
+	    lappend cmd $theapp
+	    lappend cmd [info nameofexecutable]
 	}
-	lappend cmd $theapp
 	if {$target ne {}} {
 	    lappend cmd -target $target
 	}
-	lappend cmd -libdir     $dstl/tmp
-	lappend cmd -includedir $dstl/tmp
+	set dstl_tmp [file join $dstl tmp]
+	lappend cmd -libdir     $dstl_tmp
+	lappend cmd -includedir $dstl_tmp
 	lappend cmd -pkg $src
 	puts $cmd
 	eval $cmd
@@ -484,7 +500,7 @@ proc _install {args} {
 	file delete -force $dst $dsth
 	file rename        $dstl/tmp/callback        $dst
 	file rename        $dstl/tmp/critcl_callback $dsth
-	file delete -force $dstl/tmp
+	file delete -force $dstl_tmp
 
 	puts "${prefix}Installed package:      $dst"
 	puts "${prefix}Installed headers:      $dsti/critcl_callback"
@@ -510,7 +526,7 @@ proc _drop {{dst {}}} {
 	set dsta [file dirname [file dirname [file normalize [info nameofexecutable]/___]]]
     } else {
 	set dstl $dst
-	set dsta [file dirname $dst]/bin
+	set dsta [file join [file dirname $dst] bin]
     }
 
     # Add the special package (see install). Not special with regard
@@ -532,14 +548,16 @@ proc _drop {{dst {}}} {
 	}
 
 	if {$vfile ne {}} {
-	    set version  [version [file dirname $::me]/lib/$dir/$vfile]
+	    set version  [version [file join [file dirname $::me] lib/$dir/$vfile]]
 	} else {
 	    set version {}
 	}
 
-	file delete -force $dstl/$name$version
-	puts "Removed package:     $dstl/$name$version"
+	file delete -force $namevers
+	puts "Removed package:     $namevers"
     }
+
+    set namevers [file join $dstl $name$version]
 
     # Application: critcl
     set theapp [critapp $dsta]
