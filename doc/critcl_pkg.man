@@ -12,25 +12,22 @@
 [include include/welcome.inc]
 [para]
 
-This document is the reference manpage for the [package critcl]
-package. This package is the system's core, i.e. it provides the
-essential functionality on top of which everything else is built.
+The [package critcl] package is the core of the system.  For an overview of the
+complete system, see [manpage {Introduction To CriTcl}].  For the usage of the
+standalone [cmd critcl] program, see [manpage {CriTcl Application}].
 
-Its intended audience are mainly developers wishing to write Tcl
-packages with embedded C code. Some of its sections are however
-for developers wishing to understand the package internals, and
-the API it provides to the [manpage {CriTcl Application}]. These
-sections will be marked, allowing package writers to skip them.
+This core package maybe be used to embed C code into Tcl scripts.  It also
+provides access to the internals that other parts of the core use and which
+are of interest to those wishing to understand the internal workings of the
+core and of the API it provides to the [manpage {CriTcl Application}].  These
+advanced sections are marked as such so that those simply wishing to use the
+package can skip them.
 
-Users of [cmd critcl] on the other hand are hereby refered to the
-applications' manpage, i.e. [manpage {CriTcl Application}].
-
-If you are in need of an overview of the whole system instead, please
-go and read the [manpage {Introduction To CriTcl}].
 
 [para]
 
 This package resides in the Core Package Layer of CriTcl.
+
 [para][image arch_core][para]
 
 [comment {===================================================================}]
@@ -42,9 +39,7 @@ This package resides in the Core Package Layer of CriTcl.
 
 [section Examples]
 
-As the set of examples is a bit large, and growing, it has been put
-into a separate document. Please see section "Embedding C" in the
-document about [manpage {Using CriTcl}].
+See section "Embedding C" in [manpage {Using CriTcl}].
 
 [comment {===================================================================}]
 [include include/changes.inc]

@@ -1,4 +1,5 @@
 [comment {-*- tcl -*- doctools manpage}]
+[include include/global.inc]
 [include version.inc]
 [manpage_begin critcl::app n [vset VERSION]]
 [include include/module.inc]
@@ -15,11 +16,9 @@
 
 This document is the reference manpage for the [package critcl::app]
 package. Its intended audience are developers working on critcl's
-internals.  Writers of packages with embedded C code can ignore this
-document.
+internals.  [vset not_needed_for_critcl_script]
 
-If you are in need of an overview of the whole system instead, please
-go and read the [manpage {Introduction To CriTcl}].
+[vset see_overview]
 
 [para]
 
@@ -41,17 +40,19 @@ The package exports a single command
 [list_begin definitions]
 [call [cmd ::critcl::app::main] [arg commandline]]
 
-The [arg commandline] is a list of options and input files, in this order,
-with both parts possibly empty.
-
-The exact set of options supported, their meaning, and interaction is
-detailed in section [sectref Options] below.
+The [arg commandline] is a list of zero or more options followed by zero or
+more [vset critcl_script] files.  By default, the [vset critcl_script] files
+are build and the results cached.   This cuts down on the time needed to use
+load the package.  The last occurrence of [option -pkg] and [option -tea], if
+provided, selects the corresponding alternative mode of operations. 
 
 For a larger set of examples please see section "Building Critcl Packages"
 in the document about [manpage {Using CriTcl}].
 
+
 [list_end]
 
+The options are:
 [section {Options}]			[include include/aoptions.inc]
 [section {Modes Of Operation/Use}]	[include include/modes.inc]
 [section {Package Structure}]		[include include/pstructure.inc]
