@@ -1,87 +1,74 @@
 
-Newly introduced with critcl version 3 is support for TEApot
-meta-data.
-
-[para] While, from the package developer's perspective, some meta data
-support was already present in critcl v2, through the command
-
-[cmd ::critcl::license], this was only used to generate and place a
-file [file license.txt] into the built package.
-
-[para] Now critcl supports the declaration of arbitrary meta data,
-which will be placed into a file [file teapot.txt] in a format
-suitable for use by the
+Critcl versions 3 and later can create TEApot meta-data to be placed into 
+[file teapot.txt] in a format suitable for use by the
 [uri {http://docs.activestate.com/activetcl/8.5/tpm/toc.html} {TEApot tools}].
+
+[para]
+In version 2, some meta data support was already present through
+[cmd ::critcl::license], but this was only used to generate [file license.txt].
 
 
 [list_begin definitions]
 [comment ---------------------------------------------------------------------]
 [call [cmd ::critcl::license] [arg author] [opt [arg text]...]]
 
-This command provides information about the author of the package, and
-its license.
+Ignored in "compile & run" mode.
 
-[para] If no [arg text] is present the command expects to find a file
-[file license.terms] in the same directory as the [file .critcl] file
-and reads the license from that. Otherwise the license is the joined
-[arg text]s.
+[para]
+In "generate package" mode provides information about the author of the
+package and the license for the package.
 
-[para] This information, the license, is ignored in mode "compile &
-run", only mode "generate package" uses it. In that case the
-information is written to a file [file license.terms], a sibling to
-the [file pkgIndex.tcl] file in the directory hierarchy of the
-generated package.
+[para]
+[arg text] arguments are concatenated to form the text of the license, which is
+written to [file license.terms] in the same directory as [file pkgIndex.tcl].
+If no [arg text] is provided the license is read from [file license.terms]
+in the same directory as the [vset critcl_script].
 
-[para] This information is additionally placed into the meta data file
-[file teapot.txt], under the keys [term as::author] and [term license].
-
-[para] The data specified by this command has priority over any
-information specified through the generic API [cmd ::critcl::meta].
+[para] This information takes precedence over any information specified through
+the generic API [cmd ::critcl::meta].  It is additionally placed
+into the meta data file [file teapot.txt] under the keys [term as::author] and
+[term license].
 
 [comment ---------------------------------------------------------------------]
 [call [cmd ::critcl::summary] [arg text]]
 
-Declares a short (one line is recommended) description of the package.
+Ignored in "compile & run" mode.
 
-[para] This information is ignored in mode "compile & run", only mode
-"generate package" uses it. In that case the information is placed
-into the meta data file [file teapot.txt], under the key [term summary].
-
-[para] The data specified by this command has priority over any
-information specified through the generic API [cmd ::critcl::meta].
+[para]
+In "generate package" mode places a short, preferably one-line description of
+the package into the meta data file [file teapot.txt] under the key
+[term summary].  This information takes precedence over information specified
+through the generic API [cmd ::critcl::meta].
 
 [comment ---------------------------------------------------------------------]
 [call [cmd ::critcl::description] [arg text]]
 
-Declares a longer description of the package.
+Ignored in "compile & run" mode.
 
-[para] This information is ignored in mode "compile & run", only mode
-"generate package" uses it. In that case the information is placed
-into the meta data file [file teapot.txt], under the key [term description].
-
-[para] The data specified by this command has priority over any
-information specified through the generic API [cmd ::critcl::meta].
+[para] 
+In "generate package" mode places a longer description of the package into the
+meta data file [file teapot.txt], under the key [term description].  The data
+specified by this command takes precedence over any information specified
+through the generic API [cmd ::critcl::meta].
 
 [comment ---------------------------------------------------------------------]
 [call [cmd ::critcl::subject] [opt [arg key]...]]
 
-Declares one or more keywords and key-phrases describing the package,
-for an index.
+Ignored in "compile & run" mode.
 
-[para] Multiple calls of this command accumulate keywords and phrases.
+[para]
+In "generate package" mode places each [arg key] into the meta data file
+[file teapot.txt], under the key [term subject].  This information takes
+precedence over any information specified through the generic API
+[cmd ::critcl::meta].
 
-[para] This information is ignored in mode "compile & run", only mode
-"generate package" uses it. In that case the information is placed
-into the meta data file [file teapot.txt], under the key [term subject].
+[para] Calls to this command are cumulative.
 
-[para] The data specified by this command has priority over any
-information specified through the generic API [cmd ::critcl::meta].
 
 [comment ---------------------------------------------------------------------]
 [call [cmd ::critcl::meta] [arg key] [opt [arg word]...]]
 
-This command is for the declaration of arbitrary meta data outside of
-the reserved keys
+Provides arbitrary meta data outside of the following reserved keys:
 
 [term as::author],
 [term as::build::date],
@@ -94,8 +81,8 @@ the reserved keys
 [term summary], and
 [term version],
 
-Its behaviour is like [cmd ::critcl::subject], in that it treats all
-keys as list of words, with each call declaring one or more words for
+Its behaviour is like [cmd ::critcl::subject] in that it treats all
+keys as list of words, with each call providing one or more words for
 the key, and multiple calls extending the data for an existing key, if
 not reserved.
 
@@ -122,21 +109,17 @@ is automatically generated by [package critcl] itself.
 [comment ---------------------------------------------------------------------]
 [call [cmd ::critcl::meta?] [arg key]]
 
-This command enables the retrieval of meta data information from with
-the code defining a critcl based package. Given the [arg key] the
-associated value is returned as the result of the command.
+Returns the value in the metadata associated with [arg key].
 
-[para] The envisioned main use is the retrieval of the package's name
+[para] Used primarily to retrieve the name of the package
 from within utility packages having to adapt C code templates to their
-environment. An example of a package using this command for exactly
-this purpose is [package critcl::class].
+environment. For example, [package critcl::class] uses does this.
 
 [comment ---------------------------------------------------------------------]
 [call [cmd ::critcl::buildrequirement] [arg script]]
 
-This command provides control over the capturing of dependencies
-declared via [cmd {package require}]. It runs the script, and any
-dependencies declared within are ignored, i.e. not recorded in the
-meta data.
+Provides control over the capturing of dependencies declared via
+[cmd {package require}]. [arg script] is evaluated and any dependencies
+declared within are ignored, i.e. not recorded in the meta data.
 
 [list_end]

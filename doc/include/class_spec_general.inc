@@ -9,11 +9,10 @@ because the generated include directives will be put at the very
 beginning of the generated code. This is done to allow the use of the
 imported declarations within the instance type, and elsewhere.
 
-[para] The command can be used multiple times, each adding a header to
-include. It is of course possible to not use this command at all, for
-classing not making use of external definitions.
+[para] This command is cumulative. It is of course possible to not use this
+command at all, for classing not making use of external definitions.
 
-[para] The result of the command is the empty string.
+[para] The result is the empty string.
 
 [comment {- - -- --- ----- -------- ------------- ---------------------}]
 [call [cmd support] [arg code]]
@@ -23,8 +22,7 @@ functions, etc.) needed by the [emph whole] class and not fitting into
 class- and instance-methods. The code is embedded at global level,
 outside of any function or other definition.
 
-[para] The command can be used multiple times, each adding another
-segment of C code to insert. It is of course possible to not use this
+[para] This command is cumulative. It is of course possible to not use this
 command at all, for classes not requiring supporting code.
 
 [para] The result of the command is the empty string.

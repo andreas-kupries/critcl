@@ -1,5 +1,5 @@
 
-Welcome to the [term {C Runtime In Tcl}], [term CriTcl] for short, a
-system to build C extension packages for Tcl on the fly, from C code
-embedded within Tcl scripts, for all who wish to make their code go
-faster.
+[term {C Runtime In Tcl}], or [term CriTcl] , is a system for compiling C code
+embedded in Tcl on the fly and either loading the resulting objects into Tcl for
+immediate use or packaging them for distribution.  Use [term CriTcl] to improve
+performance by rewriting in C those routines that are performance bottlenecks.

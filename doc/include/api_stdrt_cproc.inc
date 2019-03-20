@@ -1,159 +1,106 @@
 
 [list_begin definitions]
 [comment {% % %% %%% %%%%% %%%%%%%% %%%%%%%%%%%%%}]
-[def Tcl_Obj*]
-[def object]
+[def {Tcl_Obj* object}]
 
-The function returns a value of type [type Tcl_Obj*].
+If the returned Tcl_Obj is [const NULL], the Tcl return code is
+[const TCL_ERROR] and the the function should [uri \
+	https://www.tcl-lang.org/man/tcl/TclLib/SetResult.htm \
+	{set an error mesage}]
+as the interpreter result.  Otherwise, the returned Tcl_Obj is set as the
+interpreter result.
 
-This value becomes the interpreter result, if not [const 0]. The Tcl
-status is [const TCL_ERROR] when a [const 0] is returned, and
-[const TCL_OK] otherwise.
-
-[para][emph Note] how it is the responsibility of the function to set
-the interpreter result to an appropriate error message when returning
-[const 0].
-
-[para][emph Attention]: The conversion assumes that the value belonged
-to the function, with an associated reference count, and decrements
-the reference count to indicate the loss of ownership by the
-function. This means that it is an error to return a value whose
-reference count is zero. The system will crash at some point after the
-return due to reuse of the freed memory.
+[para]The returned Tcl_Obj should have a reference count greater than zero
+because the converter, assuming that the function incremented the reference
+count of the returned Tcl_Obj, decrements the reference count to release
+possession after setting the interpreter result.  If a Tcl_Obj with a reference
+count of zero were returned, the reference count would becomes one when set as
+the interpreter result, and immediately thereafter decremented to zero, causing
+the memory to be freed.  The system is then likely to crash at some point after
+the return due to reuse of the freed memory.
 
 [comment {% % %% %%% %%%%% %%%%%%%% %%%%%%%%%%%%%}]
 [def Tcl_Obj*0]
 [def object0]
 
-The function returns a value of type [type Tcl_Obj*].
-
-This value becomes the interpreter result, if not [const 0]. The Tcl
-status is [const TCL_ERROR] when a [const 0] is returned, and
-[const TCL_OK] otherwise.
-
-[para][emph Note] how it is the responsibility of the function to set
-the interpreter result to an appropriate error message when returning
-[const 0].
-
-[para][emph Attention]: Contrary to [const Tcl_Obj*] above this
-conversion assumes that the returned value has a reference count of
-[const 0] and performs [emph no] decrement. Returning a value whose
-reference count is greater than zero will likely cause a memory leak.
+Like [const Tcl_Obj*] except that this conversion assumes that the
+returned value has a reference count of [const 0] and [emph {does not}]
+decrement it. Returning a value whose reference count is greater than zero is
+likely to cause a memory leak.
 
 [comment {% % %% %%% %%%%% %%%%%%%% %%%%%%%%%%%%%}]
 [def char*]
 [def vstring]
 
-The function returns a value of type [type char*].
+A [type String] Tcl_Obj holding a copy of the returned [type char*] is set as
+the interpreter result.
 
-This value becomes the interpreter result, wrapped in a [type String].
-
-It is assumed that the string is volatile in some way, with the
-wrapping in a [type String] duplicating it before making it the
-result, ensuring that we will not access a dangling pointer in the
-future.
-
-The Tcl status is [emph always] [const TCL_OK].
 
 [comment {% % %% %%% %%%%% %%%%%%%% %%%%%%%%%%%%%}]
 [def {const char*}]
 
-Like type [const char*] above, except that the returned string is
+Like [const char*] above, except that the returned string is
 [const const]-qualified.
 
 [comment {% % %% %%% %%%%% %%%%%%%% %%%%%%%%%%%%%}]
 [def string]
 [def dstring]
 
-The function returns a value of type [type char*].
+The returned [type char*] is directly set as the interpreter result without
+making a copy.  Therefore it must be dynamically allocated via [fun Tcl_Alloc].
 
-Contrary to the previous string types here it is assumed that the
-value is dynamically allocated, via [fun Tcl_Alloc].
-
-This value becomes the interpreter result, as usual, but is [emph not]
-copied.
-
-The Tcl status is [emph always] [const TCL_OK].
 
 [comment {% % %% %%% %%%%% %%%%%%%% %%%%%%%%%%%%%}]
 [def double]
-
-The function returns a value of type [type double].
-
-This value becomes the interpreter result, properly wrapped as a
-[type Double].
-
-The Tcl status is [emph always] [const TCL_OK].
-
-[comment {% % %% %%% %%%%% %%%%%%%% %%%%%%%%%%%%%}]
 [def float]
 
-The function returns a value of type [type float].
+The returned [type double] or [type float] is converted [type Double] Tcl_Obj
+and set as the interpreter result.
 
-This value becomes the interpreter result, properly wrapped as a
-[type Double].
-
-The Tcl status is [emph always] [const TCL_OK].
 
 [comment {% % %% %%% %%%%% %%%%%%%% %%%%%%%%%%%%%}]
 [def boolean]
 [def bool]
 
-The function returns a value of type [type int], interpreted as boolean.
+The returned [type int] value is converted to an [type Int] Tcl_Obj and set as
+the interpreter result.
 
-This value becomes the interpreter result, properly wrapped as a
-[type Int].
-
-The Tcl status is [emph always] [const TCL_OK].
 
 [comment {% % %% %%% %%%%% %%%%%%%% %%%%%%%%%%%%%}]
 [def int]
 
-The function returns a value of type [type int].
+The returned [type int] value is converted to an [type Int] Tcl_Obj and set as
+the interpreter result.
 
-This value becomes the interpreter result, properly wrapped as a
-[type Int].
-
-The Tcl status is [emph always] [const TCL_OK].
 
 [comment {% % %% %%% %%%%% %%%%%%%% %%%%%%%%%%%%%}]
 [def long]
 
-The function returns a value of type [type {long int}].
+The returned [type {long int}] value is converted to a [type Long] Tcl_Obj and
+set as the interpreter result.
 
-This value becomes the interpreter result, properly wrapped as a
-[type Long].
-
-The Tcl status is [emph always] [const TCL_OK].
 
 [comment {% % %% %%% %%%%% %%%%%%%% %%%%%%%%%%%%%}]
 [def wideint]
 
-The function returns a value of type [type Tcl_WideInt].
+The returned [type Tcl_WideInt] value is converted to a [type WideInt] Tcl_Obj
+and set as the interpreter result.
 
-This value becomes the interpreter result, properly wrapped as a
-[type WideInt].
-
-The Tcl status is [emph always] [const TCL_OK].
 
 [comment {% % %% %%% %%%%% %%%%%%%% %%%%%%%%%%%%%}]
 [def ok]
 
-The function returns a value of type [type int].
+The returned [type int] value becomes the Tcl return code.
 
-It is interpreted as the Tcl status code.
-
-The interpreter result is left untouched (empty).  For a different
-outcome the function has to set the interpreter result by itself.
+The interpreter result is left untouched and can be set by the function if
+desired.
 
 [comment {% % %% %%% %%%%% %%%%%%%% %%%%%%%%%%%%%}]
 [def void]
 
 The function does not return a value.
 
-The interpreter result is left untouched (empty). For a different
-outcome the function has to set the interpreter result by itself.
-
-The Tcl status is [emph always] [const TCL_OK].
+The interpreter result is left untouched and can be set by the function if
+desired.
 
 [list_end]

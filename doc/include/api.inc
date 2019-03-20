@@ -1,10 +1,11 @@
 
 A short note ahead of the documentation: Instead of repeatedly talking
 about
-"a [file .tcl] with embbedded C code", or 
-"a [file .tcl] containing critcl commands", etc.
-we use a shorthand and simply call them [file .critcl] files,
-regardless of their file extension.
+"a Tcl script with embbedded C code", or 
+"a Tcl script containing Critcl commands",
+we call such a script a [vset critcl_script].  A file containing a
+[vset critcl_script] usually has the extension [const .tcl] or
+[const .critcl].
 
 [comment {
 	Uncompleted docs for
