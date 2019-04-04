@@ -277,10 +277,10 @@ Database Class:	\\fB\\$3\\fR
 critcl_introduction \- Introduction To CriTcl
 .SH DESCRIPTION
 .PP
-Welcome to the \fIC Runtime In Tcl\fR, \fICriTcl\fR for short, a
-system to build C extension packages for Tcl on the fly, from C code
-embedded within Tcl scripts, for all who wish to make their code go
-faster\&.
+\fIC Runtime In Tcl\fR, or \fICriTcl\fR , is a system for compiling C code
+embedded in Tcl on the fly and either loading the resulting objects into Tcl for
+immediate use or packaging them for distribution\&.  Use \fICriTcl\fR to improve
+performance by rewriting in C those routines that are performance bottlenecks\&.
 .PP
 CriTcl started life as an experiment by Jean-Claude Wippler and was a
 self-contained Tcl package to build C code into a Tcl/Tk extension on
@@ -333,10 +333,10 @@ CriTcl can be used in three different modes of operation, called
 .IP [3]
 \fIGenerate TEA Package\fR
 .PP
-Of these three \fICompile & Run\fR came first and is the default
-when using the package directly\&. In that case the package collects the
-C fragments, builds them as needed, and caches the results for quick
-reuse when the same code is used in the future again\&.
+\fICompile & Run\fR was the original mode and is the default for
+\fIcritcl_pkg\fR\&.  Collects the C fragments from the
+\fICritcl script\fR, builds them as needed, and caches the results to
+improve load times later\&.
 .PP
 The second mode, \fIGenerate Package\fR, was introduced to enable
 the creation of (prebuilt) deliverable packages which do not depend on
@@ -505,6 +505,14 @@ Feature\&. Package \fBcritcl::emap\fR bumped to version 1\&.2\&.
 Extended existing mode handling with \fB+list\fR extension
 enabling the conversion of multiple emap values into a list of
 their strings\&.
+.IP [12]
+Feature\&. Extended the set of available types by applying a few
+range restrictions to the scalar types (\fIint\fR,
+\fIlong\fR, \fIwideint\fR, \fIdouble\fR, \fIfloat\fR)\&.
+.sp
+Example: \fIint > 0\fR is now a viable type name\&.
+.sp
+For details see the package reference\&.
 .PP
 .SH "CHANGES FOR VERSION 3\&.1\&.17"
 .IP [1]

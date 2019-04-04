@@ -284,9 +284,9 @@ package require \fBplatform  ?1\&.0\&.2?\fR
 .sp
 package require \fBmd5  ?2?\fR
 .sp
-\fB::critcl::ccode\fR \fItext\fR
+\fB::critcl::ccode\fR \fIfragment\fR
 .sp
-\fB::critcl::ccommand\fR \fItclname\fR \fIcfunname\fR
+\fB::critcl::ccommand\fR \fItclname\fR \fIcname\fR
 .sp
 \fB::critcl::ccommand\fR \fItclname\fR \fIarguments\fR \fIbody\fR ?\fIoption\fR \fIvalue\fR\&.\&.\&.?
 .sp
@@ -294,7 +294,7 @@ package require \fBmd5  ?2?\fR
 .sp
 \fB::critcl::cconst\fR \fItclname\fR \fIresulttype\fR \fIvalue\fR
 .sp
-\fB::critcl::cdefines\fR \fIdefinitions\fR ?\fInamespace\fR?
+\fB::critcl::cdefines\fR \fIlist of glob patterns\fR ?\fInamespace\fR?
 .sp
 \fB::critcl::cproc\fR \fIname\fR \fIarguments\fR \fIresulttype\fR \fIbody\fR ?\fIoption\fR \fIvalue\fR\&.\&.\&.?
 .sp
@@ -308,7 +308,7 @@ package require \fBmd5  ?2?\fR
 .sp
 \fB::critcl::api\fR \fBfunction\fR \fIresulttype\fR \fIname\fR \fIarguments\fR
 .sp
-\fB::critcl::api\fR \fBheader\fR ?\fIpattern\fR\&.\&.\&.?
+\fB::critcl::api\fR \fBheader\fR ?\fIglob pattern\fR\&.\&.\&.?
 .sp
 \fB::critcl::api\fR \fBextheader\fR ?\fIfile\fR\&.\&.\&.?
 .sp
@@ -328,15 +328,15 @@ package require \fBmd5  ?2?\fR
 .sp
 \fB::critcl::cheaders\fR ?\fIarg\fR\&.\&.\&.?
 .sp
-\fB::critcl::csources\fR ?\fIpattern\fR\&.\&.\&.?
+\fB::critcl::csources\fR ?\fIglob pattern\fR\&.\&.\&.?
 .sp
-\fB::critcl::clibraries\fR ?\fIarg\fR\&.\&.\&.?
+\fB::critcl::clibraries\fR ?\fIglob pattern\fR\&.\&.\&.?
 .sp
-\fB::critcl::source\fR \fIpath\fR
+\fB::critcl::source\fR \fIglob pattern\fR
 .sp
-\fB::critcl::tsources\fR \fIpattern\fR\&.\&.\&.
+\fB::critcl::tsources\fR \fIglob pattern\fR\&.\&.\&.
 .sp
-\fB::critcl::owns\fR \fIpattern\fR\&.\&.\&.
+\fB::critcl::owns\fR \fIglob pattern\fR\&.\&.\&.
 .sp
 \fB::critcl::cflags\fR ?\fIarg\fR\&.\&.\&.?
 .sp
@@ -408,7 +408,7 @@ package require \fBmd5  ?2?\fR
 .sp
 \fB::critcl::targetplatform\fR
 .sp
-\fB::critcl::cobjects\fR ?\fIarg\fR\&.\&.\&.?
+\fB::critcl::cobjects\fR ?\fIglob pattern\fR\&.\&.\&.?
 .sp
 \fB::critcl::scan\fR \fIpath\fR
 .sp
@@ -491,23 +491,20 @@ package require \fBmd5  ?2?\fR
 .BE
 .SH DESCRIPTION
 .PP
-Welcome to the \fIC Runtime In Tcl\fR, \fICriTcl\fR for short, a
-system to build C extension packages for Tcl on the fly, from C code
-embedded within Tcl scripts, for all who wish to make their code go
-faster\&.
+\fIC Runtime In Tcl\fR, or \fICriTcl\fR , is a system for compiling C code
+embedded in Tcl on the fly and either loading the resulting objects into Tcl for
+immediate use or packaging them for distribution\&.  Use \fICriTcl\fR to improve
+performance by rewriting in C those routines that are performance bottlenecks\&.
 .PP
-This document is the reference manpage for the \fBcritcl\fR
-package\&. This package is the system's core, i\&.e\&. it provides the
-essential functionality on top of which everything else is built\&.
-Its intended audience are mainly developers wishing to write Tcl
-packages with embedded C code\&. Some of its sections are however
-for developers wishing to understand the package internals, and
-the API it provides to the \fICriTcl Application\fR\&. These
-sections will be marked, allowing package writers to skip them\&.
-Users of \fBcritcl\fR on the other hand are hereby refered to the
-applications' manpage, i\&.e\&. \fICriTcl Application\fR\&.
-If you are in need of an overview of the whole system instead, please
-go and read the \fIIntroduction To CriTcl\fR\&.
+The \fBcritcl\fR package is the core of the system\&.  For an overview of the
+complete system, see \fIIntroduction To CriTcl\fR\&.  For the usage of the
+standalone \fBcritcl\fR program, see \fICriTcl Application\fR\&.
+This core package maybe be used to embed C code into Tcl scripts\&.  It also
+provides access to the internals that other parts of the core use and which
+are of interest to those wishing to understand the internal workings of the
+core and of the API it provides to the \fICriTcl Application\fR\&.  These
+advanced sections are marked as such so that those simply wishing to use the
+package can skip them\&.
 .PP
 This package resides in the Core Package Layer of CriTcl\&.
 .PP
@@ -538,116 +535,69 @@ This package resides in the Core Package Layer of CriTcl\&.
 .SH API
 A short note ahead of the documentation: Instead of repeatedly talking
 about
-"a "\fI\&.tcl\fR" with embbedded C code", or
-"a "\fI\&.tcl\fR" containing critcl commands", etc\&.
-we use a shorthand and simply call them "\fI\&.critcl\fR" files,
-regardless of their file extension\&.
+"a Tcl script with embbedded C code", or
+"a Tcl script containing Critcl commands",
+we call such a script a \fICritcl script\fR\&.  A file containing a
+\fICritcl script\fR usually has the extension \fB\&.tcl\fR or \fB\&.critcl\fR\&.
 .SS "EMBEDDED C CODE"
-The package provides five commands to declare various types of C code
-fragments\&. These are:
+The following commands append C code fragments to the current module\&.  Fragments
+appear in the module in the order they are appended, so the earlier fragments
+(variables, functions, macros, etc\&.) are visible to later fragments\&.
 .TP
-\fB::critcl::ccode\fR \fItext\fR
-This command compiles the C code in \fItext\fR and makes the
-contained definitions (variables, functions, macros, etc\&.) available
-to all C code fragments specified after it\&. It itself can assume to
-have access to all definitions which were specified before it\&.
-See section \fBRuntime Behaviour\fR for more details\&.
-.sp
-The result of the command is the empty string\&.
+\fB::critcl::ccode\fR \fIfragment\fR
+Appends the C code in \fIfragment\fR to the current module and returns the
+empty string\&.
+See \fBRuntime Behaviour\fR\&.
 .TP
-\fB::critcl::ccommand\fR \fItclname\fR \fIcfunname\fR
-This command creates a new Tcl command named \fItclname\fR which is
-implemented by the C function \fIcfunname\fR\&.
-It is expected that \fIcfunname\fR has the proper signature for a Tcl
-command function, and was declared already\&.
-.sp
-The result of \fB::critcl::ccommand\fR itself is the empty
-string\&.
+\fB::critcl::ccommand\fR \fItclname\fR \fIcname\fR
+As documented below, except that \fIcname\fR is the name of a C function
+that already exists\&.
 .TP
 \fB::critcl::ccommand\fR \fItclname\fR \fIarguments\fR \fIbody\fR ?\fIoption\fR \fIvalue\fR\&.\&.\&.?
-This form of \fBcritcl::ccommand\fR creates a new Tcl command named
-\fItclname\fR which is implemented by the C code in \fIbody\fR\&.
+Appends the code to create a Tcl command named \fItclname\fR and a
+corresponding C function whose body is \fIbody\fR and which behaves as
+documented for Tcl's own
+\fITcl_CreateObjCommand\fR [https://www\&.tcl-lang\&.org/man/tcl/TclLib/CrtObjCmd\&.htm]\&.
 .sp
-The command wraps the \fIbody\fR in an invisible C function,
-compiles it and makes the resulting definition available to all C code
-fragments declared later on\&. It itself can assume to have access to
-all definitions which came before it\&.
-See section \fBRuntime Behaviour\fR for more details\&.
+\fIaguments\fR is a list of zero to four names for the standard arguments
+\fBclientdata\fR, \fBinterp\fR, \fBobjc\fR, and \fBobjv\fR\&.  The
+standard default names are used in place of any missing names\&.
+This is a more low-level way than \fBcritcl::cproc\fR to define a command, as
+processing of the items in \fBobjv\fR is left to the author, affording
+complete control over the handling of the arguments to the command\&.
+See section \fBRuntime Behaviour\fR\&.
 .sp
-The result of \fBcritcl::ccommand\fR itself is the empty
-string\&.
+Returns the empty string\&.
 .sp
-The list of \fIarguments\fR contain the names for the four
-parameters required by a Tcl command function\&. Superfluous list
-elements (i\&.e\&. beyond the fourth) are ignored\&. Missing elements
-(parameters), and empty parameter names are handled by replacing them
-with standard names\&. These are, in order of usage
-.RS
-.IP [1]
-\fBclientdata\fR
-.IP [2]
-\fBinterp\fR
-.IP [3]
-\fBobjc\fR
-.IP [4]
-\fBobjv\fR
-.RE
-.IP
-The only options accepted by this command are:
+Each \fIoption\fR may be one of:
 .RS
 .TP
 \fB-clientdata\fR \fIc-expression\fR
-The value of this option is the text of a single C expression\&. The
-value of expression is used in the generated C statement registering
-\fItclname\fR to initialize the client data of the new Tcl command\&.
-If not specified the expression defaults to \fBNULL\fR, i\&.e\&. no
-client data\&.
+Provides the client data for the new command\&.  \fBNULL\fR by default\&.
 .TP
 \fB-delproc\fR \fIc-expression\fR
-The value of this option is the text of a single C expression\&. The
-value of this expression has to be a function pointer of type
-"Tcl_CmdDeleteProc", which is used in the generated C statement
-registering \fItclname\fR to initialize a deletion function for the
-new Tcl command, i\&.e\&. a function which is run by Tcl when the Tcl
-command is deleted again\&.
-If not specified the expression defaults to \fBNULL\fR, i\&.e\&. no
-deletion function\&.
+Provides a function pointer of type \fITcl_CmdDeleteProc\fR [https://www\&.tcl-lang\&.org/man/tcl/TclLib/CrtObjCmd\&.htm] as the deletion function for the new command\&.  \fBNULL\fR by default\&.
 .TP
 \fB-cname\fR \fIboolean\fR
-The value of this option is a boolean flag\&. If \fBtrue\fR the name
-of the command is the C identifier of the command function\&.
-Namespaces, etc\&. are in that case not relevant at all\&. The default
-value of this option is \fBfalse\fR, causing the system to derive a
-name from the Tcl level command name, including its namespace\&.
+If \fBfalse\fR (the default), a name for the corresponding C function is
+automatically derived from the fully-qualified \fItclname\fR\&.  Otherwise, name
+of the C function is the last component of \fItclname\fR\&.
 .RE
-.IP
-A ccommand is, in comparison to functions defined via
-\fBcritcl::cproc\fR, more lower level\&.
-Its advantage is that the developer \fIcan\fR do their own argument
-processing, enabling things like variable number of arguments,
-options, etc\&., i\&.e\&. much higher flexibility\&.
-Their disadvantage is that you \fIhave\fR to do your own argument
-processing\&. Where a \fBcritcl::cproc\fR generates the code to convert
-from Tcl values to C values and back a \fBcritcl::ccommand\fR forces
-the writer to do all of this on their own\&. I\&.e\&. the cost of the
-aforementioned flexibility is a higher complexity seen by the user\&.
 .TP
 \fB::critcl::cdata\fR \fItclname\fR \fIdata\fR
-This command creates a new Tcl command named \fItclname\fR which returns
-\fIdata\fR as a ByteArray result\&.
+Appends the code to create a new Tcl command named \fItclname\fR which returns
+\fIdata\fR as a \fBByteArray\fR result\&.
 .sp
-The result of \fBcritcl::cdata\fR itself is the empty string\&.
+Returns the empty string\&.
 .TP
 \fB::critcl::cconst\fR \fItclname\fR \fIresulttype\fR \fIvalue\fR
-This command creates a new Tcl command named \fItclname\fR which returns
-the constant \fIvalue\fR as its result, with Tcl type \fIresulttype\fR\&.
-.sp
-The result of \fBcritcl::cconst\fR itself is the empty string\&.
-.sp
-The command is similar to \fBcritcl::cdata\fR in that it returns a
-constant value\&. Contrary to \fBcritcl::cdata\fR however it is not restricted
-to ByteArray results, but accepts all result-types known to \fBcritcl::cproc\fR\&.
-Its semantics are actually equivalent to
+Appends the code to create a new Tcl command named \fItclname\fR which returns
+the constant \fIvalue\fR having the Tcl type \fIresulttype\fR\&.  \fIvalue\fR can
+be a C macro or a function \fIcall\fR (including the parentheses) to any
+visible C function that does not take arguments\&.
+Unlike \fBcritcl::cdata\fR, \fIresulttype\fR can be any type known to
+\fBcritcl::cproc\fR\&.
+Its semantics are equivalent to:
 .CS
 
 
@@ -655,235 +605,168 @@ Its semantics are actually equivalent to
 
 .CE
 .sp
-Contrary to \fBcritcl::cproc\fR however it is internally optimized to
-avoid generating a superfluous C function\&.
+This is more efficient than \fBcritcl::cproc\fR since there is no
+C function generated\&.
 .sp
-Note that nothing prevents the user from using a C define for the
-\fIvalue\fR\&. Any visible C function is actually also allowed, as long as
-it does not take arguments\&.
+Returns the empty string\&.
 .TP
-\fB::critcl::cdefines\fR \fIdefinitions\fR ?\fInamespace\fR?
-This command creates Tcl variables in the specified \fInamespace\fR
-which are linked to the \fIC enum values\fR and \fI#define\fRs
-named as \fIglob patterns\fR in the list of \fIdefinitions\fR\&. Each
-variable has the same name as the definition which gave rise to it,
-and its value is the value of the corresponding enum value or
-#define\&. The namespace defaults to the global namespace, i\&.e\&. "::", if
-it wasn't specified explicitly\&.
+\fB::critcl::cdefines\fR \fIlist of glob patterns\fR ?\fInamespace\fR?
+Arranges for \fIC enum\fR and \fI#define\fR values that match one of the
+patterns in \fIglob patterns\fR to be created in the namespace
+\fInamespace\fR, each variable having the same as the corresponding C item\&.
+The default namespace is the global namespace\&.  A pattern that matches nothing
+is ignored\&.
 .sp
-Please note that this command is only for the lifting of
-\fIexisting\fR C definitions into Tcl\&. The command \fIdoes not\fR
-create the definitions in C\&. It actually goes so far to check for the
-presence of the named definitions and not performing the mapping for
-any which do not exist\&. Which is sensible, given that non-existing
-defines have no value which could be used in the mapping\&.
+The Tcl variables are created when the module is compiled, using the
+preprocessor in order to properly find all matching C definitions\&.
 .sp
-As these checks are run at the time the embedded C code of a
-"\fI\&.critcl\fR" file is actually compiled they have access to and check
-\fIall\fR C fragments defined with \fBcritcl::ccode\fR, plus all the
-headers it has access to via \fBcritcl::cheaders\fR, for that file\&.
+Produces no C code\&.  The desired C definitions must already exist\&.
 .TP
 \fB::critcl::cproc\fR \fIname\fR \fIarguments\fR \fIresulttype\fR \fIbody\fR ?\fIoption\fR \fIvalue\fR\&.\&.\&.?
-This command creates a new Tcl command named \fItclname\fR which is
-implemented by the C code in \fIbody\fR\&.
-In contrast to the low-level \fBcritcl::ccommand\fR here the arguments
-and result are typed and critcl generates the code converting from
-Tcl_Obj's to C data types, and vice versa\&.
-The command creates two invisible C functions, one wrapping the
-\fIbody\fR, the other a shim containing the necessary conversions,
-compiles them and makes the resulting definitions available to all C
-code fragments declared later on\&. It itself can assume to have access
-to all definitions which came before it\&.
-See section \fBRuntime Behaviour\fR for more details\&.
+Appends a function having \fIbody\fR as its body, another shim function to
+perform the needed conversions, and the code to create a corresponding Tcl
+command named \fItclname\fR\&.  Unlike \fBcritcl::ccommand\fR the arguments and
+result are typed, and Critcl generates the code to convert between Tcl_Obj
+values and C data types\&.
+See also \fBRuntime Behaviour\fR\&.
 .sp
-The result of \fBcritcl::cproc\fR itself is the empty string\&.
+Returns the empty string\&.
 .sp
-The only options accepted by this command are:
+Each \fIoption\fR may be:
 .RS
 .TP
 \fB-cname\fR \fIboolean\fR
-The value of this option is a boolean flag\&. If \fBtrue\fR the name
-of the command is the C identifier of the command function\&.
-Namespaces, etc\&. are in that case not relevant at all\&. The default
-value of this option is \fBfalse\fR, causing the system to derive a
-name from the Tcl level command name, including its namespace\&.
+If \fBfalse\fR (the default), a name for the corresponding C function is
+automatically derived from the fully-qualified \fItclname\fR\&.  Otherwise, name
+of the C function is the last component of \fItclname\fR\&.
 .TP
 \fB-pass-cdata\fR \fIboolean\fR
-The value of this option is a boolean flag\&. If specified and set the
-shim translating from Tcl to C level and back will pass the command's
-ClientData to the function\&.
-If not specified the flag defaults to \fBfalse\fR, i\&.e\&. no passing
-of client data\&.
+If \fBfalse\fR (the default), the shim function performing the conversion to
+and from Tcl level does not pass the ClientData as the first argument to
+the function\&.
 .TP
 \fB-arg-offset\fR \fIint\fR
-The value of this option is a positive integer number specifying the
-number of hidden arguments preceding the actual procedure
-arguments\&.
-If not specified the flag defaults to \fB0\fR\&.
-This is useful to higher-order code generator using the command in
-settings with prefix arguments which are not directly seen by the
-function, but influence argument counting and extraction\&.
+A non-negative integer, \fB0\fR by default, indicating the number of hidden
+arguments preceding the actual procedure arguments\&.  Used by higher-order code
+generators where there are prefix arguments which are not directly seen by the
+function but which influence argument counting and extraction\&.
 .RE
 .IP
-Below is the list of predefined types legal for \fIresulttype\fR, plus
-the details of their semantics\&. Note that it is possible to extend
-this list with custom types if the standard does not support what is
-needed\&. See section \fBAdvanced: Extending cproc\fR for details\&.
+\fIresulttype\fR may be one of the following predefined types or a custom type\&.
+See section \fBAdvanced: Extending cproc\fR\&.  Unless otherwise noted, the
+Tcl return code is always \fBTCL_OK\fR\&.
 .RS
 .TP
 Tcl_Obj*
 .TP
 object
-The function returns a value of type \fBTcl_Obj*\fR\&.
-This value becomes the interpreter result, if not \fB0\fR\&. The Tcl
-status is \fBTCL_ERROR\fR when a \fB0\fR is returned, and
-\fBTCL_OK\fR otherwise\&.
+If the returned Tcl_Obj is \fBNULL\fR, the Tcl return code is
+\fBTCL_ERROR\fR and the function should \fIset an error mesage\fR [https://www\&.tcl-lang\&.org/man/tcl/TclLib/SetResult\&.htm]
+as the interpreter result\&.  Otherwise, the returned Tcl_Obj is set as the
+interpreter result\&.
 .sp
-\fINote\fR how it is the responsibility of the function to set
-the interpreter result to an appropriate error message when returning
-\fB0\fR\&.
-.sp
-\fIAttention\fR: The conversion assumes that the value belonged
-to the function, with an associated reference count, and decrements
-the reference count to indicate the loss of ownership by the
-function\&. This means that it is an error to return a value whose
-reference count is zero\&. The system will crash at some point after the
-return due to reuse of the freed memory\&.
+The returned Tcl_Obj should have a reference count greater than zero
+because the converter, assuming that the function incremented the reference
+count of the returned Tcl_Obj, decrements the reference count to release
+possession after setting the interpreter result\&.  If a Tcl_Obj with a reference
+count of zero were returned, the reference count would becomes one when set as
+the interpreter result, and immediately thereafter decremented to zero, causing
+the memory to be freed\&.  The system is then likely to crash at some point after
+the return due to reuse of the freed memory\&.
 .TP
 Tcl_Obj*0
 .TP
 object0
-The function returns a value of type \fBTcl_Obj*\fR\&.
-This value becomes the interpreter result, if not \fB0\fR\&. The Tcl
-status is \fBTCL_ERROR\fR when a \fB0\fR is returned, and
-\fBTCL_OK\fR otherwise\&.
-.sp
-\fINote\fR how it is the responsibility of the function to set
-the interpreter result to an appropriate error message when returning
-\fB0\fR\&.
-.sp
-\fIAttention\fR: Contrary to \fBTcl_Obj*\fR above this
-conversion assumes that the returned value has a reference count of
-\fB0\fR and performs \fIno\fR decrement\&. Returning a value whose
-reference count is greater than zero will likely cause a memory leak\&.
+Like \fBTcl_Obj*\fR except that this conversion assumes that the
+returned value has a reference count of \fB0\fR and \fIdoes not\fR
+decrement it\&. Returning a value whose reference count is greater than zero is
+likely to cause a memory leak\&.
 .TP
 char*
 .TP
 vstring
-The function returns a value of type \fBchar*\fR\&.
-This value becomes the interpreter result, wrapped in a \fBString\fR\&.
-It is assumed that the string is volatile in some way, with the
-wrapping in a \fBString\fR duplicating it before making it the
-result, ensuring that we will not access a dangling pointer in the
-future\&.
-The Tcl status is \fIalways\fR \fBTCL_OK\fR\&.
+A \fBString\fR Tcl_Obj holding a copy of the returned \fBchar*\fR is set as
+the interpreter result\&.
 .TP
 const char*
-Like type \fBchar*\fR above, except that the returned string is
+Like \fBchar*\fR above, except that the returned string is
 \fBconst\fR-qualified\&.
 .TP
 string
 .TP
 dstring
-The function returns a value of type \fBchar*\fR\&.
-Contrary to the previous string types here it is assumed that the
-value is dynamically allocated, via \fBTcl_Alloc\fR\&.
-This value becomes the interpreter result, as usual, but is \fInot\fR
-copied\&.
-The Tcl status is \fIalways\fR \fBTCL_OK\fR\&.
+The returned \fBchar*\fR is directly set as the interpreter result without
+making a copy\&.  Therefore it must be dynamically allocated via \fBTcl_Alloc\fR\&.
 .TP
 double
-The function returns a value of type \fBdouble\fR\&.
-This value becomes the interpreter result, properly wrapped as a
-\fBDouble\fR\&.
-The Tcl status is \fIalways\fR \fBTCL_OK\fR\&.
 .TP
 float
-The function returns a value of type \fBfloat\fR\&.
-This value becomes the interpreter result, properly wrapped as a
-\fBDouble\fR\&.
-The Tcl status is \fIalways\fR \fBTCL_OK\fR\&.
+The returned \fBdouble\fR or \fBfloat\fR is converted to a \fBDouble\fR
+Tcl_Obj and set as the interpreter result\&.
 .TP
 boolean
 .TP
 bool
-The function returns a value of type \fBint\fR, interpreted as boolean\&.
-This value becomes the interpreter result, properly wrapped as a
-\fBInt\fR\&.
-The Tcl status is \fIalways\fR \fBTCL_OK\fR\&.
+The returned \fBint\fR value is converted to an \fBInt\fR Tcl_Obj and set as
+the interpreter result\&.
 .TP
 int
-The function returns a value of type \fBint\fR\&.
-This value becomes the interpreter result, properly wrapped as a
-\fBInt\fR\&.
-The Tcl status is \fIalways\fR \fBTCL_OK\fR\&.
+The returned \fBint\fR value is converted to an \fBInt\fR Tcl_Obj and set as
+the interpreter result\&.
 .TP
 long
-The function returns a value of type \fBlong int\fR\&.
-This value becomes the interpreter result, properly wrapped as a
-\fBLong\fR\&.
-The Tcl status is \fIalways\fR \fBTCL_OK\fR\&.
+The returned \fBlong int\fR value is converted to a \fBLong\fR Tcl_Obj and
+set as the interpreter result\&.
 .TP
 wideint
-The function returns a value of type \fBTcl_WideInt\fR\&.
-This value becomes the interpreter result, properly wrapped as a
-\fBWideInt\fR\&.
-The Tcl status is \fIalways\fR \fBTCL_OK\fR\&.
+The returned \fBTcl_WideInt\fR value is converted to a \fBWideInt\fR Tcl_Obj
+and set as the interpreter result\&.
 .TP
 ok
-The function returns a value of type \fBint\fR\&.
-It is interpreted as the Tcl status code\&.
-The interpreter result is left untouched (empty)\&.  For a different
-outcome the function has to set the interpreter result by itself\&.
+The returned \fBint\fR value becomes the Tcl return code\&.
+The interpreter result is left untouched and can be set by the function if
+desired\&.
 .TP
 void
 The function does not return a value\&.
-The interpreter result is left untouched (empty)\&. For a different
-outcome the function has to set the interpreter result by itself\&.
-The Tcl status is \fIalways\fR \fBTCL_OK\fR\&.
+The interpreter result is left untouched and can be set by the function if
+desired\&.
 .RE
 .sp
-The \fIarguments\fR parameter has the overall syntax of a Tcl
-dictionary value, except that keys (argument names) and values
-(argument types) are specified in reverse order\&. Consider the
-example
+The \fIarguments\fR is a multidict where each key is an argument type
+and its value is the argument name\&.  For example:
 .CS
 
 
 int x int y
 
 .CE
-.IP where \fIx\fR and \fIy\fR are the arguments/keys, both
-mapped to type/value \fBint\fR\&.
 .sp
-The argument names must be valid C identifiers\&.
+Each argument name must be a valid C identifier\&.
 .sp
-A limited form of variadic arguments is possible, through
-optional arguments with default values\&. For these the argument name is
-a 2-element list containing the actual name, and the default value\&.
-For example, in the declaration
+If the name is a list containing two items, the first item is the name
+and the second item is the default value\&.  A limited form of variadic arguments
+can be accomplished using such default values\&.
+Example:
 .CS
 
  int {x 1}
 .CE
-.IP \fIx\fR is an
-optional argument of type \fBint\fR and default value \fB1\fR\&.
+.IP
+\fIx\fR is an optional argument of type \fBint\fR with a default value of
+\fB1\fR\&.
 .sp
-A caveat! The default value is assigned unconditionally\&. If a
-custom argument type uses more complex validation, and the default may
-be invalid according to it, then the relevant checks have to be done
-in the procedure body\&. The argument conversion cannot do it as it is
-completely bypassed when the argument is not present\&. Overcoming this
-requires the separation of argument conversion and validation code\&.
+Argument conversion is completely bypassed when the argument is not
+provided, so a custom converter doing validation does not get the chance to
+validate the default value\&.  In this case, the value should be checked in the
+body of the function\&.
 .sp
-Below is the list of predefined types legal for arguments, plus
-the details of their semantics\&. Note that it is possible to extend
-this list with custom types if the standard does not support what is
-needed\&. See section \fBAdvanced: Extending cproc\fR for details\&.
+Each argument type may be one of the following predefined types or a
+custom type\&.   See \fBAdvanced: Extending cproc\fR\&.
 .sp
-Further note that the type of the first argument is allowed to
-be \fBTcl_Interp*\fR\&. In that case the argument in question is
-\fInot\fR counted as an argument of the new Tcl command\&.
+If the type of the first argument is \fBTcl_Interp*\fR, it is not
+counted as counted as an argument of the new Tcl command, and is a reference
+to the current interpreter\&.
 .RS
 .TP
 Tcl_Obj*
@@ -967,10 +850,52 @@ The function takes an argument of type \fBdouble\fR\&.
 The Tcl argument must be convertible to \fBDouble\fR, an error is
 thrown otherwise\&.
 .TP
+double > 0
+.TP
+double >= 0
+.TP
+double < 0
+.TP
+double <= 0
+.TP
+double > 1
+.TP
+double >= 1
+.TP
+double < 1
+.TP
+double <= 1
+These are variants of \fIdouble\fR above, restricting the argument
+value to the shown relation\&. An error is thrown for Tcl arguments
+outside of the specified range\&.
+\fINote:\fR This is not a general range specification syntax\&. Only
+the listed types exist\&.
+.TP
 float
 The function takes an argument of type \fBfloat\fR\&.
 The Tcl argument must be convertible to \fBDouble\fR, an error is
 thrown otherwise\&.
+.TP
+float > 0
+.TP
+float >= 0
+.TP
+float < 0
+.TP
+float <= 0
+.TP
+float > 1
+.TP
+float >= 1
+.TP
+float < 1
+.TP
+float <= 1
+These are variants of \fIfloat\fR above, restricting the argument
+value to the shown relation\&. An error is thrown for Tcl arguments
+outside of the specified range\&.
+\fINote:\fR This is not a general range specification syntax\&. Only
+the listed types exist\&.
 .TP
 boolean
 .TP
@@ -984,15 +909,78 @@ The function takes an argument of type \fBint\fR\&.
 The Tcl argument must be convertible to \fBInt\fR, an error is thrown
 otherwise\&.
 .TP
+int > 0
+.TP
+int >= 0
+.TP
+int < 0
+.TP
+int <= 0
+.TP
+int > 1
+.TP
+int >= 1
+.TP
+int < 1
+.TP
+int <= 1
+These are variants of \fIint\fR above, restricting the argument value
+to the shown relation\&. An error is thrown for Tcl arguments outside of
+the specified range\&.
+\fINote:\fR This is not a general range specification syntax\&. Only
+the listed types exist\&.
+.TP
 long
 The function takes an argument of type \fBlong int\fR\&.
 The Tcl argument must be convertible to \fBLong\fR, an error is
 thrown otherwise\&.
 .TP
+long > 0
+.TP
+long >= 0
+.TP
+long < 0
+.TP
+long <= 0
+.TP
+long > 1
+.TP
+long >= 1
+.TP
+long < 1
+.TP
+long <= 1
+These are variants of \fIlong\fR above, restricting the argument
+value to the shown relation\&. An error is thrown for Tcl arguments
+outside of the specified range\&.
+\fINote:\fR This is not a general range specification syntax\&. Only
+the listed types exist\&.
+.TP
 wideint
 The function takes an argument of type \fBTcl_WideInt\fR\&.
 The Tcl argument must be convertible to \fBWideInt\fR, an error is
 thrown otherwise\&.
+.TP
+wideint > 0
+.TP
+wideint >= 0
+.TP
+wideint < 0
+.TP
+wideint <= 0
+.TP
+wideint > 1
+.TP
+wideint >= 1
+.TP
+wideint < 1
+.TP
+wideint <= 1
+These are variants of \fIwideint\fR above, restricting the argument
+value to the shown relation\&. An error is thrown for Tcl arguments
+outside of the specified range\&.
+\fINote:\fR This is not a general range specification syntax\&. Only
+the listed types exist\&.
 .TP
 void*
 .TP
@@ -1017,39 +1005,29 @@ good use cases are shown\&.
 .RE
 .TP
 \fB::critcl::cproc\fR \fIname\fR \fIarguments\fR \fIresulttype\fR
-This variant of \fBcritcl::cproc\fR assumes that the functionality to
-connect to is implemented by the C function \fIname\fR which has the
-signature described by the \fIarguments\fR and \fIresulttype\fR\&.
-.sp
-It creates only the shim performing the conversions required by
-arguments and result\&.
+As documented below, but used when the C function named \fIname\fR already
+exists\&.
 .TP
 \fB::critcl::cinit\fR \fItext\fR \fIexternals\fR
-This command compiles the C code in \fItext\fR and \fIexternals\fR\&.
+Appends the C code in \fItext\fR and \fIexternals\fR, but only after all the
+other fragments appended by the previously-listed commands regardless of their
+placement in the \fICritcl script\fR relative to this command\&.  Thus, all
+their content is visible\&.  See also \fBRuntime Behaviour\fR\&.
 .sp
-Both arguments have access to all definitions created by the
-previously listed commands, regardless of their placement in the
-"\fI\&.critcl\fR" file relative to this command\&.
-See section \fBRuntime Behaviour\fR for more details\&.
+The C code in \fItext\fR is placed into the body of the initialization
+function of the shared library backing the \fICritcl script\fR, and is
+executed when this library is loaded into the interpreter\&.  It has access to
+the variable \fBTcl_Interp* interp\fR referencing the Tcl interpreter currently
+being initialized\&.
 .sp
-The C code in \fItext\fR is put into the body of the
-initialization function of the shared library backing the
-"\fI\&.critcl\fR" file, and is executed when this library is loaded into
-the interpreter\&.
+\fIexternals\fR is placed outside and just before the initialization
+function, making it a good place for any external symbols required by
+initialization function, but which should not be accessible by any other parts
+of the C code\&.
 .sp
-This code has access to a variable \fBinterp\fR of type
-\fBTcl_Interp*\fR referencing the Tcl interpreter currently being
-initialized\&.
+Calls to this command are cumulative\&.
 .sp
-The code in \fIexternals\fR on the other hand is placed outside
-and just before the initialization function, making this is a good
-place for any external symbols required by initialization function
-which should not be accessible by any other parts of the C code\&.
-.sp
-Multiple invokations of this command are allowed, and a later
-call has access to the information of all preceding ones\&.
-.sp
-The result of the command is the empty string\&.
+Returns the empty string\&.
 .TP
 \fB::critcl::include\fR \fIpath\fR
 This command is a convenient shorthand for
@@ -1063,218 +1041,163 @@ critcl::code {
 .CE
 .PP
 .SS "STUBS TABLE MANAGEMENT"
-Newly introduced with critcl version 3 is the support for stubs
-tables, Tcl's dynamic linking mechanism handling the resolution of
+Critcl versions 3 and later provide \fBcritcl::api\fR to create and manipulate
+stubs tables, Tcl's dynamic linking mechanism handling the resolution of
 symbols between C extensions\&.
-We won't go into its details here\&. See \fIhttp://wiki\&.tcl\&.tk/285\fR
-for an introduction in general, and section \fBStubs Tables\fR
-for the details of critcl's particular variant\&.
+See \fIhttp://wiki\&.tcl-lang\&.org/285\fR
+for an introduction, and section \fBStubs Tables\fR
+for the details of Critcl's particular variant\&.
 .PP
-Critcl supports this via a single command, \fBcritcl::api\fR,
-and its methods\&.
-.PP
-First, importing stubs tables, i\&.e\&. APIs, from another
-extension:
+Importing stubs tables, i\&.e\&. APIs, from another extension:
 .TP
 \fB::critcl::api\fR \fBimport\fR \fIname\fR \fIversion\fR
-Critcl prepares the "\fI\&.critcl\fR" file \fIand\fR its companion
-"\fI\&.c\fR" files by including the headers
+Adds the following include directives into the \fICritcl script\fR
+\fIand\fR each of its companion "\fI\&.c\fR" files:
 .RS
 .IP [1]
-"\fI\fBname\fR/\fBname\fRDecls\&.h\fR"
+#include <\fBname\fR/\fBname\fRDecls\&.h>
 .IP [2]
-"\fI\fBname\fR/\fBname\fRStubLib\&.h\fR"
+#include <\fBname\fR/\fBname\fRStubLib\&.h>
 .RE
 .IP
-in the appropriate places\&. It is checked that the compiler will be
-able to find these header files somewhere on the include search
-path, using the paths defined so far (See \fBcritcl::cheaders\fR, and
-the critcl application's \fB-I\fR and \fB-includedir\fR
-options)\&. Note how critcl expects the headers of package \fBfoo\fR to
-reside in a sub-directory "\fIfoo\fR" of the known include search
-paths\&.
+Returns an error if "\fI\fBname\fR\fR" isn't in the search path for the
+compiler\&.  See \fBcritcl::cheaders\fR and the critcl application's \fB-I\fR
+and \fB-includedir\fR options\&.
 .sp
-\fIImportant:\fR If \fBfoo\fR is a namespaced package name,
-like, for example "c::stack", then the namespace separators "::" are
-converted into underscores ("_") in path names, C code, etc\&.
+\fIImportant:\fR If \fBname\fR is a fully-qualified name in a
+non-global namespace, e\&.g\&.
+"c::stack", the namespace separators "::" are converted into underscores
+("_") in path names, C code, etc\&.
 .sp
-The first header is expected to contain contains all the
-necessary stubs table type declarations, mapping macros, etc\&., and may
-include package specific headers (See \fBcritcl::api header\fR
-below)\&.
-This header is included at the beginning of the C code backing the
-"\fI\&.critcl\fR" file, and at the beginning of all companion "\fI\&.c\fR"
-files\&. This means that the writer of these files doesn't have to write
-the necessary \fI#include\fR directory, critcl does it for them\&.
+\fBname\fR/\fBname\fRDecls\&.h contains the stubs table type declarations,
+mapping macros, etc\&., and may include package-specific headers\&.  See
+\fBcritcl::api header\fR, below\&.  An \fI#include\fR directive is added at
+the beginning of the generated code for \fICritcl script\fR and at the
+beginning of each of its companion "\fI\&.c\fR" files\&.
 .sp
-The second header is expected to contain the stubs table
-variable definition, and the C code, i\&.e\&. definition, of the function
-to initialize it\&.
-This, and a call to this initializer function are added to the
-"\fI\&.critcl\fR" file's initialization code\&.
+\fBname\fR/\fBname\fRStubLib\&.h contains the stubs table variable
+definition and the function to initialize it\&.  An \fI#include\fR directive
+for it is added to the initialization code for the \fICritcl script\fR ,
+along with a call to the initializer function\&.
 .sp
-If the directory containing the aforementioned headers also
-contains the file "\fI\fBname\fR/\fBname\fR\&.decls\fR" then it is
-assumed that this file contains the external representation of the
-stubs table used to generate the headers\&. The file is read and the
-internal representation of the stubs table returned as result of the
-command, for the importing package to use as it sees fit\&. If no such
-file is present the command returns the empty string as its result\&.
+If "\fI\fBname\fR/\fBname\fR\&.decls\fR" accompanies
+\fBname\fR/\fBname\fRDecls\&.h, it should contain the external representation of
+the stubs table used to generate the headers\&. The file is read and the internal
+representation of the stubs table returned for use by the importing package\&.
+Otherwise, the empy string is returned\&.
 .sp
 One possible use would be the automatic generation of C code
 calling on the functions listed in the imported API\&.
 .sp
-When generating a TEA wrapper the names of the imported APIs
+When generating a TEA package the names of the imported APIs
 are used to declare \fBconfigure\fR options with which the user can
-declare a non-standard location for the headers of the API\&. Any API
-\fBFOO\fR is translated a single configure option
-\fB--with-\fBFOO\fR-include\fR\&.
+declare a non-standard directory for the headers of the API\&. Any API
+\fBname\fR is translated into a single configure option
+\fB--with-\fBname\fR-include\fR\&.
 .PP
 .PP
-Second, declaration and export of a stubs table, i\&.e\&. API, for
-the current package, \fBfoo\fR:
+Declaration and export of a stubs table, i\&.e\&. API, for
+the \fICritcl script\fR:
 .TP
 \fB::critcl::api\fR \fBfunction\fR \fIresulttype\fR \fIname\fR \fIarguments\fR
-This method declares that the function \fIname\fR is in the public API
-of the package, and its signature (type of the result, number, names
-and types of its arguments)\&.
-Using this method automatically causes critcl to generate both the
-code for a stubs table in the package, the headers needed by packages
-using this API, and a "\fI\&.decls\fR" file containing the stubs table
-implied by the exports, usable by \fBcritcl::api import\fR\&.
+Adds to the public API of the \fICritcl script\fR the signature
+for the function named \fIname\fR and having the signature specified by
+\fIarguments\fR and \fIresulttype\fR\&.  Code is generated for a "\fI\&.decls\fR"
+file, the corresponding public headers, and a stubs table usable by
+\fBcritcl::api import\fR\&.
 .sp
-\fIarguments\fR is a list of C types and associated argument
-names\&. Like a dictionary, except that keys (argument names) and values
-(argument types) are swapped\&. The \fIresulttype\fR is a C type as well\&.
+\fIarguments\fR is a multidict where each key is an argument type and its
+value is the argument name, and \fIresulttype\fR is a C type\&.
 .TP
-\fB::critcl::api\fR \fBheader\fR ?\fIpattern\fR\&.\&.\&.?
-This method notifies critcl of companion header files which have to be
-exported together with the generated stubs headers\&.
+\fB::critcl::api\fR \fBheader\fR ?\fIglob pattern\fR\&.\&.\&.?
+Each file matching a \fIglob pattern\fR is copied into the directory
+containing the generated headers, and an \fI#include\fR directive for it is
+added to "\fIDecls\&.h\fR" for the \fICritcl script\fR\&.
+Returns an error if a \fIglob pattern\fR matches nothing\&.
 .sp
-All arguments are interpreted as glob pattern and the matching
-files are copied into the directory containing the generated headers
-well\&. As an importing package uses only "\fI\fBfoo\fRDecls\&.h\fR" to
-access the API this generated header will contain the necessary
-\fI#include\fR directives to make these companion header files and their
-declarations available too\&.
-Patterns matching no file or non-existing files cause the command to
-throw an error\&.
-.sp
-\fINote\fR that patterns which are not beginning with an
-absolute path are interpreted relative to the directory containing the
-current "\fI\&.critcl\fR" file\&.
+A pattern for a relative path is resolved relative to the directory
+containing the \fICritcl script\fR\&.
 .TP
 \fB::critcl::api\fR \fBextheader\fR ?\fIfile\fR\&.\&.\&.?
-This method is similar \fB::critcl::api header\fR, in that it
-notifies critcl of companion header files which have to be exported
-together with the generated stubs headers\&.
-.sp
-The difference is that these headers will be expected to exist
-in the external development environment\&.
-As such they will be \fI#include\fRd in the generated header for
-the package, but not copied to the package header directory\&. Nor are
-they allowed to be glob patterns, as critcl has no context, i\&.e
-directory, in which to expand such patterns\&.
+Like \fB::critcl::api header\fR, but each \fIfile\fR should exist in the
+external development environment\&.  An \fI#include\fR directive is added to
+"\fI\fBfoo\fRDecls\&.h\fR", but \fIfile\fR is not copied to the package header
+directory\&. \fIfile\fR is not a glob pattern as Critcl has no context,
+i\&.e directory, in which to expand such patterns\&.
 .PP
-Note that the generated headers for an exported API are included in
-the package like it is done when importing it somewhere else\&. To repeat:
+As with the headers for an imported API, an \fI#include\fR directive is
+added to the generated code for the \fICritcl script\fR and to
+each companion "\fI\&.c\fR" file\&.
 .PP
-The "\fI\fBfoo\fRDecls\&.h\fR" header is included at the beginning
-of the C code backing the "\fI\&.critcl\fR" file, and at the beginning of
-all companion "\fI\&.c\fR" files\&. This means that the writer of these
-files doesn't have to write the necessary \fI#include\fR directory,
-critcl does it for them\&.
+In "compile & run" mode the generated header files and any companion
+headers are placed in the \fBResult Cache\fR subdirectory for the
+\fICritcl script\fR\&. This directory is added to the include search path of
+any other package importing this API and and building in mode "compile & run"\&.
 .PP
-In mode "compile & run" the generated header files, and their
-companion headers, if any, are placed in the subdirectory "\fIfoo\fR"
-of the \fBResult Cache\fR\&. As this location is implicitly added
-to the include search path any other package importing this API and
-and build in mode "compile & run" as well will find the these headers\&.
+In "generate package" mode \fB-includedir\fR specifies the
+subdirectory in the package to place the generated headers in\&. This
+directory is added to the search paths for header files, ensuring that a
+package importing an API finds it if the package exporting that API used the
+same setting for \fB-includedir\fR\&.
 .PP
-For mode "generate package" the application was extended with a
-new option \fB-includedir\fR which specifies the location to place
-the generated headers in (again in subdirectory "\fIfoo\fR" of that
-path)\&. This path is also be added to the include search paths,
-ensuring that a package importing an API will find it if the package
-exporting that API used the same setting for \fB-includedir\fR\&.
-.PP
-For mode "generate TEA" the static scanner was extended to
-recognize \fBcritcl::api header\fR as a source of companion files\&.
-It further uses data about \fBcritcl::api import\fR commands to put
-proper support for \fB--with-\fBfoo\fR-include\fR options into the
-generate "\fIconfigure(\&.in)\fR" so that a user may specify custom
+In "generate TEA" mode the static scanner recognizes
+\fBcritcl::api header\fR as a source of companion files\&.
+It also uses data from calls to \fBcritcl::api import\fR to
+add support for \fB--with-\fBfoo\fR-include\fR options into the
+generated "\fIconfigure(\&.in)\fR" so that a user may specify custom
 locations for the headers of any imported API\&.
 .SS "PACKAGE META DATA"
-Newly introduced with critcl version 3 is support for TEApot
-meta-data\&.
-.PP
-While, from the package developer's perspective, some meta data
-support was already present in critcl v2, through the command
-\fB::critcl::license\fR, this was only used to generate and place a
-file "\fIlicense\&.txt\fR" into the built package\&.
-.PP
-Now critcl supports the declaration of arbitrary meta data,
-which will be placed into a file "\fIteapot\&.txt\fR" in a format
-suitable for use by the
+Critcl versions 3 and later can create TEApot meta-data to be placed into
+"\fIteapot\&.txt\fR" in a format suitable for use by the
 \fITEApot tools\fR [http://docs\&.activestate\&.com/activetcl/8\&.5/tpm/toc\&.html]\&.
+.PP
+In version 2, some meta data support was already present through
+\fB::critcl::license\fR, but this was only used to generate "\fIlicense\&.txt\fR"\&.
 .TP
 \fB::critcl::license\fR \fIauthor\fR ?\fItext\fR\&.\&.\&.?
-This command provides information about the author of the package, and
-its license\&.
+Ignored in "compile & run" mode\&.
 .sp
-If no \fItext\fR is present the command expects to find a file
-"\fIlicense\&.terms\fR" in the same directory as the "\fI\&.critcl\fR" file
-and reads the license from that\&. Otherwise the license is the joined
-\fItext\fRs\&.
+In "generate package" mode provides information about the author of the
+package and the license for the package\&.
 .sp
-This information, the license, is ignored in mode "compile &
-run", only mode "generate package" uses it\&. In that case the
-information is written to a file "\fIlicense\&.terms\fR", a sibling to
-the "\fIpkgIndex\&.tcl\fR" file in the directory hierarchy of the
-generated package\&.
+\fItext\fR arguments are concatenated to form the text of the license, which is
+written to "\fIlicense\&.terms\fR" in the same directory as "\fIpkgIndex\&.tcl\fR"\&.
+If no \fItext\fR is provided the license is read from "\fIlicense\&.terms\fR"
+in the same directory as the \fICritcl script\fR\&.
 .sp
-This information is additionally placed into the meta data file
-"\fIteapot\&.txt\fR", under the keys \fIas::author\fR and \fIlicense\fR\&.
-.sp
-The data specified by this command has priority over any
-information specified through the generic API \fB::critcl::meta\fR\&.
+This information takes precedence over any information specified through
+the generic API \fB::critcl::meta\fR\&.  It is additionally placed
+into the meta data file "\fIteapot\&.txt\fR" under the keys \fIas::author\fR and
+\fIlicense\fR\&.
 .TP
 \fB::critcl::summary\fR \fItext\fR
-Declares a short (one line is recommended) description of the package\&.
+Ignored in "compile & run" mode\&.
 .sp
-This information is ignored in mode "compile & run", only mode
-"generate package" uses it\&. In that case the information is placed
-into the meta data file "\fIteapot\&.txt\fR", under the key \fIsummary\fR\&.
-.sp
-The data specified by this command has priority over any
-information specified through the generic API \fB::critcl::meta\fR\&.
+In "generate package" mode places a short, preferably one-line description of
+the package into the meta data file "\fIteapot\&.txt\fR" under the key
+\fIsummary\fR\&.  This information takes precedence over information specified
+through the generic API \fB::critcl::meta\fR\&.
 .TP
 \fB::critcl::description\fR \fItext\fR
-Declares a longer description of the package\&.
+Ignored in "compile & run" mode\&.
 .sp
-This information is ignored in mode "compile & run", only mode
-"generate package" uses it\&. In that case the information is placed
-into the meta data file "\fIteapot\&.txt\fR", under the key \fIdescription\fR\&.
-.sp
-The data specified by this command has priority over any
-information specified through the generic API \fB::critcl::meta\fR\&.
+In "generate package" mode places a longer description of the package into the
+meta data file "\fIteapot\&.txt\fR", under the key \fIdescription\fR\&.  The data
+specified by this command takes precedence over any information specified
+through the generic API \fB::critcl::meta\fR\&.
 .TP
 \fB::critcl::subject\fR ?\fIkey\fR\&.\&.\&.?
-Declares one or more keywords and key-phrases describing the package,
-for an index\&.
+Ignored in "compile & run" mode\&.
 .sp
-Multiple calls of this command accumulate keywords and phrases\&.
+In "generate package" mode places each \fIkey\fR into the meta data file
+"\fIteapot\&.txt\fR", under the key \fIsubject\fR\&.  This information takes
+precedence over any information specified through the generic API
+\fB::critcl::meta\fR\&.
 .sp
-This information is ignored in mode "compile & run", only mode
-"generate package" uses it\&. In that case the information is placed
-into the meta data file "\fIteapot\&.txt\fR", under the key \fIsubject\fR\&.
-.sp
-The data specified by this command has priority over any
-information specified through the generic API \fB::critcl::meta\fR\&.
+Calls to this command are cumulative\&.
 .TP
 \fB::critcl::meta\fR \fIkey\fR ?\fIword\fR\&.\&.\&.?
-This command is for the declaration of arbitrary meta data outside of
-the reserved keys
+Provides arbitrary meta data outside of the following reserved keys:
 \fIas::author\fR,
 \fIas::build::date\fR,
 \fIdescription\fR,
@@ -1285,8 +1208,8 @@ the reserved keys
 \fIsubject\fR,
 \fIsummary\fR, and
 \fIversion\fR,
-Its behaviour is like \fB::critcl::subject\fR, in that it treats all
-keys as list of words, with each call declaring one or more words for
+Its behaviour is like \fB::critcl::subject\fR in that it treats all
+keys as list of words, with each call providing one or more words for
 the key, and multiple calls extending the data for an existing key, if
 not reserved\&.
 .sp
@@ -1309,196 +1232,121 @@ The information for the reserved keys
 is automatically generated by \fBcritcl\fR itself\&.
 .TP
 \fB::critcl::meta?\fR \fIkey\fR
-This command enables the retrieval of meta data information from with
-the code defining a critcl based package\&. Given the \fIkey\fR the
-associated value is returned as the result of the command\&.
+Returns the value in the metadata associated with \fIkey\fR\&.
 .sp
-The envisioned main use is the retrieval of the package's name
+Used primarily to retrieve the name of the package
 from within utility packages having to adapt C code templates to their
-environment\&. An example of a package using this command for exactly
-this purpose is \fBcritcl::class\fR\&.
+environment\&. For example, \fBcritcl::class\fR uses does this\&.
 .TP
 \fB::critcl::buildrequirement\fR \fIscript\fR
-This command provides control over the capturing of dependencies
-declared via \fBpackage require\fR\&. It runs the script, and any
-dependencies declared within are ignored, i\&.e\&. not recorded in the
-meta data\&.
+Provides control over the capturing of dependencies declared via
+\fBpackage require\fR\&. \fIscript\fR is evaluated and any dependencies
+declared within are ignored, i\&.e\&. not recorded in the meta data\&.
 .PP
 .SS "CONTROL & INTERFACE"
-The package provides thirteen commands to control the details of
-compilation and linking, enabling "\fI\&.critcl\fR" files to provide
-custom information about their environment and dependencies\&.
-.PP
-In important thing to note about all these commands is that the
-package manages their information on a per-file basis\&.
-I\&.e\&. information provided by and in a file "\fIFOO\&.tcl\fR" is kept
-separate from the information provided by and in a file
-"\fIBAR\&.tcl\fR", preventing them from interfering with each other\&.
-.PP
-The commands are:
+These commands control the details of compilation and linking a
+\fICritcl script\fR\&.  The information is used only to compile/link the
+object for the \fICritcl script\fR\&.  For example, information for
+"\fIFOO\&.tcl\fR" is kept separate from information for "\fIBAR\&.tcl\fR"\&.
 .TP
 \fB::critcl::cheaders\fR ?\fIarg\fR\&.\&.\&.?
-This command provides the compile step with additional header files
-and header locations\&.
+Provides additional header locations\&.
 .sp
-All arguments matching the glob pattern \fB-*\fR are
-forwarded to the compiler's command line when it is invoked for the
-current "\fI\&.critcl\fR" file\&.
+Each argument is a glob pattern\&.  If an argument begins with \fB-\fR
+it is an argument to the compiler\&.  Otherwise the parent directory of each
+matching path is a directory to be searched for header files\&.  Returns an
+error if a pattern matches no files\&.
+A pattern for a relative path is resolved relative to the directory
+containing the \fICritcl script\fR\&.
 .sp
-All other arguments are interpreted as glob pattern and the
-matching files are made available to the compiler when it is invoked
-for the current "\fI\&.critcl\fR" file\&. Patterns matching no file or
-non-existing files cause the command to throw an error\&.
+\fB#include\fR lines are not automatically generated for matching
+header files\&.  Use \fBcritcl::include\fR or \fBcritcl::ccode\fR as necessary to
+add them\&.
 .sp
-\fINote\fR that patterns which are not beginning with an
-absolute path are interpreted relative to the directory containing the
-current "\fI\&.critcl\fR" file\&.
-.sp
-\fINote\fR further that this declaration does not cause the
-specified header files to be automatically
-\fB#include\fR'd\&. Inclusion still has to be done via either
-\fBcritcl::include\fR or \fBcritcl::ccode\fR, where necessary\&.
-It does simply ensure that the compiler will be able to find these
-files when invoked, by providing the necessary command line flags
-to extend the compiler's search paths\&.
-.sp
-Multiple invocations of this command accumulate their
-information\&.
+Calls to this command are cumulative\&.
 .TP
-\fB::critcl::csources\fR ?\fIpattern\fR\&.\&.\&.?
-This command provides the compile step with additional C source files\&.
+\fB::critcl::csources\fR ?\fIglob pattern\fR\&.\&.\&.?
+Matching paths become inputs to the compilation of the current object
+along with the sources for the current \fICritcl script\fR\&.  Returns an
+error if no paths match a pattern\&.
+A pattern for a relative path is resolved relative to the directory
+containing the \fICritcl script\fR\&.
 .sp
-All arguments are interpreted as glob patterns\&. Patterns
-matching no file or non-existing files cause the command to throw an
-error\&. The files matching the patterns are made available to the
-compiler when it is invoked for the current "\fI\&.critcl\fR" file\&. This
-means that the files in question are compiled together with the
-"\fI\&.c\fR" file backing the "\fI\&.critcl\fR" file into a single object\&.
-.sp
-\fINote\fR that patterns which are not beginning with an
-absolute path are interpreted relative to the directory containing the
-current "\fI\&.critcl\fR" file\&.
-.sp
-Multiple invocations of this command accumulate their
-information\&.
+Calls to this command are cumulative\&.
 .TP
-\fB::critcl::clibraries\fR ?\fIarg\fR\&.\&.\&.?
-This command provides the link step with additional libraries to link
-and library locations\&.
+\fB::critcl::clibraries\fR ?\fIglob pattern\fR\&.\&.\&.?
+provides the link step with additional libraries and library locations\&.
+A \fIglob pattern\fR that begins with \fB-\fR is added as an argument to
+the linker\&.  Otherwise matching files are linked into the shared library\&.
+Returns an error if no paths match a pattern\&.
+A pattern for a relative path is resolved relative to the directory
+containing the \fICritcl script\fR\&.
 .sp
-All arguments matching the glob pattern \fB-*\fR are
-forwarded to the linkers's command line when it is invoked for the
-current "\fI\&.critcl\fR" file\&.
-.sp
-All other arguments are interpreted glob patterns\&. Patterns
-matching no file or non-existing files cause the command to throw an
-error\&. The files matching the patterns are made available to the
-linker when it is invoked for the current "\fI\&.critcl\fR" file\&. This
-means that the files in question are linked together with the object
-file backing the "\fI\&.critcl\fR" file into a single shared library\&.
-.sp
-\fINote\fR that patterns which are not beginning with an
-absolute path are interpreted relative to the directory containing the
-current "\fI\&.critcl\fR" file\&.
-.sp
-Multiple invocations of this command accumulate their
-information\&.
+Calls to this command are cumulative\&.
 .TP
-\fB::critcl::source\fR \fIpath\fR
-This command evaluates the critcl commands in the file specified by
-\fIpath\fR in the context of the current "\fI\&.critcl\fR" file\&.
-.sp
-The argument is actually considered as glob pattern and all
-matching files are evaluated\&. A pattern matching no file or
-non-existing files cause the command to throw an error\&.
-.sp
-\fINote\fR that a pattern not beginning with an absolute path
-is interpreted relative to the directory containing the current
-"\fI\&.critcl\fR" file\&.
+\fB::critcl::source\fR \fIglob pattern\fR
+Evaluates as scripts the files matching each \fIglob pattern\fR\&.  Returns an
+error if there are no matching files\&.
+A pattern for a relative path is resolved relative to the directory
+containing the \fICritcl script\fR\&.
 .TP
-\fB::critcl::tsources\fR \fIpattern\fR\&.\&.\&.
-This command provides the critcl package with information about
-additional Tcl script files to source when the shared library is
-loaded\&.
+\fB::critcl::tsources\fR \fIglob pattern\fR\&.\&.\&.
+Provides the information about additional Tcl script files to source when the
+shared library is loaded\&.
 .sp
-All arguments are considered as glob patterns and the matching
-files are made available to generated shared library when it is loaded
-for the current "\fI\&.critcl\fR" file\&. Patterns matching no file or
-non-existing files cause the command to throw an error\&.
+Matching paths are made available to the generated shared library when
+it is loaded for the current \fICritcl script\fR\&.  Returns an error if a
+pattern matches no files\&.
+A pattern for a relative path is resolved relative to the directory
+containing the \fICritcl script\fR\&.
 .sp
-\fINote\fR that patterns which are not beginning with an
-absolute path are interpreted relative to the directory containing the
-current "\fI\&.critcl\fR" file\&.
+Calls to this command are cumulative\&.
 .sp
-Multiple invocations of this command accumulate their
-information\&.
-.sp
-The declared files are sourced after the shared library has
-been loaded, in the same order they were provided to \fBcritcl::tsources\fR\&.
+After the shared library has been loaded, the declared files are sourced
+in the same order that they were provided as arguments\&.
 .TP
-\fB::critcl::owns\fR \fIpattern\fR\&.\&.\&.
-This command is ignored by the regular build modes, i\&.e\&. both "compile
-and run", and "generate package"\&. It is present to support the static
-code scanner of critcl v3's new mode to "generate TEA" packages\&.
-.sp
-In that situation it provides the critcl package with
-information about any files which have to be wrapped and could not be
-figured out from the previous commands (i\&.e\&. \fBcritcl::csources\fR,
-\fBcritcl::tsources\fR) because of getting specified dynamically, or
-getting directly sourced and this not visible to critcl in any other
-way\&.
+\fB::critcl::owns\fR \fIglob pattern\fR\&.\&.\&.
+Ignored in "compile and run" and "generate package" modes\&.
+In "generate TEA" mode each file matching a \fIglob pattern\fR is a file to
+be included in the TEA extension but that could not be ascertained as such from
+previous commands like \fBcritcl::csources\fR and \fBcritcl::tsources\fR,
+either because of they were specified dynamically or because they were directly
+sourced\&.
 .TP
 \fB::critcl::cflags\fR ?\fIarg\fR\&.\&.\&.?
-This command provides the compile step with additional compiler flags\&.
 .sp
-All arguments are forwarded to the compiler's command line when
-it is invoked for the current "\fI\&.critcl\fR" file\&.
+Each \fIarg\fR is an argument to the compiler\&.
 .sp
-Multiple invocations of this command accumulate their
-information\&.
+Calls to this command are cumulative\&.
 .TP
 \fB::critcl::ldflags\fR ?\fIarg\fR\&.\&.\&.?
-This command provides the link step with additional linker flags\&.
 .sp
-All arguments are forwarded to the linkers's command line when
-it is invoked for the current "\fI\&.critcl\fR" file\&.
+Each \fIarg\fR is an argument to the linker\&.
 .sp
-Multiple invocations of this command accumulate their
-information\&.
+Calls to this command are cumulative\&.
 .TP
 \fB::critcl::framework\fR ?\fIarg\fR\&.\&.\&.?
-This command provides the link step with the names of additional
-frameworks to link on MacOS X\&. The command is ignored if we are not
-building for OS X\&. This means that it is possible to declare the OS X
-specific frameworks unconditionally\&. The package itself takes care to
-not use them when building for non-OS X platforms\&.
+Each \fIarg\fR is the name of a framework to link on MacOS X\&.  This command is
+ignored if OS X is not the target so that frameworks can be specified
+unconditionally\&.
 .sp
-All arguments are forwarded to the linkers's command line when
-it is invoked for the current "\fI\&.critcl\fR" file\&.
-.sp
-Multiple invocations of this command accumulate their
-information\&.
+Calls to this command are cumulative\&.
 .TP
 \fB::critcl::tcl\fR \fIversion\fR
-This command tells critcl for what minimum version of the Tcl runtime
-to compile and link the package for\&. If not specified critcl falls
-back to the default of \fB8\&.4\fR\&.
+Specifies the minimum version of the Tcl runtime
+to compile and link the package for\&.  The default is \fB8\&.4\fR\&.
 .TP
 \fB::critcl::tk\fR
-This command informs critcl that the package in question is based on
-Tk, and therefore needs the Tk headers for compilation, and the Tk
-stubs for linking\&.
+Arranges to include the Tk headers and link to the Tk stubs\&.
 .TP
 \fB::critcl::preload\fR \fIlib\fR\&.\&.\&.
-This command arranges that the named dependent external shared library is loaded
-before the generated package's shared library\&.
+Arranges for the external shared library \fIlib\fR to be loaded
+before the shared library for the \fICritcl script\fR is loaded\&.
 .sp
-Multiple invocations of this command accumulate their
-information\&.
+Calls to this command are cumulative\&.
 .sp
-Each library \fIFOO\fR named for preload will be searched at the
-locations listed below, in the order listed, and the search will stop
-on the first existing path\&.
+Each library \fIFOO\fR is searched for in the directories listed below, in the order
+listed\&.  The search stops at the first existing path\&.
 Additional notes:
 .RS
 .IP \(bu
@@ -1506,7 +1354,7 @@ Additional notes:
 .IP \(bu
 The extension "\fI\&.so\fR" is the placeholder for whatever actual extension is used by the target platform for its shared libraries\&.
 .IP \(bu
-Note how the search is relative to the current working directory\&.
+The search is relative to the current working directory\&.
 .RE
 .IP
 And now the paths, depending on the exact form of the library name:
@@ -1523,18 +1371,8 @@ FOO/\fBplatform\fR/FOO\&.so
 .RE
 .TP
 PATH/FOO
-For this form the exact set searched depends on the existence of
-directory "\fIPATH/FOO\fR"\&. If it does not exist critcl searches
-.RS
-.IP [1]
-FOO\&.so
-.IP [2]
-PATH/FOO\&.so
-.IP [3]
-PATH/\fBplatform\fR/FOO\&.so
-.RE
-.IP
-Otherwise it searches
+The exact set searched depends on the existence of
+directory "\fIPATH/FOO\fR"\&. If it exists, critcl searches
 .RS
 .IP [1]
 FOO\&.so
@@ -1542,6 +1380,16 @@ FOO\&.so
 PATH/FOO/FOO\&.so
 .IP [3]
 PATH/FOO/\fBplatform\fR/FOO\&.so
+.RE
+.IP
+Otherwise it searches
+.RS
+.IP [1]
+FOO\&.so
+.IP [2]
+PATH/FOO\&.so
+.IP [3]
+PATH/\fBplatform\fR/FOO\&.so
 .RE
 .IP
 instead\&.
@@ -1559,189 +1407,135 @@ FOO\&.so
 .RE
 .RE
 .IP
-If you are a developer wishing to understand or modify the internals
-of the \fBcritcl\fR package then you possibly should read the
-section explaining how the \fBPreloading functionality\fR is
-implemented\&.
+For developers who want to understand or modify the internals of the
+\fBcritcl\fR package, \fBPreloading functionality\fR explains how
+preloading is implemented\&.
 .TP
 \fB::critcl::debug\fR \fIarea\fR\&.\&.\&.
-This tells critcl if the package is to be compiled for debugging, and
-which areas to activate\&. Internally each area is translated into
+Specifies what debugging features to activate\&. Internally each area is translated into
 area-specific flags for the compiler which are then handed over to
 \fBcritcl::cflags\fR\&.
 .RS
 .TP
 \fBmemory\fR
-Specification of this area activates Tcl memory debugging
-for the package code\&.
+Specifies Tcl memory debugging\&.
 .TP
 \fBsymbols\fR
-Specification of this area activates compilation and linking with
-debugging symbols, for use by a debugger or other tool\&.
+Specifies compilation and linking with debugging symbols for use by a debugger
+or other tool\&.
 .TP
 \fBall\fR
-Specification of this area translates ino the activation of all other
-legal areas\&.
+Specifies all available debugging\&.
 .RE
 .PP
 .SS INTROSPECTION
-The package provides six commands to control compilation and linking\&.
-These are:
+The following commands control compilation and linking\&.
 .TP
 \fB::critcl::check\fR ?\fIlabel\fR? \fItext\fR
-This command is useful to test if some functionality is available in
-the build environment, and then select other C code fragments based on
-that information\&.
-It immediately compiles the C code in \fItext\fR and returns a boolean
-value based on the result of the compilation\&.
-The command returns \fBtrue\fR on success, and \fBfalse\fR otherwise\&.
-If specified, the \fIlabel\fR is used to uniquely mark the check in the
-generated log\&.
+Returns a \fBtrue\fR if the C code in \fItext\fR compiles sucessfully, and
+\fBfalse\fR otherwise\&.  Used to check for availability of features in the
+build environment\&.
+If provided, \fIlabel\fR is used to uniquely mark the results in the generated
+log\&.
 .TP
 \fB::critcl::checklink\fR ?\fIlabel\fR? \fItext\fR
-This command is an extenson of \fBcritcl::check\fR above, useful to
-test if some functionality is available in the build environment, and
-then select other C code fragments based on that information\&.
-It immediately compiles and links the C code in \fItext\fR and returns
-a boolean value based on the result of compilation and linking\&.
-The command returns \fBtrue\fR on success, and \fBfalse\fR otherwise\&.
-If specified, the \fIlabel\fR is used to uniquely mark the check in the
-generated log\&.
+Like \fBcritcl::check\fR but also links the compiled objects, returning
+\fBtrue\fR if the link is successful and \fBfalse\fR otherwise\&.
+If specified, \fIlabel\fR is used to uniquely mark the results in the generated
+log\&.
 .TP
 \fB::critcl::msg\fR ?\fB-nonewline\fR? \fImsg\fR
-This command can be used by critc-based code to report results from
-\fBcritcl::check\fR and \fBcritcl::checklink\fR\&. The default
-implementation used by mode \fIcompile & run\fR ignores any calls\&.
-.sp
-Tools like the \fICriTcl Application\fR are allowed to
-redefine this procedure to perform their own way of message
-reporting\&. The package \fBcritcl::app\fR and the application on
-top print such messages to \fIstdout\fR, for example\&.
+Scripts using \fBcritcl::check\fR and \fBcritcl::checklink\fR can use this
+command to report results\&.  Does nothing in \fIcompile & run\fR mode\&.  Tools
+like the \fICriTcl Aplication\fR may redefine this command to implement
+their own message reporting\&. For example, \fBcritcl::app\fR and any
+packages built on it print messages to \fIstdout\fR\&.
 .TP
 \fB::critcl::print\fR ?\fB-nonewline\fR? ?\fIchan\fR? \fImsg\fR
-This command is used by the critcl internals to report its activity\&.
-Its signature is equivalent to the Tcl builtin command \fB::puts\fR\&.
-The default implementation is effectively \fB::puts\fR\&.
+Used by the Critcl internals to report activity\&.  By default, effectively the
+same thing as \fB::puts\fR\&.  Tools directly using either the Critcl package or
+the Critcl application package may redefine this procedure to implement their
+own output functionality\&.
 .sp
-Tools directly using either the critcl package, or the critcl
-application package are allowed to redefine this procedure to perform
-their own way of printing\&.
-.sp
-An example of this is
+For example, the newest revisions of
 \fIKettle\fR [https://chiselapp\&.com/user/andreas_kupries/repository/Kettle/index]
-where the newest revisions use this to highlight build warnings\&.
+use this to highlight build warnings\&.
 .TP
 \fB::critcl::compiled\fR
-This command returns a boolean value\&. It returns \fBtrue\fR if the C
-code of the current "\fI\&.critcl\fR" file is already compiled, and
-\fBfalse\fR otherwise\&.
+Returns \fBtrue\fR if the current \fICritcl script\fR is already compiled
+and \fBfalse\fR otherwise\&.
 .sp
-This predicate effectively enables a "\fI\&.critcl\fR" file used
-as its own Tcl companion file (see \fBcritcl::tsources\fR) to
-distinguish between sourced by mode "compile & run" for compilation
-and sourced from either the result of mode "generate package" or during
-the load phase of "compile & run"\&.
-In case of the two latter possibilities the result is \fBtrue\fR,
-and \fBfalse\fR for the first\&.
+Enables a \fICritcl script\fR used as its own Tcl companion file (see
+\fBcritcl::tsources\fR) to distinguish between being sourced for compilation in
+\fIcompile & run\fR mode and being sourced from either the result of
+\fIgenerate package\fR mode or during the load phase of
+\fIcompile & run\fR mode\&.
+The result is \fBfalse\fR in the first case and \fBtrue\fR in the later two
+cases\&.
 .TP
 \fB::critcl::compiling\fR
-This command returns a boolean value\&. It returns \fBtrue\fR if C
-code can be compiled on this platform in general, i\&.e\&. if a C compiler
-is available, and \fBfalse\fR otherwise\&.
+Returns \fBtrue\fR if a working C compiler is available and \fBfalse\fR
+otherwise\&.
 .TP
 \fB::critcl::done\fR
-This command returns a boolean value\&. It returns \fBtrue\fR when
-critcl has built the embedded C code, and \fBfalse\fR otherwise\&.
+Returns \fBtrue\fR when \fICritcl script\fR has been built and
+\fBfalse\fR otherwise\&.  Only useful from within a \fICritcl script\fR\&.
+Enables the Tcl parts of a \fICritcl script\fR to distinguish between
+\fIprebuilt package\fR mode and \fIcompile & run\fR mode\&.
 .sp
-This enables the Tcl code of a critcl-based package to
-distinguish between it getting used as a prebuilt package, versus
-dynamic compile & run, and take action based on that\&.
-.sp
-\fINote\fR that this command is only useful from within a
-"\fI\&.critcl\fR" file\&. The result is managed on a per-file basis, like
-is done for the commands embedding C code and controlling the
-behaviour of compiler and linker\&.
-.sp
-See also section \fBModes Of Operation/Use\fR\&.
+See also \fBModes Of Operation/Use\fR\&.
 .TP
 \fB::critcl::failed\fR
-This command returns a boolean value\&. It returns \fBtrue\fR if
-critcl has failed to build the package, and \fBfalse\fR otherwise,
-i\&.e\&. success\&. As part of this it forces the building of the package,
-but not its loading\&. Note that it will attempt to build the package
-only on the first call; future calls for the same package will return
-a cached result\&.
-.sp
-This enables a critcl-based package to check itself for
-availability and throw an error if it could not be built\&. \fINote\fR
-that the command does \fInot\fR throw such an error itself\&.
-.sp
-\fINote\fR further that this command is only useful from
-within in a "\fI\&.critcl\fR" file\&. The result is managed on a per-file
-basis, like is done for the commands embedding C code and controlling
-the behaviour of compiler and linker\&.
+Returns \fBtrue\fR if the \fICritcl script\fR could not be built, and
+\fBfalse\fR otherwise\&.  Forces the building of the package if it hasn't
+already been done, but not its loading\&.  Thus, a \fICritcl script\fR can
+check itself for availability of the compiled components\&.  Only useful from
+within a \fICritcl script\fR\&.
 .TP
 \fB::critcl::load\fR
-This command is like \fBcritcl::failed\fR, except that it also forces
-the loading of the generated shared library, if it was built, and that
-its result has reversed sense\&.
-.sp
-It returns \fBtrue\fR if critcl succeeded in building and
-loading the package, and \fBfalse\fR otherwise, i\&.e\&. build- or
-load-failure\&.
-.sp
-This enables a critcl-based package to to not only check itself
-for availability and throw an error if it could not be built, but also
-force an immediate load, circumventing the default behaviour, which is
-lazy\&. See also section \fBRuntime Behaviour\fR\&. \fINote\fR that
-the command does \fInot\fR throw any error itself\&.
-.sp
-\fINote\fR further that this command is only useful from
-within in a "\fI\&.critcl\fR" file\&. The result is managed on a per-file
-basis, like is done for the commands embedding C code and controlling
-the behaviour of compiler and linker\&.
+Like \fBcritcl::failed\fR except that it also forces the loading of the
+generated shared library, and that it returns \fBtrue\fR on success and
+\fBfalse\fR on failure\&.  Thus, a \fICritcl script\fR can check itself for
+availability of the compiled components\&.  Only useful from within a
+\fICritcl script\fR\&.
 .PP
 .SS "BUILD MANAGEMENT"
-The package provides a single command for the management of global
-settings, i\&.e\&. configuration options which are independent of any
-"\fI\&.critcl\fR" file\&.
+The following command manages global settings, i\&.e\&. configuration options which
+are independent of any \fICritcl script\fR\&.
 .PP
-It is expected that this command is irrelevant to anybody just
-wishing to write a "\fI\&.critcl\fR" file\&. It is a management command
-which is only useful to the \fICriTcl Application\fR or similar
-tools\&.
+This command should not be needed to write a \fICritcl script\fR\&. It is
+a management command which is only useful to the \fICriTcl Application\fR
+or similar tools\&.
 .TP
 \fB::critcl::config\fR \fIoption\fR ?\fIval\fR?
-This command sets and returns critcl's global configuration options\&. These are
+Sets and returns the following global configuration options:
 .RS
 .TP
 \fBforce\fR bool
-This flag tells the package whether it should force the building of C
-files despite having a cached shared library (when \fBtrue\fR, or
-not\&. The default is \fBoff\fR\&.
+When \fBfalse\fR (the default), the C files are not built if there is a
+cached shared library\&.
 .TP
 \fBlines\fR bool
-This flag tells the package whether to embed #line directives into the
-generated C code (when \fBtrue\fR) or not\&. By default this is \fBon\fR\&.
+When \fBtrue\fR (the default), #line directives are embedded into the
+generated C code\&.
 .TP
 \fBtrace\fR bool
-Inactive by default\&.
-When active code tracing entry and exit of \fBcritcl::cproc\fR-based
-is inserted into the C code\&. This implicitly activates the tracing
-facility in general\&. (See package \fBcritcl::cutil\fR)\&.
+When \fBfalse\fR (the default), no code tracing the entry and exit of
+Critcl-backed commands in the \fICritcl script\fR is inserted\&.  Insertion of
+such code implicitly activates the tracing facility in general\&.  See
+\fBcritcl::cutil\fR\&.
 .sp
-Side note: This facility requires the use of a tclsh supporting
-the builtin \fBinfo frame\fR command\&. If critcl is run by a tclsh
-not supporting this no \fI#line\fR directives will be emitted\&. The
+This facility requires the use of a tclsh that provides
+\fBinfo frame\fR\&.  Otherwise, no \fI#line\fR directives are emitted\&. The
 command is supported by Tcl 8\&.5 and higher\&. It is also supported by
 Tcl 8\&.4 provided that it was compiled with the define
 \fB-DTCL_TIP280\fR\&. An example of such is ActiveState's ActiveTcl\&.
 .sp
 Developers of higher-level packages generating their own C
-code, either directly, or indirectly, by using critcl commands, should
+code, either directly or indirectly through critcl, should
 also read section \fBAdvanced: Location management\fR to see how
 critcl helps them in generating their directives\&.
-Examples of such packages come with critcl itself, see the packages
+Examples of such packages come with critcl itself\&. See
 \fBcritcl::iassoc\fR and \fBcritcl::class\fR\&.
 .TP
 \fBI\fR path
@@ -1750,7 +1544,7 @@ A single global include path to use for all files\&. Not set by default\&.
 \fBcombine\fR enum
 .RS
 .TP
-\fBdynamic\fR
+\fBdynamic\fR (the default)
 Object files have the suffix \fB_pic\fR\&.
 .TP
 \fBstatic\fR
@@ -1761,214 +1555,177 @@ Object files have no suffix, and the generated C files are compiled
 without using Tcl/Tk stubs\&. The result are object files usable for
 static linking into a \fIbig shell\fR\&.
 .RE
-.IP
-The default is \fBdynamic\fR\&.
 .TP
 \fBlanguage\fR string
 .TP
 \fBkeepsrc\fR bool
-This flag tells the package whether to keep the generated "\fI\&.c\fR"
-files after it has build their "\fI\&.o\fR" files (when \fBtrue\fR), or
-not\&. The default is \fBoff\fR\&.
+When \fBfalse\fR (the default), the generated "\fI\&.c\fR"
+files are deleted after the "\fI\&.o\fR" files have been built\&.
 .TP
-\fBoutdir\fR path
-The path where to place a generated shared library\&. Not set by
-default, causing placement into the \fBResult Cache\fR\&.
+\fBoutdir\fR directory
+The directory where to place a generated shared library\&. By default, it is
+placed into the \fBResult Cache\fR\&.
 .RE
 .PP
 .SS "RESULT CACHE MANAGEMENT"
-This package provides two commands for the management of the
-\fBResult Cache\fR\&. See that section for background information\&.
-.PP
-\fINOTE\fR that these commands are irrelevant to anybody just
-wishing to write a package using critcl for the C parts\&. They are
-management commands which are only useful to the
-\fICriTcl Application\fR or similar tools\&.
+The following commands control the \fBResult Cache\fR\&.
+These commands are not needed to simply write a \fICritcl script\fR\&.
 .TP
 \fB::critcl::cache\fR ?path?
-This command sets and returns the path to the directory for the
-package's result cache\&.
+Sets and returns the path to the directory for the package's result cache\&.
 .sp
 The default location is
 "\fI~/\&.critcl/[platform::generic]\fR" and usually does not
 require any changes\&.
 .TP
 \fB::critcl::clean_cache\fR ?\fIpattern\fR\&.\&.\&.?
-This command cleans the result cache, i\&.e\&. removes any and all files
+Cleans the result cache, i\&.e\&. removes any and all files
 and directories in it\&. If one or more patterns are specified then only
 the files and directories matching them are removed\&.
 .PP
 .SS "BUILD CONFIGURATION"
-This package provides four commands for the management of the
-build configuration, i\&.e\&. the per-platform information about
-compilers, linkers, and their commandline options\&.
-.PP
-\fINOTE\fR that these commands are irrelevant to anybody just
-wishing to write a package using critcl for the C parts\&. They are
-management commands which are only useful to the
-\fICriTcl Application\fR or similar tools\&.
+The following commands manage the build configuration, i\&.e\&. the per-platform
+information about compilers, linkers, and their commandline options\&.
+These commands are not needed to simply write a \fICritcl script\fR\&.
 .TP
 \fB::critcl::readconfig\fR \fIpath\fR
-This command reads the build configuration file at \fIpath\fR and
-configures the package using the information for the currently set
-target platform\&.
+Reads the build configuration file at \fIpath\fR and configures the package
+using the information for the target platform\&.
 .TP
 \fB::critcl::showconfig\fR ?\fIchan\fR?
-This command converts the currently active build configuration into a
-human-readable string and prints the result to the channel \fIchan\fR\&.
-If \fIchan\fR is not present the string is instead returned as the
-result of the command\&.
+Converts the active build configuration into a human-readable string and
+returns it, or if \fIchan\fR is provided prints the result to that channel\&.
 .TP
 \fB::critcl::showallconfig\fR ?\fIchan\fR?
-This command converts the set of all known build configurations (from
-the currently active build configuration file last set with
-\fBcritcl::readconfig\fR) into a string and print the result to the
-channel \fIchan\fR\&.
-If \fIchan\fR is not present the string is instead returned as the
-result of the command\&.
+Converts the set of all known build configurations from the currently active
+build configuration file last set with \fBcritcl::readconfig\fR into a string
+and returns it, or if \fIchan\fR is provided, prints it to that channel\&.
 .TP
 \fB::critcl::chooseconfig\fR \fItarget\fR ?\fInomatcherr\fR?
-This command takes a target identifier and matches it against all
-known targets, returning a list containing all the matching ones\&. This
-search is first done on an exact basis, and then via glob matching\&. If
-no known target matches the argument the default is to return an empty
-list\&. However, if the boolean \fInomatcherr\fR is specified and set,
-and error will be thrown instead, using \fBcritcl::error\fR\&.
+Matches \fItarget\fR against all known targets, returning a list containing
+all the matching ones\&. This search is first done on an exact basis, and then
+via glob matching\&. If no known target matches the argument the default is to
+return an empty list\&. However, if the boolean \fInomatcherr\fR is specified and
+set an error is thrown using \fBcritcl::error\fR instead\&.
 .TP
 \fB::critcl::setconfig\fR \fItarget\fR
-This command takes a target identifier and configures the package to
-use all its settings\&.
+Configures the package to use the settings of \fItarget\fR\&.
 .PP
 .SS "TOOL API"
-The twelve commands in this section provide tools like
+The following commands provide tools like
 \fICriTcl Application\fR or similar with
 deeper access to the package's internals\&.
-These commands are irrelevant to anybody just
-wishing to write a "\fI\&.critcl\fR" file\&.
+These commands are not needed to simply write a \fICritcl script\fR\&.
 .TP
 \fB::critcl::actualtarget\fR
-This command returns the platform identifier of the target platform,
-i\&.e\&. the platform the generated code will be built for\&. In contrast to
-\fB::critcl::targetplatform\fR this is the true target, with any
-cross-compilation information resolved\&.
+Returns the platform identifier for the target platform, i\&.e\&. the platform to
+build for\&. Unlike \fB::critcl::targetplatform\fR this is the true target, with
+any cross-compilation information resolved\&.
 .TP
 \fB::critcl::buildforpackage\fR ?\fIflag\fR?
-This command signals whether the next file to be build is built for
-inclusion into a package or not\&. If not specified the \fIflag\fR
-defaults to \fBtrue\fR, i\&.e\&. building for a package\&. This disables a
-number of things in the backend, namely the linking of that file into
-a shared library, and loading such\&. It is expected that the build
-results are later wrapped into a larger collection\&.
+Signals whether the next file is to be built for inclusion into a package\&. If
+not specified the \fIflag\fR defaults to \fBtrue\fR, i\&.e\&. building for a
+package\&. This disables a number of things in the backend, namely the linking of
+that file into a shared library and the loading of that library\&. It is expected
+that the build results are later wrapped into a larger collection\&.
 .TP
 \fB::critcl::cnothingtodo\fR \fIfile\fR
-This command checks whether there is anything to build for \fIfile\fR\&.
+Checks whether there is anything to build for \fIfile\fR\&.
 .TP
 \fB::critcl::cresults\fR ?\fIfile\fR?
-This command returns the build result information for the specified \fIfile\fR\&.
-If no file is specified the information is taken from \fBinfo script\fR\&.
-The result in question is a Tcl dictionary with the following keys,
-and their meanings:
+Returns information about building \fIfile\fR, or \fBinfo script\fR If
+\fIfile\fR is not provided\&.
+The result in question is a dictionary containing the following items:
 .RS
 .TP
 \fBclibraries\fR
-The list of external shared libraries, and/or locations thereof to
-link the \fIfile\fR needs for successful linking\&.
+A list of external shared libraries and/or directories needed to link
+\fIfile\fR\&.
 .TP
 \fBldflags\fR
-The list of linker flags needed by the \fIfile\fR for successful linking\&.
+A list of linker flags needed to link \fIfile\fR\&.
 .TP
 \fBlicense\fR
-The license the package in the \fIfile\fR is under\&. A string\&.
+The text of the license for the package \fIfile\fR is located in\&.
 .TP
 \fBmintcl\fR
-The minimum version of Tcl required by the package in the \fIfile\fR
-to run successfully\&. A proper Tcl version number\&.
+The minimum version of Tcl required by the package \fIfile\fR
+is in to run successfully\&. A proper Tcl version number\&.
 .TP
 \fBobjects\fR
-The list of object files backing the \fIfile\fR, to be linked\&.
+A list of object files to link into \fIfile\fR\&.
 .TP
 \fBpreload\fR
-The list of libraries the generated package has to preload to allow
-the package in the \fIfile\fR to run successfully\&.
+A list of libraries to be preloaded in order to sucessfully load and use
+\fIfile\fR\&.
 .TP
 \fBtk\fR
-A boolean indicating whether the package in the \fIfile\fR has to be
-linked against Tk or not\&.
+\fBtrue\fR if \fIfile\fR requires Tk and \fBfalse\fR otherwise\&.
 .TP
 \fBtsources\fR
-The list of companion "\fI\&.tcl\fR" files to source for the package in
-the "\fI\&.critcl\fR" \fIfile\fR to run successfully\&.
+A list of companion "\fI\&.tcl\fR" files to source in order to load and use the
+\fICritcl script\fR \fIfile\fR\&.
 .TP
 \fBlog\fR
 The full build log generated by the compiler/linker, including command
 line data from critcl, and other things\&.
 .TP
 \fBexl\fR
-The raw build log generated by the compiler/linker\&. This key contains
-only the output generated by the invoked applications\&.
+The raw build log generated by the compiler/linker\&. Contains the output
+generated by the invoked applications\&.
 .RE
 .TP
 \fB::critcl::crosscheck\fR
-This command checks if the package is configured for cross-compilation
-and prints a message to the standard error channel if so\&.
+Determines whether the package is configured for cross-compilation and prints a
+message to the standard error channel if so\&.
 .TP
 \fB::critcl::error\fR \fImsg\fR
-This command is used by the package to report internal errors\&. The default
-implementation simply throws the error\&.
-Tools like the \fICriTcl Application\fR are allowed to redefine
+Used to report internal errors\&. The default implementation simply returns the
+error\&.  Tools like the \fICriTcl Application\fR are allowed to redefine
 this procedure to perform their own way of error reporting\&. There is
 one constraint they are not allowed to change: The procedure must
 \fInot return\fR to the caller\&.
 .TP
 \fB::critcl::knowntargets\fR
-This command returns a list containing the identifiers of all targets
+Returns a list of the identifiers of all targets
 found during the last invocation of \fBcritcl::readconfig\fR\&.
 .TP
 \fB::critcl::sharedlibext\fR
-This command returns the file extension used by shared libraries on the
-target platform\&.
+Returns the file extension for shared libraries on the target platform\&.
 .TP
 \fB::critcl::targetconfig\fR
-This command returns the target identifier chosen to by either system
-or user to build code for\&.
+Returns the identifier of the target to build for, as specified by either the
+user or the system\&.
 .TP
 \fB::critcl::buildplatform\fR
-This command returns the platform identifier of the build platform,
-i\&.e\&. where the package is running on\&.
+Returns the identifier of the build platform, i\&.e\&. where the package is running
+on\&.
 .TP
 \fB::critcl::targetplatform\fR
-This command returns the platform identifier of the target platform,
-i\&.e\&. the platform the generated code will be built for\&. In contrast to
+Returns the identifier of the target platform,
+i\&.e\&. the platform to compile for\&. In contrast to
 \fB::critcl::actualtarget\fR this may be the name of a
 cross-compilation target\&.
 .TP
-\fB::critcl::cobjects\fR ?\fIarg\fR\&.\&.\&.?
-This command is like \fB::critcl::clibraries\fR, provides the link
-step with additional information\&. Instead of libraries the arguments
-are object files however\&.
-Despite this similarity it is not listed in section
-\fBControl & Interface\fR because it is of no use to package
-writers\&. Only tools like the \fICriTcl Application\fR have need
-of it\&.
+\fB::critcl::cobjects\fR ?\fIglob pattern\fR\&.\&.\&.?
+Like \fB::critcl::clibraries\fR, but instead of matching libraries, each
+\fIglob pattern\fR matches object files to be linked into the
+shared object (at compile time, not runtime)\&. If a \fIglob pattern\fR matches
+nothing an error is returned\&.
+Not listed in \fBControl & Interface\fR because it is of no use to
+package writers\&. Only tools like the \fICriTcl Application\fR need it\&.
 .sp
-All arguments are interpreted glob patterns\&. Patterns matching
-no file or non-existing files cause the command to throw an error\&. The
-files matching the patterns are made available to the linker when it
-is invoked for the current "\fI\&.critcl\fR" file\&. This means that the
-files in question are linked together with the object file backing the
-"\fI\&.critcl\fR" file into a single shared library\&.
+A pattern for a relative path is resolved relative to the directory
+containing the \fICritcl script\fR\&.
 .sp
-\fINote\fR that patterns which are not beginning with an
-absolute path are interpreted relative to the directory containing the
-current "\fI\&.critcl\fR" file\&.
-.sp
-Multiple invocations of this command accumulate their
-information\&.
+Calls to this command are cumulative\&.
 .TP
 \fB::critcl::scan\fR \fIpath\fR
-This command is the main entry point to critcl's static code scanner\&.
-Invoked for a single "\fI\&.critcl\fR" file it returns a dictionary providing
-the following pieces information about it:
+The main entry point to Critcl's static code scanner\&.  Used by tools to
+implement processing modes like the assembly of a directory hierarchy
+containing a TEA-lookalike buildystem, etc\&.
+.sp
+Scans \fIpath\fR and returns a dictionary containing the following items:
 .RS
 .TP
 version
@@ -1978,77 +1735,68 @@ org
 Author(ing organization)\&.
 .TP
 files
-List of the companion files\&. The paths in this list are
-all relative to the location (directory) of the input file\&.
+List of the companion files, relative to the directory of the input
+file\&.
 .RE
-.IP
-This command and the information it returns can be used by tools to
-implement processing modes like the assembly of a directory hierarchy
-containing a TEA-lookalike buildystem, etc\&.
 .TP
 \fB::critcl::name2c\fR \fIname\fR
-This command exposes the conversion of a Tcl level identifier of
-commands into various C-level pieces, i\&.e\&. Tcl namespace prefix, C
-namespace prefix, Tcl base name, and C base name\&.
+Given the Tcl-level identifier \fIname\fR, returns a list containing the
+following details of its conversion to C:
+.RS
+.IP \(bu
+Tcl namespace prefix
+.IP \(bu
+C namespace prefix
+.IP \(bu
+Tcl base name
+.IP \(bu
+C base name
+.RE
 .sp
-The result of the command is a list of 4 elements providing the
-above mentioned information, in the named order\&.
-.sp
-The envisioned main use is from within utility packages
-providing Tcl commands without going through the standard commands,
-i\&.e\&. \fBcritcl::ccommand\fR, or \fBcritcl::cproc\fR\&. An example of a
-package using this command for exactly this purpose is
-\fBcritcl::class\fR\&.
+For use by utilities that provide Tcl commands without going through
+standard commands like \fBcritcl::ccommand\fR or \fBcritcl::cproc\fR\&.
+\fBcritcl::class\fR does this\&.
 .PP
 .SS "ADVANCED: EMBEDDED C CODE"
-For the advanced user five commands used inside of \fBcritcl::cproc\fR are
-exposed\&. These are:
+For advanced use, the following commands used by \fBcritcl::cproc\fR itself are
+exposed\&.
 .TP
 \fB::critcl::argnames\fR \fIarguments\fR
-This command takes an argument declaration as taken by \fBcritcl::cproc\fR
-and returns a list of the user visible arguments found in the declaration\&.
+Given an argument declaration as documented for \fBcritcl::cproc\fR, returns a list of the corresponding user-visible names\&.
 .TP
 \fB::critcl::argcnames\fR \fIarguments\fR
-This command takes an argument declaration as taken by \fBcritcl::cproc\fR
-and returns a list of the C side variable names for the user visible arguments
-found in the declaration\&. The names returned here match the names used in the
+Given an argument declaration as documented for \fBcritcl::cproc\fR, returns a list of the corresponding C variable names for the
+user-visible names\&. The names returned here match the names used in the
 declarations and code returned by \fB::critcl::argvardecls\fR and
 \fB::critcl::argconversion\fR\&.
 .TP
 \fB::critcl::argcsignature\fR \fIarguments\fR
-This command takes an argument declaration as taken by \fBcritcl::cproc\fR
-and returns a list of C parameter declarations for all arguments found
-in the declaration\&.
+Given an argument declaration as documented for \fBcritcl::cproc\fR, returns a list of the corresponding C parameter declarations\&.
 .TP
 \fB::critcl::argvardecls\fR \fIarguments\fR
-This command takes an argument declaration as taken by \fBcritcl::cproc\fR
-and returns a list of C side variable declarations for the user
-visible arguments found in the declaration\&. The names used in these
-declarations match the names returned by \fB::critcl::argcnames\fR\&.
+Given an argument declaration as documented for \fBcritcl::cproc\fR, returns a list of the corresponding C variable declarations\&.
+The names used in these declarations match the names returned by
+\fB::critcl::argcnames\fR\&.
 .TP
 \fB::critcl::argconversion\fR \fIarguments\fR ?\fIn\fR?
-This command takes an argument declaration as taken by \fBcritcl::cproc\fR
-and returns a list of C code fragments converting the user visible arguments
-found in the declaration from Tcl_Obj* to C types\&. The names used in these
-statements match the names returned by \fB::critcl::argcnames\fR\&.
+Given an argument declaration as documented for \fBcritcl::cproc\fR, returns a list of C code fragments converting the user visible
+arguments found in the declaration from Tcl_Obj* to C types\&. The names used in
+these statements match the names returned by \fB::critcl::argcnames\fR\&.
 .sp
 The generated code assumes that the procedure arguments start
-at index \fIn\fR of the \fBobjv\fR array\&. If this argument is not
-specified \fB1\fR will be assumed\&.
+at index \fIn\fR of the \fBobjv\fR array\&.  The default is \fB1\fR\&.
 .TP
 \fB::critcl::argoptional\fR \fIarguments\fR
-This command takes an argument declaration as taken by \fBcritcl::cproc\fR
-and returns a list of boolean values indicating which arguments are
-optional (\fBtrue\fR) and not (\fBfalse\fR)\&.
+Given an argument declaration as documented for \fBcritcl::cproc\fR, returns a list of boolean values indicating which arguments
+are optional (\fBtrue\fR), and which are not (\fBfalse\fR)\&.
 .TP
 \fB::critcl::argdefaults\fR \fIarguments\fR
-This command takes an argument declaration as taken by \fBcritcl::cproc\fR
-and returns a list containing the default values for all optional arguments\&.
+Given an argument declaration as documented for \fBcritcl::cproc\fR, returns a list containing the default values for all optional
+arguments\&.
 .TP
 \fB::critcl::argsupport\fR \fIarguments\fR
-This command takes an argument declaration as taken by \fBcritcl::cproc\fR
-and returns a list of C code fragments needed to define the necessary
-supporting types\&.
+Given an argument declaration as documented for \fBcritcl::cproc\fR, returns a list of C code fragments needed to define the
+necessary supporting types\&.
 .PP
 .SS "CUSTOM BUILD CONFIGURATION"
 This package provides one command for the management of
@@ -2115,9 +1863,8 @@ generated C code so that any errors, warnings and notes found by the C
 compiler during compilation will refer to the "\fI\&.critcl\fR" file the
 faulty code comes from, instead of the generated "\fI\&.c\fR" file\&.
 .PP
-Side note: This facility requires the use of a tclsh supporting
-the builtin \fBinfo frame\fR command\&. If critcl is run by a tclsh
-not supporting this no \fI#line\fR directives will be emitted\&. The
+This facility requires the use of a tclsh that provides
+\fBinfo frame\fR\&.  Otherwise, no \fI#line\fR directives are emitted\&. The
 command is supported by Tcl 8\&.5 and higher\&. It is also supported by
 Tcl 8\&.4 provided that it was compiled with the define
 \fB-DTCL_TIP280\fR\&. An example of such is ActiveState's ActiveTcl\&.
@@ -2311,7 +2058,7 @@ The C return type of the associated function, also the C type of the
 result variable, is \fIctype\fR\&. This type defaults to \fIname\fR if
 it is not specified\&.
 .sp
-If \fIname\fR is declared already an error will be thrown\&.
+If \fIname\fR is already declared an error is thrown\&.
 \fIAttention!\fR The standard result type \fBvoid\fR is special as
 it has no accompanying result variable\&. This cannot be expressed
 by this extension command\&.
@@ -2363,37 +2110,35 @@ It returns a boolean value, \fBtrue\fR if the type is known and
 .TP
 \fB::critcl::argtype\fR \fIname\fR \fIbody\fR ?\fIctype\fR? ?\fIctypefun\fR?
 This command defines the argument type \fIname\fR, and associates it
-with the C code doing the conversion (\fIbody\fR) from Tcl to C
-The C type of the variable to hold the conversion result is
-\fIctype\fR and the type of the function argument itself is
-\fIctypefun\fR\&.  Both types default to \fIname\fR if they are not
-specified (or the empty string)\&.
+with the C code doing the conversion (\fIbody\fR) from Tcl to C\&.
+\fIctype\fR is the C type of the variable to hold the conversion result
+and \fIctypefun\fR is the type of the function argument itself\&.
+Both types default to \fIname\fR if they are the empty string or are not
+provided\&.
 .sp
-If \fIname\fR is declared already an error will be thrown\&.
+If \fIname\fR is already declared an error is thrown\&.
 .sp
-The \fIbody\fR's responsibility is the conversion of a
-command's Tcl_Obj* argument into a C value for the underlying
-function and its storage in a helper variable\&.
+\fIbody\fR is a C code fragment that converts a Tcl_Obj* into a
+C value which is stored in a helper variable in the underlying function\&.
 .sp
-The C code of \fIbody\fR is guaranteed to be called inside of a
-separate C code block (thus allowing the use of local variables) which
-has access to the following environment:
+\fIbody\fR is called inside its own code block to isolate local
+variables, and the following items are in scope:
 .RS
 .TP
 \fBinterp\fR
-A Tcl_Interp* typed C variable referencing the
+A variable of type \fBTcl_Interp*\fR which is the
 interpreter the code is running in\&.
 .TP
 \fB@@\fR
-A placeholder for the Tcl_Obj*-valued C expression
-providing the value of the argument to convert\&.
+A placeholder for an expression that evaluates to the
+\fBTcl_Obj*\fR to convert\&.
 .TP
 \fB@A\fR
-A placeholder for the name of the C variable to store the
+A placeholder for the name of the variable to store the
 converted argument into\&.
 .RE
 .IP
-As examples here are the definitions of two standard argument types:
+As examples, here are the definitions of two standard argument types:
 .CS
 
 
@@ -2416,7 +2161,7 @@ this is not the case an error is thrown\&.
 .TP
 \fB::critcl::argtypesupport\fR \fIname\fR \fIcode\fR ?\fIguard\fR?
 This command defines a C code fragment for the already defined
-argument type \fIname\fR which will be inserted before all functions
+argument type \fIname\fR which is inserted before all functions
 using that type\&. Its purpose is the definition of any supporting C
 types needed by the argument type\&.
 If the type is used by many functions the system ensures that only the
@@ -2429,7 +2174,7 @@ perform their own guarding\&.
 .TP
 \fB::critcl::argtyperelease\fR \fIname\fR \fIcode\fR
 This command defines a C code fragment for the already defined
-argument type \fIname\fR which will be inserted whenever the worker
+argument type \fIname\fR which is inserted whenever the worker
 function of a \fBcritcl::cproc\fR returns to the shim\&. It is the
 responsibility of this fragment to unconditionally release any
 resources the \fBcritcl::argtype\fR conversion code allocated\&.
@@ -2449,10 +2194,10 @@ CriTcl can be used in three different modes of operation, called
 .IP [3]
 \fIGenerate TEA Package\fR
 .PP
-Of these three \fICompile & Run\fR came first and is the default
-when using the package directly\&. In that case the package collects the
-C fragments, builds them as needed, and caches the results for quick
-reuse when the same code is used in the future again\&.
+\fICompile & Run\fR was the original mode and is the default for
+\fIcritcl_pkg\fR\&.  Collects the C fragments from the
+\fICritcl script\fR, builds them as needed, and caches the results to
+improve load times later\&.
 .PP
 The second mode, \fIGenerate Package\fR, was introduced to enable
 the creation of (prebuilt) deliverable packages which do not depend on
@@ -2866,8 +2611,8 @@ are not touched\&.
 .sp
 The copied values can be overridden later in the configuration
 file\&. Multiple \fBcopy\fR lines may exist for a platform and be
-intermixed with normal configuration definitions\&. If a variable is
-defined multiple times, the last definition will be used\&.
+intermixed with normal configuration definitions\&. Only the last definition of a
+variable is used\&.
 .IP [8]
 At last, a line of the form "\fBvariable\fR \fIvalue\fR"
 defines a default configuration variable and value\&.
@@ -3094,7 +2839,7 @@ extern const RngStubs *rngStubsPtr;
 #define TCL_STORAGE_CLASS DLLEXPORT
 
 const RngStubs* rngStubsPtr;
-
+
 /*
  *----------------------------------------------------------------------
  *
@@ -3141,9 +2886,7 @@ Rng_InitStubs(Tcl_Interp *interp, CONST char *version, int exact)
 .CE
 .PP
 .SH EXAMPLES
-As the set of examples is a bit large, and growing, it has been put
-into a separate document\&. Please see section "Embedding C" in the
-document about \fIUsing CriTcl\fR\&.
+See section "Embedding C" in \fIUsing CriTcl\fR\&.
 .PP
 The latest changes are found at the top\&.
 .SH "CHANGES FOR VERSION 3\&.1\&.18 (UNRELEASED)"
@@ -3190,6 +2933,14 @@ Feature\&. Package \fBcritcl::emap\fR bumped to version 1\&.2\&.
 Extended existing mode handling with \fB+list\fR extension
 enabling the conversion of multiple emap values into a list of
 their strings\&.
+.IP [12]
+Feature\&. Extended the set of available types by applying a few
+range restrictions to the scalar types (\fIint\fR,
+\fIlong\fR, \fIwideint\fR, \fIdouble\fR, \fIfloat\fR)\&.
+.sp
+Example: \fIint > 0\fR is now a viable type name\&.
+.sp
+For details see the package reference\&.
 .PP
 .SH "CHANGES FOR VERSION 3\&.1\&.17"
 .IP [1]
