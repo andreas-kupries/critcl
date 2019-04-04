@@ -68,13 +68,14 @@ the [vset critcl_script]:
 [comment ---------------------------------------------------------------------]
 [call [cmd ::critcl::api] [method function] [arg resulttype] [arg name] [arg arguments]]
 
-Adds to the public API of the [vset critcl_script] the signature the
-for the function named name [arg name] having the signature specified by
+Adds to the public API of the [vset critcl_script] the signature
+for the function named [arg name] and having the signature specified by
 [arg arguments] and [arg resulttype].  Code is generated for a [file .decls]
 file, the corresponding public headers, and a stubs table usable by
-[cmd {critcl::api import}].  [para] [arg arguments] is a multidict where each
-key is an argument type and its value is the argument name, and
-[arg resulttype] is a C type.
+[cmd {critcl::api import}].
+
+[para] [arg arguments] is a multidict where each key is an argument type and its
+value is the argument name, and [arg resulttype] is a C type.
 
 [comment ---------------------------------------------------------------------]
 [call [cmd ::critcl::api] [method header] [opt [arg {glob pattern}]...]]
@@ -85,12 +86,11 @@ added to [file Decls.h] for the [vset critcl_script].
 
 Returns an error if a [arg {glob pattern}] matches nothing.
 
-[para] A pattern for a relative pathname is resolved relative to the
-directory containing the [vset critcl_script].
+[para] [vset relative_pattern]
 
 [comment {
 	I am intentionally not documenting "critcl::api export".
-	I am not convinced yet that this method is is needed.
+	I am not convinced yet that this method is needed.
 	The default, using the package name as the stubs table
 	library and interface names seems to me to be not only
 	reasonable, but the only setting truly needed. I simply
@@ -105,7 +105,7 @@ directory containing the [vset critcl_script].
 
 Like [cmd {::critcl::api header}], but each [arg file] should exist in the
 external development environment.  An [term {#include}] directive is added to
-[file [var foo]Decls.h], but [arg fiile] is not copied to the package header
+[file [var foo]Decls.h], but [arg file] is not copied to the package header
 directory. [arg file] is not a glob pattern as Critcl has no context,
 i.e directory, in which to expand such patterns.
 
@@ -117,8 +117,8 @@ each companion [file .c] file.
 
 [para] In "compile & run" mode the generated header files and any companion
 headers are placed in the [sectref {Result Cache}] subdirectory for the
-[vset critcl_script]. This directory is added to the include search path any
-other package importing this API and and building in mode "compile & run".
+[vset critcl_script]. This directory is added to the include search path of
+any other package importing this API and and building in mode "compile & run".
 
 [para] In "generate package" mode [option -includedir] specifies the
 subdirectory in the package to place the generated headers in. This
