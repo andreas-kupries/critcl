@@ -105,7 +105,6 @@ is ignored.
 
 [para] The Tcl variables are created when the module is compiled, using the
 preprocessor in order to properly find all matching C definitions.
-Therefore [cmd critcl::ccode] and [cmd critcl::cheaders]
 
 [para]
 Produces no C code.  The desired C definitions must already exist.

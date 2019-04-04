@@ -26,7 +26,7 @@ Print the version to [const stdout] and exit.
 [opt_def -I path]
 
 Arranges for the compiler to search [arg path] for headers.
-[vset cumulative]
+[vset cumulative_opt]
 
 [vset teaignored]
 
@@ -34,7 +34,7 @@ Arranges for the compiler to search [arg path] for headers.
 [opt_def -L path]
 
 Arranges for the linker to search [arg path].
-[vset cumulative]
+[vset cumulative_opt]
 
 [vset teaignored]
 
@@ -91,7 +91,7 @@ Both [const memory] and [const symbols].
 
 [vset teaignored]
 
-[vset cumulative]
+[vset cumulative_opt]
 
 [comment %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%]
 [opt_def -disable name]
@@ -162,7 +162,7 @@ Adds [arg directory] to the list of directories the compiler searches for
 headers in. With [option -pkg], generated header files are saved in
 [arg directory].
 
-[vset cumulative]
+[vset cumulative_opt]
 
 The last value is used as the destination for generated header files.
 
