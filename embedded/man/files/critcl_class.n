@@ -2,7 +2,7 @@
 '\" Generated from file 'critcl_class\&.man' by tcllib/doctools with format 'nroff'
 '\" Copyright (c) 2011-2018 Andreas Kupries
 '\"
-.TH "critcl::class" n 1\&.0\&.6 doc "C Runtime In Tcl (CriTcl)"
+.TH "critcl::class" n 1\&.1 doc "C Runtime In Tcl (CriTcl)"
 .\" The -*- nroff -*- definitions below are for supplemental macros used
 .\" in Tcl/Tk manual entries.
 .\"
@@ -278,7 +278,7 @@ package require \fBTcl  8\&.4\fR
 .sp
 package require \fBcritcl  ?3\&.1\&.6?\fR
 .sp
-package require \fBcritcl::class  ?1\&.0\&.6?\fR
+package require \fBcritcl::class  ?1\&.1?\fR
 .sp
 \fB::critcl::class::define\fR \fIname\fR \fIscript\fR
 .sp
@@ -317,10 +317,10 @@ package require \fBcritcl::class  ?1\&.0\&.6?\fR
 .BE
 .SH DESCRIPTION
 .PP
-Welcome to the \fIC Runtime In Tcl\fR, \fICriTcl\fR for short, a
-system to build C extension packages for Tcl on the fly, from C code
-embedded within Tcl scripts, for all who wish to make their code go
-faster\&.
+\fIC Runtime In Tcl\fR, or \fICriTcl\fR , is a system for compiling C code
+embedded in Tcl on the fly and either loading the resulting objects into Tcl for
+immediate use or packaging them for distribution\&.  Use \fICriTcl\fR to improve
+performance by rewriting in C those routines that are performance bottlenecks\&.
 .PP
 This document is the reference manpage for the \fBcritcl::class\fR
 package\&. This package provides convenience commands for advanced
@@ -384,11 +384,11 @@ because the generated include directives will be put at the very
 beginning of the generated code\&. This is done to allow the use of the
 imported declarations within the instance type, and elsewhere\&.
 .sp
-The command can be used multiple times, each adding a header to
-include\&. It is of course possible to not use this command at all, for
-classing not making use of external definitions\&.
+Calls to this command are cumulative\&.
+It is of course possible to not use this command at all, for classes
+not making use of external definitions\&.
 .sp
-The result of the command is the empty string\&.
+The result is the empty string\&.
 .TP
 \fBsupport\fR \fIcode\fR
 This command specifies supporting C code, i\&.e\&. any definitions (types,
@@ -396,9 +396,9 @@ functions, etc\&.) needed by the \fIwhole\fR class and not fitting into
 class- and instance-methods\&. The code is embedded at global level,
 outside of any function or other definition\&.
 .sp
-The command can be used multiple times, each adding another
-segment of C code to insert\&. It is of course possible to not use this
-command at all, for classes not requiring supporting code\&.
+Calls to this command are cumulative\&.
+It is of course possible to not use this command at all, for classes
+not requiring supporting code\&.
 .sp
 The result of the command is the empty string\&.
 .TP

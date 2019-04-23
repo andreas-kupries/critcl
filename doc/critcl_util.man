@@ -1,3 +1,4 @@
+[include include/global.inc]
 [comment {-*- tcl -*- doctools manpage}]
 [manpage_begin critcl::util n 1]
 [include include/module2.inc]
@@ -77,9 +78,7 @@ prefixed with the [arg label], using [cmd critcl::msg].
 possible empty string as the result, if [cmd critcl::error] does not
 terminate execution.
 
-[para] Relative paths are allowed as elements of [arg paths], and are
-normalized relative to the directory containing the currently handled
-critcl file.
+[vset relative_path]
 
 [list_end]
 

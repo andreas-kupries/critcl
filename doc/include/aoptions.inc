@@ -1,233 +1,197 @@
+[include include/global.inc]
 
-The following options are understood
+[vset teaignored "
+[para]
+Ignored when generating a TEA package
+(see option [option -tea] below).
+"]
+
+[vset validated_on_build "
+[para] Validated only if one of the input files for the [vset critcl_script]
+actually defines and uses a custom build configuration option with that
+[arg name].
+"]
+
+
+The following options are understood:
 
 [list_begin options]
 [comment %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%]
 [opt_def -v]
 [opt_def --version]
 
-These options cause critcl to print its version to [const stdout] and
-then exit.
+Print the version to [const stdout] and exit.
 
 [comment %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%]
 [opt_def -I path]
 
-This option specifies an additional global include path to use during
-compilation of [file .critcl] files. All values are used if this is
-specified multiple times.
+Arranges for the compiler to search [arg path] for headers.
+[vset cumulative_opt]
 
-[para] This option is irrelevant when generating a TEA package (see
-option [option -tea] below).
+[vset teaignored]
 
 [comment %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%]
 [opt_def -L path]
 
-This option specifies an additional global library searh path to use
-during linking of [file .critcl] files. All values are used if this is
-specified multiple times.
+Arranges for the linker to search [arg path].
+[vset cumulative_opt]
 
-[para] This option is irrelevant when generating a TEA package (see
-option [option -tea] below).
+[vset teaignored]
 
 [comment %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%]
 [opt_def -cache path]
 
-This option specifies the path to the directory to use as the result
-cache. If not specified it defaults to [file ~/.critcl/<platform>],
-or, when generating a package (see option [option -pkg] below), to
-[file ~/.critcl/<pid>.<epoch>],
+Sets [arg path] as the directory to use as the result cache. The default is
+[file ~/.critcl/<platform>], or [file ~/.critcl/<pid>.<epoch>] when generating
+a package.  See option [option -pkg], below.
 
-When specified multiple times the last value is used.
-
-[para] This option is irrelevant when generating a TEA package (see
-option [option -tea] below).
+[vset teaignored]
 
 [comment %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%]
 [opt_def -clean]
 
-When specified the result cache is emptied, i.e. all files and
-directories found inside are deleted) before compilation begins.
+Arranges for all files and directories in the result cache to be deleted before
+compilation begins.
 
-[para] This option is irrelevant when generating a package (see option
-[option -pkg] below) because this mode starts out with a unique and
-empty result cache.
+[para] Ignored when generating a package because this mode starts out with a
+unique and empty result cache.  See option [option -pkg], below.
 
-[para] This option is irrelevant when generating a TEA package (see
-option [option -tea] below).
+[vset teaignored]
 
 [comment %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%]
 [opt_def -config path]
 
-This option specifies the path to a custom configuration file,
-allowing the user to use their own target specifications. If not
-specified a hardwired default configuration embedded in the system
-core is used instead.
+Provides a custom configuration file.  By default a configuration included in
+the system core is used.
 
 When specified multiple times the last value is used.
 
-[para] This option is irrelevant when generating a TEA package (see
-option [option -tea] below).
+[vset teaignored]
 
 [comment %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%]
 [opt_def -debug mode]
 
-This option activates compilation with debugging. It accepts the modes
-below.
+Activates one of the following debugging modes:
 
-When specified multiple times the combination of all modes is used.
-
-[para] This option is irrelevant when generating a TEA package (see
-option [option -tea] below).
 
 [list_begin definitions]
 [def [const memory]]
 
-This mode activates memory debugging of allocations made through the
-Tcl core.
+Track and report memory allocations made by the Tcl core.
 
 [def [const symbols]]
 
-This mode activates building of all [file .c] files with debugging
-symbols.
+Compile all [file .c] files with debugging symbols.
 
 [def [const all]]
 
-This mode activates both [const memory] and [const symbols].
+Both [const memory] and [const symbols].
 
 [list_end]
+
+[vset teaignored]
+
+[vset cumulative_opt]
 
 [comment %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%]
 [opt_def -disable name]
 
-This option sets the value of the custom build configuration option
+Sets the value of the custom build configuration option
 [arg name] to [const false]. It is equivalent to "-with-[arg name] 0".
 
-[para] The information is validated only if one of the [file .critcl]
-input files actually defines and uses a custom build configuration
-option with that [arg name].
+[vset validated_on_build]
 
-[para] This option is irrelevant when generating a TEA package (see
-option [option -tea] below).
+[vset teaignored]
 
 [comment %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%]
 [opt_def -enable name]
 
-This option sets the value of the custom build configuration option
+Sets the value of the custom build configuration option
 [arg name] to [const true]. It is equivalent to "-with-[arg name] 1".
 
-[para] The information is validated only if one of the [file .critcl]
-input files actually defines and uses a custom build configuration
-option with that [arg name].
+[vset validated_on_build]
 
-[para] This option is irrelevant when generating a TEA package (see
-option [option -tea] below).
+[vset teaignored]
 
 [comment %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%]
 [opt_def -force]
 
-When specified compilation is always done, even if a shared library
-for the file exists already. This effect can be had through cleaning
-the cache (see above) as well, except that it is lazy in the
-destruction of files and will not destroy files unrelated to the ones
-we are building.
+Forces compilation even if a shared library for the file already exists.
+Unlike cleaning the cache, this is lazy in the destruction of files and only
+affects relevant files.
 
-[para] This option is irrelevant when generating a package (see option
-[option -pkg] below) because this mode starts out with a unique and
-empty result cache.
+[para] Ignored when generating a package (see option [option -pkg], below),
+which starts out with a unique and empty result cache.
 
-[para] This option is irrelevant when generating a TEA package (see
-option [option -tea] below).
+[vset teaignored]
 
 [comment %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%]
 [opt_def -help]
 
-This option will cause the system to print a short help about command
-line syntax and options and then exit the application.
+Prints a short description of command line syntax and options and then exits
+the application.
 
 [comment %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%]
 [opt_def -keep]
 
-This option will cause the system to keep the [file .c] files
-generated by a run in the result cache.
+Causes the system to cache compiled [file .c] files.
 
-When generating a package (see option [option -pkg] below) this also
-prevents the deletion of the unique result cache used by the run.
+Also prevents the deletion of the unique result cache used by the run when
+generating a package (see option [option -pkg] below),
 
-This option is intended for the debugging of [cmd critcl] itself,
-where it may be necessary to inspect the generated C code.
+Intended for debugging of [cmd critcl] itself, where it may be necessary to
+inspect the generated C code.
 
-[para] This option is irrelevant when generating a TEA package (see
-option [option -tea] below).
+[vset teaignored]
 
 [comment %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%]
-[opt_def -libdir path]
+[opt_def -libdir directory]
 
-This option specifies the path under which the packages generated via
-option [option -pkg] are saved. It also specifies a path to search
-libraries in, like for [option -L].
+Adds [arg directory] to the list of directories the linker searches for
+libraries in (like [option -L]).  With [option -pkg], generated packages are
+saved in [arg directory].
 
 When specified multiple times the last value is used.
 
-When not specified at all the default, [file lib], is used. Note how
-this is a relative path, placing the result into the current working
-directory.
+The default is [file lib], resolved relative to the current working directory.
 
 [comment %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%]
-[opt_def -includedir path]
+[opt_def -includedir directory]
 
-This option specifies the path under which any generated package
-headers are saved. It also specifies a path to search include files
-in, like for [option -I].
+Adds [arg directory] to the list of directories the compiler searches for
+headers in. With [option -pkg], generated header files are saved in
+[arg directory].
 
-When specified multiple times the last value is used as destination,
-however all previous values are kept on the include search path.
+[vset cumulative_opt]
 
-When not specified at all the default, [file include], is used. Note
-how this is a relative path, placing the result into the current
-working directory.
+The last value is used as the destination for generated header files.
 
-[para] This option is irrelevant when generating a TEA package (see
-option [option -tea] below).
+The default is the relative directory [file include], resolved relative to the
+current working directory.
+
+[vset teaignored]
 
 [comment %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%]
 [opt_def -pkg]
 
-The default mode of the application is to build the [file .critcl]
-files listed on the command line and save the results in the result
-cache. Essentially pre-filling the cache with important packages,
-cutting down on the time needed to use these packages.
+Generates a package from the [vset critcl_script] files.  Input files are
+processed first as usual, but are then bundled into a single library, with
+additional generated files to form the library into a standard Tcl package.
 
 [para]
 
-This option activates one of the other modes, package generation.
-
-In this mode the input files are processed first as usual, however
-after that they are bundled into a single library and additional files
-are generated to make this library usable as a regular Tcl package.
-
-[para]
-
-The option [option -tea], see below, invokes the last mode, TEA
 generation. If both options, i.e. [option -pkg] and [option -tea] are
 specified the last one specified wins.
 
 [para]
 
-In this mode the options [option -clean] and [option -force] are
-irrelevant and ignored. In contrast, the option [option -libdir] is
+Options [option -clean] and [option -force] are ignored. [option -libdir] is
 relevant in both this and [option -tea] mode.
 
 [para]
 
-When this option is specified the basename of the first file argument
-after the options is used as the name of the package to generate. If
-the extension of that file indicates a shared library ([file .so],
-[file .sl], [file .dylib], and [file .dll]) it is also removed from
-the set of input files. A [file .tcl] file is kept as part of the
-input. A single file without extension is assumed to actually have a
-[file .tcl] extension. A file without extension, but other input files
-following is treated like the name of a shared library proper, and
-removed from the set of input files.
+[vset pkg_namerules]
+
 
 [para] Examples:
 
@@ -262,83 +226,62 @@ removed from the set of input files.
 [comment %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%]
 [opt_def -show]
 
-This option, when specified, will cause the system to print the
-configuration of the chosen target to [const stdout] and then exit.
+Prints the configuration of the chosen target to [const stdout] and then exits.
 
-The choice of target can be influenced through the option
-[option -target] (see below).
+Set [option -target], below.
 
 [comment %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%]
 [opt_def -showall]
 
-This option, when specified, will cause the system to print the whole
-chosen configuration file to [const stdout] and then exit.
+Prints the whole chosen configuration file to [const stdout] and then exits.
 
-The choice of configuration file can be influenced through the option
-[option -config] (see above).
+See [option -config], above.
 
 [comment %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%]
 [opt_def -target name]
 
-This option overrides the default choice of build target with
-the user's choice.
+Overrides the default choice of build target.
 
-When specified multiple times the last value is used.
+Only the last occurrence of this option is used.
 
 The named target must exist in the chosen configuration file.
 
-Use option [option -targets] (see below) to get a list of the
+Use [option -targets] (see below) to get a list of the
 acceptable targets.
 
-The choice of configuration file can be influenced through the option
-[option -config] (see above).
+Use [option -config] to select the configuration file. 
 
-[para] This option is irrelevant when generating a TEA package (see
-option [option -tea] below).
+[vset teaignored]
 
 [comment %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%]
 [opt_def -targets]
 
-This option, when specified, will cause the system to print the list
-of all known targets from the chosen configuration file to
-[const stdout] and then exit.
+Prints the list of all known targets from the chosen configuration file to
+[const stdout] and then exits.
 
-The choice of configuration file can be influenced through the option
-[option -config] (see above).
+Use [option -config] to select the configuration file. 
 
 [comment %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%]
 [opt_def -tea]
 
-Similar to option [option -pkg], except that the invoked mode does not
-generate binaries, but a directory hierarchy containing the
-[file .critcl] file, its companion files, and a TEA-lookalike build
-system with most of the needed support code (incliding copies of the
-critcl packages).
+Like [option -pkg], except no binaries are generated. Creates a directory
+hierarchy containing the [vset critcl_script], its companion files, and a
+TEA-conformant build system with most of the needed support code, including
+copies of the critcl packages.
 
 [para]
 
-If both options, i.e. [option -pkg] and [option -tea] are specified
-the last one specified wins.
+If both [option -pkg] and [option -tea] are specified the last occurrence wins.
 
 [para]
 
-In this mode the options [option -I], [option -L], [option -clean],
+[option -I], [option -L], [option -clean],
 [option -force], [option -cache], [option -includedir], [option -enable],
-[option -disable], and [option -with-[var FOO]] are irrelevant and
+[option -disable], and [option -with-[var FOO]] are 
 ignored. In contrast, the option [option -libdir] is relevant in both
 this and [option -pkg] mode.
 
-[para]
-
-When this option is specified the basename of the first file argument
-after the options is used as the name of the package to generate. If
-the extension of that file indicates a shared library ([file .so],
-[file .sl], [file .dylib], and [file .dll]) it is also removed from
-the set of input files. A [file .tcl] file is kept as part of the
-input. A single file without extension is assumed to actually have a
-[file .tcl] extension. A file without extension, but other input files
-following is treated like the name of a shared library proper, and
-removed from the set of input files.
+[para] [vset pkg_namerules]
 
 [para] Examples:
 
@@ -380,7 +323,6 @@ This option sets the value of the custom build configuration option
 input files actually defines and uses a custom build configuration
 option with that [arg name].
 
-[para] This option is irrelevant when generating a TEA package (see
-option [option -tea] above).
+[vset teaignored]
 
 [list_end]

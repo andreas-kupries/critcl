@@ -242,8 +242,8 @@ are not touched.
 
 [para] The copied values can be overridden later in the configuration
 file. Multiple [const copy] lines may exist for a platform and be
-intermixed with normal configuration definitions. If a variable is
-defined multiple times, the last definition will be used.
+intermixed with normal configuration definitions. Only the last definition of a
+variable is used.
 
 [comment {============================================================}]
 [enum] At last, a line of the form "[var variable] [arg value]"

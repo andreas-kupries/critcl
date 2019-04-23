@@ -7,10 +7,10 @@ CriTcl can be used in three different modes of operation, called
 [enum] [term {Generate TEA Package}]
 [list_end]
 
-Of these three [term {Compile & Run}] came first and is the default
-when using the package directly. In that case the package collects the
-C fragments, builds them as needed, and caches the results for quick
-reuse when the same code is used in the future again.
+[term {Compile & Run}] was the original mode and is the default for
+[manpage {critcl_pkg}].  Collects the C fragments from the
+[vset critcl_script], builds them as needed, and caches the results to
+improve load times later.
 
 [para]
 

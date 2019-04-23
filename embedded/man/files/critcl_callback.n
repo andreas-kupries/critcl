@@ -291,10 +291,10 @@ package require \fBcritcl::callback  ?0\&.1?\fR
 .BE
 .SH DESCRIPTION
 .PP
-Welcome to the \fIC Runtime In Tcl\fR, \fICriTcl\fR for short, a
-system to build C extension packages for Tcl on the fly, from C code
-embedded within Tcl scripts, for all who wish to make their code go
-faster\&.
+\fIC Runtime In Tcl\fR, or \fICriTcl\fR , is a system for compiling C code
+embedded in Tcl on the fly and either loading the resulting objects into Tcl for
+immediate use or packaging them for distribution\&.  Use \fICriTcl\fR to improve
+performance by rewriting in C those routines that are performance bottlenecks\&.
 .PP
 This document is the reference manpage for the
 \fBcritcl::callback\fR package\&.

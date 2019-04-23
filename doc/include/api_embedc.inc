@@ -1,260 +1,190 @@
 
-The package provides five commands to declare various types of C code
-fragments. These are:
+The following commands append C code fragments to the current module.  Fragments
+appear in the module in the order they are appended, so the earlier fragments
+(variables, functions, macros, etc.) are visible to later fragments.
 
 [list_begin definitions]
 [comment ---------------------------------------------------------------------]
-[call [cmd ::critcl::ccode] [arg text]]
+[call [cmd ::critcl::ccode] [arg fragment]]
 
-This command compiles the C code in [arg text] and makes the
-contained definitions (variables, functions, macros, etc.) available
-to all C code fragments specified after it. It itself can assume to
-have access to all definitions which were specified before it.
+Appends the C code in [arg fragment] to the current module and returns the
+empty string.
 
-See section [sectref {Runtime Behaviour}] for more details.
+See [sectref {Runtime Behaviour}].
+
+[comment ---------------------------------------------------------------------]
+[call [cmd ::critcl::ccommand] [arg tclname] [arg cname]]
+
+As documented below, except that [arg cname] is the name of a C function
+that already exists.
+
+
+[comment ---------------------------------------------------------------------]
+[call [cmd ::critcl::ccommand] [arg tclname] [arg arguments] [arg body] [
+	opt "[arg option] [arg value]..."]]
+
+Appends the code to create a Tcl command named [arg tclname] and a
+corresponding C function whose body is [arg body] and which behaves as
+documented for Tcl's own
+[uri https://www.tcl-lang.org/man/tcl/TclLib/CrtObjCmd.htm Tcl_CreateObjCommand].
 
 [para]
-The result of the command is the empty string.
+[arg aguments] is a list of zero to four names for the standard arguments
+[const clientdata], [const interp], [const objc], and [const objv].  The
+standard default names are used in place of any missing names.
 
-[comment ---------------------------------------------------------------------]
-[call [cmd ::critcl::ccommand] [arg tclname] [arg cfunname]]
+This is a more low-level way than [cmd critcl::cproc] to define a command, as
+processing of the items in [const objv] is left to the author, affording
+complete control over the handling of the arguments to the command.
 
-This command creates a new Tcl command named [arg tclname] which is
-implemented by the C function [arg cfunname].
+See section [sectref {Runtime Behaviour}].
 
-It is expected that [arg cfunname] has the proper signature for a Tcl
-command function, and was declared already.
+[para] 
+Returns the empty string.
 
-[para] The result of [cmd ::critcl::ccommand] itself is the empty
-string.
-
-[comment ---------------------------------------------------------------------]
-[call [cmd ::critcl::ccommand] [arg tclname] [arg arguments] [arg body] [opt "[arg option] [arg value]..."]]
-
-This form of [cmd critcl::ccommand] creates a new Tcl command named
-[arg tclname] which is implemented by the C code in [arg body].
-
-[para] The command wraps the [arg body] in an invisible C function,
-compiles it and makes the resulting definition available to all C code
-fragments declared later on. It itself can assume to have access to
-all definitions which came before it.
-
-See section [sectref {Runtime Behaviour}] for more details.
-
-[para] The result of [cmd critcl::ccommand] itself is the empty
-string.
-
-[para] The list of [arg arguments] contain the names for the four
-parameters required by a Tcl command function. Superfluous list
-elements (i.e. beyond the fourth) are ignored. Missing elements
-(parameters), and empty parameter names are handled by replacing them
-with standard names. These are, in order of usage
-
-[list_begin enumerated]
-[enum] [const clientdata]
-[enum] [const interp]
-[enum] [const objc]
-[enum] [const objv]
-[list_end]
-
-The only options accepted by this command are:
+[para]
+Each [arg option] may be one of:
 
 [list_begin options]
 [opt_def -clientdata [arg c-expression]]
 
-The value of this option is the text of a single C expression. The
-value of expression is used in the generated C statement registering
-[arg tclname] to initialize the client data of the new Tcl command.
-
-If not specified the expression defaults to [const NULL], i.e. no
-client data.
+Provides the client data for the new command.  [const NULL] by default.
 
 [opt_def -delproc [arg c-expression]]
 
-The value of this option is the text of a single C expression. The
-value of this expression has to be a function pointer of type
-"Tcl_CmdDeleteProc", which is used in the generated C statement
-registering [arg tclname] to initialize a deletion function for the
-new Tcl command, i.e. a function which is run by Tcl when the Tcl
-command is deleted again.
+Provides a function pointer of type [uri \
+	https://www.tcl-lang.org/man/tcl/TclLib/CrtObjCmd.htm \
+	Tcl_CmdDeleteProc
+] as the deletion function for the new command.  [const NULL] by default.
 
-If not specified the expression defaults to [const NULL], i.e. no
-deletion function.
 
-[opt_def -cname [arg boolean]]
-
-The value of this option is a boolean flag. If [const true] the name
-of the command is the C identifier of the command function.
-Namespaces, etc. are in that case not relevant at all. The default
-value of this option is [const false], causing the system to derive a
-name from the Tcl level command name, including its namespace.
+[include api_embedc_cnameoption.inc]
 
 [list_end]
-
-A ccommand is, in comparison to functions defined via
-[cmd critcl::cproc], more lower level.
-
-Its advantage is that the developer [emph can] do their own argument
-processing, enabling things like variable number of arguments,
-options, etc., i.e. much higher flexibility.
-
-Their disadvantage is that you [emph have] to do your own argument
-processing. Where a [cmd critcl::cproc] generates the code to convert
-from Tcl values to C values and back a [cmd critcl::ccommand] forces
-the writer to do all of this on their own. I.e. the cost of the
-aforementioned flexibility is a higher complexity seen by the user.
 
 [comment ---------------------------------------------------------------------]
 [call [cmd ::critcl::cdata] [arg tclname] [arg data]]
 
-This command creates a new Tcl command named [arg tclname] which returns
-[arg data] as a ByteArray result.
+Appends the code to create a new Tcl command named [arg tclname] which returns
+[arg data] as a [const ByteArray] result.
 
-[para] The result of [cmd critcl::cdata] itself is the empty string.
+[para]
+Returns the empty string.
 
 [comment ---------------------------------------------------------------------]
 [call [cmd ::critcl::cconst] [arg tclname] [arg resulttype] [arg value]]
 
-This command creates a new Tcl command named [arg tclname] which returns
-the constant [arg value] as its result, with Tcl type [arg resulttype].
+Appends the code to create a new Tcl command named [arg tclname] which returns
+the constant [arg value] having the Tcl type [arg resulttype].  [arg value] can
+be a C macro or a function [emph call] (including the parentheses) to any
+visible C function that does not take arguments.
 
-[para] The result of [cmd critcl::cconst] itself is the empty string.
+Unlike [cmd critcl::cdata], [arg resulttype] can be any type known to
+[cmd critcl::cproc].
 
-[para] The command is similar to [cmd critcl::cdata] in that it returns a
-constant value. Contrary to [cmd critcl::cdata] however it is not restricted
-to ByteArray results, but accepts all result-types known to [cmd critcl::cproc].
-Its semantics are actually equivalent to
+Its semantics are equivalent to:
 
 [example {
     cproc $tclname {} $resulttype "return $value ;"
 }]
 
-[para] Contrary to [cmd critcl::cproc] however it is internally optimized to
-avoid generating a superfluous C function.
+[para] This is more efficient than [cmd critcl::cproc] since there is no
+C function generated.
 
-[para] Note that nothing prevents the user from using a C define for the
-[arg value]. Any visible C function is actually also allowed, as long as
-it does not take arguments.
+[para]
+Returns the empty string.
 
 [comment ---------------------------------------------------------------------]
-[call [cmd ::critcl::cdefines] [arg definitions] [opt [arg namespace]]]
+[call [cmd ::critcl::cdefines] [arg {list of glob patterns}] [opt [arg namespace]]]
 
-This command creates Tcl variables in the specified [arg namespace]
-which are linked to the [term {C enum values}] and [term #define]s
-named as [term {glob patterns}] in the list of [arg definitions]. Each
-variable has the same name as the definition which gave rise to it,
-and its value is the value of the corresponding enum value or
-#define. The namespace defaults to the global namespace, i.e. "::", if
-it wasn't specified explicitly.
+Arranges for [term {C enum}] and [term #define] values that match one of the
+patterns in [term {glob patterns}] to be created in the namespace
+[arg namespace], each variable having the same as the corresponding C item.
+The default namespace is the global namespace.  A pattern that matches nothing
+is ignored.
 
-[para] Please note that this command is only for the lifting of
-[emph existing] C definitions into Tcl. The command [emph {does not}]
-create the definitions in C. It actually goes so far to check for the
-presence of the named definitions and not performing the mapping for
-any which do not exist. Which is sensible, given that non-existing
-defines have no value which could be used in the mapping.
+[para] The Tcl variables are created when the module is compiled, using the
+preprocessor in order to properly find all matching C definitions.
 
-[para] As these checks are run at the time the embedded C code of a
-[file .critcl] file is actually compiled they have access to and check
-[emph all] C fragments defined with [cmd critcl::ccode], plus all the
-headers it has access to via [cmd critcl::cheaders], for that file.
+[para]
+Produces no C code.  The desired C definitions must already exist.
 
 [comment ---------------------------------------------------------------------]
 [call [cmd ::critcl::cproc] [arg name] [arg arguments] [arg resulttype] [arg body] \
       [opt "[arg option] [arg value]..."]]
 
-This command creates a new Tcl command named [arg tclname] which is
-implemented by the C code in [arg body].
+Appends a function having [arg body] as its body, another shim function to
+perform the needed conversions, and the code to create a corresponding Tcl
+command named [arg tclname].  Unlike [cmd critcl::ccommand] the arguments and
+result are typed, and Critcl generates the code to convert between Tcl_Obj
+values and C data types.
 
-In contrast to the low-level [cmd critcl::ccommand] here the arguments
-and result are typed and critcl generates the code converting from
-Tcl_Obj's to C data types, and vice versa.
+See also [sectref {Runtime Behaviour}].
 
-The command creates two invisible C functions, one wrapping the
-[arg body], the other a shim containing the necessary conversions,
-compiles them and makes the resulting definitions available to all C
-code fragments declared later on. It itself can assume to have access
-to all definitions which came before it.
+[para]
+Returns the empty string.
 
-See section [sectref {Runtime Behaviour}] for more details.
-
-[para] The result of [cmd critcl::cproc] itself is the empty string.
-
-[para] The only options accepted by this command are:
-
+[para]
+Each [arg option] may be:
 [list_begin options]
-[opt_def -cname [arg boolean]]
 
-The value of this option is a boolean flag. If [const true] the name
-of the command is the C identifier of the command function.
-Namespaces, etc. are in that case not relevant at all. The default
-value of this option is [const false], causing the system to derive a
-name from the Tcl level command name, including its namespace.
+[include api_embedc_cnameoption.inc]
 
 [opt_def -pass-cdata [arg boolean]]
 
-The value of this option is a boolean flag. If specified and set the
-shim translating from Tcl to C level and back will pass the command's
-ClientData to the function.
+If [const false] (the default), the shim function performing the conversion to
+and from Tcl level does not pass the ClientData as the first argument to
+the function.
 
-If not specified the flag defaults to [const false], i.e. no passing
-of client data.
 
 [opt_def -arg-offset [arg int]]
 
-The value of this option is a positive integer number specifying the
-number of hidden arguments preceding the actual procedure
-arguments.
-
-If not specified the flag defaults to [const 0].
-
-This is useful to higher-order code generator using the command in
-settings with prefix arguments which are not directly seen by the
-function, but influence argument counting and extraction.
+A non-negative integer, [const 0] by default, indicating the number of hidden
+arguments preceding the actual procedure arguments.  Used by higher-order code
+generators where there are prefix arguments which are not directly seen by the
+function but which influence argument counting and extraction.
 
 [list_end]
 
-Below is the list of predefined types legal for [arg resulttype], plus
-the details of their semantics. Note that it is possible to extend
-this list with custom types if the standard does not support what is
-needed. See section [sectref {Advanced: Extending cproc}] for details.
+[arg resulttype] may be one of the following predefined types or a custom type.
+See section [sectref {Advanced: Extending cproc}].  Unless otherwise noted, the
+Tcl return code is always [const TCL_OK].
 
 [comment {% % %% %%% %%%%% %%%%%%%% %%%%%%%%%%%%% %%%%%%%%%%%%%%%%%%%%%}]
 [include api_stdrt_cproc.inc]
 [comment {% % %% %%% %%%%% %%%%%%%% %%%%%%%%%%%%% %%%%%%%%%%%%%%%%%%%%%}]
 
-[para] The [arg arguments] parameter has the overall syntax of a Tcl
-dictionary value, except that keys (argument names) and values
-(argument types) are specified in reverse order. Consider the
-example [example {
+[para] The [arg arguments] is a multidict where each key is an argument type
+and its value is the argument name.  For example:
+
+[example {
 int x int y
-}] where [arg x] and [arg y] are the arguments/keys, both
-mapped to type/value [const int].
+}]
 
-[para] The argument names must be valid C identifiers.
+[para] Each argument name must be a valid C identifier.
 
-[para] A limited form of variadic arguments is possible, through
-optional arguments with default values. For these the argument name is
-a 2-element list containing the actual name, and the default value.
+[para] If the name is a list containing two items, the first item is the name
+and the second item is the default value.  A limited form of variadic arguments
+can be accomplished using such default values.
 
-For example, in the declaration [example { int {x 1} }] [arg x] is an
-optional argument of type [type int] and default value [const 1].
+Example:
 
-[para] A caveat! The default value is assigned unconditionally. If a
-custom argument type uses more complex validation, and the default may
-be invalid according to it, then the relevant checks have to be done
-in the procedure body. The argument conversion cannot do it as it is
-completely bypassed when the argument is not present. Overcoming this
-requires the separation of argument conversion and validation code.
+[example { int {x 1} }]
 
-[para] Below is the list of predefined types legal for arguments, plus
-the details of their semantics. Note that it is possible to extend
-this list with custom types if the standard does not support what is
-needed. See section [sectref {Advanced: Extending cproc}] for details.
+[arg x] is an optional argument of type [type int] with a default value of
+[const 1].
 
-[para] Further note that the type of the first argument is allowed to
-be [const Tcl_Interp*]. In that case the argument in question is
-[emph not] counted as an argument of the new Tcl command.
+[para] Argument conversion is completely bypassed when the argument is not
+provided, so a custom converter doing validation does not get the chance to
+validate the default value.  In this case, the value should be checked in the
+body of the function.
+
+[para] Each argument type may be one of the following predefined types or a
+custom type.   See [sectref {Advanced: Extending cproc}].
+
+[para] If the type of the first argument is [const Tcl_Interp*], it is not
+counted as counted as an argument of the new Tcl command, and is a reference
+to the current interpreter.
 
 [comment {% % %% %%% %%%%% %%%%%%%% %%%%%%%%%%%%% %%%%%%%%%%%%%%%%%%%%%}]
 [include api_stdat_cproc.inc]
@@ -263,42 +193,33 @@ be [const Tcl_Interp*]. In that case the argument in question is
 [comment ---------------------------------------------------------------------]
 [call [cmd ::critcl::cproc] [arg name] [arg arguments] [arg resulttype]]
 
-This variant of [cmd critcl::cproc] assumes that the functionality to
-connect to is implemented by the C function [arg name] which has the
-signature described by the [arg arguments] and [arg resulttype].
+As documented below, but used when the C function named [arg name] already
+exists.
 
-[para] It creates only the shim performing the conversions required by
-arguments and result.
 
 [comment ---------------------------------------------------------------------]
 [call [cmd ::critcl::cinit] [arg text] [arg externals]]
 
-This command compiles the C code in [arg text] and [arg externals].
+Appends the C code in [arg text] and [arg externals], but only after all the
+other fragments appended by the previously-listed commands regardless of their
+placement in the [vset critcl_script] relative to this command.  Thus, all
+their content is visible.  See also [sectref {Runtime Behaviour}].
 
-[para] Both arguments have access to all definitions created by the
-previously listed commands, regardless of their placement in the
-[file .critcl] file relative to this command.
-See section [sectref {Runtime Behaviour}] for more details.
+[para] The C code in [arg text] is placed into the body of the initialization
+function of the shared library backing the [vset critcl_script], and is
+executed when this library is loaded into the interpreter.  It has access to
+the variable [var {Tcl_Interp* interp}] referencing the Tcl interpreter currently
+being initialized.
 
-[para] The C code in [arg text] is put into the body of the
-initialization function of the shared library backing the
-[file .critcl] file, and is executed when this library is loaded into
-the interpreter.
+[para] [arg externals] is placed outside and just before the initialization
+function, making it a good place for any external symbols required by
+initialization function, but which should not be accessible by any other parts
+of the C code.
 
-[para] This code has access to a variable [var interp] of type
-[const Tcl_Interp*] referencing the Tcl interpreter currently being
-initialized.
-
-[para] The code in [arg externals] on the other hand is placed outside
-and just before the initialization function, making this is a good
-place for any external symbols required by initialization function
-which should not be accessible by any other parts of the C code.
-
-[para] Multiple invokations of this command are allowed, and a later
-call has access to the information of all preceding ones.
+[para] [vset cumulative]
 
 [para]
-The result of the command is the empty string.
+Returns the empty string.
 
 [comment ---------------------------------------------------------------------]
 [call [cmd ::critcl::include] [arg path]]

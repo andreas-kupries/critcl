@@ -1,122 +1,96 @@
+[include include/global.inc]
 
-Newly introduced with critcl version 3 is the support for stubs
-tables, Tcl's dynamic linking mechanism handling the resolution of
+Critcl versions 3 and later provide [cmd critcl::api] to create and manipulate
+stubs tables, Tcl's dynamic linking mechanism handling the resolution of
 symbols between C extensions.
 
-We won't go into its details here. See [uri http://wiki.tcl.tk/285]
-for an introduction in general, and section [sectref {Stubs Tables}]
-for the details of critcl's particular variant.
+See [uri http://wiki.tcl-lang.org/285]
+for an introduction, and section [sectref {Stubs Tables}]
+for the details of Critcl's particular variant.
 
-[para] Critcl supports this via a single command, [cmd critcl::api],
-and its methods.
-
-[para] First, importing stubs tables, i.e. APIs, from another
-extension:
+[para]
+Importing stubs tables, i.e. APIs, from another extension:
 
 [list_begin definitions]
 [comment ---------------------------------------------------------------------]
 [call [cmd ::critcl::api] [method import] [arg name] [arg version]]
 
-Critcl prepares the [file .critcl] file [emph and] its companion
-[file .c] files by including the headers
+Adds the following include directives into the [vset critcl_script]
+[emph and] each of its companion [file .c] files:
 
 [list_begin enumerated]
-[enum] [file [var name]/[var name]Decls.h]
-[enum] [file [var name]/[var name]StubLib.h]
+[enum] #include <[var name]/[var name]Decls.h>
+[enum] #include <[var name]/[var name]StubLib.h>
 [list_end]
 
-in the appropriate places. It is checked that the compiler will be
-able to find these header files somewhere on the include search
-path, using the paths defined so far (See [cmd critcl::cheaders], and
-the critcl application's [option -I] and [option -includedir]
-options). Note how critcl expects the headers of package [var foo] to
-reside in a sub-directory [file foo] of the known include search
-paths.
+Returns an error if [file [var name]] isn't in the search path for the
+compiler.  See [cmd critcl::cheaders] and the critcl application's [option -I]
+and [option -includedir] options.
 
-[para] [emph Important:] If [var foo] is a namespaced package name,
-like, for example "c::stack", then the namespace separators "::" are
-converted into underscores ("_") in path names, C code, etc.
+[para] [emph Important:] If [var name] is a fully-qualified name in a
+non-global namespace, e.g.
+"c::stack", the namespace separators "::" are converted into underscores
+("_") in path names, C code, etc.
 
-[para] The first header is expected to contain contains all the
-necessary stubs table type declarations, mapping macros, etc., and may
-include package specific headers (See [cmd {critcl::api header}]
-below).
+[para] [var name]/[var name]Decls.h contains the stubs table type declarations,
+mapping macros, etc., and may include package-specific headers.  See
+[cmd {critcl::api header}], below.  An [term {#include}] directive is added at
+the beginning of the generated code for [vset critcl_script] and at the
+beginning of each of its companion [file .c] files.
 
-This header is included at the beginning of the C code backing the
-[file .critcl] file, and at the beginning of all companion [file .c]
-files. This means that the writer of these files doesn't have to write
-the necessary [term {#include}] directory, critcl does it for them.
+[para] [var name]/[var name]StubLib.h contains the stubs table variable
+definition and the function to initialize it.  An [term {#include}] directive
+for it is added to the initialization code for the [vset critcl_script] ,
+along with a call to the initializer function.
 
-[para] The second header is expected to contain the stubs table
-variable definition, and the C code, i.e. definition, of the function
-to initialize it.
-
-This, and a call to this initializer function are added to the
-[file .critcl] file's initialization code.
-
-[para] If the directory containing the aforementioned headers also
-contains the file [file [var name]/[var name].decls] then it is
-assumed that this file contains the external representation of the
-stubs table used to generate the headers. The file is read and the
-internal representation of the stubs table returned as result of the
-command, for the importing package to use as it sees fit. If no such
-file is present the command returns the empty string as its result.
+[para] If [file [var name]/[var name].decls] accompanies
+[var name]/[var name]Decls.h, it should contain the external representation of
+the stubs table used to generate the headers. The file is read and the internal
+representation of the stubs table returned for use by the importing package.
+Otherwise, the empy string is returned.
 
 [para] One possible use would be the automatic generation of C code
 calling on the functions listed in the imported API.
 
-[para] When generating a TEA wrapper the names of the imported APIs
+[para] When generating a TEA package the names of the imported APIs
 are used to declare [syscmd configure] options with which the user can
-declare a non-standard location for the headers of the API. Any API
-[var FOO] is translated a single configure option
-[option --with-[var FOO]-include].
+declare a non-standard directory for the headers of the API. Any API
+[var name] is translated into a single configure option
+[option --with-[var name]-include].
 
 [list_end]
 
 
-[para] Second, declaration and export of a stubs table, i.e. API, for
-the current package, [var foo]:
+[para] Declaration and export of a stubs table, i.e. API, for
+the [vset critcl_script]:
 
 [list_begin definitions]
 [comment ---------------------------------------------------------------------]
 [call [cmd ::critcl::api] [method function] [arg resulttype] [arg name] [arg arguments]]
 
-This method declares that the function [arg name] is in the public API
-of the package, and its signature (type of the result, number, names
-and types of its arguments).
+Adds to the public API of the [vset critcl_script] the signature
+for the function named [arg name] and having the signature specified by
+[arg arguments] and [arg resulttype].  Code is generated for a [file .decls]
+file, the corresponding public headers, and a stubs table usable by
+[cmd {critcl::api import}].
 
-Using this method automatically causes critcl to generate both the
-code for a stubs table in the package, the headers needed by packages
-using this API, and a [file .decls] file containing the stubs table
-implied by the exports, usable by [cmd {critcl::api import}].
-
-[para] [arg arguments] is a list of C types and associated argument
-names. Like a dictionary, except that keys (argument names) and values
-(argument types) are swapped. The [arg resulttype] is a C type as well.
+[para] [arg arguments] is a multidict where each key is an argument type and its
+value is the argument name, and [arg resulttype] is a C type.
 
 [comment ---------------------------------------------------------------------]
-[call [cmd ::critcl::api] [method header] [opt [arg pattern]...]]
+[call [cmd ::critcl::api] [method header] [opt [arg {glob pattern}]...]]
 
-This method notifies critcl of companion header files which have to be
-exported together with the generated stubs headers.
+Each file matching a [arg {glob pattern}] is copied into the directory
+containing the generated headers, and an [term {#include}] directive for it is
+added to [file Decls.h] for the [vset critcl_script].
 
-[para] All arguments are interpreted as glob pattern and the matching
-files are copied into the directory containing the generated headers
-well. As an importing package uses only [file [var foo]Decls.h] to
-access the API this generated header will contain the necessary
-[term {#include}] directives to make these companion header files and their
-declarations available too.
+Returns an error if a [arg {glob pattern}] matches nothing.
 
-Patterns matching no file or non-existing files cause the command to
-throw an error.
-
-[para] [emph Note] that patterns which are not beginning with an
-absolute path are interpreted relative to the directory containing the
-current [file .critcl] file.
+[para] [vset relative_pattern]
 
 [comment {
 	I am intentionally not documenting "critcl::api export".
-	I am not convinced yet that this methis is needed.
+	I am not convinced yet that this method is needed.
 	The default, using the package name as the stubs table
 	library and interface names seems to me to be not only
 	reasonable, but the only setting truly needed. I simply
@@ -129,45 +103,32 @@ current [file .critcl] file.
 [comment ---------------------------------------------------------------------]
 [call [cmd ::critcl::api] [method extheader] [opt [arg file]...]]
 
-This method is similar [cmd {::critcl::api header}], in that it
-notifies critcl of companion header files which have to be exported
-together with the generated stubs headers.
-
-[para] The difference is that these headers will be expected to exist
-in the external development environment.
-
-As such they will be [term {#include}]d in the generated header for
-the package, but not copied to the package header directory. Nor are
-they allowed to be glob patterns, as critcl has no context, i.e
-directory, in which to expand such patterns.
+Like [cmd {::critcl::api header}], but each [arg file] should exist in the
+external development environment.  An [term {#include}] directive is added to
+[file [var foo]Decls.h], but [arg file] is not copied to the package header
+directory. [arg file] is not a glob pattern as Critcl has no context,
+i.e directory, in which to expand such patterns.
 
 [list_end]
 
-Note that the generated headers for an exported API are included in
-the package like it is done when importing it somewhere else. To repeat:
+As with the headers for an imported API, an [term {#include}] directive is
+added to the generated code for the [vset critcl_script] and to
+each companion [file .c] file.
 
-[para] The [file [var foo]Decls.h] header is included at the beginning
-of the C code backing the [file .critcl] file, and at the beginning of
-all companion [file .c] files. This means that the writer of these
-files doesn't have to write the necessary [term {#include}] directory,
-critcl does it for them.
+[para] In "compile & run" mode the generated header files and any companion
+headers are placed in the [sectref {Result Cache}] subdirectory for the
+[vset critcl_script]. This directory is added to the include search path of
+any other package importing this API and and building in mode "compile & run".
 
-[para] In mode "compile & run" the generated header files, and their
-companion headers, if any, are placed in the subdirectory [file foo]
-of the [sectref {Result Cache}]. As this location is implicitly added
-to the include search path any other package importing this API and
-and build in mode "compile & run" as well will find the these headers.
+[para] In "generate package" mode [option -includedir] specifies the
+subdirectory in the package to place the generated headers in. This
+directory is added to the search paths for header files, ensuring that a
+package importing an API finds it if the package exporting that API used the
+same setting for [option -includedir].
 
-[para] For mode "generate package" the application was extended with a
-new option [option -includedir] which specifies the location to place
-the generated headers in (again in subdirectory [file foo] of that
-path). This path is also be added to the include search paths,
-ensuring that a package importing an API will find it if the package
-exporting that API used the same setting for [option -includedir].
-
-[para] For mode "generate TEA" the static scanner was extended to
-recognize [cmd {critcl::api header}] as a source of companion files.
-It further uses data about [cmd {critcl::api import}] commands to put
-proper support for [option --with-[var foo]-include] options into the
-generate [file configure(.in)] so that a user may specify custom
+[para] In "generate TEA" mode the static scanner recognizes
+[cmd {critcl::api header}] as a source of companion files.
+It also uses data from calls to [cmd {critcl::api import}] to
+add support for [option --with-[var foo]-include] options into the
+generated [file configure(.in)] so that a user may specify custom
 locations for the headers of any imported API.

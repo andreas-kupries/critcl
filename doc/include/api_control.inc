@@ -1,203 +1,131 @@
+[include include/global.inc]
 
-The package provides thirteen commands to control the details of
-compilation and linking, enabling [file .critcl] files to provide
-custom information about their environment and dependencies.
-
-[para] In important thing to note about all these commands is that the
-package manages their information on a per-file basis.
-
-I.e. information provided by and in a file [file FOO.tcl] is kept
-separate from the information provided by and in a file
-[file BAR.tcl], preventing them from interfering with each other.
-
-[para]
-The commands are:
+These commands control the details of compilation and linking a
+[vset critcl_script].  The information is used only to compile/link the
+object for the [vset critcl_script].  For example, information for
+[file FOO.tcl] is kept separate from information for [file BAR.tcl].
 
 [list_begin definitions]
 [comment ---------------------------------------------------------------------]
 [call [cmd ::critcl::cheaders] [opt [arg arg]...]]
 
-This command provides the compile step with additional header files
-and header locations.
+Provides additional header locations.
 
-[para] All arguments matching the glob pattern [const -*] are
-forwarded to the compiler's command line when it is invoked for the
-current [file .critcl] file.
+[para] Each argument is a glob pattern.  If an argument begins with [const -]
+it is an argument to the compiler.  Otherwise the parent directory of each
+matching path is a directory to be searched for header files.  Returns an
+error if a pattern matches no files.
 
-[para] All other arguments are interpreted as glob pattern and the
-matching files are made available to the compiler when it is invoked
-for the current [file .critcl] file. Patterns matching no file or
-non-existing files cause the command to throw an error.
+[vset relative_pattern]
 
-[para] [emph Note] that patterns which are not beginning with an
-absolute path are interpreted relative to the directory containing the
-current [file .critcl] file.
+[para] [const {#include}] lines are not automatically generated for matching
+header files.  Use [cmd critcl::include] or [cmd critcl::ccode] as necessary to
+add them.
 
-[para] [emph Note] further that this declaration does not cause the
-specified header files to be automatically
-[const {#include}]'d. Inclusion still has to be done via either
-[cmd critcl::include] or [cmd critcl::ccode], where necessary.
-
-It does simply ensure that the compiler will be able to find these
-files when invoked, by providing the necessary command line flags
-to extend the compiler's search paths.
-
-[para] Multiple invocations of this command accumulate their
-information.
+[para] [vset cumulative]
 
 [comment ---------------------------------------------------------------------]
-[call [cmd ::critcl::csources] [opt [arg pattern]...]]
+[call [cmd ::critcl::csources] [opt [arg {glob pattern}]...]]
 
-This command provides the compile step with additional C source files.
+Matching paths become inputs to the compilation of the current object
+along with the sources for the current [vset critcl_script].  Returns an
+error if no paths match a pattern.
 
-[para] All arguments are interpreted as glob patterns. Patterns
-matching no file or non-existing files cause the command to throw an
-error. The files matching the patterns are made available to the
-compiler when it is invoked for the current [file .critcl] file. This
-means that the files in question are compiled together with the
-[file .c] file backing the [file .critcl] file into a single object.
+[vset relative_pattern]
 
-[para] [emph Note] that patterns which are not beginning with an
-absolute path are interpreted relative to the directory containing the
-current [file .critcl] file.
-
-[para] Multiple invocations of this command accumulate their
-information.
+[para] [vset cumulative]
 
 [comment ---------------------------------------------------------------------]
-[call [cmd ::critcl::clibraries] [opt [arg arg]...]]
+[call [cmd ::critcl::clibraries] [opt [arg {glob pattern}]...]]
 
-This command provides the link step with additional libraries to link
-and library locations.
+provides the link step with additional libraries and library locations.
 
-[para] All arguments matching the glob pattern [const -*] are
-forwarded to the linkers's command line when it is invoked for the
-current [file .critcl] file.
+A [arg {glob pattern}] that begins with [const -] is added as an argument to
+the linker.  Otherwise matching files are linked into the shared library.
+Returns an error if no paths match a pattern.
 
-[para] All other arguments are interpreted glob patterns. Patterns
-matching no file or non-existing files cause the command to throw an
-error. The files matching the patterns are made available to the
-linker when it is invoked for the current [file .critcl] file. This
-means that the files in question are linked together with the object
-file backing the [file .critcl] file into a single shared library.
+[vset relative_pattern]
 
-[para] [emph Note] that patterns which are not beginning with an
-absolute path are interpreted relative to the directory containing the
-current [file .critcl] file.
-
-[para] Multiple invocations of this command accumulate their
-information.
+[para] [vset cumulative]
 
 [comment ---------------------------------------------------------------------]
-[call [cmd ::critcl::source] [arg path]]
+[call [cmd ::critcl::source] [arg {glob pattern}]]
 
-This command evaluates the critcl commands in the file specified by
-[arg path] in the context of the current [file .critcl] file.
+Evaluates as scripts the files matching each [arg {glob pattern}].  Returns an
+error if there are no matching files.
 
-[para] The argument is actually considered as glob pattern and all
-matching files are evaluated. A pattern matching no file or
-non-existing files cause the command to throw an error.
-
-[para] [emph Note] that a pattern not beginning with an absolute path
-is interpreted relative to the directory containing the current
-[file .critcl] file.
+[vset relative_pattern]
 
 [comment ---------------------------------------------------------------------]
-[call [cmd ::critcl::tsources] [arg pattern]...]
+[call [cmd ::critcl::tsources] [arg {glob pattern}]...]
 
-This command provides the critcl package with information about
-additional Tcl script files to source when the shared library is
-loaded.
+Provides the information about additional Tcl script files to source when the
+shared library is loaded.
 
-[para] All arguments are considered as glob patterns and the matching
-files are made available to generated shared library when it is loaded
-for the current [file .critcl] file. Patterns matching no file or
-non-existing files cause the command to throw an error.
+[para] Matching paths are made available to the generated shared library when
+it is loaded for the current [vset critcl_script].  Returns an error if a
+pattern matches no files.
 
-[para] [emph Note] that patterns which are not beginning with an
-absolute path are interpreted relative to the directory containing the
-current [file .critcl] file.
+[vset relative_pattern]
 
-[para] Multiple invocations of this command accumulate their
-information.
+[para] [vset cumulative]
 
-[para] The declared files are sourced after the shared library has
-been loaded, in the same order they were provided to [cmd critcl::tsources].
+[para] After the shared library has been loaded, the declared files are sourced
+in the same order that they were provided as arguments.
 
 [comment ---------------------------------------------------------------------]
-[call [cmd ::critcl::owns] [arg pattern]...]
+[call [cmd ::critcl::owns] [arg {glob pattern}]...]
 
-This command is ignored by the regular build modes, i.e. both "compile
-and run", and "generate package". It is present to support the static
-code scanner of critcl v3's new mode to "generate TEA" packages.
+Ignored in "compile and run" and "generate package" modes.
 
-[para] In that situation it provides the critcl package with
-information about any files which have to be wrapped and could not be
-figured out from the previous commands (i.e. [cmd critcl::csources],
-[cmd critcl::tsources]) because of getting specified dynamically, or
-getting directly sourced and this not visible to critcl in any other
-way.
+In "generate TEA" mode each file matching a [arg {glob pattern}] is a file to
+be included in the TEA extension but that could not be ascertained as such from
+previous commands like [cmd critcl::csources] and [cmd critcl::tsources],
+either because of they were specified dynamically or because they were directly
+sourced.
 
 
 [comment ---------------------------------------------------------------------]
 [call [cmd ::critcl::cflags] [opt [arg arg]...]]
 
-This command provides the compile step with additional compiler flags.
+[para] Each [arg arg] is an argument to the compiler. 
 
-[para] All arguments are forwarded to the compiler's command line when
-it is invoked for the current [file .critcl] file.
-
-[para] Multiple invocations of this command accumulate their
-information.
+[para] [vset cumulative]
 
 [comment ---------------------------------------------------------------------]
 [call [cmd ::critcl::ldflags] [opt [arg arg]...]]
 
-This command provides the link step with additional linker flags.
+[para] Each [arg arg] is an argument to the linker.
 
-[para] All arguments are forwarded to the linkers's command line when
-it is invoked for the current [file .critcl] file.
-
-[para] Multiple invocations of this command accumulate their
-information.
+[para] [vset cumulative]
 
 [comment ---------------------------------------------------------------------]
 [call [cmd ::critcl::framework] [opt [arg arg]...]]
 
-This command provides the link step with the names of additional
-frameworks to link on MacOS X. The command is ignored if we are not
-building for OS X. This means that it is possible to declare the OS X
-specific frameworks unconditionally. The package itself takes care to
-not use them when building for non-OS X platforms.
+Each [arg arg] is the name of a framework to link on MacOS X.  This command is
+ignored if OS X is not the target so that frameworks can be specified
+unconditionally.
 
-[para] All arguments are forwarded to the linkers's command line when
-it is invoked for the current [file .critcl] file.
-
-[para] Multiple invocations of this command accumulate their
-information.
+[para] [vset cumulative]
 
 [comment ---------------------------------------------------------------------]
 [call [cmd ::critcl::tcl] [arg version]]
 
-This command tells critcl for what minimum version of the Tcl runtime
-to compile and link the package for. If not specified critcl falls
-back to the default of [const 8.4]. 
+Specifies the minimum version of the Tcl runtime
+to compile and link the package for.  The default is [const 8.4]. 
 
 [comment ---------------------------------------------------------------------]
 [call [cmd ::critcl::tk]]
 
-This command informs critcl that the package in question is based on
-Tk, and therefore needs the Tk headers for compilation, and the Tk
-stubs for linking.
+Arranges to include the Tk headers and link to the Tk stubs.
 
 [comment ---------------------------------------------------------------------]
 [call [cmd ::critcl::preload] [arg lib]...]
 
-This command arranges that the named dependent external shared library is loaded
-before the generated package's shared library.
+Arranges for the external shared library [arg lib] to be loaded
+before the shared library for the [vset critcl_script] is loaded.
 
-[para] Multiple invocations of this command accumulate their
-information.
+[para] [vset cumulative]
 
 [para][include preload_search.inc]
 
@@ -205,34 +133,30 @@ information.
 	XXX preload - compile & run - will it work ?
 }]
 
-If you are a developer wishing to understand or modify the internals
-of the [package critcl] package then you possibly should read the
-section explaining how the [sectref {Preloading functionality}] is
-implemented.
+For developers who want to understand or modify the internals of the
+[package critcl] package, [sectref {Preloading functionality}] explains how
+preloading is implemented.
 
 [comment ---------------------------------------------------------------------]
 [call [cmd ::critcl::debug] [arg area]...]
 
-This tells critcl if the package is to be compiled for debugging, and
-which areas to activate. Internally each area is translated into
+Specifies what debugging features to activate. Internally each area is translated into
 area-specific flags for the compiler which are then handed over to
 [cmd critcl::cflags].
 
 [list_begin definitions]
 [def [const memory]]
 
-Specification of this area activates Tcl memory debugging
-for the package code.
+Specifies Tcl memory debugging.
 
 [def [const symbols]]
 
-Specification of this area activates compilation and linking with
-debugging symbols, for use by a debugger or other tool.
+Specifies compilation and linking with debugging symbols for use by a debugger
+or other tool.
 
 [def [const all]]
 
-Specification of this area translates ino the activation of all other
-legal areas.
+Specifies all available debugging.
 
 [list_end]
 [list_end]
