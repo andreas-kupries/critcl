@@ -5521,15 +5521,15 @@ proc ::critcl::Initialize {} {
 
     argtype bytes {
 	/* Raw binary string _with_ length information */
-	@A.s = (char*) Tcl_GetByteArrayFromObj(@@, &(@A.len));
+	@A.s = Tcl_GetByteArrayFromObj(@@, &(@A.len));
 	@A.o = @@;
     } critcl_bytes critcl_bytes
 
     argtypesupport bytes {
 	typedef struct critcl_bytes {
-	    Tcl_Obj* o;
-	    char*    s;
-	    int      len;
+	    Tcl_Obj*             o;
+	    const unsigned char* s;
+	    int                len;
 	} critcl_bytes;
     }
 

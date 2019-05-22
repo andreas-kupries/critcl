@@ -288,49 +288,54 @@ underwent from version to version\&.
 The latest changes are found at the top\&.
 .SH "CHANGES FOR VERSION 3\&.1\&.18 (UNRELEASED)"
 .IP [1]
+Bugfix\&. Issue #95\&. Changed field \fBcritcl_bytes\&.s\fR to
+\fBunsigned char*\fR to match Tcl's type\&. Further constified
+the field to make clear that read-only usage is the common case
+for it\&.
+.IP [2]
 Bugfix\&. Package \fBcritcl::cutil\fR bumped to version 0\&.1\&.1\&.
 Fixed missing inclusion of header "\fIstring\&.h\fR" in
 "\fIcritcl_alloc\&.h\fR", needed for \fBmemcpy\fR in macro \fBSTREP\fR\&.
-.IP [2]
+.IP [3]
 Merged pull request #83 from apnadkarni/vc-fixes\&.
 Removed deprecated -Gs for MSVC builds, and other Windows fixups\&.
-.IP [3]
+.IP [4]
 Feature\&. Package \fBcritcl::iassoc\fR bumped to version 1\&.1\&.
 Refactored internals to generate an include header for use by \&.c files\&.
 This now matches what other generator packages do\&.
 The template file is inlined and removed\&.
-.IP [4]
+.IP [5]
 Merged pull request #82 from gahr/home-symlink
 Modified tests to handle possibility of $HOME a symlink\&.
-.IP [5]
+.IP [6]
 Merged pull request #81 from gahr/test-not-installed
 Modified test support to find uninstalled critcl packages when
 running tests\&. Handles all but critcl::md5\&.
-.IP [6]
+.IP [7]
 Merged pull request #85 from snoe925/issue-84
 to fix Issue #84 breaking installation on OSX\&.
-.IP [7]
+.IP [8]
 Merged pull request #87 from apnadkarni/tea-fixes to fix Issue
 #86, broken -tea option, generating an incomplete package\&.
-.IP [8]
+.IP [9]
 Feature\&. New package \fBcritcl::callback\fR providing
 C-level functions and data structures to manage callbacks from
 C to Tcl\&.
-.IP [9]
+.IP [10]
 Feature\&. Package \fBcritcl::literals\fR bumped to version
 1\&.3\&.  Added mode \fB+list\fR enabling the conversion of
 multiple literals into a list of their strings\&.
-.IP [10]
+.IP [11]
 Feature\&. Package \fBcritcl::enum\fR bumped to version 1\&.1\&.
 Added basic mode handling, supporting \fBtcl\fR (default) and
 \fB+list\fR (extension enabling the conversion of multiple
 enum values into a list of their strings)\&.
-.IP [11]
+.IP [12]
 Feature\&. Package \fBcritcl::emap\fR bumped to version 1\&.2\&.
 Extended existing mode handling with \fB+list\fR extension
 enabling the conversion of multiple emap values into a list of
 their strings\&.
-.IP [12]
+.IP [13]
 Feature\&. Extended the set of available types by applying a few
 range restrictions to the scalar types (\fIint\fR,
 \fIlong\fR, \fIwideint\fR, \fIdouble\fR, \fIfloat\fR)\&.

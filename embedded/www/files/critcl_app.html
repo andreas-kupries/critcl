@@ -442,6 +442,10 @@ targets. The result of such a merge would look like:</p>
 </div>
 <div id="section4" class="doctools_section"><h2><a name="section4">Changes for version 3.1.18 (unreleased)</a></h2>
 <ol class="doctools_enumerated">
+<li><p>Bugfix. Issue #95. Changed field <b class="const">critcl_bytes.s</b> to
+       <b class="type">unsigned char*</b> to match Tcl's type. Further constified
+       the field to make clear that read-only usage is the common case
+       for it.</p></li>
 <li><p>Bugfix. Package <b class="package"><a href="critcl_cutil.html">critcl::cutil</a></b> bumped to version 0.1.1.
        Fixed missing inclusion of header &quot;<b class="file">string.h</b>&quot; in
        &quot;<b class="file">critcl_alloc.h</b>&quot;, needed for <b class="function">memcpy</b> in macro <b class="function">STREP</b>.</p></li>

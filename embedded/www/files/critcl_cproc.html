@@ -213,9 +213,9 @@ containing the original <b class="type">Tcl_Obj*</b> reference of the Tcl argume
 plus the length of the byte array and a pointer to the byte data.</p>
 <pre class="doctools_example">
 typedef struct critcl_bytes {
-    Tcl_Obj* o;
-    char*    s;
-    int      len;
+    Tcl_Obj*             o;
+    const unsigned char* s;
+    int                len;
 } critcl_list;
 </pre>
 <p>The Tcl argument must be convertible to <b class="type">ByteArray</b>, an error is
