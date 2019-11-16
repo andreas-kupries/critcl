@@ -1,6 +1,11 @@
 [section {Changes for version 3.1.18 (unreleased)}]
 [list_begin enumerated]
 
+[enum] Bugfix. Issue #95. Changed field [const critcl_bytes.s] to
+       [type {unsigned char*}] to match Tcl's type. Further constified
+       the field to make clear that read-only usage is the common case
+       for it.
+
 [enum] Bugfix. Package [package critcl::cutil] bumped to version 0.1.1.
        Fixed missing inclusion of header [file string.h] in
        [file critcl_alloc.h], needed for [fun memcpy] in macro [fun STREP].

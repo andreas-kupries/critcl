@@ -42,7 +42,7 @@ The package exports a single command
 
 The [arg commandline] is a list of zero or more options followed by zero or
 more [vset critcl_script] files.  By default, the [vset critcl_script] files
-are build and the results cached.   This cuts down on the time needed to use
+are build and the results cached.   This cuts down on the time needed to
 load the package.  The last occurrence of [option -pkg] and [option -tea], if
 provided, selects the corresponding alternative mode of operations. 
 

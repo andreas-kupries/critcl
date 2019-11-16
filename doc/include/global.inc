@@ -4,13 +4,17 @@
 Calls to this command are cumulative.
 }]
 
+[vset cumulative_opt {
+Uses of this option are cumulative.
+}]
+
 [vset not_needed_for_critcl_script "
 These commands are not needed to simply write a [term {Critcl script}].
 "] 
 
 [vset pkg_namerules "
 The basename of the first file is the name of the package to generate. If
-the its file extension indicates a shared library ([file .so], [file .sl],
+its file extension indicates a shared library ([file .so], [file .sl],
 [file .dylib], and [file .dll]) it is also removed from the set of input
 files. Each [vset critcl_script] file is kept as part of the input. A single
 file without a suffix is assumed to be a [vset critcl_script]. A file without

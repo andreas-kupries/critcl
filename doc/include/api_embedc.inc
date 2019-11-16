@@ -88,8 +88,8 @@ Its semantics are equivalent to:
     cproc $tclname {} $resulttype "return $value ;"
 }]
 
-[para] This is more efficient than [cmd critcl::cproc] since there no
-C function is generated.
+[para] This is more efficient than [cmd critcl::cproc] since there is no
+C function generated.
 
 [para]
 Returns the empty string.
@@ -105,7 +105,6 @@ is ignored.
 
 [para] The Tcl variables are created when the module is compiled, using the
 preprocessor in order to properly find all matching C definitions.
-Therefore [cmd critcl::ccode] and [cmd critcl::cheaders]
 
 [para]
 Produces no C code.  The desired C definitions must already exist.
@@ -166,7 +165,7 @@ int x int y
 
 [para] If the name is a list containing two items, the first item is the name
 and the second item is the default value.  A limited form of variadic arguments
-can be accomplished using sudh default values.
+can be accomplished using such default values.
 
 Example:
 
@@ -177,15 +176,15 @@ Example:
 
 [para] Argument conversion is completely bypassed when the argument is not
 provided, so a custom converter doing validation does not get the chance to
-validate the defalut value.  In this case, the value should be checked in the
+validate the default value.  In this case, the value should be checked in the
 body of the function.
 
 [para] Each argument type may be one of the following predefined types or a
 custom type.   See [sectref {Advanced: Extending cproc}].
 
 [para] If the type of the first argument is [const Tcl_Interp*], it is not
-counted as counted as an argument of the new Tcl command, and is a value to the
-current interpreter.
+counted as counted as an argument of the new Tcl command, and is a reference
+to the current interpreter.
 
 [comment {% % %% %%% %%%%% %%%%%%%% %%%%%%%%%%%%% %%%%%%%%%%%%%%%%%%%%%}]
 [include api_stdat_cproc.inc]
@@ -194,7 +193,7 @@ current interpreter.
 [comment ---------------------------------------------------------------------]
 [call [cmd ::critcl::cproc] [arg name] [arg arguments] [arg resulttype]]
 
-As documnented below, but used when the C function named [arg name] already
+As documented below, but used when the C function named [arg name] already
 exists.
 
 
@@ -204,7 +203,7 @@ exists.
 Appends the C code in [arg text] and [arg externals], but only after all the
 other fragments appended by the previously-listed commands regardless of their
 placement in the [vset critcl_script] relative to this command.  Thus, all
-theri content is visible.  See also [sectref {Runtime Behaviour}].
+their content is visible.  See also [sectref {Runtime Behaviour}].
 
 [para] The C code in [arg text] is placed into the body of the initialization
 function of the shared library backing the [vset critcl_script], and is
@@ -217,7 +216,7 @@ function, making it a good place for any external symbols required by
 initialization function, but which should not be accessible by any other parts
 of the C code.
 
-[para] Calls to this command are cumulative.
+[para] [vset cumulative]
 
 [para]
 Returns the empty string.

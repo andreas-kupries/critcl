@@ -66,9 +66,9 @@ plus the length of the byte array and a pointer to the byte data.
 
 [example {
 typedef struct critcl_bytes {
-    Tcl_Obj* o;
-    char*    s;
-    int      len;
+    Tcl_Obj*             o;
+    const unsigned char* s;
+    int                len;
 } critcl_list;
 }]
 

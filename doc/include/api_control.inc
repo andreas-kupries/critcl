@@ -13,7 +13,7 @@ Provides additional header locations.
 
 [para] Each argument is a glob pattern.  If an argument begins with [const -]
 it is an argument to the compiler.  Otherwise the parent directory of each
-matching pathname is a directory to be searched for header files.  Returns an
+matching path is a directory to be searched for header files.  Returns an
 error if a pattern matches no files.
 
 [vset relative_pattern]
@@ -22,18 +22,18 @@ error if a pattern matches no files.
 header files.  Use [cmd critcl::include] or [cmd critcl::ccode] as necessary to
 add them.
 
-[para] Calls to this command are cumulative.
+[para] [vset cumulative]
 
 [comment ---------------------------------------------------------------------]
 [call [cmd ::critcl::csources] [opt [arg {glob pattern}]...]]
 
-Matching pathnames become inputs to the compilation of the current object
+Matching paths become inputs to the compilation of the current object
 along with the sources for the current [vset critcl_script].  Returns an
-error if no pathnames match a pattern.
+error if no paths match a pattern.
 
 [vset relative_pattern]
 
-[para] Calls to this command are cumulative.
+[para] [vset cumulative]
 
 [comment ---------------------------------------------------------------------]
 [call [cmd ::critcl::clibraries] [opt [arg {glob pattern}]...]]
@@ -42,11 +42,11 @@ provides the link step with additional libraries and library locations.
 
 A [arg {glob pattern}] that begins with [const -] is added as an argument to
 the linker.  Otherwise matching files are linked into the shared library.
-Returns an error if no pathnames match a pattern.
+Returns an error if no paths match a pattern.
 
 [vset relative_pattern]
 
-[para] Calls to this command are cumulative.
+[para] [vset cumulative]
 
 [comment ---------------------------------------------------------------------]
 [call [cmd ::critcl::source] [arg {glob pattern}]]
@@ -59,16 +59,16 @@ error if there are no matching files.
 [comment ---------------------------------------------------------------------]
 [call [cmd ::critcl::tsources] [arg {glob pattern}]...]
 
-For a package, provides the information about additional Tcl script files to
-source when the shared library is loaded.
+Provides the information about additional Tcl script files to source when the
+shared library is loaded.
 
-[para] Matching files are made available to the generated shared library when
+[para] Matching paths are made available to the generated shared library when
 it is loaded for the current [vset critcl_script].  Returns an error if a
 pattern matches no files.
 
 [vset relative_pattern]
 
-[para] Calls to this command are cumulative.
+[para] [vset cumulative]
 
 [para] After the shared library has been loaded, the declared files are sourced
 in the same order that they were provided as arguments.
@@ -79,7 +79,7 @@ in the same order that they were provided as arguments.
 Ignored in "compile and run" and "generate package" modes.
 
 In "generate TEA" mode each file matching a [arg {glob pattern}] is a file to
-be included in the TEA extension but that could not be ascertained out from
+be included in the TEA extension but that could not be ascertained as such from
 previous commands like [cmd critcl::csources] and [cmd critcl::tsources],
 either because of they were specified dynamically or because they were directly
 sourced.
@@ -90,23 +90,23 @@ sourced.
 
 [para] Each [arg arg] is an argument to the compiler. 
 
-[para] Calls to this command are cumulative.
+[para] [vset cumulative]
 
 [comment ---------------------------------------------------------------------]
 [call [cmd ::critcl::ldflags] [opt [arg arg]...]]
 
-[para] Each [arg arg]is an argument to the linker.
+[para] Each [arg arg] is an argument to the linker.
 
-[para] Calls to this command are cumulative.
+[para] [vset cumulative]
 
 [comment ---------------------------------------------------------------------]
 [call [cmd ::critcl::framework] [opt [arg arg]...]]
 
 Each [arg arg] is the name of a framework to link on MacOS X.  This command is
-ignored if OS X is not the target So that frameworks can be specified
+ignored if OS X is not the target so that frameworks can be specified
 unconditionally.
 
-[para] Calls to this command are cumulative.
+[para] [vset cumulative]
 
 [comment ---------------------------------------------------------------------]
 [call [cmd ::critcl::tcl] [arg version]]
@@ -125,7 +125,7 @@ Arranges to include the Tk headers and link to the Tk stubs.
 Arranges for the external shared library [arg lib] to be loaded
 before the shared library for the [vset critcl_script] is loaded.
 
-[para] Calls to this command are cumulative.
+[para] [vset cumulative]
 
 [para][include preload_search.inc]
 

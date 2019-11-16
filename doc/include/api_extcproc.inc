@@ -89,8 +89,8 @@ provided.
 
 [para] If [arg name] is already declared an error is thrown.
 
-[para] [arg body] is a function that converts a Tcl_Obj* into a C value which
-is stored in a helper variable in the underlying function.
+[para] [arg body] is a C code fragment that converts a Tcl_Obj* into a
+C value which is stored in a helper variable in the underlying function.
 
 [para] [arg body] is called inside its own code block to isolate local
 variables, and the following items are in scope:
@@ -98,8 +98,8 @@ variables, and the following items are in scope:
 [list_begin definitions]
 [def [var interp]] A variable of type [const Tcl_Interp*] which is the
                    interpreter the code is running in.
-[def [const @@]] A placeholder for an expression that evaluates to the [
-     	    	 const Tcl_Obj*] to convert 
+[def [const @@]] A placeholder for an expression that evaluates to the
+                 [const Tcl_Obj*] to convert.
 
 [def [const @A]] A placeholder for the name of the variable to store the
      	    	 converted argument into.

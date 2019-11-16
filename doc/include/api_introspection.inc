@@ -77,7 +77,7 @@ Enables the Tcl parts of a [vset critcl_script] to distinguish between
 [comment ---------------------------------------------------------------------]
 [call [cmd ::critcl::failed]]
 
-Returns [const true] the [vset critcl_script] could not be built, and
+Returns [const true] if the [vset critcl_script] could not be built, and
 [const false] otherwise.  Forces the building of the package if it hasn't
 already been done, but not its loading.  Thus, a [vset critcl_script] can
 check itself for availability of the compiled components.  Only useful from
@@ -87,9 +87,10 @@ within a [vset critcl_script].
 [comment ---------------------------------------------------------------------]
 [call [cmd ::critcl::load]]
 
-Lik [cmd critcl::failed] except that it also forces the loading of the
-generated shared library, and that it returns true on success and false on
-failure.  Thus, a [vset critcl_script] can check itself for availability of
-the compiled components.  Only useful from within a [vset critcl_script].
+Like [cmd critcl::failed] except that it also forces the loading of the
+generated shared library, and that it returns [const true] on success and
+[const false] on failure.  Thus, a [vset critcl_script] can check itself for
+availability of the compiled components.  Only useful from within a
+[vset critcl_script].
 
 [list_end]

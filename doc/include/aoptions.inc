@@ -1,10 +1,19 @@
 [include include/global.inc]
+
 [vset teaignored "
 [para]
 Ignored when generating a TEA package
 (see option [option -tea] below).
 "]
-The following options are understood
+
+[vset validated_on_build "
+[para] Validated only if one of the input files for the [vset critcl_script]
+actually defines and uses a custom build configuration option with that
+[arg name].
+"]
+
+
+The following options are understood:
 
 [list_begin options]
 [comment %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%]
@@ -17,7 +26,7 @@ Print the version to [const stdout] and exit.
 [opt_def -I path]
 
 Arranges for the compiler to search [arg path] for headers.
-[vset cumulative]
+[vset cumulative_opt]
 
 [vset teaignored]
 
@@ -25,14 +34,14 @@ Arranges for the compiler to search [arg path] for headers.
 [opt_def -L path]
 
 Arranges for the linker to search [arg path].
-[vset cumulative]
+[vset cumulative_opt]
 
 [vset teaignored]
 
 [comment %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%]
 [opt_def -cache path]
 
-Sets [arg path] as the the directory to use as the result cache. The default is
+Sets [arg path] as the directory to use as the result cache. The default is
 [file ~/.critcl/<platform>], or [file ~/.critcl/<pid>.<epoch>] when generating
 a package.  See option [option -pkg], below.
 
@@ -82,19 +91,13 @@ Both [const memory] and [const symbols].
 
 [vset teaignored]
 
-[vset cumulative]
+[vset cumulative_opt]
 
 [comment %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%]
 [opt_def -disable name]
 
 Sets the value of the custom build configuration option
 [arg name] to [const false]. It is equivalent to "-with-[arg name] 0".
-
-[vset validated_on_build "
-[para] Validated only if one of the input files for the [vset critcl_script]
-actually defines and uses a custom build configuration option with that
-[arg name].
-"]
 
 [vset validated_on_build]
 
@@ -136,8 +139,8 @@ Causes the system to cache compiled [file .c] files.
 Also prevents the deletion of the unique result cache used by the run when
 generating a package (see option [option -pkg] below),
 
-Intended debugging of [cmd critcl] itself, where it may be necessary to inspect
-the generated C code.
+Intended for debugging of [cmd critcl] itself, where it may be necessary to
+inspect the generated C code.
 
 [vset teaignored]
 
@@ -159,8 +162,9 @@ Adds [arg directory] to the list of directories the compiler searches for
 headers in. With [option -pkg], generated header files are saved in
 [arg directory].
 
-Calls to this command are cumulative, but the last value is used as the
-destination for generated header files.
+[vset cumulative_opt]
+
+The last value is used as the destination for generated header files.
 
 The default is the relative directory [file include], resolved relative to the
 current working directory.
@@ -277,17 +281,7 @@ If both [option -pkg] and [option -tea] are specified the last occurrence wins.
 ignored. In contrast, the option [option -libdir] is relevant in both
 this and [option -pkg] mode.
 
-[para]
-
-The basename of the first file argument
-is used as the name of the package to generate. If
-its file extension indicates a shared library ([file .so],
-[file .sl], [file .dylib], and [file .dll]), it is also removed from
-the set of input files. A [vset critcl_script] is kept as part of the
-input. A single file without an extension is assumed to be a
-[vset critcl_script] that has a [file .tcl] extension.  When other input files
-follow a file without an extension, the file is assumed to be the name of a shared
-library, and removed from the set of input files.
+[para] [vset pkg_namerules]
 
 [para] Examples:
 

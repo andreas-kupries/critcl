@@ -1,10 +1,11 @@
 
 [list_begin definitions]
 [comment {% % %% %%% %%%%% %%%%%%%% %%%%%%%%%%%%%}]
-[def {Tcl_Obj* object}]
+[def Tcl_Obj*]
+[def object]
 
 If the returned Tcl_Obj is [const NULL], the Tcl return code is
-[const TCL_ERROR] and the the function should [uri \
+[const TCL_ERROR] and the function should [uri \
 	https://www.tcl-lang.org/man/tcl/TclLib/SetResult.htm \
 	{set an error mesage}]
 as the interpreter result.  Otherwise, the returned Tcl_Obj is set as the
@@ -54,8 +55,8 @@ making a copy.  Therefore it must be dynamically allocated via [fun Tcl_Alloc].
 [def double]
 [def float]
 
-The returned [type double] or [type float] is converted [type Double] Tcl_Obj
-and set as the interpreter result.
+The returned [type double] or [type float] is converted to a [type Double]
+Tcl_Obj and set as the interpreter result.
 
 
 [comment {% % %% %%% %%%%% %%%%%%%% %%%%%%%%%%%%%}]
