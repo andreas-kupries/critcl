@@ -138,6 +138,12 @@ proc savedoc {tmpdir} {
     file copy -force embedded/www $tmpdir/doc
     return
 }
+
+proc pkgdirname {name version} {
+	return $name$version
+}
+
+
 proc placedoc {tmpdir} {
     file delete -force doc
     file copy -force $tmpdir/doc doc
@@ -383,12 +389,11 @@ proc _install {args} {
 		set version {}
 	    }
 
-	    set namevers [file join $dstl $name$version]
+	    set namevers $dstl/[pkgdirname $name $version]
 
 	    file copy   -force $selfdir/lib/$dir     $dstl/${name}-new
 	    file delete -force $namevers
 	    file rename        $dstl/${name}-new     $namevers
-	    puts "${prefix}Installed package:      $namevers"
 	    set prefix {}
 	}
 
@@ -437,7 +442,7 @@ proc _install {args} {
 	set src     $selfdir/lib/critcl-md5c/md5c.tcl
 	set version [version $src]
 	set name    critcl_md5c
-	set dst     $namevers
+	set dst		$dstl/[pkgdirname $name $version]
 	set cmd     {}
 
 	lappend cmd exec >@ stdout 2>@ stderr
@@ -455,6 +460,7 @@ proc _install {args} {
 	puts $cmd
 	eval $cmd
 
+	puts [list whooo deleting $dst]
 	file delete -force $dst
 	file rename        $dstl/tmp/md5c $dst
 	file delete -force $dstl/tmp
