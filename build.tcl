@@ -101,7 +101,6 @@ proc findlib {path} {
 	    return $path
 	}
 	set new [file dirname $path]
-	puts [list hey $new]
 	if {$new eq $path} break
 	set path $new
     }
@@ -109,7 +108,7 @@ proc findlib {path} {
 }
 proc dstlfromlib {path} {
     # kinda the inverse of findlib above, it returns the path to
-    # dstlpath, relative the */lib path returned by findlib. The path
+    # dstl relative the */lib path returned by findlib. The path
     # is returned as a list of segments
     set relpath {}
     while {1} {
@@ -117,7 +116,7 @@ proc dstlfromlib {path} {
             break
         }
         set new [file dirname $path]
-        set relpath [linsert $relpath 0 [file tail $path]]
+        set relpath [linsert $relpath[set relpath {}] 0 [file tail $path]]
         if {$new eq $path} break
         set path $new
     }
@@ -159,6 +158,9 @@ proc reminder {commit} {
     puts "We are in branch gh-pages now, coming from $commit"
     puts ""
     return
+}
+proc shquote value {
+    return "\"[string map [list \\ \\\\ $ \\$ ` \\`] $value]\""
 }
 proc Hhelp {} { return "\n\tPrint this help" }
 proc _help {} {
@@ -393,6 +395,7 @@ proc _install {args} {
 
 	    file copy   -force $selfdir/lib/$dir     $dstl/${name}-new
 	    file delete -force $namevers
+	    puts "${prefix}Installed package:      $namevers"
 	    file rename        $dstl/${name}-new     $namevers
 	    set prefix {}
 	}
@@ -405,20 +408,20 @@ proc _install {args} {
 
 	set c [open $theapp w]
 	lappend map @bs@   "\\"
+	lappend map @exe@ [shquote [file dirname [file normalize [info nameofexecutable]/...]]]
 	lappend map @path@ [list $reldstl]  ;# insert the dst path
 	lappend map "\t    " {} ;# de-dent
 	puts $c [string trimleft [string map $map {
 	    #!/bin/sh
 	    # -*- hide next line from tcl -*- @bs@
-	    exe=$1
-	    # -*- hide next line from tcl -*- @bs@
-	    shift
-	    # -*- hide next line from tcl -*- @bs@
-	    exec "$exe" "$0" ${1+"$@"}
+	    exec @exe@ "$0" ${1+"$@"}
 
-	    set libpath [file normalize [file join [file dirname [info script]] .. lib]]
+	    set libpath [file join [file dirname [file dirname [
+		file normalize [info script]/...]]] .. lib]
 	    set libpath [file join $libpath @path@]
-	    if {[lsearch -exact $auto_path $libpath] < 0} {lappend auto_path $libpath}
+	    if {[lsearch -exact $auto_path $libpath] < 0} {
+		set auto_path [linsert $auto_path[set auto_path {}] 0 $libpath]
+	    }
 
 	    package require critcl::app
 	    critcl::app::main $argv}]]
@@ -446,21 +449,15 @@ proc _install {args} {
 	set cmd     {}
 
 	lappend cmd exec >@ stdout 2>@ stderr
-	if {$::tcl_platform(platform) eq "windows"} {
-	    lappend cmd [info nameofexecutable]
-	    lappend cmd $theapp
-	} else {
-	    lappend cmd $theapp
-	    lappend cmd [info nameofexecutable]
-	}
+	lappend cmd [info nameofexecutable]
+	lappend cmd $theapp
 	if {$target ne {}} {
 	    lappend cmd -target $target
 	}
 	lappend cmd -libdir $dstl/tmp -pkg $src
-	puts $cmd
+	puts [list executing $cmd]
 	eval $cmd
 
-	puts [list whooo deleting $dst]
 	file delete -force $dst
 	file rename        $dstl/tmp/md5c $dst
 	file delete -force $dstl/tmp
@@ -486,13 +483,8 @@ proc _install {args} {
 	set cmd     {}
 
 	lappend cmd exec >@ stdout 2>@ stderr
-	if {$::tcl_platform(platform) eq "windows"} {
-	    lappend cmd [info nameofexecutable]
-	    lappend cmd $theapp
-	} else {
-	    lappend cmd $theapp
-	    lappend cmd [info nameofexecutable]
-	}
+	lappend cmd [info nameofexecutable]
+	lappend cmd $theapp
 	if {$target ne {}} {
 	    lappend cmd -target $target
 	}
@@ -500,7 +492,7 @@ proc _install {args} {
 	lappend cmd -libdir     $dstl_tmp
 	lappend cmd -includedir $dstl_tmp
 	lappend cmd -pkg $src
-	puts $cmd
+	puts [list executing $cmd]
 	eval $cmd
 
 	file delete -force $dst $dsth
