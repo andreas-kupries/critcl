@@ -13,7 +13,7 @@ proc main {} {
     exit 0
 }
 set packages {
-    {app-critcl       ../critcl/critcl.tcl critcl-app}
+    {app-critcl       {.. critcl critcl.tcl} critcl-app}
     {critcl           critcl.tcl}
     {critcl-bitmap    bitmap.tcl}
     {critcl-class     class.tcl}
@@ -68,12 +68,14 @@ proc +x {path} {
 }
 proc critapp {dst} {
     global tcl_platform
-    set app $dst/critcl
+    set app [file join $dst critcl]
     if {$tcl_platform(platform) eq "windows"} {
 	append app .tcl
     }
     return $app
 }
+
+
 proc grep {file pattern} {
     set lines [split [read [set chan [open $file r]]] \n]
     close $chan
@@ -134,7 +136,7 @@ proc id {cv vv} {
 }
 proc savedoc {tmpdir} {
     puts {Collecting the documentation ...}
-    file copy -force embedded/www $tmpdir/doc
+    file copy -force [file join embedded www] [file join $tmpdir doc]
     return
 }
 
@@ -145,7 +147,7 @@ proc pkgdirname {name version} {
 
 proc placedoc {tmpdir} {
     file delete -force doc
-    file copy -force $tmpdir/doc doc
+    file copy -force [file join $tmpdir doc] doc
     return
 }
 proc 2website {} {
@@ -180,9 +182,9 @@ proc Htest {} { return "\n\tRun the testsuite." }
 proc _test {} {
     global argv
     set    argv {} ;# clear -- tcltest shall see nothing
-    # Run all .test files in the test/ directory.
+    # Run all .test files in the test directory.
     set selfdir [file dirname $::me]
-    foreach testsuite [lsort -dict [glob -directory $selfdir/test *.test]] {
+    foreach testsuite [lsort -dict [glob -directory [file join $selfdir test] *.test]] {
 	puts ""
 	puts "_ _ __ ___ _____ ________ _____________ _____________________ *** [file tail $testsuite] ***"
 	if {[catch {
@@ -199,23 +201,23 @@ proc _test {} {
 }
 proc Hdoc {} { return "\n\t(Re)Generate the embedded documentation." }
 proc _doc {} {
-    cd [file dirname $::me]/doc
+    cd [file join [file dirname $::me] doc]
 
     puts "Removing old documentation..."
-    file delete -force ../embedded/man
-    file delete -force ../embedded/www
+    file delete -force [file join .. embedded man]
+    file delete -force [file join .. embedded www]
 
-    file mkdir ../embedded/man
-    file mkdir ../embedded/www
+    file mkdir [file join .. embedded man]
+    file mkdir [file join .. embedded www]
 
     puts "Generating man pages..."
-    exec 2>@ stderr >@ stdout dtplite -ext n -o ../embedded/man nroff .
+    exec 2>@ stderr >@ stdout dtplite -ext n -o [file join .. embedded man] nroff .
     puts "Generating html..."
-    exec 2>@ stderr >@ stdout dtplite        -o ../embedded/www html .
+    exec 2>@ stderr >@ stdout dtplite        -o [file join .. embedded www] html .
 
-    cd  ../embedded/man
+    cd  [file join .. embedded man]
     file delete -force .idxdoc .tocdoc
-    cd  ../www
+    cd  [file join .. www]
     file delete -force .idxdoc .tocdoc
 
     return
@@ -224,7 +226,7 @@ proc Htextdoc {} { return "destination\n\tGenerate plain text documentation in s
 proc _textdoc {dst} {
     set destination [file normalize $dst]
 
-    cd [file dirname $::me]/doc
+    cd [file join [file dirname $::me] doc]
 
     puts "Removing old text documentation at ${dst}..."
     file delete -force $destination
@@ -241,7 +243,7 @@ proc _textdoc {dst} {
 }
 proc Hfigures {} { return "\n\t(Re)Generate the figures and diagrams for the documentation." }
 proc _figures {} {
-    cd [file dirname $::me]/doc/figures
+    cd [file join [file dirname $::me] doc figures]
 
     puts "Generating (tklib) diagrams..."
     eval [linsert [glob *.dia] 0 exec 2>@ stderr >@ stdout dia convert -t -o . png]
@@ -270,27 +272,27 @@ proc _release {} {
 
     # # ## ### ##### ######## #############
     puts {Generate starkit...}
-    _starkit $tmpdir/critcl31.kit
+    _starkit [file join $tmpdir critcl31.kit]
 
     # # ## ### ##### ######## #############
     puts {Collecting starpack prefix...}
     # which we use the existing starpack for, from the gh-pages branch
 
     exec 2>@ stderr >@ stdout git checkout gh-pages
-    file copy download/critcl31.exe $tmpdir/prefix.exe
+    file copy [file join download critcl31.exe] [file join $tmpdir prefix.exe]
     exec 2>@ stderr >@ stdout git checkout $commit
 
     # # ## ### ##### ######## #############
     puts {Generate starpack...}
-    _starpack $tmpdir/prefix.exe $tmpdir/critcl31.exe
+    _starpack [file join $tmpdir prefix.exe] [file join $tmpdir critcl31.exe]
     # TODO: vacuum the thing. fix permissions if so.
 
     # # ## ### ##### ######## #############
     2website
     placedoc $tmpdir
 
-    file copy -force $tmpdir/critcl31.kit download/critcl31.kit
-    file copy -force $tmpdir/critcl31.exe download/critcl31.exe
+    file copy -force [file join $tmpdir critcl31.kit] [file join downloadcritcl31.kit]
+    file copy -force [file join $tmpdir critcl31.exe] [file join download critcl31.exe]
 
     set index   [fileutil::cat index.html]
     set pattern   "\\\[commit .*\\\] \\(v\[^)\]*\\)<!-- current"
@@ -323,13 +325,23 @@ proc _release-doc {} {
 }
 
 proc Htargets {} { return "?destination?\n\tShow available targets.\n\tExpects critcl app to be installed in destination." }
-proc _targets {{dst {}}} {
-    if {[llength [info level 0]] < 2} {
-	set dsta [file dirname [file dirname [file normalize [info nameofexecutable]/___]]]
-    } else {
-	set dsta [file dirname [findlib $dstl]]/bin
+proc _targets args {
+    switch $args {
+	0 {
+	}
+	1 {
+	}
+	default {
+	    error -list wrong # args
+	}
     }
-    puts [join [split [exec $dsta/critcl -targets]] \n]
+    if {[llength [info level 0]] < 2} {
+	set dsta [file dirname [file dirname [file normalize [
+	    file join [info nameofexecutable] ...]]]]
+    } else {
+	set dsta [file join [file dirname [findlib $dstl]] bin]
+    }
+    puts [join [split [exec [file join $dsta critcl] -targets]] \n]
     return
 }
 
@@ -343,20 +355,21 @@ proc _install {args} {
 	set args [lrange $args 2 end]
     }
 
+
     if {[llength $args] == 0} {
-	set exe  [file dirname [file normalize [info nameofexecutable]/___]]
+	set exe  [file dirname [file normalize [file join [info nameofexecutable] ...]]]
 	set dstl [info library]
 	set dsta [file dirname $exe]
 	set dsti [file join [file dirname $dsta] include]
 
     } else {
 	set dstl [lindex $args 0]
-	if {![file exists [file dirname $dstl]]} {
-	    file mkdir $dstl/../bin
-	    file mkdir $dstl/../include
-	}
-	set dsta [file join [file dirname [findlib $dstl]] bin]
-	set dsti [file join [file dirname [findlib $dstl]] include]
+	set libdir [findlib $dstl]
+	set top [file dirname $libdir]
+	set dsta [file join $top bin]
+	file mkdir $dsta
+	set dsti [file join $top include]
+	file mkdir $dsti
     }
 
     set selfdir [file dirname $me]
@@ -386,20 +399,19 @@ proc _install {args} {
 	    }
 
 	    if {$vfile ne {}} {
-		set version  [version $selfdir/lib/$dir/$vfile]
+		set version  [version [file join $selfdir lib $dir {*}$vfile]]
 	    } else {
 		set version {}
 	    }
 
-	    set namevers $dstl/[pkgdirname $name $version]
+	    set namevers [file join $dstl [pkgdirname $name $version]]
 
-	    file copy   -force $selfdir/lib/$dir     $dstl/${name}-new
+	    file copy -force [file join $selfdir lib $dir] [file join $dstl ${name}-new]
 	    file delete -force $namevers
 	    puts "${prefix}Installed package:      $namevers"
-	    file rename        $dstl/${name}-new     $namevers
+	    file rename [file join $dstl ${name}-new] $namevers
 	    set prefix {}
 	}
-
 
 	# Application: critcl
 
@@ -408,16 +420,19 @@ proc _install {args} {
 
 	set c [open $theapp w]
 	lappend map @bs@   "\\"
-	lappend map @exe@ [shquote [file dirname [file normalize [info nameofexecutable]/...]]]
+	lappend map @exe@ [shquote [file dirname [file normalize [
+	    file join [info nameofexecutable] ...]]]]
 	lappend map @path@ [list $reldstl]  ;# insert the dst path
+	puts [list geedonk $reldstl]
 	lappend map "\t    " {} ;# de-dent
 	puts $c [string trimleft [string map $map {
 	    #!/bin/sh
-	    # -*- hide next line from tcl -*- @bs@
+	    # -*-tcl -*-
+	    # hide next line from tcl @bs@
 	    exec @exe@ "$0" ${1+"$@"}
 
 	    set libpath [file join [file dirname [file dirname [
-		file normalize [info script]/...]]] .. lib]
+		file normalize [file join [info script] ...]]]] .. lib]
 	    set libpath [file join $libpath @path@]
 	    if {[lsearch -exact $auto_path $libpath] < 0} {
 		set auto_path [linsert $auto_path[set auto_path {}] 0 $libpath]
@@ -442,10 +457,10 @@ proc _install {args} {
 	# that. This is package-mode, where MD5 itself is not used, so
 	# there is no chicken vs. egg.
 
-	set src     $selfdir/lib/critcl-md5c/md5c.tcl
+	set src     [file join $selfdir lib critcl-md5c md5c.tcl]
 	set version [version $src]
 	set name    critcl_md5c
-	set dst		$dstl/[pkgdirname $name $version]
+	set dst     [file join $dstl [pkgdirname $name $version]]
 	set cmd     {}
 
 	lappend cmd exec >@ stdout 2>@ stderr
@@ -454,13 +469,13 @@ proc _install {args} {
 	if {$target ne {}} {
 	    lappend cmd -target $target
 	}
-	lappend cmd -libdir $dstl/tmp -pkg $src
+	lappend cmd -libdir [file join $dstl tmp] -pkg $src
 	puts [list executing $cmd]
 	eval $cmd
 
 	file delete -force $dst
-	file rename        $dstl/tmp/md5c $dst
-	file delete -force $dstl/tmp
+	file rename        [file join $dstl tmp md5c] $dst
+	file delete -force [file join $dstl tmp]
 
 	puts "${prefix}Installed package:      $dst"
 
@@ -475,11 +490,11 @@ proc _install {args} {
 	# machine. It uses the just-installed application for
 	# that.
 	
-	set src     $selfdir/lib/critcl-callback/callback.tcl
+	set src     [file join $selfdir lib critcl-callback callback.tcl]
 	set version [version $src]
 	set name    critcl_callback
-	set dst     $dstl/$name$version
-	set dsth    $dsti/$name
+	set dst     [file join $dstl $name$version]
+	set dsth    [file join $dsti $name]
 	set cmd     {}
 
 	lappend cmd exec >@ stdout 2>@ stderr
@@ -492,16 +507,16 @@ proc _install {args} {
 	lappend cmd -libdir     $dstl_tmp
 	lappend cmd -includedir $dstl_tmp
 	lappend cmd -pkg $src
-	puts [list executing $cmd]
 	eval $cmd
 
 	file delete -force $dst $dsth
-	file rename        $dstl/tmp/callback        $dst
-	file rename        $dstl/tmp/critcl_callback $dsth
+	file rename  [file join $dstl tmp callback] $dst
+	file rename  [file join $dstl tmp critcl_callback] $dsth
 	file delete -force $dstl_tmp
 
 	puts "${prefix}Installed package:      $dst"
-	puts "${prefix}Installed headers:      $dsti/critcl_callback"
+	puts "${prefix}Installed headers:      [
+	    file join $dsti critcl_callback]"
 
     } msg]} {
 	if {![string match {*permission denied*} $msg]} {
@@ -521,7 +536,8 @@ proc _drop {{dst {}}} {
 
     if {[llength [info level 0]] < 2} {
 	set dstl [info library]
-	set dsta [file dirname [file dirname [file normalize [info nameofexecutable]/___]]]
+	set dsta [file dirname [file dirname [file normalize [file join [
+	    info nameofexecutable] ...]]]]
     } else {
 	set dstl $dst
 	set dsta [file join [file dirname $dst] bin]
@@ -546,7 +562,7 @@ proc _drop {{dst {}}} {
 	}
 
 	if {$vfile ne {}} {
-	    set version  [version [file join [file dirname $::me] lib/$dir/$vfile]]
+	    set version  [version [file join [file dirname $::me] lib $dir $vfile]]
 	} else {
 	    set version {}
 	}
@@ -588,11 +604,11 @@ proc _starpack {prefix {dst critcl}} {
     file copy -force $prefix $dst
 
     vfs::mk4::Mount $dst /KIT
-    file mkdir /KIT/lib
+    file mkdir [file join /KIT lib]
 
     foreach d [glob -directory lib *] {
-	file delete -force  /KIT/lib/[file tail $d]
-	file copy -force $d /KIT/lib
+	file delete -force  [file join /KIT lib [file tail $d]]
+	file copy -force $d [file join /KIT lib]
     }
 
     file copy -force main.tcl /KIT
@@ -610,7 +626,7 @@ proc _examples {args} {
 
     # List examples, or run the build code on the examples, passing any arguments.
 
-    set examples [glob -directory $selfdir/examples */$self]
+    set examples [glob -directory [file join $selfdir examples] */$self]
 
     puts ""
     if {![llength $args]} {
