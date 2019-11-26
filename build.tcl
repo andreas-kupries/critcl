@@ -164,6 +164,24 @@ proc reminder {commit} {
 proc shquote value {
     return "\"[string map [list \\ \\\\ $ \\$ ` \\`] $value]\""
 }
+
+proc targets libdir {
+    if {$libdir eq {} } {
+	set exe  [file dirname [file normalize [file join [info nameofexecutable] ...]]]
+	set dstl [info library]
+	set dsta [file dirname $exe]
+	set dsti [file join [file dirname $dsta] include]
+    } else {
+	set dstl $libdir
+	set libdir [findlib $dstl]
+	set top [file dirname $libdir]
+	set dsta [file join $top bin]
+	set dsti [file join $top include]
+    }
+    list $dsta $dsti $dstl
+}
+
+
 proc Hhelp {} { return "\n\tPrint this help" }
 proc _help {} {
     usage 0
@@ -326,20 +344,17 @@ proc _release-doc {} {
 
 proc Htargets {} { return "?destination?\n\tShow available targets.\n\tExpects critcl app to be installed in destination." }
 proc _targets args {
-    switch $args {
-	0 {
-	}
-	1 {
+    switch [llength $args] {
+	0 - 1 {
 	}
 	default {
 	    error -list wrong # args
 	}
     }
     if {[llength [info level 0]] < 2} {
-	set dsta [file dirname [file dirname [file normalize [
-	    file join [info nameofexecutable] ...]]]]
+	lassign [targets {}] dsta dsti dstl
     } else {
-	set dsta [file join [file dirname [findlib $dstl]] bin]
+	lassign [targets [lindex [info level 0] 1]] dsta dsti dstl
     }
     puts [join [split [exec [file join $dsta critcl] -targets]] \n]
     return
@@ -355,22 +370,14 @@ proc _install {args} {
 	set args [lrange $args 2 end]
     }
 
-
     if {[llength $args] == 0} {
-	set exe  [file dirname [file normalize [file join [info nameofexecutable] ...]]]
-	set dstl [info library]
-	set dsta [file dirname $exe]
-	set dsti [file join [file dirname $dsta] include]
+	set libdir {}
 
     } else {
-	set dstl [lindex $args 0]
-	set libdir [findlib $dstl]
-	set top [file dirname $libdir]
-	set dsta [file join $top bin]
-	file mkdir $dsta
-	set dsti [file join $top include]
-	file mkdir $dsti
+	set libdir [lindex $args 0]
     }
+    lassign [targets $libdir] dsta dsti dstl
+    file mkdir $dsta $dsti
 
     set selfdir [file dirname $me]
 
