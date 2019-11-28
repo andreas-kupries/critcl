@@ -354,7 +354,7 @@ proc _targets args {
     if {[llength [info level 0]] < 2} {
 	lassign [targets {}] dsta dsti dstl
     } else {
-	lassign [targets [lindex [info level 0] 1]] dsta dsti dstl
+	lassign [targets [file join [file dirname [lindex [info level 0] 1]] lib]] dsta dsti dstl
     }
     puts [join [split [exec [file join $dsta critcl] -targets]] \n]
     return
