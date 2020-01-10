@@ -136,7 +136,6 @@ If [const false] (the default), the shim function performing the conversion to
 and from Tcl level does not pass the ClientData as the first argument to
 the function.
 
-
 [opt_def -arg-offset [arg int]]
 
 A non-negative integer, [const 0] by default, indicating the number of hidden
@@ -154,7 +153,7 @@ Tcl return code is always [const TCL_OK].
 [include api_stdrt_cproc.inc]
 [comment {% % %% %%% %%%%% %%%%%%%% %%%%%%%%%%%%% %%%%%%%%%%%%%%%%%%%%%}]
 
-[para] The [arg arguments] is a multidict where each key is an argument type
+[para] The [arg arguments] is a multi-dictionary where each key is an argument type
 and its value is the argument name.  For example:
 
 [example {
