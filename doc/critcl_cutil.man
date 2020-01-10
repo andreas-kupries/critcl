@@ -1,10 +1,11 @@
+[vset VERSION 0.2]
 [comment {-*- tcl -*- doctools manpage}]
-[manpage_begin critcl::cutil n 0.1]
+[manpage_begin critcl::cutil n [vset VERSION]]
 [include include/module2.inc]
 [titledesc {CriTcl C-level Utilities}]
 [require Tcl 8.4]
 [require critcl [opt 2.1]]
-[require critcl::cutil [opt 0.1]]
+[require critcl::cutil [opt [vset VERSION]]]
 [description]
 [para]
 [include include/welcome.inc]
@@ -48,9 +49,14 @@ C code declared via [cmd critcl::csources].
 
 [example {
     type* ALLOC (type)
+    type* ALLOC_PLUS (type, int n)
     type* NALLOC (type, int n)
     type* REALLOC (type* var, type, int n)
     void  FREE (type* var)
+
+    void STREP    (Tcl_Obj* o, char* s, int len);
+    void STREP_DS (Tcl_Obj* o, Tcl_DString* ds);
+    void STRDUP   (varname, char* str);
 }]
 
 [para] The details of the semantics are explained in section
@@ -76,9 +82,6 @@ C code declared via [cmd critcl::csources].
     void ASSERT_BOUNDS (int index, int size);
 
     void STOPAFTER (int n);
-
-    void STREP (Tcl_Obj* o, char* s, int len);
-    void STREP_DS (Tcl_Obj* o, Tcl_DString* ds);
 }]
 
 [para] Note that these definitions are conditional on the existence of
@@ -200,6 +203,17 @@ in general.
 This macro allocates a single element of the given [arg type] and
 returns a pointer to that memory.
 
+[call [cmd {type* ALLOC_PLUS (type, int n)}]]
+
+This macro allocates a single element of the given [arg type], plus an
+additional [arg n] bytes after the structure and returns a pointer to
+that memory.
+
+[para] This is for variable-sized structures of. An example of such
+could be a generic list element structure which stores management
+information in the structure itself, and the value/payload immediately
+after, in the same memory block.
+
 [call [cmd {type* NALLOC (type, int n)}]]
 
 This macro allocates [arg n] elements of the given [arg type] and
@@ -220,6 +234,25 @@ pointer before trying to use it.
 
 This macro releases the memory referenced by the pointer variable
 [arg var].
+
+[comment {* * ** *** ***** ******** ************* *********************}]
+[call [cmd {void STREP (Tcl_Obj* o, char* s, int len)}]]
+
+This macro properly sets the string representation of the Tcl object
+[arg o] to a copy of the string [arg s], expected to be of length
+[arg len].
+
+[comment {* * ** *** ***** ******** ************* *********************}]
+[call [cmd {void STREP_DS (Tcl_Obj* o, Tcl_DString* ds)}]]
+
+This macro properly sets the string representation of the Tcl object
+[arg o] to a copy of the string held by the [type DString] [arg ds].
+
+[comment {* * ** *** ***** ******** ************* *********************}]
+[call [cmd {void STRDUP (varname, char* str)}]]
+
+This macro duplicates the string [arg str] into the heap and stores
+the result into the named [type char*] variable [arg var].
 
 [list_end]
 
@@ -245,19 +278,6 @@ range [const 0] to [const {size-1}].
 
 This macro throws a panic after it is called [arg n] times.
 Note, each separate instance of the macro has its own counter.
-
-[comment {* * ** *** ***** ******** ************* *********************}]
-[call [cmd {void STREP (Tcl_Obj* o, char* s, int len)}]]
-
-This macro properly sets the string representation of the Tcl object
-[arg o] to a copy of the string [arg s], expected to be of length
-[arg len].
-
-[comment {* * ** *** ***** ******** ************* *********************}]
-[call [cmd {void STREP_DS (Tcl_Obj* o, Tcl_DString* ds)}]]
-
-This macro properly sets the string representation of the Tcl object
-[arg o] to a copy of the string held by the [type DString] [arg ds].
 
 [list_end]
 

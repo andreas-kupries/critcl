@@ -2,7 +2,7 @@
 #define __CRITCL_UTIL_ALLOC_H 1
 
 /*
- * Copyright (c) 2017-2018 Andreas Kupries <andreas_kupries@users.sourceforge.net>
+ * Copyright (c) 2017-2020 Andreas Kupries <andreas_kupries@users.sourceforge.net>
  * = = == === ===== ======== ============= =====================
  */
 
@@ -13,9 +13,10 @@
  * Helper macros for easy allocation of structures and arrays.
  */
 
-#define ALLOC(type)       (type *) ckalloc   (sizeof (type))
-#define NALLOC(type,n)    (type *) ckalloc   (sizeof (type) * (n))
-#define REALLOC(x,type,n) (type *) ckrealloc ((char*) x, sizeof (type) * (n))
+#define ALLOC(type)        (type *) ckalloc   (sizeof (type))
+#define ALLOC_PLUS(type,n) (type *) ckalloc   (sizeof (type) + (n))
+#define NALLOC(type,n)     (type *) ckalloc   (sizeof (type) * (n))
+#define REALLOC(x,type,n)  (type *) ckrealloc ((char*) x, sizeof (type) * (n))
 
 #define FREE(p) ckfree ((char*)(p))
 
@@ -33,6 +34,12 @@
 #define STREP_DS(o,ds) {				\
 	int length = Tcl_DStringLength (ds);		\
 	STREP(o, Tcl_DStringValue (ds), length);	\
+    }
+
+#define STRDUP(v,s) {			    \
+        char* str = ckalloc (1+strlen (s)); \
+	strcpy (str, s);		    \
+	v = str; \
     }
 
 /*
