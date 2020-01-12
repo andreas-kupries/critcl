@@ -632,7 +632,10 @@ See also \fBRuntime Behaviour\fR\&.
 .sp
 Returns the empty string\&.
 .sp
-Each \fIoption\fR may be:
+.RS
+.TP
+string \fIoption\fR
+Each may be one of:
 .RS
 .TP
 \fB-cname\fR \fIboolean\fR
@@ -651,36 +654,52 @@ arguments preceding the actual procedure arguments\&.  Used by higher-order code
 generators where there are prefix arguments which are not directly seen by the
 function but which influence argument counting and extraction\&.
 .RE
-.IP
-\fIresulttype\fR may be one of the following predefined types or a custom type\&.
-See section \fBAdvanced: Extending cproc\fR\&.  Unless otherwise noted, the
-Tcl return code is always \fBTCL_OK\fR\&.
+.TP
+string \fIresulttype\fR
+May be one of the following predefined
+types or a custom type\&.
+For the latter see section \fBAdvanced: Extending cproc\fR\&.
+Unless otherwise noted, the Tcl return code is always \fBTCL_OK\fR\&.
 .RS
 .TP
 Tcl_Obj*
 .TP
 object
-If the returned Tcl_Obj is \fBNULL\fR, the Tcl return code is
-\fBTCL_ERROR\fR and the function should \fIset an error mesage\fR [https://www\&.tcl-lang\&.org/man/tcl/TclLib/SetResult\&.htm]
-as the interpreter result\&.  Otherwise, the returned Tcl_Obj is set as the
-interpreter result\&.
+If the returned \fBTcl_Obj*\fR is \fBNULL\fR, the Tcl return code
+is \fBTCL_ERROR\fR and the function should \fIset an error mesage\fR [https://www\&.tcl-lang\&.org/man/tcl/TclLib/SetResult\&.htm]
+as the interpreter result\&.  Otherwise, the returned \fBTcl_Obj*\fR is
+set as the interpreter result\&.
 .sp
-The returned Tcl_Obj should have a reference count greater than zero
-because the converter, assuming that the function incremented the reference
-count of the returned Tcl_Obj, decrements the reference count to release
-possession after setting the interpreter result\&.  If a Tcl_Obj with a reference
-count of zero were returned, the reference count would becomes one when set as
-the interpreter result, and immediately thereafter decremented to zero, causing
-the memory to be freed\&.  The system is then likely to crash at some point after
-the return due to reuse of the freed memory\&.
+Note that setting an error message requires the function body
+to have access to the interpreter the function is running in\&. See the
+argument type \fBTcl_Interp*\fR for the details on how to make that
+happen\&.
+.sp
+Note further that the returned \fBTcl_Obj*\fR should have a
+reference count greater than \fB0\fR\&. This is because the converter
+decrements the reference count to release possession after setting the
+interpreter result\&. It assumes that the function incremented the
+reference count of the returned \fBTcl_Obj*\fR\&.
+If a \fBTcl_Obj*\fR with a reference count of \fB0\fR were
+returned, the reference count would become \fB1\fR when set as the
+interpreter result, and immediately thereafter be decremented to
+\fB0\fR again, causing the memory to be freed\&.  The system is then
+likely to crash at some point after the return due to reuse of the
+freed memory\&.
 .TP
 Tcl_Obj*0
 .TP
 object0
 Like \fBTcl_Obj*\fR except that this conversion assumes that the
-returned value has a reference count of \fB0\fR and \fIdoes not\fR
-decrement it\&. Returning a value whose reference count is greater than zero is
-likely to cause a memory leak\&.
+returned value has a reference count of \fB0\fR and
+\fIdoes not\fR decrement it\&. Returning a value whose reference
+count is greater than \fB0\fR is therefore likely to cause a memory
+leak\&.
+.sp
+Note that setting an error message requires the function body
+to have access to the interpreter the function is running in\&. See the
+argument type \fBTcl_Interp*\fR for the details on how to make that
+happen\&.
 .TP
 char*
 .TP
@@ -724,22 +743,25 @@ and set as the interpreter result\&.
 .TP
 ok
 The returned \fBint\fR value becomes the Tcl return code\&.
-The interpreter result is left untouched and can be set by the function if
-desired\&.
+The interpreter result is left untouched and can be set by the
+function if desired\&. Note that doing this requires the function body
+to have access to the interpreter the function is running in\&. See the
+argument type \fBTcl_Interp*\fR for the details on how to make that
+happen\&.
 .TP
 void
 The function does not return a value\&.
 The interpreter result is left untouched and can be set by the function if
 desired\&.
 .RE
-.sp
-The \fIarguments\fR is a multidict where each key is an argument type
-and its value is the argument name\&.  For example:
+.TP
+list \fIarguments\fR
+Is a multi-dictionary where each key is an
+argument type and its value is the argument name\&.
+For example:
 .CS
 
-
-int x int y
-
+ int x int y
 .CE
 .sp
 Each argument name must be a valid C identifier\&.
@@ -747,14 +769,14 @@ Each argument name must be a valid C identifier\&.
 If the name is a list containing two items, the first item is the name
 and the second item is the default value\&.  A limited form of variadic arguments
 can be accomplished using such default values\&.
-Example:
+For example:
 .CS
 
  int {x 1}
 .CE
 .IP
-\fIx\fR is an optional argument of type \fBint\fR with a default value of
-\fB1\fR\&.
+Here \fIx\fR is an optional argument of type \fBint\fR with a default
+value of \fB1\fR\&.
 .sp
 Argument conversion is completely bypassed when the argument is not
 provided, so a custom converter doing validation does not get the chance to
@@ -762,12 +784,21 @@ validate the default value\&.  In this case, the value should be checked in the
 body of the function\&.
 .sp
 Each argument type may be one of the following predefined types or a
-custom type\&.   See \fBAdvanced: Extending cproc\fR\&.
-.sp
-If the type of the first argument is \fBTcl_Interp*\fR, it is not
-counted as counted as an argument of the new Tcl command, and is a reference
-to the current interpreter\&.
+custom type\&. For the latter see \fBAdvanced: Extending cproc\fR\&.
 .RS
+.TP
+Tcl_Interp*
+\fIAttention\fR: This is a \fIspecial\fR argument type\&. It can
+\fIonly\fR be used by the \fIfirst\fR argument of a function\&.
+Any other argument using it will cause critcl to throw an error\&.
+.sp
+When used, the argument will contain a reference to the current
+interpreter the function body may use\&. Furthermore the argument will
+\fInot\fR be an argument of the Tcl command for the function\&.
+.sp
+This is useful when the function has to do more than simply
+returning a value\&. Examples would be setting up error messages on
+failure, or querying the interpreter for variables and other data\&.
 .TP
 Tcl_Obj*
 .TP
@@ -1002,6 +1033,7 @@ i\&.e\&. memory addresses\&.
 It is planned to remove their documentation in release 3\&.2, and their
 implementation in release 3\&.3\&.  Their deprecation can be undone if
 good use cases are shown\&.
+.RE
 .RE
 .TP
 \fB::critcl::cproc\fR \fIname\fR \fIarguments\fR \fIresulttype\fR
