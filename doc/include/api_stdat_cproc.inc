@@ -12,8 +12,8 @@
 Any other argument using it will cause critcl to throw an error.
 
 [para] When used, the argument will contain a reference to the current
-interpreter the function body may use. Furthermore the argument will
-[strong not] be an argument of the Tcl command for the function.
+interpreter that the function body may use. Furthermore the argument
+will [strong not] be an argument of the Tcl command for the function.
 
 [para] This is useful when the function has to do more than simply
 returning a value. Examples would be setting up error messages on
