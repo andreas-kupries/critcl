@@ -1,33 +1,51 @@
-
+[comment {
+	 Standard result types for use with
+	 cproc and cconst.
+}]
 [list_begin definitions]
 [comment {% % %% %%% %%%%% %%%%%%%% %%%%%%%%%%%%%}]
 [def Tcl_Obj*]
 [def object]
 
-If the returned Tcl_Obj is [const NULL], the Tcl return code is
-[const TCL_ERROR] and the function should [uri \
+If the returned [type Tcl_Obj*] is [const NULL], the Tcl return code
+is [const TCL_ERROR] and the function should [uri \
 	https://www.tcl-lang.org/man/tcl/TclLib/SetResult.htm \
 	{set an error mesage}]
-as the interpreter result.  Otherwise, the returned Tcl_Obj is set as the
-interpreter result.
+as the interpreter result.  Otherwise, the returned [type Tcl_Obj*] is
+set as the interpreter result.
 
-[para]The returned Tcl_Obj should have a reference count greater than zero
-because the converter, assuming that the function incremented the reference
-count of the returned Tcl_Obj, decrements the reference count to release
-possession after setting the interpreter result.  If a Tcl_Obj with a reference
-count of zero were returned, the reference count would becomes one when set as
-the interpreter result, and immediately thereafter decremented to zero, causing
-the memory to be freed.  The system is then likely to crash at some point after
-the return due to reuse of the freed memory.
+[para] Note that setting an error message requires the function body
+to have access to the interpreter the function is running in. See the
+argument type [type Tcl_Interp*] for the details on how to make that
+happen.
+
+[para] Note further that the returned [type Tcl_Obj*] should have a
+reference count greater than [const 0]. This is because the converter
+decrements the reference count to release possession after setting the
+interpreter result. It assumes that the function incremented the
+reference count of the returned [type Tcl_Obj*].
+
+If a [type Tcl_Obj*] with a reference count of [const 0] were
+returned, the reference count would become [const 1] when set as the
+interpreter result, and immediately thereafter be decremented to
+[const 0] again, causing the memory to be freed.  The system is then
+likely to crash at some point after the return due to reuse of the
+freed memory.
 
 [comment {% % %% %%% %%%%% %%%%%%%% %%%%%%%%%%%%%}]
 [def Tcl_Obj*0]
 [def object0]
 
 Like [const Tcl_Obj*] except that this conversion assumes that the
-returned value has a reference count of [const 0] and [emph {does not}]
-decrement it. Returning a value whose reference count is greater than zero is
-likely to cause a memory leak.
+returned value has a reference count of [const 0] and
+[emph {does not}] decrement it. Returning a value whose reference
+count is greater than [const 0] is therefore likely to cause a memory
+leak.
+
+[para] Note that setting an error message requires the function body
+to have access to the interpreter the function is running in. See the
+argument type [type Tcl_Interp*] for the details on how to make that
+happen.
 
 [comment {% % %% %%% %%%%% %%%%%%%% %%%%%%%%%%%%%}]
 [def char*]
@@ -35,7 +53,6 @@ likely to cause a memory leak.
 
 A [type String] Tcl_Obj holding a copy of the returned [type char*] is set as
 the interpreter result.
-
 
 [comment {% % %% %%% %%%%% %%%%%%%% %%%%%%%%%%%%%}]
 [def {const char*}]
@@ -93,8 +110,11 @@ and set as the interpreter result.
 
 The returned [type int] value becomes the Tcl return code.
 
-The interpreter result is left untouched and can be set by the function if
-desired.
+The interpreter result is left untouched and can be set by the
+function if desired. Note that doing this requires the function body
+to have access to the interpreter the function is running in. See the
+argument type [type Tcl_Interp*] for the details on how to make that
+happen.
 
 [comment {% % %% %%% %%%%% %%%%%%%% %%%%%%%%%%%%%}]
 [def void]

@@ -1,6 +1,24 @@
-
+[comment {
+	 Standard argument types for use with
+	 cproc and cclass methods.
+}]
 [list_begin definitions]
 [comment {% % %% %%% %%%%% %%%%%%%% %%%%%%%%%%%%%}]
+
+[def Tcl_Interp*]
+
+[strong Attention]: This is a [strong special] argument type. It can
+[strong only] be used by the [strong first] argument of a function.
+Any other argument using it will cause critcl to throw an error.
+
+[para] When used, the argument will contain a reference to the current
+interpreter that the function body may use. Furthermore the argument
+will [strong not] be an argument of the Tcl command for the function.
+
+[para] This is useful when the function has to do more than simply
+returning a value. Examples would be setting up error messages on
+failure, or querying the interpreter for variables and other data.
+
 [def Tcl_Obj*]
 [def object]
 
