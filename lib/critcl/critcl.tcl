@@ -5446,9 +5446,9 @@ proc ::critcl::Initialize {} {
 
     argtypesupport pstring {
 	typedef struct critcl_pstring {
-	    const Tcl_Obj* o;
-	    const char*    s;
-	    int            len;
+	    Tcl_Obj*    o;
+	    const char* s;
+	    int         len;
 	} critcl_pstring;
     }
 
@@ -5459,7 +5459,7 @@ proc ::critcl::Initialize {} {
 
     argtypesupport list {
 	typedef struct critcl_list {
-	    const Tcl_Obj*  o;
+	    Tcl_Obj*        o;
 	    Tcl_Obj* const* v;
 	    int             c;
 	} critcl_list;
@@ -5529,7 +5529,7 @@ proc ::critcl::Initialize {} {
 
     argtypesupport bytes {
 	typedef struct critcl_bytes {
-	    const Tcl_Obj*       o;
+	    Tcl_Obj*             o;
 	    const unsigned char* s;
 	    int                len;
 	} critcl_bytes;
