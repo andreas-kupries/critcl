@@ -35,11 +35,16 @@ plus the length of the string and a pointer to the character array.
 
 [example {
 typedef struct critcl_pstring {
-    Tcl_Obj* o;
-    char*    s;
-    int      len;
+    Tcl_Obj*    o;
+    const char* s;
+    int         len;
 } critcl_pstring;
 }]
+
+Note the [strong const]. The string is [strong read-only]. Any
+modification can have arbitrary effects, from pulling out the rug
+under the script because of string value and internal representation
+not matching anymore, up to crashes anytime later.
 
 [comment {% % %% %%% %%%%% %%%%%%%% %%%%%%%%%%%%%}]
 [def list]
@@ -51,14 +56,19 @@ elements.
 
 [example {
 typedef struct critcl_list {
-    Tcl_Obj*  o;
-    Tcl_Obj** v;
-    int       c;
+    Tcl_Obj*        o;
+    Tcl_Obj* const* v;
+    int             c;
 } critcl_list;
 }]
 
 The Tcl argument must be convertible to [type List], an error is
 thrown otherwise.
+
+[para] Note the [strong const]. The list is [strong read-only].  Any
+modification can have arbitrary effects, from pulling out the rug
+under the script because of string value and internal representation
+not matching anymore, up to crashes anytime later.
 
 [comment {% % %% %%% %%%%% %%%%%%%% %%%%%%%%%%%%%}]
 [def bytearray]
@@ -93,11 +103,21 @@ typedef struct critcl_bytes {
 The Tcl argument must be convertible to [type ByteArray], an error is
 thrown otherwise.
 
+[para] Note the [strong const]. The bytes are is [strong read-only].
+Any modification can have arbitrary effects, from pulling out the rug
+under the script because of string value and internal representation
+not matching anymore, up to crashes anytime later.
+
 [comment {% % %% %%% %%%%% %%%%%%%% %%%%%%%%%%%%%}]
 [def char*]
 
-The function takes an argument of type [type char*].
+The function takes an argument of type [type {const char*}].
 The string representation of the Tcl argument is passed in.
+
+[para] Note the [strong const]. The string are is [strong read-only].
+Any modification can have arbitrary effects, from pulling out the rug
+under the script because of string value and internal representation
+not matching anymore, up to crashes anytime later.
 
 [comment {% % %% %%% %%%%% %%%%%%%% %%%%%%%%%%%%%}]
 [def double]
