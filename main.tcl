@@ -1,10 +1,11 @@
 if {![catch {
-  # kit related main:
+  # Kit related main:
   package require starkit
 }]} {
   if {[starkit::startup] == "sourced"} return
 } else {
-  # direct invoke without kit (sourced/debug/dev-edition):
+  # Direct invoke without kit (sourced/debug/dev-edition), assume
+  # relative location of the required packages:
   lappend ::auto_path [file join [file dirname [info script]] lib]
 }
 package require critcl::app 3
