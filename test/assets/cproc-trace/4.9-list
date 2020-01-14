@@ -1,0 +1,42 @@
+/* ---------------------------------------------------------------------- */
+
+#define ns__aproc0 "::aproc"
+#ifndef CRITCL_list
+#define CRITCL_list
+
+	typedef struct critcl_list {
+	    Tcl_Obj*  o;
+	    Tcl_Obj** v;
+	    int       c;
+	} critcl_list;
+    
+#endif /* CRITCL_list _________ */
+
+static void c__aproc0(critcl_list x)
+{
+
+}
+
+static int
+tcl__aproc0(ClientData cd, Tcl_Interp *interp, int oc, Tcl_Obj *CONST ov[])
+{
+  critcl_list _x;
+
+  critcl_trace_cmd_args (ns__aproc0, oc, ov);
+
+  if (oc != 2) {
+    Tcl_WrongNumArgs(interp, 1, ov, "x");
+    return critcl_trace_cmd_result (TCL_ERROR, interp);
+  }
+
+  /* (list x) - - -- --- ----- -------- */
+	{
+	if (Tcl_ListObjGetElements (interp, ov[1], &(_x.c), &(_x.v)) != TCL_OK) return critcl_trace_cmd_result (TCL_ERROR, interp);
+	_x.o = ov[1]; }
+
+  /* Call - - -- --- ----- -------- */
+  c__aproc0(_x);
+
+  /* (void return) - - -- --- ----- -------- */
+	return critcl_trace_cmd_result (TCL_OK, interp);
+}

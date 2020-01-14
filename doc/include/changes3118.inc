@@ -1,14 +1,39 @@
 [section {Changes for version 3.1.18 (unreleased)}]
 [list_begin enumerated]
 
-[enum] Bugfix. Issue #95. Changed field [const critcl_bytes.s] to
+[enum] Feature. Added channel types to the set of builtin argument
+       and result types. The result type comes in variants for newly
+       created channels and known channels. The former will register
+       the returned value in the interpreter, the other assumes that
+       it already is.
+
+[enum] Feature. Package [package critcl::class] bumped to version 1.1.
+       Extended with the ability to create a C API for classes, and
+       the ability to disable the generation of the Tcl API.
+
+[enum] Bugfix. Merged pull request #99 from pooryorick/master. Fixes
+       to the target directory calculations done by the install code.
+
+[enum] Merged pull request #94 from andreas-kupries/documentation.
+       A larger documentation cleanup. The main work was done by
+       pooryorick, followed by tweaks done by myself.
+
+[enum] Extended the test suite with lots of cases based on the
+       examples for the various generator packages. IOW the new test
+       cases replicate/encapsulate the examples and demonstrate that
+       the packages used by the examples generate working code.
+
+[enum] Bugfix. Issue #95. Changed the field [const critcl_bytes.s] to
        [type {unsigned char*}] to match Tcl's type. Further constified
        the field to make clear that read-only usage is the common case
        for it.
 
-[enum] Bugfix. Package [package critcl::cutil] bumped to version 0.1.1.
-       Fixed missing inclusion of header [file string.h] in
-       [file critcl_alloc.h], needed for [fun memcpy] in macro [fun STREP].
+[enum] Bugfix/Feature. Package [package critcl::cutil] bumped to
+       version 0.2.  Fixed missing inclusion of header [file string.h]
+       in [file critcl_alloc.h], needed for [fun memcpy] in macro
+       [fun STREP].  Added macros [fun ALLOC_PLUS] and [fun STRDUP].
+       Moved documentation of [fun STREP...] macros into proper place
+       (alloc section, not assert).
 
 [enum] Merged pull request #83 from apnadkarni/vc-fixes.
        Removed deprecated -Gs for MSVC builds, and other Windows fixups.
@@ -55,5 +80,8 @@
 
        [para] Example: [term {int > 0}] is now a viable type name.
 
-       [para] For details see the package reference.
+       [para] This is actually more limited than the description might
+       let you believe.
+
+       [para] See the package reference for the details.
 [list_end]

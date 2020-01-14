@@ -30,12 +30,29 @@ decrement it. Returning a value whose reference count is greater than zero is
 likely to cause a memory leak.
 
 [comment {% % %% %%% %%%%% %%%%%%%% %%%%%%%%%%%%%}]
+[def new-channel]
+
+A [type String] Tcl_Obj holding the name of the returned
+[type Tcl_Channel] is set as the interpreter result.
+
+The channel is further assumed to be [strong new], and therefore
+registered with the interpreter to make it known.
+
+[comment {% % %% %%% %%%%% %%%%%%%% %%%%%%%%%%%%%}]
+[def known-channel]
+
+A [type String] Tcl_Obj holding the name of the returned
+[type Tcl_Channel] is set as the interpreter result.
+
+The channel is further assumed to be [strong {already registered}]
+with the interpreter.
+
+[comment {% % %% %%% %%%%% %%%%%%%% %%%%%%%%%%%%%}]
 [def char*]
 [def vstring]
 
 A [type String] Tcl_Obj holding a copy of the returned [type char*] is set as
 the interpreter result.
-
 
 [comment {% % %% %%% %%%%% %%%%%%%% %%%%%%%%%%%%%}]
 [def {const char*}]

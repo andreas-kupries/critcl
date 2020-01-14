@@ -139,6 +139,17 @@ The Tcl argument must be convertible to [type Boolean], an error is
 thrown otherwise.
 
 [comment {% % %% %%% %%%%% %%%%%%%% %%%%%%%%%%%%%}]
+[def channel]
+
+The function takes an argument of type [type Tcl_Channel].
+
+The Tcl argument must be convertible to type [type Channel], an error
+is thrown otherwise.
+
+The channel is further assumed to be [strong {already registered}]
+with the interpreter.
+
+[comment {% % %% %%% %%%%% %%%%%%%% %%%%%%%%%%%%%}]
 [def int]
 
 The function takes an argument of type [type int].

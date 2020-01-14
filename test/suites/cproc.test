@@ -223,11 +223,60 @@ test critcl-cproc${suffix}-3.11 {cproc, object result} -body {
     get critcl::cproc aproc {} object { return Tcl_NewIntObj(0); }
 } -result [viewFile [localPath test/assets/cproc${suffix}/3.11]]
 
+test critcl-cproc${suffix}-3.12 {cproc, channel result, new} -body {
+    get critcl::cproc aproc {} new-channel {
+        return Tcl_OpenFileChannel (interp, "/tmp", "r", 0);
+    }
+} -result [viewFile [localPath test/assets/cproc${suffix}/3.12]]
+
+test critcl-cproc${suffix}-3.13 {cproc, channel result, known} -body {
+    get critcl::cproc aproc {} known-channel {
+        return Tcl_GetStdChannel (0);
+    }
+} -result [viewFile [localPath test/assets/cproc${suffix}/3.13]]
+
+
+# -------------------------------------------------------------------------
+# Vary argument types of the function. Cover all (sensible) builtin result types.
+# Not covered: int*, float*, double* (all deprecated)
+
+set n 0
+foreach type {
+    int
+    bool
+    long
+    wideint
+    double
+    float
+    {int > 0}
+    char*
+    pstring
+    list
+    object
+    bytearray
+    bytes
+    channel
+} {
+    set td [string map {{ } _ * _} $type]
+    test critcl-cproc${suffix}-4.${n}-$td "cproc, $type argument" -body {
+        get critcl::cproc aproc [list $type x] void { }
+    } -result [viewFile [localPath test/assets/cproc${suffix}/4.${n}-$td]]
+    incr n ; unset td
+}
+
+test critcl-cproc${suffix}-4.${n}-vobject "cproc, variadic Tcl_Obj* argument" -body {
+    get critcl::cproc aproc {object args} void { }
+} -result [viewFile [localPath test/assets/cproc${suffix}/4.${n}-vobject]]
+incr n
+
+test critcl-cproc${suffix}-4.${n}-vint "cproc, variadic int argument" -body {
+    get critcl::cproc aproc {int args} void { }
+} -result [viewFile [localPath test/assets/cproc${suffix}/4.${n}-vint]]
+
+unset n
+
 # -------------------------------------------------------------------------
 ## XXX TODO one to multiple arguments
-## XXX TODO optional arguments
-## XXX TODO various argument types
-## XXX TODO various result types
 ## XXX TODO ...
 
 testsuiteCleanup

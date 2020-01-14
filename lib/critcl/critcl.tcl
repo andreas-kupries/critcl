@@ -5533,6 +5533,12 @@ proc ::critcl::Initialize {} {
 	} critcl_bytes;
     }
 
+    argtype channel {
+	int mode;
+	@A = Tcl_GetChannel(interp, Tcl_GetString (@@), &mode);
+	if (@A == NULL) return TCL_ERROR;
+    } Tcl_Channel Tcl_Channel
+
     # Declare the standard result types for cproc.
     # System still has special case code for:
     # - void (no rv result variable).
@@ -5610,6 +5616,19 @@ proc ::critcl::Initialize {} {
 	return TCL_OK;
     } Tcl_Obj*
     resulttype object0 = Tcl_Obj*0
+
+    resulttype new-channel {
+	if (rv == NULL) { return TCL_ERROR; }
+	Tcl_RegisterChannel (interp, rv);
+	Tcl_SetObjResult (interp, Tcl_NewStringObj (Tcl_GetChannelName (rv), -1));
+	return TCL_OK;
+    } Tcl_Channel
+
+    resulttype known-channel {
+	if (rv == NULL) { return TCL_ERROR; }
+	Tcl_SetObjResult (interp, Tcl_NewStringObj (Tcl_GetChannelName (rv), -1));
+	return TCL_OK;
+    } Tcl_Channel
 
     rename ::critcl::Initialize {}
     return
