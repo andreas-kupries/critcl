@@ -181,6 +181,37 @@ proc targets libdir {
     list $dsta $dsti $dstl
 }
 
+proc Hsynopsis {} { return "\n\tGenerate a synopsis of procs and builtin types" }
+proc _synopsis {} {
+    puts Public:
+    puts [exec grep -n ^proc lib/critcl/critcl.tcl \
+	      | sed -e "s| \{$||" -e {s/:proc ::critcl::/ /} \
+	      | grep -v { [A-Z]} \
+	      | grep -v { at::[A-Z]} \
+	      | sort -k 2 \
+	      | sed -e {s/^/    /}]
+
+    puts Private:
+    puts [exec grep -n ^proc lib/critcl/critcl.tcl \
+	      | sed -e "s| \{$||" -e {s/:proc ::critcl::/ /} \
+	      | grep {[A-Z]} \
+	      | sort -k 2 \
+	      | sed -e {s/^/    /}]
+
+    puts "Builtin argument types:"
+    puts [exec grep -n {    argtype} lib/critcl/critcl.tcl \
+	      | sed -e "s| \{$||" -e {s/:[ 	]*argtype/ /} \
+	      | sort -k 2 \
+	      | sed -e {s/^/    /}]
+
+    puts "Builtin result types:"
+    puts [exec grep -n {    resulttype} lib/critcl/critcl.tcl \
+	      | sed -e "s| \{$||" -e {s/:[ 	]*resulttype/ /} \
+	      | sort -k 2 \
+	      | sed -e {s/^/    /}]
+
+    return
+}
 
 proc Hhelp {} { return "\n\tPrint this help" }
 proc _help {} {
