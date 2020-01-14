@@ -664,7 +664,7 @@ proc _examples {args} {
 
     # List examples, or run the build code on the examples, passing any arguments.
 
-    set examples [glob -directory [file join $selfdir examples] */$self]
+    set examples [lsort -dict [glob -directory [file join $selfdir examples] */$self]]
 
     puts ""
     if {![llength $args]} {
