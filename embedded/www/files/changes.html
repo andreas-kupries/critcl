@@ -154,15 +154,39 @@ performance by rewriting in C those routines that are performance bottlenecks.</
 underwent from version to version.</p>
 <p>The latest changes are found at the top.</p>
 </div>
-<div id="section2" class="doctools_section"><h2><a name="section2">Changes for version 3.1.18 (unreleased)</a></h2>
+<div id="section2" class="doctools_section"><h2><a name="section2">Changes for version 3.1.18</a></h2>
 <ol class="doctools_enumerated">
-<li><p>Bugfix. Issue #95. Changed field <b class="const">critcl_bytes.s</b> to
+<li><p>Feature. Added channel types to the set of builtin argument
+       and result types. The result type comes in variants for newly
+       created channels and known channels. The former will register
+       the returned value in the interpreter, the other assumes that
+       it already is.</p></li>
+<li><p>Bugfix. Issue #96. Reworked the documentation around the
+       argument type <b class="type">Tcl_Interp*</b> to make its special status
+       more visible, explain uses, and call it out from result types
+       where its use will be necessary or at least useful.</p></li>
+<li><p>Feature. Package <b class="package"><a href="critcl_class.html">critcl::class</a></b> bumped to version 1.1.
+       Extended with the ability to create a C API for classes, and
+       the ability to disable the generation of the Tcl API.</p></li>
+<li><p>Bugfix. Merged pull request #99 from pooryorick/master. Fixes
+       to the target directory calculations done by the install code.</p></li>
+<li><p>Merged pull request #94 from andreas-kupries/documentation.
+       A larger documentation cleanup. The main work was done by
+       pooryorick, followed by tweaks done by myself.</p></li>
+<li><p>Extended the test suite with lots of cases based on the
+       examples for the various generator packages. IOW the new test
+       cases replicate/encapsulate the examples and demonstrate that
+       the packages used by the examples generate working code.</p></li>
+<li><p>Bugfix. Issue #95. Changed the field <b class="const">critcl_bytes.s</b> to
        <b class="type">unsigned char*</b> to match Tcl's type. Further constified
        the field to make clear that read-only usage is the common case
        for it.</p></li>
-<li><p>Bugfix. Package <b class="package"><a href="critcl_cutil.html">critcl::cutil</a></b> bumped to version 0.1.1.
-       Fixed missing inclusion of header &quot;<b class="file">string.h</b>&quot; in
-       &quot;<b class="file">critcl_alloc.h</b>&quot;, needed for <b class="function">memcpy</b> in macro <b class="function">STREP</b>.</p></li>
+<li><p>Bugfix/Feature. Package <b class="package"><a href="critcl_cutil.html">critcl::cutil</a></b> bumped to
+       version 0.2.  Fixed missing inclusion of header &quot;<b class="file">string.h</b>&quot;
+       in &quot;<b class="file">critcl_alloc.h</b>&quot;, needed for <b class="function">memcpy</b> in macro
+       <b class="function">STREP</b>.  Added macros <b class="function">ALLOC_PLUS</b> and <b class="function">STRDUP</b>.
+       Moved documentation of <b class="function">STREP...</b> macros into proper place
+       (alloc section, not assert).</p></li>
 <li><p>Merged pull request #83 from apnadkarni/vc-fixes.
        Removed deprecated -Gs for MSVC builds, and other Windows fixups.</p></li>
 <li><p>Feature. Package <b class="package"><a href="critcl_iassoc.html">critcl::iassoc</a></b> bumped to version 1.1.
@@ -196,7 +220,9 @@ underwent from version to version.</p>
        range restrictions to the scalar types (<i class="term">int</i>,
        <i class="term">long</i>, <i class="term">wideint</i>, <i class="term">double</i>, <i class="term">float</i>).</p>
 <p>Example: <i class="term">int &gt; 0</i> is now a viable type name.</p>
-<p>For details see the package reference.</p></li>
+<p>This is actually more limited than the description might
+       let you believe.</p>
+<p>See the package reference for the details.</p></li>
 </ol>
 </div>
 <div id="section3" class="doctools_section"><h2><a name="section3">Changes for version 3.1.17</a></h2>

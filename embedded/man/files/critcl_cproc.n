@@ -450,6 +450,13 @@ The function takes an argument of type \fBint\fR\&.
 The Tcl argument must be convertible to \fBBoolean\fR, an error is
 thrown otherwise\&.
 .TP
+channel
+The function takes an argument of type \fBTcl_Channel\fR\&.
+The Tcl argument must be convertible to type \fBChannel\fR, an error
+is thrown otherwise\&.
+The channel is further assumed to be \fIalready registered\fR
+with the interpreter\&.
+.TP
 int
 The function takes an argument of type \fBint\fR\&.
 The Tcl argument must be convertible to \fBInt\fR, an error is thrown
@@ -575,6 +582,18 @@ Like \fBTcl_Obj*\fR except that this conversion assumes that the
 returned value has a reference count of \fB0\fR and \fIdoes not\fR
 decrement it\&. Returning a value whose reference count is greater than zero is
 likely to cause a memory leak\&.
+.TP
+new-channel
+A \fBString\fR Tcl_Obj holding the name of the returned
+\fBTcl_Channel\fR is set as the interpreter result\&.
+The channel is further assumed to be \fInew\fR, and therefore
+registered with the interpreter to make it known\&.
+.TP
+known-channel
+A \fBString\fR Tcl_Obj holding the name of the returned
+\fBTcl_Channel\fR is set as the interpreter result\&.
+The channel is further assumed to be \fIalready registered\fR
+with the interpreter\&.
 .TP
 char*
 .TP

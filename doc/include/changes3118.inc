@@ -1,4 +1,4 @@
-[section {Changes for version 3.1.18 (unreleased)}]
+[section {Changes for version 3.1.18}]
 [list_begin enumerated]
 
 [enum] Feature. Added channel types to the set of builtin argument
@@ -6,6 +6,11 @@
        created channels and known channels. The former will register
        the returned value in the interpreter, the other assumes that
        it already is.
+
+[enum] Bugfix. Issue #96. Reworked the documentation around the
+       argument type [type Tcl_Interp*] to make its special status
+       more visible, explain uses, and call it out from result types
+       where its use will be necessary or at least useful.
 
 [enum] Feature. Package [package critcl::class] bumped to version 1.1.
        Extended with the ability to create a C API for classes, and

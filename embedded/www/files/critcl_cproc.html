@@ -277,6 +277,12 @@ the listed types exist.</p></dd>
 <dd><p>The function takes an argument of type <b class="type">int</b>.
 The Tcl argument must be convertible to <b class="type">Boolean</b>, an error is
 thrown otherwise.</p></dd>
+<dt>channel</dt>
+<dd><p>The function takes an argument of type <b class="type">Tcl_Channel</b>.
+The Tcl argument must be convertible to type <b class="type">Channel</b>, an error
+is thrown otherwise.
+The channel is further assumed to be <em>already registered</em>
+with the interpreter.</p></dd>
 <dt>int</dt>
 <dd><p>The function takes an argument of type <b class="type">int</b>.
 The Tcl argument must be convertible to <b class="type">Int</b>, an error is thrown
@@ -394,6 +400,16 @@ the return due to reuse of the freed memory.</p></dd>
 returned value has a reference count of <b class="const">0</b> and <em>does not</em>
 decrement it. Returning a value whose reference count is greater than zero is
 likely to cause a memory leak.</p></dd>
+<dt>new-channel</dt>
+<dd><p>A <b class="type">String</b> Tcl_Obj holding the name of the returned
+<b class="type">Tcl_Channel</b> is set as the interpreter result.
+The channel is further assumed to be <em>new</em>, and therefore
+registered with the interpreter to make it known.</p></dd>
+<dt>known-channel</dt>
+<dd><p>A <b class="type">String</b> Tcl_Obj holding the name of the returned
+<b class="type">Tcl_Channel</b> is set as the interpreter result.
+The channel is further assumed to be <em>already registered</em>
+with the interpreter.</p></dd>
 <dt>char*</dt>
 <dd></dd>
 <dt>vstring</dt>

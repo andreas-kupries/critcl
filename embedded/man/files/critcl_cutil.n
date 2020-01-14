@@ -2,7 +2,7 @@
 '\" Generated from file 'critcl_cutil\&.man' by tcllib/doctools with format 'nroff'
 '\" Copyright (c) 2011-2018 Andreas Kupries
 '\"
-.TH "critcl::cutil" n 0\&.1 doc "C Runtime In Tcl (CriTcl)"
+.TH "critcl::cutil" n 0\&.2 doc "C Runtime In Tcl (CriTcl)"
 .\" The -*- nroff -*- definitions below are for supplemental macros used
 .\" in Tcl/Tk manual entries.
 .\"
@@ -278,7 +278,7 @@ package require \fBTcl  8\&.4\fR
 .sp
 package require \fBcritcl  ?2\&.1?\fR
 .sp
-package require \fBcritcl::cutil  ?0\&.1?\fR
+package require \fBcritcl::cutil  ?0\&.2?\fR
 .sp
 \fB::critcl::cutil::alloc\fR
 .sp
@@ -288,21 +288,25 @@ package require \fBcritcl::cutil  ?0\&.1?\fR
 .sp
 \fBtype* ALLOC (type)\fR
 .sp
+\fBtype* ALLOC_PLUS (type, int n)\fR
+.sp
 \fBtype* NALLOC (type, int n)\fR
 .sp
 \fBtype* REALLOC (type* var, type, int n)\fR
 .sp
 \fBvoid FREE (type* var)\fR
 .sp
+\fBvoid STREP (Tcl_Obj* o, char* s, int len)\fR
+.sp
+\fBvoid STREP_DS (Tcl_Obj* o, Tcl_DString* ds)\fR
+.sp
+\fBvoid STRDUP (varname, char* str)\fR
+.sp
 \fBvoid ASSERT (expression, char* message\fR
 .sp
 \fBvoid ASSERT_BOUNDS (int index, int size)\fR
 .sp
 \fBvoid STOPAFTER(n)\fR
-.sp
-\fBvoid STREP (Tcl_Obj* o, char* s, int len)\fR
-.sp
-\fBvoid STREP_DS (Tcl_Obj* o, Tcl_DString* ds)\fR
 .sp
 \fBTRACE_ON\fR
 .sp
@@ -421,9 +425,14 @@ The macros definitions and their signatures are:
 
 
     type* ALLOC (type)
+    type* ALLOC_PLUS (type, int n)
     type* NALLOC (type, int n)
     type* REALLOC (type* var, type, int n)
     void  FREE (type* var)
+
+    void STREP    (Tcl_Obj* o, char* s, int len);
+    void STREP_DS (Tcl_Obj* o, Tcl_DString* ds);
+    void STRDUP   (varname, char* str);
 
 .CE
 .sp
@@ -449,9 +458,6 @@ The macro definitions and their signatures are
     void ASSERT_BOUNDS (int index, int size);
 
     void STOPAFTER (int n);
-
-    void STREP (Tcl_Obj* o, char* s, int len);
-    void STREP_DS (Tcl_Obj* o, Tcl_DString* ds);
 
 .CE
 .sp
@@ -563,6 +569,16 @@ The result of the command is an empty string\&.
 This macro allocates a single element of the given \fItype\fR and
 returns a pointer to that memory\&.
 .TP
+\fBtype* ALLOC_PLUS (type, int n)\fR
+This macro allocates a single element of the given \fItype\fR, plus an
+additional \fIn\fR bytes after the structure and returns a pointer to
+that memory\&.
+.sp
+This is for variable-sized structures of\&. An example of such
+could be a generic list element structure which stores management
+information in the structure itself, and the value/payload immediately
+after, in the same memory block\&.
+.TP
 \fBtype* NALLOC (type, int n)\fR
 This macro allocates \fIn\fR elements of the given \fItype\fR and
 returns a pointer to that memory\&.
@@ -579,6 +595,19 @@ pointer before trying to use it\&.
 \fBvoid FREE (type* var)\fR
 This macro releases the memory referenced by the pointer variable
 \fIvar\fR\&.
+.TP
+\fBvoid STREP (Tcl_Obj* o, char* s, int len)\fR
+This macro properly sets the string representation of the Tcl object
+\fIo\fR to a copy of the string \fIs\fR, expected to be of length
+\fIlen\fR\&.
+.TP
+\fBvoid STREP_DS (Tcl_Obj* o, Tcl_DString* ds)\fR
+This macro properly sets the string representation of the Tcl object
+\fIo\fR to a copy of the string held by the \fBDString\fR \fIds\fR\&.
+.TP
+\fBvoid STRDUP (varname, char* str)\fR
+This macro duplicates the string \fIstr\fR into the heap and stores
+the result into the named \fBchar*\fR variable \fIvar\fR\&.
 .PP
 .SH ASSERTIONS
 .TP
@@ -594,15 +623,6 @@ range \fB0\fR to \fBsize-1\fR\&.
 \fBvoid STOPAFTER(n)\fR
 This macro throws a panic after it is called \fIn\fR times\&.
 Note, each separate instance of the macro has its own counter\&.
-.TP
-\fBvoid STREP (Tcl_Obj* o, char* s, int len)\fR
-This macro properly sets the string representation of the Tcl object
-\fIo\fR to a copy of the string \fIs\fR, expected to be of length
-\fIlen\fR\&.
-.TP
-\fBvoid STREP_DS (Tcl_Obj* o, Tcl_DString* ds)\fR
-This macro properly sets the string representation of the Tcl object
-\fIo\fR to a copy of the string held by the \fBDString\fR \fIds\fR\&.
 .PP
 .SH TRACING
 All output is printed to \fBstdout\fR\&.
