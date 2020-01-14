@@ -1,6 +1,11 @@
 [section {Changes for version 3.1.18}]
 [list_begin enumerated]
 
+[enum] Feature (Developer support). Merged pull request #96 from
+       sebres/main-direct-invoke. Enables direct invokation of the
+       [file main.tcl] file for starkits from within a dev checkout,
+       i.e. outside of a starkit, or starpack.
+
 [enum] Feature. Added channel types to the set of builtin argument
        and result types. The result type comes in variants for newly
        created channels and known channels. The former will register
