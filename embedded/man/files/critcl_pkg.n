@@ -632,7 +632,10 @@ See also \fBRuntime Behaviour\fR\&.
 .sp
 Returns the empty string\&.
 .sp
-Each \fIoption\fR may be:
+.RS
+.TP
+string \fIoption\fR
+Each may be one of:
 .RS
 .TP
 \fB-cname\fR \fIboolean\fR
@@ -651,48 +654,52 @@ arguments preceding the actual procedure arguments\&.  Used by higher-order code
 generators where there are prefix arguments which are not directly seen by the
 function but which influence argument counting and extraction\&.
 .RE
-.IP
-\fIresulttype\fR may be one of the following predefined types or a custom type\&.
-See section \fBAdvanced: Extending cproc\fR\&.  Unless otherwise noted, the
-Tcl return code is always \fBTCL_OK\fR\&.
+.TP
+string \fIresulttype\fR
+May be one of the following predefined
+types or a custom type\&.
+For the latter see section \fBAdvanced: Extending cproc\fR\&.
+Unless otherwise noted, the Tcl return code is always \fBTCL_OK\fR\&.
 .RS
 .TP
 Tcl_Obj*
 .TP
 object
-If the returned Tcl_Obj is \fBNULL\fR, the Tcl return code is
-\fBTCL_ERROR\fR and the function should \fIset an error mesage\fR [https://www\&.tcl-lang\&.org/man/tcl/TclLib/SetResult\&.htm]
-as the interpreter result\&.  Otherwise, the returned Tcl_Obj is set as the
-interpreter result\&.
+If the returned \fBTcl_Obj*\fR is \fBNULL\fR, the Tcl return code
+is \fBTCL_ERROR\fR and the function should \fIset an error mesage\fR [https://www\&.tcl-lang\&.org/man/tcl/TclLib/SetResult\&.htm]
+as the interpreter result\&.  Otherwise, the returned \fBTcl_Obj*\fR is
+set as the interpreter result\&.
 .sp
-The returned Tcl_Obj should have a reference count greater than zero
-because the converter, assuming that the function incremented the reference
-count of the returned Tcl_Obj, decrements the reference count to release
-possession after setting the interpreter result\&.  If a Tcl_Obj with a reference
-count of zero were returned, the reference count would becomes one when set as
-the interpreter result, and immediately thereafter decremented to zero, causing
-the memory to be freed\&.  The system is then likely to crash at some point after
-the return due to reuse of the freed memory\&.
+Note that setting an error message requires the function body
+to have access to the interpreter the function is running in\&. See the
+argument type \fBTcl_Interp*\fR for the details on how to make that
+happen\&.
+.sp
+Note further that the returned \fBTcl_Obj*\fR should have a
+reference count greater than \fB0\fR\&. This is because the converter
+decrements the reference count to release possession after setting the
+interpreter result\&. It assumes that the function incremented the
+reference count of the returned \fBTcl_Obj*\fR\&.
+If a \fBTcl_Obj*\fR with a reference count of \fB0\fR were
+returned, the reference count would become \fB1\fR when set as the
+interpreter result, and immediately thereafter be decremented to
+\fB0\fR again, causing the memory to be freed\&.  The system is then
+likely to crash at some point after the return due to reuse of the
+freed memory\&.
 .TP
 Tcl_Obj*0
 .TP
 object0
 Like \fBTcl_Obj*\fR except that this conversion assumes that the
-returned value has a reference count of \fB0\fR and \fIdoes not\fR
-decrement it\&. Returning a value whose reference count is greater than zero is
-likely to cause a memory leak\&.
-.TP
-new-channel
-A \fBString\fR Tcl_Obj holding the name of the returned
-\fBTcl_Channel\fR is set as the interpreter result\&.
-The channel is further assumed to be \fInew\fR, and therefore
-registered with the interpreter to make it known\&.
-.TP
-known-channel
-A \fBString\fR Tcl_Obj holding the name of the returned
-\fBTcl_Channel\fR is set as the interpreter result\&.
-The channel is further assumed to be \fIalready registered\fR
-with the interpreter\&.
+returned value has a reference count of \fB0\fR and
+\fIdoes not\fR decrement it\&. Returning a value whose reference
+count is greater than \fB0\fR is therefore likely to cause a memory
+leak\&.
+.sp
+Note that setting an error message requires the function body
+to have access to the interpreter the function is running in\&. See the
+argument type \fBTcl_Interp*\fR for the details on how to make that
+happen\&.
 .TP
 char*
 .TP
@@ -736,22 +743,25 @@ and set as the interpreter result\&.
 .TP
 ok
 The returned \fBint\fR value becomes the Tcl return code\&.
-The interpreter result is left untouched and can be set by the function if
-desired\&.
+The interpreter result is left untouched and can be set by the
+function if desired\&. Note that doing this requires the function body
+to have access to the interpreter the function is running in\&. See the
+argument type \fBTcl_Interp*\fR for the details on how to make that
+happen\&.
 .TP
 void
 The function does not return a value\&.
 The interpreter result is left untouched and can be set by the function if
 desired\&.
 .RE
-.sp
-The \fIarguments\fR is a multi-dictionary where each key is an argument type
-and its value is the argument name\&.  For example:
+.TP
+list \fIarguments\fR
+Is a multi-dictionary where each key is an
+argument type and its value is the argument name\&.
+For example:
 .CS
 
-
-int x int y
-
+ int x int y
 .CE
 .sp
 Each argument name must be a valid C identifier\&.
@@ -759,14 +769,14 @@ Each argument name must be a valid C identifier\&.
 If the name is a list containing two items, the first item is the name
 and the second item is the default value\&.  A limited form of variadic arguments
 can be accomplished using such default values\&.
-Example:
+For example:
 .CS
 
  int {x 1}
 .CE
 .IP
-\fIx\fR is an optional argument of type \fBint\fR with a default value of
-\fB1\fR\&.
+Here \fIx\fR is an optional argument of type \fBint\fR with a default
+value of \fB1\fR\&.
 .sp
 Argument conversion is completely bypassed when the argument is not
 provided, so a custom converter doing validation does not get the chance to
@@ -774,12 +784,21 @@ validate the default value\&.  In this case, the value should be checked in the
 body of the function\&.
 .sp
 Each argument type may be one of the following predefined types or a
-custom type\&.   See \fBAdvanced: Extending cproc\fR\&.
-.sp
-If the type of the first argument is \fBTcl_Interp*\fR, it is not
-counted as counted as an argument of the new Tcl command, and is a reference
-to the current interpreter\&.
+custom type\&. For the latter see \fBAdvanced: Extending cproc\fR\&.
 .RS
+.TP
+Tcl_Interp*
+\fIAttention\fR: This is a \fIspecial\fR argument type\&. It can
+\fIonly\fR be used by the \fIfirst\fR argument of a function\&.
+Any other argument using it will cause critcl to throw an error\&.
+.sp
+When used, the argument will contain a reference to the current
+interpreter the function body may use\&. Furthermore the argument will
+\fInot\fR be an argument of the Tcl command for the function\&.
+.sp
+This is useful when the function has to do more than simply
+returning a value\&. Examples would be setting up error messages on
+failure, or querying the interpreter for variables and other data\&.
 .TP
 Tcl_Obj*
 .TP
@@ -916,13 +935,6 @@ The function takes an argument of type \fBint\fR\&.
 The Tcl argument must be convertible to \fBBoolean\fR, an error is
 thrown otherwise\&.
 .TP
-channel
-The function takes an argument of type \fBTcl_Channel\fR\&.
-The Tcl argument must be convertible to type \fBChannel\fR, an error
-is thrown otherwise\&.
-The channel is further assumed to be \fIalready registered\fR
-with the interpreter\&.
-.TP
 int
 The function takes an argument of type \fBint\fR\&.
 The Tcl argument must be convertible to \fBInt\fR, an error is thrown
@@ -1021,6 +1033,7 @@ i\&.e\&. memory addresses\&.
 It is planned to remove their documentation in release 3\&.2, and their
 implementation in release 3\&.3\&.  Their deprecation can be undone if
 good use cases are shown\&.
+.RE
 .RE
 .TP
 \fB::critcl::cproc\fR \fIname\fR \fIarguments\fR \fIresulttype\fR
@@ -2910,94 +2923,61 @@ See section "Embedding C" in \fIUsing CriTcl\fR\&.
 The latest changes are found at the top\&.
 .SH "CHANGES FOR VERSION 3\&.1\&.18 (UNRELEASED)"
 .IP [1]
-Feature\&. Added channel types to the set of builtin argument
-and result types\&. The result type comes in variants for newly
-created channels and known channels\&. The former will register
-the returned value in the interpreter, the other assumes that
-it already is\&.
-.IP [2]
-Bugfix\&. Issue #96\&. Reworked the documentation around the
-argument type \fBTcl_Interp*\fR to make its special status
-more visible, explain uses, and call it out from result types
-where its use will be necessary or at least useful\&.
-.IP [3]
-Feature\&. Package \fBcritcl::class\fR bumped to version 1\&.1\&.
-Extended with the ability to create a C API for classes, and
-the ability to disable the generation of the Tcl API\&.
-.IP [4]
-Bugfix\&. Merged pull request #99 from pooryorick/master\&. Fixes
-to the target directory calculations done by the install code\&.
-.IP [5]
-Merged pull request #94 from andreas-kupries/documentation\&.
-A larger documentation cleanup\&. The main work was done by
-pooryorick, followed by tweaks done by myself\&.
-.IP [6]
-Extended the test suite with lots of cases based on the
-examples for the various generator packages\&. IOW the new test
-cases replicate/encapsulate the examples and demonstrate that
-the packages used by the examples generate working code\&.
-.IP [7]
-Bugfix\&. Issue #95\&. Changed the field \fBcritcl_bytes\&.s\fR to
+Bugfix\&. Issue #95\&. Changed field \fBcritcl_bytes\&.s\fR to
 \fBunsigned char*\fR to match Tcl's type\&. Further constified
 the field to make clear that read-only usage is the common case
 for it\&.
-.IP [8]
-Bugfix/Feature\&. Package \fBcritcl::cutil\fR bumped to
-version 0\&.2\&.  Fixed missing inclusion of header "\fIstring\&.h\fR"
-in "\fIcritcl_alloc\&.h\fR", needed for \fBmemcpy\fR in macro
-\fBSTREP\fR\&.  Added macros \fBALLOC_PLUS\fR and \fBSTRDUP\fR\&.
-Moved documentation of \fBSTREP\&.\&.\&.\fR macros into proper place
-(alloc section, not assert)\&.
-.IP [9]
+.IP [2]
+Bugfix\&. Package \fBcritcl::cutil\fR bumped to version 0\&.1\&.1\&.
+Fixed missing inclusion of header "\fIstring\&.h\fR" in
+"\fIcritcl_alloc\&.h\fR", needed for \fBmemcpy\fR in macro \fBSTREP\fR\&.
+.IP [3]
 Merged pull request #83 from apnadkarni/vc-fixes\&.
 Removed deprecated -Gs for MSVC builds, and other Windows fixups\&.
-.IP [10]
+.IP [4]
 Feature\&. Package \fBcritcl::iassoc\fR bumped to version 1\&.1\&.
 Refactored internals to generate an include header for use by \&.c files\&.
 This now matches what other generator packages do\&.
 The template file is inlined and removed\&.
-.IP [11]
+.IP [5]
 Merged pull request #82 from gahr/home-symlink
 Modified tests to handle possibility of $HOME a symlink\&.
-.IP [12]
+.IP [6]
 Merged pull request #81 from gahr/test-not-installed
 Modified test support to find uninstalled critcl packages when
 running tests\&. Handles all but critcl::md5\&.
-.IP [13]
+.IP [7]
 Merged pull request #85 from snoe925/issue-84
 to fix Issue #84 breaking installation on OSX\&.
-.IP [14]
+.IP [8]
 Merged pull request #87 from apnadkarni/tea-fixes to fix Issue
 #86, broken -tea option, generating an incomplete package\&.
-.IP [15]
+.IP [9]
 Feature\&. New package \fBcritcl::callback\fR providing
 C-level functions and data structures to manage callbacks from
 C to Tcl\&.
-.IP [16]
+.IP [10]
 Feature\&. Package \fBcritcl::literals\fR bumped to version
 1\&.3\&.  Added mode \fB+list\fR enabling the conversion of
 multiple literals into a list of their strings\&.
-.IP [17]
+.IP [11]
 Feature\&. Package \fBcritcl::enum\fR bumped to version 1\&.1\&.
 Added basic mode handling, supporting \fBtcl\fR (default) and
 \fB+list\fR (extension enabling the conversion of multiple
 enum values into a list of their strings)\&.
-.IP [18]
+.IP [12]
 Feature\&. Package \fBcritcl::emap\fR bumped to version 1\&.2\&.
 Extended existing mode handling with \fB+list\fR extension
 enabling the conversion of multiple emap values into a list of
 their strings\&.
-.IP [19]
+.IP [13]
 Feature\&. Extended the set of available types by applying a few
 range restrictions to the scalar types (\fIint\fR,
 \fIlong\fR, \fIwideint\fR, \fIdouble\fR, \fIfloat\fR)\&.
 .sp
 Example: \fIint > 0\fR is now a viable type name\&.
 .sp
-This is actually more limited than the description might
-let you believe\&.
-.sp
-See the package reference for the details\&.
+For details see the package reference\&.
 .PP
 .SH "CHANGES FOR VERSION 3\&.1\&.17"
 .IP [1]

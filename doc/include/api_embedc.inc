@@ -125,7 +125,10 @@ See also [sectref {Runtime Behaviour}].
 Returns the empty string.
 
 [para]
-Each [arg option] may be:
+[list_begin arguments]
+
+[arg_def string option] Each may be one of:
+
 [list_begin options]
 
 [include api_embedc_cnameoption.inc]
@@ -145,20 +148,23 @@ function but which influence argument counting and extraction.
 
 [list_end]
 
-[arg resulttype] may be one of the following predefined types or a custom type.
-See section [sectref {Advanced: Extending cproc}].  Unless otherwise noted, the
-Tcl return code is always [const TCL_OK].
+[arg_def string resulttype] May be one of the following predefined
+types or a custom type.
+
+For the latter see section [sectref {Advanced: Extending cproc}].
+
+Unless otherwise noted, the Tcl return code is always [const TCL_OK].
 
 [comment {% % %% %%% %%%%% %%%%%%%% %%%%%%%%%%%%% %%%%%%%%%%%%%%%%%%%%%}]
 [include api_stdrt_cproc.inc]
 [comment {% % %% %%% %%%%% %%%%%%%% %%%%%%%%%%%%% %%%%%%%%%%%%%%%%%%%%%}]
 
-[para] The [arg arguments] is a multi-dictionary where each key is an argument type
-and its value is the argument name.  For example:
+[arg_def list arguments] Is a multi-dictionary where each key is an
+argument type and its value is the argument name.
 
-[example {
-int x int y
-}]
+For example:
+
+[example { int x int y }]
 
 [para] Each argument name must be a valid C identifier.
 
@@ -166,12 +172,12 @@ int x int y
 and the second item is the default value.  A limited form of variadic arguments
 can be accomplished using such default values.
 
-Example:
+For example:
 
 [example { int {x 1} }]
 
-[arg x] is an optional argument of type [type int] with a default value of
-[const 1].
+Here [arg x] is an optional argument of type [type int] with a default
+value of [const 1].
 
 [para] Argument conversion is completely bypassed when the argument is not
 provided, so a custom converter doing validation does not get the chance to
@@ -179,15 +185,13 @@ validate the default value.  In this case, the value should be checked in the
 body of the function.
 
 [para] Each argument type may be one of the following predefined types or a
-custom type.   See [sectref {Advanced: Extending cproc}].
-
-[para] If the type of the first argument is [const Tcl_Interp*], it is not
-counted as counted as an argument of the new Tcl command, and is a reference
-to the current interpreter.
+custom type. For the latter see [sectref {Advanced: Extending cproc}].
 
 [comment {% % %% %%% %%%%% %%%%%%%% %%%%%%%%%%%%% %%%%%%%%%%%%%%%%%%%%%}]
 [include api_stdat_cproc.inc]
 [comment {% % %% %%% %%%%% %%%%%%%% %%%%%%%%%%%%% %%%%%%%%%%%%%%%%%%%%%}]
+
+[list_end][comment {-- arguments --}]
 
 [comment ---------------------------------------------------------------------]
 [call [cmd ::critcl::cproc] [arg name] [arg arguments] [arg resulttype]]

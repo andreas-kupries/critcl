@@ -164,6 +164,16 @@ packages with embedded C code.</p>
 </div>
 <div id="section2" class="doctools_section"><h2><a name="section2">Standard argument types</a></h2>
 <dl class="doctools_definitions">
+<dt>Tcl_Interp*</dt>
+<dd><p><em>Attention</em>: This is a <em>special</em> argument type. It can
+<em>only</em> be used by the <em>first</em> argument of a function.
+Any other argument using it will cause critcl to throw an error.</p>
+<p>When used, the argument will contain a reference to the current
+interpreter the function body may use. Furthermore the argument will
+<em>not</em> be an argument of the Tcl command for the function.</p>
+<p>This is useful when the function has to do more than simply
+returning a value. Examples would be setting up error messages on
+failure, or querying the interpreter for variables and other data.</p></dd>
 <dt>Tcl_Obj*</dt>
 <dd></dd>
 <dt>object</dt>
@@ -277,12 +287,6 @@ the listed types exist.</p></dd>
 <dd><p>The function takes an argument of type <b class="type">int</b>.
 The Tcl argument must be convertible to <b class="type">Boolean</b>, an error is
 thrown otherwise.</p></dd>
-<dt>channel</dt>
-<dd><p>The function takes an argument of type <b class="type">Tcl_Channel</b>.
-The Tcl argument must be convertible to type <b class="type">Channel</b>, an error
-is thrown otherwise.
-The channel is further assumed to be <em>already registered</em>
-with the interpreter.</p></dd>
 <dt>int</dt>
 <dd><p>The function takes an argument of type <b class="type">int</b>.
 The Tcl argument must be convertible to <b class="type">Int</b>, an error is thrown
@@ -381,35 +385,37 @@ good use cases are shown.</p></dd>
 <dt>Tcl_Obj*</dt>
 <dd></dd>
 <dt>object</dt>
-<dd><p>If the returned Tcl_Obj is <b class="const">NULL</b>, the Tcl return code is
-<b class="const">TCL_ERROR</b> and the function should <a href="https://www.tcl-lang.org/man/tcl/TclLib/SetResult.htm">set an error mesage</a>
-as the interpreter result.  Otherwise, the returned Tcl_Obj is set as the
-interpreter result.</p>
-<p>The returned Tcl_Obj should have a reference count greater than zero
-because the converter, assuming that the function incremented the reference
-count of the returned Tcl_Obj, decrements the reference count to release
-possession after setting the interpreter result.  If a Tcl_Obj with a reference
-count of zero were returned, the reference count would becomes one when set as
-the interpreter result, and immediately thereafter decremented to zero, causing
-the memory to be freed.  The system is then likely to crash at some point after
-the return due to reuse of the freed memory.</p></dd>
+<dd><p>If the returned <b class="type">Tcl_Obj*</b> is <b class="const">NULL</b>, the Tcl return code
+is <b class="const">TCL_ERROR</b> and the function should <a href="https://www.tcl-lang.org/man/tcl/TclLib/SetResult.htm">set an error mesage</a>
+as the interpreter result.  Otherwise, the returned <b class="type">Tcl_Obj*</b> is
+set as the interpreter result.</p>
+<p>Note that setting an error message requires the function body
+to have access to the interpreter the function is running in. See the
+argument type <b class="type">Tcl_Interp*</b> for the details on how to make that
+happen.</p>
+<p>Note further that the returned <b class="type">Tcl_Obj*</b> should have a
+reference count greater than <b class="const">0</b>. This is because the converter
+decrements the reference count to release possession after setting the
+interpreter result. It assumes that the function incremented the
+reference count of the returned <b class="type">Tcl_Obj*</b>.
+If a <b class="type">Tcl_Obj*</b> with a reference count of <b class="const">0</b> were
+returned, the reference count would become <b class="const">1</b> when set as the
+interpreter result, and immediately thereafter be decremented to
+<b class="const">0</b> again, causing the memory to be freed.  The system is then
+likely to crash at some point after the return due to reuse of the
+freed memory.</p></dd>
 <dt>Tcl_Obj*0</dt>
 <dd></dd>
 <dt>object0</dt>
 <dd><p>Like <b class="const">Tcl_Obj*</b> except that this conversion assumes that the
-returned value has a reference count of <b class="const">0</b> and <em>does not</em>
-decrement it. Returning a value whose reference count is greater than zero is
-likely to cause a memory leak.</p></dd>
-<dt>new-channel</dt>
-<dd><p>A <b class="type">String</b> Tcl_Obj holding the name of the returned
-<b class="type">Tcl_Channel</b> is set as the interpreter result.
-The channel is further assumed to be <em>new</em>, and therefore
-registered with the interpreter to make it known.</p></dd>
-<dt>known-channel</dt>
-<dd><p>A <b class="type">String</b> Tcl_Obj holding the name of the returned
-<b class="type">Tcl_Channel</b> is set as the interpreter result.
-The channel is further assumed to be <em>already registered</em>
-with the interpreter.</p></dd>
+returned value has a reference count of <b class="const">0</b> and
+<em>does not</em> decrement it. Returning a value whose reference
+count is greater than <b class="const">0</b> is therefore likely to cause a memory
+leak.</p>
+<p>Note that setting an error message requires the function body
+to have access to the interpreter the function is running in. See the
+argument type <b class="type">Tcl_Interp*</b> for the details on how to make that
+happen.</p></dd>
 <dt>char*</dt>
 <dd></dd>
 <dt>vstring</dt>
@@ -444,8 +450,11 @@ set as the interpreter result.</p></dd>
 and set as the interpreter result.</p></dd>
 <dt>ok</dt>
 <dd><p>The returned <b class="type">int</b> value becomes the Tcl return code.
-The interpreter result is left untouched and can be set by the function if
-desired.</p></dd>
+The interpreter result is left untouched and can be set by the
+function if desired. Note that doing this requires the function body
+to have access to the interpreter the function is running in. See the
+argument type <b class="type">Tcl_Interp*</b> for the details on how to make that
+happen.</p></dd>
 <dt>void</dt>
 <dd><p>The function does not return a value.
 The interpreter result is left untouched and can be set by the function if

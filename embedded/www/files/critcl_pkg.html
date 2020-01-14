@@ -387,7 +387,9 @@ result are typed, and Critcl generates the code to convert between Tcl_Obj
 values and C data types.
 See also <span class="sectref"><a href="#subsection17">Runtime Behaviour</a></span>.</p>
 <p>Returns the empty string.</p>
-<p>Each <i class="arg">option</i> may be:</p>
+<dl class="doctools_arguments">
+<dt>string <i class="arg">option</i></dt>
+<dd><p>Each may be one of:</p>
 <dl class="doctools_options">
 <dt><b class="option">-cname</b> <i class="arg">boolean</i></dt>
 <dd><p>If <b class="const">false</b> (the default), a name for the corresponding C function is
@@ -402,43 +404,47 @@ the function.</p></dd>
 arguments preceding the actual procedure arguments.  Used by higher-order code
 generators where there are prefix arguments which are not directly seen by the
 function but which influence argument counting and extraction.</p></dd>
-</dl>
-<p><i class="arg">resulttype</i> may be one of the following predefined types or a custom type.
-See section <span class="sectref"><a href="#subsection15">Advanced: Extending cproc</a></span>.  Unless otherwise noted, the
-Tcl return code is always <b class="const">TCL_OK</b>.</p>
+</dl></dd>
+<dt>string <i class="arg">resulttype</i></dt>
+<dd><p>May be one of the following predefined
+types or a custom type.
+For the latter see section <span class="sectref"><a href="#subsection15">Advanced: Extending cproc</a></span>.
+Unless otherwise noted, the Tcl return code is always <b class="const">TCL_OK</b>.</p>
 <dl class="doctools_definitions">
 <dt>Tcl_Obj*</dt>
 <dd></dd>
 <dt>object</dt>
-<dd><p>If the returned Tcl_Obj is <b class="const">NULL</b>, the Tcl return code is
-<b class="const">TCL_ERROR</b> and the function should <a href="https://www.tcl-lang.org/man/tcl/TclLib/SetResult.htm">set an error mesage</a>
-as the interpreter result.  Otherwise, the returned Tcl_Obj is set as the
-interpreter result.</p>
-<p>The returned Tcl_Obj should have a reference count greater than zero
-because the converter, assuming that the function incremented the reference
-count of the returned Tcl_Obj, decrements the reference count to release
-possession after setting the interpreter result.  If a Tcl_Obj with a reference
-count of zero were returned, the reference count would becomes one when set as
-the interpreter result, and immediately thereafter decremented to zero, causing
-the memory to be freed.  The system is then likely to crash at some point after
-the return due to reuse of the freed memory.</p></dd>
+<dd><p>If the returned <b class="type">Tcl_Obj*</b> is <b class="const">NULL</b>, the Tcl return code
+is <b class="const">TCL_ERROR</b> and the function should <a href="https://www.tcl-lang.org/man/tcl/TclLib/SetResult.htm">set an error mesage</a>
+as the interpreter result.  Otherwise, the returned <b class="type">Tcl_Obj*</b> is
+set as the interpreter result.</p>
+<p>Note that setting an error message requires the function body
+to have access to the interpreter the function is running in. See the
+argument type <b class="type">Tcl_Interp*</b> for the details on how to make that
+happen.</p>
+<p>Note further that the returned <b class="type">Tcl_Obj*</b> should have a
+reference count greater than <b class="const">0</b>. This is because the converter
+decrements the reference count to release possession after setting the
+interpreter result. It assumes that the function incremented the
+reference count of the returned <b class="type">Tcl_Obj*</b>.
+If a <b class="type">Tcl_Obj*</b> with a reference count of <b class="const">0</b> were
+returned, the reference count would become <b class="const">1</b> when set as the
+interpreter result, and immediately thereafter be decremented to
+<b class="const">0</b> again, causing the memory to be freed.  The system is then
+likely to crash at some point after the return due to reuse of the
+freed memory.</p></dd>
 <dt>Tcl_Obj*0</dt>
 <dd></dd>
 <dt>object0</dt>
 <dd><p>Like <b class="const">Tcl_Obj*</b> except that this conversion assumes that the
-returned value has a reference count of <b class="const">0</b> and <em>does not</em>
-decrement it. Returning a value whose reference count is greater than zero is
-likely to cause a memory leak.</p></dd>
-<dt>new-channel</dt>
-<dd><p>A <b class="type">String</b> Tcl_Obj holding the name of the returned
-<b class="type">Tcl_Channel</b> is set as the interpreter result.
-The channel is further assumed to be <em>new</em>, and therefore
-registered with the interpreter to make it known.</p></dd>
-<dt>known-channel</dt>
-<dd><p>A <b class="type">String</b> Tcl_Obj holding the name of the returned
-<b class="type">Tcl_Channel</b> is set as the interpreter result.
-The channel is further assumed to be <em>already registered</em>
-with the interpreter.</p></dd>
+returned value has a reference count of <b class="const">0</b> and
+<em>does not</em> decrement it. Returning a value whose reference
+count is greater than <b class="const">0</b> is therefore likely to cause a memory
+leak.</p>
+<p>Note that setting an error message requires the function body
+to have access to the interpreter the function is running in. See the
+argument type <b class="type">Tcl_Interp*</b> for the details on how to make that
+happen.</p></dd>
 <dt>char*</dt>
 <dd></dd>
 <dt>vstring</dt>
@@ -473,36 +479,46 @@ set as the interpreter result.</p></dd>
 and set as the interpreter result.</p></dd>
 <dt>ok</dt>
 <dd><p>The returned <b class="type">int</b> value becomes the Tcl return code.
-The interpreter result is left untouched and can be set by the function if
-desired.</p></dd>
+The interpreter result is left untouched and can be set by the
+function if desired. Note that doing this requires the function body
+to have access to the interpreter the function is running in. See the
+argument type <b class="type">Tcl_Interp*</b> for the details on how to make that
+happen.</p></dd>
 <dt>void</dt>
 <dd><p>The function does not return a value.
 The interpreter result is left untouched and can be set by the function if
 desired.</p></dd>
-</dl>
-<p>The <i class="arg">arguments</i> is a multi-dictionary where each key is an argument type
-and its value is the argument name.  For example:</p>
-<pre class="doctools_example">
-int x int y
-</pre>
+</dl></dd>
+<dt>list <i class="arg">arguments</i></dt>
+<dd><p>Is a multi-dictionary where each key is an
+argument type and its value is the argument name.
+For example:</p>
+<pre class="doctools_example"> int x int y </pre>
 <p>Each argument name must be a valid C identifier.</p>
 <p>If the name is a list containing two items, the first item is the name
 and the second item is the default value.  A limited form of variadic arguments
 can be accomplished using such default values.
-Example:</p>
+For example:</p>
 <pre class="doctools_example"> int {x 1} </pre>
-<p><i class="arg">x</i> is an optional argument of type <b class="type">int</b> with a default value of
-<b class="const">1</b>.</p>
+<p>Here <i class="arg">x</i> is an optional argument of type <b class="type">int</b> with a default
+value of <b class="const">1</b>.</p>
 <p>Argument conversion is completely bypassed when the argument is not
 provided, so a custom converter doing validation does not get the chance to
 validate the default value.  In this case, the value should be checked in the
 body of the function.</p>
 <p>Each argument type may be one of the following predefined types or a
-custom type.   See <span class="sectref"><a href="#subsection15">Advanced: Extending cproc</a></span>.</p>
-<p>If the type of the first argument is <b class="const">Tcl_Interp*</b>, it is not
-counted as counted as an argument of the new Tcl command, and is a reference
-to the current interpreter.</p>
+custom type. For the latter see <span class="sectref"><a href="#subsection15">Advanced: Extending cproc</a></span>.</p>
 <dl class="doctools_definitions">
+<dt>Tcl_Interp*</dt>
+<dd><p><em>Attention</em>: This is a <em>special</em> argument type. It can
+<em>only</em> be used by the <em>first</em> argument of a function.
+Any other argument using it will cause critcl to throw an error.</p>
+<p>When used, the argument will contain a reference to the current
+interpreter the function body may use. Furthermore the argument will
+<em>not</em> be an argument of the Tcl command for the function.</p>
+<p>This is useful when the function has to do more than simply
+returning a value. Examples would be setting up error messages on
+failure, or querying the interpreter for variables and other data.</p></dd>
 <dt>Tcl_Obj*</dt>
 <dd></dd>
 <dt>object</dt>
@@ -616,12 +632,6 @@ the listed types exist.</p></dd>
 <dd><p>The function takes an argument of type <b class="type">int</b>.
 The Tcl argument must be convertible to <b class="type">Boolean</b>, an error is
 thrown otherwise.</p></dd>
-<dt>channel</dt>
-<dd><p>The function takes an argument of type <b class="type">Tcl_Channel</b>.
-The Tcl argument must be convertible to type <b class="type">Channel</b>, an error
-is thrown otherwise.
-The channel is further assumed to be <em>already registered</em>
-with the interpreter.</p></dd>
 <dt>int</dt>
 <dd><p>The function takes an argument of type <b class="type">int</b>.
 The Tcl argument must be convertible to <b class="type">Int</b>, an error is thrown
@@ -713,6 +723,7 @@ i.e. memory addresses.</p>
 It is planned to remove their documentation in release 3.2, and their
 implementation in release 3.3.  Their deprecation can be undone if
 good use cases are shown.</p></dd>
+</dl></dd>
 </dl></dd>
 <dt><a name="8"><b class="cmd">::critcl::cproc</b> <i class="arg">name</i> <i class="arg">arguments</i> <i class="arg">resulttype</i></a></dt>
 <dd><p>As documented below, but used when the C function named <i class="arg">name</i> already
@@ -2221,39 +2232,15 @@ Rng_InitStubs(Tcl_Interp *interp, CONST char *version, int exact)
 <p>See section &quot;Embedding C&quot; in <i class="term">Using CriTcl</i>.</p>
 <p>The latest changes are found at the top.</p>
 </div>
-<div id="section5" class="doctools_section"><h2><a name="section5">Changes for version 3.1.18</a></h2>
+<div id="section5" class="doctools_section"><h2><a name="section5">Changes for version 3.1.18 (unreleased)</a></h2>
 <ol class="doctools_enumerated">
-<li><p>Feature. Added channel types to the set of builtin argument
-       and result types. The result type comes in variants for newly
-       created channels and known channels. The former will register
-       the returned value in the interpreter, the other assumes that
-       it already is.</p></li>
-<li><p>Bugfix. Issue #96. Reworked the documentation around the
-       argument type <b class="type">Tcl_Interp*</b> to make its special status
-       more visible, explain uses, and call it out from result types
-       where its use will be necessary or at least useful.</p></li>
-<li><p>Feature. Package <b class="package"><a href="critcl_class.html">critcl::class</a></b> bumped to version 1.1.
-       Extended with the ability to create a C API for classes, and
-       the ability to disable the generation of the Tcl API.</p></li>
-<li><p>Bugfix. Merged pull request #99 from pooryorick/master. Fixes
-       to the target directory calculations done by the install code.</p></li>
-<li><p>Merged pull request #94 from andreas-kupries/documentation.
-       A larger documentation cleanup. The main work was done by
-       pooryorick, followed by tweaks done by myself.</p></li>
-<li><p>Extended the test suite with lots of cases based on the
-       examples for the various generator packages. IOW the new test
-       cases replicate/encapsulate the examples and demonstrate that
-       the packages used by the examples generate working code.</p></li>
-<li><p>Bugfix. Issue #95. Changed the field <b class="const">critcl_bytes.s</b> to
+<li><p>Bugfix. Issue #95. Changed field <b class="const">critcl_bytes.s</b> to
        <b class="type">unsigned char*</b> to match Tcl's type. Further constified
        the field to make clear that read-only usage is the common case
        for it.</p></li>
-<li><p>Bugfix/Feature. Package <b class="package"><a href="critcl_cutil.html">critcl::cutil</a></b> bumped to
-       version 0.2.  Fixed missing inclusion of header &quot;<b class="file">string.h</b>&quot;
-       in &quot;<b class="file">critcl_alloc.h</b>&quot;, needed for <b class="function">memcpy</b> in macro
-       <b class="function">STREP</b>.  Added macros <b class="function">ALLOC_PLUS</b> and <b class="function">STRDUP</b>.
-       Moved documentation of <b class="function">STREP...</b> macros into proper place
-       (alloc section, not assert).</p></li>
+<li><p>Bugfix. Package <b class="package"><a href="critcl_cutil.html">critcl::cutil</a></b> bumped to version 0.1.1.
+       Fixed missing inclusion of header &quot;<b class="file">string.h</b>&quot; in
+       &quot;<b class="file">critcl_alloc.h</b>&quot;, needed for <b class="function">memcpy</b> in macro <b class="function">STREP</b>.</p></li>
 <li><p>Merged pull request #83 from apnadkarni/vc-fixes.
        Removed deprecated -Gs for MSVC builds, and other Windows fixups.</p></li>
 <li><p>Feature. Package <b class="package"><a href="critcl_iassoc.html">critcl::iassoc</a></b> bumped to version 1.1.
@@ -2287,9 +2274,7 @@ Rng_InitStubs(Tcl_Interp *interp, CONST char *version, int exact)
        range restrictions to the scalar types (<i class="term">int</i>,
        <i class="term">long</i>, <i class="term">wideint</i>, <i class="term">double</i>, <i class="term">float</i>).</p>
 <p>Example: <i class="term">int &gt; 0</i> is now a viable type name.</p>
-<p>This is actually more limited than the description might
-       let you believe.</p>
-<p>See the package reference for the details.</p></li>
+<p>For details see the package reference.</p></li>
 </ol>
 </div>
 <div id="section6" class="doctools_section"><h2><a name="section6">Changes for version 3.1.17</a></h2>
