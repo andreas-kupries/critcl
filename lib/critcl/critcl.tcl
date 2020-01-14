@@ -5437,7 +5437,7 @@ proc ::critcl::Initialize {} {
 
     argtype char* {
 	@A = Tcl_GetString(@@);
-    }
+    } {const char*} {const char*}
 
     argtype pstring {
 	@A.s = Tcl_GetStringFromObj(@@, &(@A.len));
@@ -5453,7 +5453,7 @@ proc ::critcl::Initialize {} {
     }
 
     argtype list {
-	if (Tcl_ListObjGetElements (interp, @@, &(@A.c), &(@A.v)) != TCL_OK) return TCL_ERROR;
+	if (Tcl_ListObjGetElements (interp, @@, &(@A.c), (Tcl_Obj***) &(@A.v)) != TCL_OK) return TCL_ERROR;
 	@A.o = @@;
     } critcl_list critcl_list
 
