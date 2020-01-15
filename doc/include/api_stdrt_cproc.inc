@@ -2,6 +2,13 @@
 	 Standard result types for use with
 	 cproc and cconst.
 }]
+
+Before going into the details first a quick overview:
+
+[include rtypes_table.inc]
+
+And now the details:
+
 [list_begin definitions]
 [comment {% % %% %%% %%%%% %%%%%%%% %%%%%%%%%%%%%}]
 [def Tcl_Obj*]
@@ -69,8 +76,11 @@ with the interpreter.
 [def char*]
 [def vstring]
 
-A [type String] Tcl_Obj holding a copy of the returned [type char*] is set as
-the interpreter result.
+A [type String] Tcl_Obj holding a [strong copy] of the returned
+[type char*] is set as the interpreter result. If the value is
+allocated then the function itself and the extension it is a part of
+are responsible for releasing the memory when the data is not in use
+any longer.
 
 [comment {% % %% %%% %%%%% %%%%%%%% %%%%%%%%%%%%%}]
 [def {const char*}]
@@ -82,8 +92,10 @@ Like [const char*] above, except that the returned string is
 [def string]
 [def dstring]
 
-The returned [type char*] is directly set as the interpreter result without
-making a copy.  Therefore it must be dynamically allocated via [fun Tcl_Alloc].
+The returned [type char*] is directly set as the interpreter result
+[strong {without making a copy}].  Therefore it must be dynamically
+allocated via [fun Tcl_Alloc]. Release happens automatically when the
+Interpreter finds that the value is not required any longer.
 
 
 [comment {% % %% %%% %%%%% %%%%%%%% %%%%%%%%%%%%%}]

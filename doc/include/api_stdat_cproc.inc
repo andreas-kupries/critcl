@@ -2,6 +2,14 @@
 	 Standard argument types for use with
 	 cproc and cclass methods.
 }]
+
+
+Before going into the details first a quick overview:
+
+[include atypes_table.inc]
+
+And now the details:
+
 [list_begin definitions]
 [comment {% % %% %%% %%%%% %%%%%%%% %%%%%%%%%%%%%}]
 
@@ -25,6 +33,9 @@ failure, or querying the interpreter for variables and other data.
 The function takes an argument of type [type Tcl_Obj*].
 No argument checking is done.
 The Tcl level word is passed to the argument as-is.
+
+Note that this value must be treated as [strong read-only] (except for
+hidden changes to its intrep, i.e. [term shimmering]).
 
 [comment {% % %% %%% %%%%% %%%%%%%% %%%%%%%%%%%%%}]
 [def pstring]
@@ -83,6 +94,8 @@ thrown otherwise.
 [emph Note] that the length of the [type ByteArray] is [emph not]
 passed to the function, making this type not very usable.
 
+[include deprecated.inc]
+
 [comment {% % %% %%% %%%%% %%%%%%%% %%%%%%%%%%%%%}]
 [def bytes]
 
@@ -103,8 +116,8 @@ typedef struct critcl_bytes {
 The Tcl argument must be convertible to [type ByteArray], an error is
 thrown otherwise.
 
-[para] Note the [strong const]. The bytes are is [strong read-only].
-Any modification can have arbitrary effects, from pulling out the rug
+[para] Note the [strong const]. The bytes are [strong read-only].  Any
+modification can have arbitrary effects, from pulling out the rug
 under the script because of string value and internal representation
 not matching anymore, up to crashes anytime later.
 
@@ -114,8 +127,8 @@ not matching anymore, up to crashes anytime later.
 The function takes an argument of type [type {const char*}].
 The string representation of the Tcl argument is passed in.
 
-[para] Note the [strong const]. The string are is [strong read-only].
-Any modification can have arbitrary effects, from pulling out the rug
+[para] Note the [strong const]. The string is [strong read-only]. Any
+modification can have arbitrary effects, from pulling out the rug
 under the script because of string value and internal representation
 not matching anymore, up to crashes anytime later.
 
@@ -279,9 +292,6 @@ passed as argument to the function.
 In other words, this is for Tcl values somehow holding raw C pointers,
 i.e. memory addresses.
 
-[para] [emph Attention]: These types are considered [emph DEPRECATED].
-It is planned to remove their documentation in release 3.2, and their
-implementation in release 3.3.  Their deprecation can be undone if
-good use cases are shown.
+[include deprecated.inc]
 
 [list_end]
