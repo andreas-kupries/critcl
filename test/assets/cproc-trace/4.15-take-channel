@@ -45,11 +45,10 @@ tcl__aproc0(ClientData cd, Tcl_Interp *interp, int oc, Tcl_Obj *CONST ov[])
 	    /* Next some fiddling with the reference count to prevent
 	     * the unregistration from killing it. We basically record
 	     * it as globally known before removing it from the
-	     * current interpreter (unregister and cut).
+	     * current interpreter
 	     */
 	    Tcl_RegisterChannel((Tcl_Interp *) NULL, _x);
 	    Tcl_UnregisterChannel(interp, _x);
-	    Tcl_CutChannel(_x);
 	} }
 
   /* Call - - -- --- ----- -------- */

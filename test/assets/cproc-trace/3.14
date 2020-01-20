@@ -22,7 +22,6 @@ tcl__aproc0(ClientData cd, Tcl_Interp *interp, int oc, Tcl_Obj *CONST ov[])
 
   /* (return-channel return) - - -- --- ----- -------- */
 	if (rv == NULL) { return critcl_trace_cmd_result (TCL_ERROR, interp); }
-	Tcl_SpliceChannel (rv);
 	Tcl_RegisterChannel (interp, rv);
 	Tcl_UnregisterChannel(NULL, rv);
 	Tcl_SetObjResult (interp, Tcl_NewStringObj (Tcl_GetChannelName (rv), -1));

@@ -5578,11 +5578,10 @@ proc ::critcl::Initialize {} {
 	    /* Next some fiddling with the reference count to prevent
 	     * the unregistration from killing it. We basically record
 	     * it as globally known before removing it from the
-	     * current interpreter (unregister and cut).
+	     * current interpreter
 	     */
 	    Tcl_RegisterChannel((Tcl_Interp *) NULL, @A);
 	    Tcl_UnregisterChannel(interp, @A);
-	    Tcl_CutChannel(@A);
 	}
     } Tcl_Channel Tcl_Channel
     
@@ -5676,7 +5675,6 @@ proc ::critcl::Initialize {} {
     # Note, this is complementary to argtype `take-channel`.
     resulttype return-channel {
 	if (rv == NULL) { return TCL_ERROR; }
-	Tcl_SpliceChannel (rv);
 	Tcl_RegisterChannel (interp, rv);
 	Tcl_UnregisterChannel(NULL, rv);
 	Tcl_SetObjResult (interp, Tcl_NewStringObj (Tcl_GetChannelName (rv), -1));
