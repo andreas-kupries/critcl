@@ -235,6 +235,12 @@ test critcl-cproc${suffix}-3.13 {cproc, channel result, known} -body {
     }
 } -result [viewFile [localPath test/assets/cproc${suffix}/3.13]]
 
+test critcl-cproc${suffix}-3.14 {cproc, channel result, return a taken channel} -body {
+    get critcl::cproc aproc {} return-channel {
+        return 0;
+    }
+} -result [viewFile [localPath test/assets/cproc${suffix}/3.14]]
+
 
 # -------------------------------------------------------------------------
 # Vary argument types of the function. Cover all (sensible) builtin result types.
@@ -256,6 +262,8 @@ foreach type {
     bytearray
     bytes
     channel
+    unshared-channel
+    take-channel
 } {
     set td [string map {{ } _ * _} $type]
     test critcl-cproc${suffix}-4.${n}-$td "cproc, $type argument" -body {

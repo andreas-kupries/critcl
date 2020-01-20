@@ -1,7 +1,7 @@
 /* ---------------------------------------------------------------------- */
 
 #define ns__aproc0 "::aproc"
-static void c__aproc0(char* x)
+static void c__aproc0(const char* x)
 {
 
 }
@@ -9,7 +9,7 @@ static void c__aproc0(char* x)
 static int
 tcl__aproc0(ClientData cd, Tcl_Interp *interp, int oc, Tcl_Obj *CONST ov[])
 {
-  char* _x;
+  const char* _x;
 
   critcl_trace_cmd_args (ns__aproc0, oc, ov);
 

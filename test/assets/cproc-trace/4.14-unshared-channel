@@ -1,18 +1,7 @@
 /* ---------------------------------------------------------------------- */
 
 #define ns__aproc0 "::aproc"
-#ifndef CRITCL_list
-#define CRITCL_list
-
-	typedef struct critcl_list {
-	    Tcl_Obj*        o;
-	    Tcl_Obj* const* v;
-	    int             c;
-	} critcl_list;
-    
-#endif /* CRITCL_list _________ */
-
-static void c__aproc0(critcl_list x)
+static void c__aproc0(Tcl_Channel x)
 {
 
 }
@@ -20,7 +9,7 @@ static void c__aproc0(critcl_list x)
 static int
 tcl__aproc0(ClientData cd, Tcl_Interp *interp, int oc, Tcl_Obj *CONST ov[])
 {
-  critcl_list _x;
+  Tcl_Channel _x;
 
   critcl_trace_cmd_args (ns__aproc0, oc, ov);
 
@@ -29,10 +18,15 @@ tcl__aproc0(ClientData cd, Tcl_Interp *interp, int oc, Tcl_Obj *CONST ov[])
     return critcl_trace_cmd_result (TCL_ERROR, interp);
   }
 
-  /* (list x) - - -- --- ----- -------- */
+  /* (unshared-channel x) - - -- --- ----- -------- */
 	{
-	if (Tcl_ListObjGetElements (interp, ov[1], &(_x.c), (Tcl_Obj***) &(_x.v)) != TCL_OK) return critcl_trace_cmd_result (TCL_ERROR, interp);
-	_x.o = ov[1]; }
+	int mode;
+	_x = Tcl_GetChannel(interp, Tcl_GetString (ov[1]), &mode);
+	if (_x == NULL) return critcl_trace_cmd_result (TCL_ERROR, interp);
+	if (Tcl_IsChannelShared (_x)) {
+	    Tcl_SetObjResult(interp, Tcl_NewStringObj("channel is shared", -1));
+	    return critcl_trace_cmd_result (TCL_ERROR, interp);
+	} }
 
   /* Call - - -- --- ----- -------- */
   c__aproc0(_x);

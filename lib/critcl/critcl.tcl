@@ -5541,10 +5541,51 @@ proc ::critcl::Initialize {} {
 	if (@A == NULL) return TCL_ERROR;
     } Tcl_Channel Tcl_Channel
 
-    # Declare the standard result types for cproc.
-    # System still has special case code for:
-    # - void (no rv result variable).
+    argtype unshared-channel {
+	int mode;
+	@A = Tcl_GetChannel(interp, Tcl_GetString (@@), &mode);
+	if (@A == NULL) return TCL_ERROR;
+	if (Tcl_IsChannelShared (@A)) {
+	    Tcl_SetObjResult(interp, Tcl_NewStringObj("channel is shared", -1));
+	    return TCL_ERROR;
+	}
+    } Tcl_Channel Tcl_Channel
 
+    # Note, the complementary resulttype is `return-channel`.
+    argtype take-channel {
+	int mode;
+	@A = Tcl_GetChannel(interp, Tcl_GetString (@@), &mode);
+	if (@A == NULL) return TCL_ERROR;
+	if (Tcl_IsChannelShared (@A)) {
+	    Tcl_SetObjResult(interp, Tcl_NewStringObj("channel is shared", -1));
+	    return TCL_ERROR;
+	}
+	{
+	    /* Disable event processing for the channel, both by
+	     * removing any registered handler, and forcing interest
+	     * to none. This also disables the processing of pending
+	     * events which are ready to fire for the given
+	     * channel. If we do not do this, events will hit the
+	     * detached channel and potentially wreck havoc on our
+	     * memory and eventually badly hurt us...
+	     */
+	    Tcl_DriverWatchProc *watchProc;
+	    Tcl_ClearChannelHandlers(@A);
+	    watchProc = Tcl_ChannelWatchProc(Tcl_GetChannelType(@A));
+	    if (watchProc) {
+		(*watchProc)(Tcl_GetChannelInstanceData(@A), 0);
+	    }
+	    /* Next some fiddling with the reference count to prevent
+	     * the unregistration from killing it. We basically record
+	     * it as globally known before removing it from the
+	     * current interpreter (unregister and cut).
+	     */
+	    Tcl_RegisterChannel((Tcl_Interp *) NULL, @A);
+	    Tcl_UnregisterChannel(interp, @A);
+	    Tcl_CutChannel(@A);
+	}
+    } Tcl_Channel Tcl_Channel
+    
     resulttype void {
 	return TCL_OK;
     }
@@ -5628,6 +5669,16 @@ proc ::critcl::Initialize {} {
 
     resulttype known-channel {
 	if (rv == NULL) { return TCL_ERROR; }
+	Tcl_SetObjResult (interp, Tcl_NewStringObj (Tcl_GetChannelName (rv), -1));
+	return TCL_OK;
+    } Tcl_Channel
+
+    # Note, this is complementary to argtype `take-channel`.
+    resulttype return-channel {
+	if (rv == NULL) { return TCL_ERROR; }
+	Tcl_SpliceChannel (rv);
+	Tcl_RegisterChannel (interp, rv);
+	Tcl_UnregisterChannel(NULL, rv);
 	Tcl_SetObjResult (interp, Tcl_NewStringObj (Tcl_GetChannelName (rv), -1));
 	return TCL_OK;
     } Tcl_Channel

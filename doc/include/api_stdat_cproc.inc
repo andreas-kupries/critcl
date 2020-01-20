@@ -201,6 +201,53 @@ The channel is further assumed to be [strong {already registered}]
 with the interpreter.
 
 [comment {% % %% %%% %%%%% %%%%%%%% %%%%%%%%%%%%%}]
+[def unshared-channel]
+
+This type is an extension of [type channel] above.
+
+All of the information above applies.
+
+[para] Beyond that the channel must not be shared by multiple
+interpreters, an error is thrown otherwise.
+
+[comment {% % %% %%% %%%%% %%%%%%%% %%%%%%%%%%%%%}]
+[def take-channel]
+
+This type is an extension of [type unshared-channel] above.
+
+All of the information above applies.
+
+[para] Beyond that the code removes the channel from the current
+interpreter without closing it, and disables all pre-existing event
+handling for it.
+
+[para] With this the function takes full ownership of the channel in
+question, taking it away from the interpreter invoking it. It is then
+responsible for the lifecycle of the channel, up to and including
+closing it.
+
+[para] Should the system the function is a part of wish to return
+control of the channel back to the interpeter it then has to use the
+result type [type return-channel]. This will undo the registration
+changes made by this argument type.
+
+[strong Note] however that the removal of pre-existing event handling
+done here cannot be undone.
+
+[para] [strong Attention] Removal from the interpreter without closing
+the channel is effected by incrementing the channel's reference count
+without providing an interpreter, before decrementing the same for the
+current interpreter. This leaves the overall reference count intact
+without causing Tcl to close it when it is removed from the
+interpreter structures. At this point the channel is effectively a
+globally-owned part of the system not associated with any interpreter.
+
+[para] The complementary result type then runs this sequence in
+reverse. And if the channel is never returned to Tcl either the
+function or the system it is a part of have to unregister the global
+reference when they are done with it.
+
+[comment {% % %% %%% %%%%% %%%%%%%% %%%%%%%%%%%%%}]
 [def int]
 
 The function takes an argument of type [type int].

@@ -5,9 +5,9 @@
 #define CRITCL_list
 
 	typedef struct critcl_list {
-	    Tcl_Obj*  o;
-	    Tcl_Obj** v;
-	    int       c;
+	    Tcl_Obj*        o;
+	    Tcl_Obj* const* v;
+	    int             c;
 	} critcl_list;
     
 #endif /* CRITCL_list _________ */
@@ -29,7 +29,7 @@ tcl__aproc0(ClientData cd, Tcl_Interp *interp, int oc, Tcl_Obj *CONST ov[])
 
   /* (list x) - - -- --- ----- -------- */
 	{
-	if (Tcl_ListObjGetElements (interp, ov[1], &(_x.c), &(_x.v)) != TCL_OK) return TCL_ERROR;
+	if (Tcl_ListObjGetElements (interp, ov[1], &(_x.c), (Tcl_Obj***) &(_x.v)) != TCL_OK) return TCL_ERROR;
 	_x.o = ov[1]; }
 
   /* Call - - -- --- ----- -------- */

@@ -5,9 +5,9 @@
 #define CRITCL_pstring
 
 	typedef struct critcl_pstring {
-	    Tcl_Obj* o;
-	    char*    s;
-	    int      len;
+	    Tcl_Obj*    o;
+	    const char* s;
+	    int         len;
 	} critcl_pstring;
     
 #endif /* CRITCL_pstring _________ */

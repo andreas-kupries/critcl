@@ -286,86 +286,94 @@ This document provides an overview of the changes \fBcritcl\fR
 underwent from version to version\&.
 .PP
 The latest changes are found at the top\&.
-.SH "CHANGES FOR VERSION 3\&.1\&.18 (UNRELEASED)"
+.SH "CHANGES FOR VERSION 3\&.1\&.18"
 .IP [1]
-Feature\&. Added channel types to the set of builtin argument
-and result types\&. The result type comes in variants for newly
-created channels and known channels\&. The former will register
-the returned value in the interpreter, the other assumes that
-it already is\&.
+Feature (Developer support)\&. Merged pull request #96 from
+sebres/main-direct-invoke\&. Enables direct invokation of the
+"\fImain\&.tcl\fR" file for starkits from within a dev checkout,
+i\&.e\&. outside of a starkit, or starpack\&.
 .IP [2]
+Feature\&. Added channel types to the set of builtin argument and
+result types\&. The argument types are for simple channel access,
+access requiring unshared channels, and taking the channel
+fully into the C level, away from Tcl\&. The result type comes in
+variants for newly created channels, known channels, and to
+return taken channels back to Tcl\&. The first will register the
+returned value in the interpreter, the second assumes that it
+already is\&.
+.IP [3]
 Bugfix\&. Issue #96\&. Reworked the documentation around the
 argument type \fBTcl_Interp*\fR to make its special status
 more visible, explain uses, and call it out from result types
 where its use will be necessary or at least useful\&.
-.IP [3]
+.IP [4]
 Feature\&. Package \fBcritcl::class\fR bumped to version 1\&.1\&.
 Extended with the ability to create a C API for classes, and
 the ability to disable the generation of the Tcl API\&.
-.IP [4]
+.IP [5]
 Bugfix\&. Merged pull request #99 from pooryorick/master\&. Fixes
 to the target directory calculations done by the install code\&.
-.IP [5]
+.IP [6]
 Merged pull request #94 from andreas-kupries/documentation\&.
 A larger documentation cleanup\&. The main work was done by
 pooryorick, followed by tweaks done by myself\&.
-.IP [6]
+.IP [7]
 Extended the test suite with lots of cases based on the
 examples for the various generator packages\&. IOW the new test
 cases replicate/encapsulate the examples and demonstrate that
 the packages used by the examples generate working code\&.
-.IP [7]
+.IP [8]
 Bugfix\&. Issue #95\&. Changed the field \fBcritcl_bytes\&.s\fR to
 \fBunsigned char*\fR to match Tcl's type\&. Further constified
 the field to make clear that read-only usage is the common case
 for it\&.
-.IP [8]
+.IP [9]
 Bugfix/Feature\&. Package \fBcritcl::cutil\fR bumped to
 version 0\&.2\&.  Fixed missing inclusion of header "\fIstring\&.h\fR"
 in "\fIcritcl_alloc\&.h\fR", needed for \fBmemcpy\fR in macro
 \fBSTREP\fR\&.  Added macros \fBALLOC_PLUS\fR and \fBSTRDUP\fR\&.
 Moved documentation of \fBSTREP\&.\&.\&.\fR macros into proper place
 (alloc section, not assert)\&.
-.IP [9]
+.IP [10]
 Merged pull request #83 from apnadkarni/vc-fixes\&.
 Removed deprecated -Gs for MSVC builds, and other Windows fixups\&.
-.IP [10]
+.IP [11]
 Feature\&. Package \fBcritcl::iassoc\fR bumped to version 1\&.1\&.
 Refactored internals to generate an include header for use by \&.c files\&.
 This now matches what other generator packages do\&.
 The template file is inlined and removed\&.
-.IP [11]
+.IP [12]
 Merged pull request #82 from gahr/home-symlink
 Modified tests to handle possibility of $HOME a symlink\&.
-.IP [12]
+.IP [13]
 Merged pull request #81 from gahr/test-not-installed
 Modified test support to find uninstalled critcl packages when
 running tests\&. Handles all but critcl::md5\&.
-.IP [13]
+.IP [14]
 Merged pull request #85 from snoe925/issue-84
 to fix Issue #84 breaking installation on OSX\&.
-.IP [14]
+.IP [15]
 Merged pull request #87 from apnadkarni/tea-fixes to fix Issue
 #86, broken -tea option, generating an incomplete package\&.
-.IP [15]
+.IP [16]
 Feature\&. New package \fBcritcl::callback\fR providing
 C-level functions and data structures to manage callbacks from
 C to Tcl\&.
-.IP [16]
+.IP [17]
 Feature\&. Package \fBcritcl::literals\fR bumped to version
 1\&.3\&.  Added mode \fB+list\fR enabling the conversion of
 multiple literals into a list of their strings\&.
-.IP [17]
+.IP [18]
 Feature\&. Package \fBcritcl::enum\fR bumped to version 1\&.1\&.
 Added basic mode handling, supporting \fBtcl\fR (default) and
 \fB+list\fR (extension enabling the conversion of multiple
 enum values into a list of their strings)\&.
-.IP [18]
+.IP [19]
 Feature\&. Package \fBcritcl::emap\fR bumped to version 1\&.2\&.
 Extended existing mode handling with \fB+list\fR extension
 enabling the conversion of multiple emap values into a list of
 their strings\&.
-.IP [19]
+.IP [20]
 Feature\&. Extended the set of available types by applying a few
 range restrictions to the scalar types (\fIint\fR,
 \fIlong\fR, \fIwideint\fR, \fIdouble\fR, \fIfloat\fR)\&.

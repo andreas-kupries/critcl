@@ -314,6 +314,50 @@ find (toplevel document vs\&. having to search the large main reference)\&.
 Its intended audience are developers wishing to write Tcl
 packages with embedded C code\&.
 .SH "STANDARD ARGUMENT TYPES"
+Before going into the details first a quick overview:
+.CS
+
+
+Critcl type | C type         | Tcl type  | Notes
+----------- | -------------- | --------- | ------------------------------
+Tcl_Interp* | Tcl_Interp*    | n/a       | \fISpecial\fR, only first
+----------- | -------------- | --------- | ------------------------------
+Tcl_Obj*    | Tcl_Obj*       | Any       | \fIRead-only\fR
+object      |                |           | Alias of \fBTcl_Obj*\fR above
+list        | critcl_list    | List      | \fIRead-only\fR
+----------- | -------------- | --------- | ------------------------------
+char*       | const char*    | Any       | \fIRead-only\fR, \fIstring rep\fR
+pstring     | critcl_pstring | Any       | \fIRead-only\fR
+bytes       | critcl_bytes   | ByteArray | \fIRead-only\fR
+----------- | -------------- | --------- | ------------------------------
+int         | int            | Int       |
+long        | long           | Long      |
+wideint     | Tcl_WideInt    | WideInt   |
+double      | double         | Double    |
+float       | float          | Double    |
+----------- | -------------- | --------- | ------------------------------
+X > 0       |                |           | For X in \fBint\fR \&.\&.\&. \fBfloat\fR above\&.
+X >= 0      |                |           | C types as per the base type X\&.
+X < 0       |                |           | Allowed argument values are
+X <= 0      |                |           | restricted as per the shown
+X > 1       |                |           | relation
+X >= 1      |                |           |
+X < 1       |                |           | This is not a general mechanism
+X <= 1      |                |           | open to other values\&. Only 0/1\&.
+----------- | -------------- | --------- | ------------------------------
+boolean     | int            | Boolean   |
+bool        |                |           | Alias of \fBboolean\fR above
+----------- | -------------- | --------- | ------------------------------
+bytearray   |                |           | \fIDEPRECATED\fR
+rawchar     |                |           | \fIDEPRECATED\fR
+rawchar*    |                |           | \fIDEPRECATED\fR
+double*     |                |           | \fIDEPRECATED\fR
+float*      |                |           | \fIDEPRECATED\fR
+int*        |                |           | \fIDEPRECATED\fR
+void*       |                |           | \fIDEPRECATED\fR
+
+.CE
+And now the details:
 .TP
 Tcl_Interp*
 \fIAttention\fR: This is a \fIspecial\fR argument type\&. It can
@@ -321,8 +365,8 @@ Tcl_Interp*
 Any other argument using it will cause critcl to throw an error\&.
 .sp
 When used, the argument will contain a reference to the current
-interpreter the function body may use\&. Furthermore the argument will
-\fInot\fR be an argument of the Tcl command for the function\&.
+interpreter that the function body may use\&. Furthermore the argument
+will \fInot\fR be an argument of the Tcl command for the function\&.
 .sp
 This is useful when the function has to do more than simply
 returning a value\&. Examples would be setting up error messages on
@@ -334,6 +378,8 @@ object
 The function takes an argument of type \fBTcl_Obj*\fR\&.
 No argument checking is done\&.
 The Tcl level word is passed to the argument as-is\&.
+Note that this value must be treated as \fIread-only\fR (except for
+hidden changes to its intrep, i\&.e\&. \fIshimmering\fR)\&.
 .TP
 pstring
 The function takes an argument of type \fBcritcl_pstring\fR
@@ -343,12 +389,17 @@ plus the length of the string and a pointer to the character array\&.
 
 
 typedef struct critcl_pstring {
-    Tcl_Obj* o;
-    char*    s;
-    int      len;
+    Tcl_Obj*    o;
+    const char* s;
+    int         len;
 } critcl_pstring;
 
 .CE
+.IP
+Note the \fIconst\fR\&. The string is \fIread-only\fR\&. Any
+modification can have arbitrary effects, from pulling out the rug
+under the script because of string value and internal representation
+not matching anymore, up to crashes anytime later\&.
 .TP
 list
 The function takes an argument of type \fBcritcl_list\fR containing
@@ -359,15 +410,20 @@ elements\&.
 
 
 typedef struct critcl_list {
-    Tcl_Obj*  o;
-    Tcl_Obj** v;
-    int       c;
+    Tcl_Obj*        o;
+    Tcl_Obj* const* v;
+    int             c;
 } critcl_list;
 
 .CE
 .IP
 The Tcl argument must be convertible to \fBList\fR, an error is
 thrown otherwise\&.
+.sp
+Note the \fIconst\fR\&. The list is \fIread-only\fR\&.  Any
+modification can have arbitrary effects, from pulling out the rug
+under the script because of string value and internal representation
+not matching anymore, up to crashes anytime later\&.
 .TP
 bytearray
 .TP
@@ -379,6 +435,11 @@ The Tcl argument must be convertible to \fBByteArray\fR, an error is
 thrown otherwise\&.
 \fINote\fR that the length of the \fBByteArray\fR is \fInot\fR
 passed to the function, making this type not very usable\&.
+.sp
+\fIAttention\fR: These types are considered \fIDEPRECATED\fR\&.
+It is planned to remove their documentation in release 3\&.2, and their
+implementation in release 3\&.3\&.  Their deprecation can be undone if
+good use cases are shown\&.
 .TP
 bytes
 This is the \fInew\fR and usable \fBByteArray\fR type\&.
@@ -399,10 +460,20 @@ typedef struct critcl_bytes {
 .IP
 The Tcl argument must be convertible to \fBByteArray\fR, an error is
 thrown otherwise\&.
+.sp
+Note the \fIconst\fR\&. The bytes are \fIread-only\fR\&.  Any
+modification can have arbitrary effects, from pulling out the rug
+under the script because of string value and internal representation
+not matching anymore, up to crashes anytime later\&.
 .TP
 char*
-The function takes an argument of type \fBchar*\fR\&.
+The function takes an argument of type \fBconst char*\fR\&.
 The string representation of the Tcl argument is passed in\&.
+.sp
+Note the \fIconst\fR\&. The string is \fIread-only\fR\&. Any
+modification can have arbitrary effects, from pulling out the rug
+under the script because of string value and internal representation
+not matching anymore, up to crashes anytime later\&.
 .TP
 double
 The function takes an argument of type \fBdouble\fR\&.
@@ -469,6 +540,46 @@ The Tcl argument must be convertible to type \fBChannel\fR, an error
 is thrown otherwise\&.
 The channel is further assumed to be \fIalready registered\fR
 with the interpreter\&.
+.TP
+unshared-channel
+This type is an extension of \fBchannel\fR above\&.
+All of the information above applies\&.
+.sp
+Beyond that the channel must not be shared by multiple
+interpreters, an error is thrown otherwise\&.
+.TP
+take-channel
+This type is an extension of \fBunshared-channel\fR above\&.
+All of the information above applies\&.
+.sp
+Beyond that the code removes the channel from the current
+interpreter without closing it, and disables all pre-existing event
+handling for it\&.
+.sp
+With this the function takes full ownership of the channel in
+question, taking it away from the interpreter invoking it\&. It is then
+responsible for the lifecycle of the channel, up to and including
+closing it\&.
+.sp
+Should the system the function is a part of wish to return
+control of the channel back to the interpeter it then has to use the
+result type \fBreturn-channel\fR\&. This will undo the registration
+changes made by this argument type\&.
+\fINote\fR however that the removal of pre-existing event handling
+done here cannot be undone\&.
+.sp
+\fIAttention\fR Removal from the interpreter without closing
+the channel is effected by incrementing the channel's reference count
+without providing an interpreter, before decrementing the same for the
+current interpreter\&. This leaves the overall reference count intact
+without causing Tcl to close it when it is removed from the
+interpreter structures\&. At this point the channel is effectively a
+globally-owned part of the system not associated with any interpreter\&.
+.sp
+The complementary result type then runs this sequence in
+reverse\&. And if the channel is never returned to Tcl either the
+function or the system it is a part of have to unregister the global
+reference when they are done with it\&.
 .TP
 int
 The function takes an argument of type \fBint\fR\&.
@@ -570,6 +681,43 @@ implementation in release 3\&.3\&.  Their deprecation can be undone if
 good use cases are shown\&.
 .PP
 .SH "STANDARD RESULT TYPES"
+Before going into the details first a quick overview:
+.CS
+
+
+Critcl type   | C type         | Tcl type  | Notes
+------------- | -------------- | --------- | ------------------------------
+void          | n/a            | n/a       | Always OK\&. Body sets result
+ok            | int            | n/a       | Result code\&. Body sets result
+------------- | -------------- | --------- | ------------------------------
+int           | int            | Int       |
+boolean       |                |           | Alias of \fBint\fR above
+bool          |                |           | Alias of \fBint\fR above
+long          | long           | Long      |
+wideint       | Tcl_WideInt    | WideInt   |
+double        | double         | Double    |
+float         | float          | Double    |
+------------- | -------------- | --------- | ------------------------------
+char*         | char*          | String    | \fIMakes a copy\fR
+vstring       |                |           | Alias of \fBchar*\fR above
+const char*   | const char*    |           | Behavior of \fBchar*\fR above
+------------- | -------------- | --------- | ------------------------------
+string        |                | String    | Freeable string set directly
+              |                |           | \fINo copy is made\fR
+dstring       |                |           | Alias of \fBstring\fR above
+------------- | -------------- | --------- | ------------------------------
+              |                |           | For all below: Null is ERROR
+              |                |           | Body has to set any message
+Tcl_Obj*      | Tcl_Obj*       | Any       | \fIrefcount --\fR
+object        |                |           | Alias of \fBTcl_Obj*\fR above
+Tcl_Obj*0     |                | Any       | \fIrefcount unchanged\fR
+object0       |                |           | Alias of \fBTcl_Obj*0\fR above
+------------- | -------------- | --------- | ------------------------------
+known-channel | Tcl_Channel    | String    | Assumes to already be registered
+new-channel   | Tcl_Channel    | String    | New channel, will be registered
+
+.CE
+And now the details:
 .TP
 Tcl_Obj*
 .TP
@@ -622,11 +770,23 @@ A \fBString\fR Tcl_Obj holding the name of the returned
 The channel is further assumed to be \fIalready registered\fR
 with the interpreter\&.
 .TP
+return-channel
+This type is a variant of \fBnew-channel\fR above\&.
+It varies slightly from it in the registration sequence to be properly
+complementary to the argument type \fBtake-channel\fR\&.
+A \fBString\fR Tcl_Obj holding the name of the returned
+\fBTcl_Channel\fR is set as the interpreter result\&.
+The channel is further assumed to be \fInew\fR, and therefore
+registered with the interpreter to make it known\&.
+.TP
 char*
 .TP
 vstring
-A \fBString\fR Tcl_Obj holding a copy of the returned \fBchar*\fR is set as
-the interpreter result\&.
+A \fBString\fR Tcl_Obj holding a \fIcopy\fR of the returned
+\fBchar*\fR is set as the interpreter result\&. If the value is
+allocated then the function itself and the extension it is a part of
+are responsible for releasing the memory when the data is not in use
+any longer\&.
 .TP
 const char*
 Like \fBchar*\fR above, except that the returned string is
@@ -635,8 +795,10 @@ Like \fBchar*\fR above, except that the returned string is
 string
 .TP
 dstring
-The returned \fBchar*\fR is directly set as the interpreter result without
-making a copy\&.  Therefore it must be dynamically allocated via \fBTcl_Alloc\fR\&.
+The returned \fBchar*\fR is directly set as the interpreter result
+\fIwithout making a copy\fR\&.  Therefore it must be dynamically
+allocated via \fBTcl_Alloc\fR\&. Release happens automatically when the
+Interpreter finds that the value is not required any longer\&.
 .TP
 double
 .TP
@@ -1034,9 +1196,9 @@ Thus the argument type is defined as
 
     critcl::argtypesupport pstring {
         typedef struct critcl_pstring {
-            Tcl_Obj* o;
-            char*    s;
-            int      len;
+            Tcl_Obj*    o;
+            const char* s;
+            int         len;
         } critcl_pstring;
     }
 
@@ -1063,9 +1225,9 @@ argument of \fBcritcl::cproc\fR\&.
 
     critcl::argtypesupport pstring {
         typedef struct critcl_pstring {
-            Tcl_Obj* o;
-            char*    s;
-            int      len;
+            Tcl_Obj*    o;
+            const char* s;
+            int         len;
         } critcl_pstring;
     }
 
@@ -1076,10 +1238,10 @@ argument of \fBcritcl::cproc\fR\&.
 .CE
 Note, the above example shows only the most simple case of an
 allocated argument, with a conversion that cannot fail (namely, string
-retrieval)\&. If the conversion can fail then either allocation has to
-be defered to happen only on successful conversion, or the conversion
-code has to release the allocated memory itself in the failure path,
-because it will never reach the code defined via
+retrieval)\&. If the conversion can fail then either the allocation has
+to be defered to happen only on successful conversion, or the
+conversion code has to release the allocated memory itself in the
+failure path, because it will never reach the code defined via
 \fBcritcl::argtyperelease\fR in that case\&.
 .SS "CUSTOM TYPES, RESULTS"
 All of the previous sections dealt with argument conversions,

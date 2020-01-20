@@ -73,6 +73,21 @@ The channel is further assumed to be [strong {already registered}]
 with the interpreter.
 
 [comment {% % %% %%% %%%%% %%%%%%%% %%%%%%%%%%%%%}]
+[def return-channel]
+
+This type is a variant of [type new-channel] above.
+
+It varies slightly from it in the registration sequence to be properly
+complementary to the argument type [type take-channel].
+
+
+A [type String] Tcl_Obj holding the name of the returned
+[type Tcl_Channel] is set as the interpreter result.
+
+The channel is further assumed to be [strong new], and therefore
+registered with the interpreter to make it known.
+
+[comment {% % %% %%% %%%%% %%%%%%%% %%%%%%%%%%%%%}]
 [def char*]
 [def vstring]
 

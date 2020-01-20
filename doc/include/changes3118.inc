@@ -6,11 +6,14 @@
        [file main.tcl] file for starkits from within a dev checkout,
        i.e. outside of a starkit, or starpack.
 
-[enum] Feature. Added channel types to the set of builtin argument
-       and result types. The result type comes in variants for newly
-       created channels and known channels. The former will register
-       the returned value in the interpreter, the other assumes that
-       it already is.
+[enum] Feature. Added channel types to the set of builtin argument and
+       result types. The argument types are for simple channel access,
+       access requiring unshared channels, and taking the channel
+       fully into the C level, away from Tcl. The result type comes in
+       variants for newly created channels, known channels, and to
+       return taken channels back to Tcl. The first will register the
+       returned value in the interpreter, the second assumes that it
+       already is.
 
 [enum] Bugfix. Issue #96. Reworked the documentation around the
        argument type [type Tcl_Interp*] to make its special status

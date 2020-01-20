@@ -173,6 +173,41 @@ test cproc-rt-3.2-new-channel "critcl, cproc, runtime, channel result" -setup {
 } -result {file*} -match glob
 
 # -------------------------------------------------------------------------
+# Special argument and return types II: unshared-channel, take-channel, return-channel
+
+test cproc-rt-3.3.0-unshared-channel "critcl, cproc, runtime, unshared channel ok" -setup {
+    make-demo TL {
+        critcl::cproc pass {unshared-channel x} known-channel { return x; }
+    }
+} -cleanup {
+    close $c
+    unset c
+    file delete cproc-new-channel
+} -body {
+    set c [pass [open cproc-new-channel w]]
+} -result {file*} -match glob
+
+test cproc-rt-3.3.1-unshared-channel "critcl, cproc, runtime, unshared channel fail" -setup {
+    make-demo TL {
+        critcl::cproc pass {unshared-channel x} known-channel { return x; }
+    }
+} -body {
+    pass stdin
+} -returnCodes error -result {channel is shared}
+
+test cproc-rt-3.4-take-channel "critcl, cproc, runtime, take & return channel" -setup {
+    make-demo TL {
+        critcl::cproc pass {take-channel x} return-channel { return x; }
+    }
+} -cleanup {
+    close $c
+    unset c
+    file delete cproc-new-channel
+} -body {
+    set c [pass [open cproc-new-channel w]]
+} -result {file*} -match glob
+
+# -------------------------------------------------------------------------
 # Generated argument types: variadics.
 
 test cproc-rt-4.0.0-vint "critcl, cproc, runtime, variadic int, ok" -setup {

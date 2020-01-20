@@ -113,7 +113,7 @@
 <li class="doctools_section"><a href="#section1">Description</a></li>
 <li class="doctools_section"><a href="#section2">Application Options</a></li>
 <li class="doctools_section"><a href="#section3">Package Structure</a></li>
-<li class="doctools_section"><a href="#section4">Changes for version 3.1.18 (unreleased)</a></li>
+<li class="doctools_section"><a href="#section4">Changes for version 3.1.18</a></li>
 <li class="doctools_section"><a href="#section5">Changes for version 3.1.17</a></li>
 <li class="doctools_section"><a href="#section6">Changes for version 3.1.16</a></li>
 <li class="doctools_section"><a href="#section7">Changes for version 3.1.15</a></li>
@@ -442,11 +442,18 @@ targets. The result of such a merge would look like:</p>
 </div>
 <div id="section4" class="doctools_section"><h2><a name="section4">Changes for version 3.1.18</a></h2>
 <ol class="doctools_enumerated">
-<li><p>Feature. Added channel types to the set of builtin argument
-       and result types. The result type comes in variants for newly
-       created channels and known channels. The former will register
-       the returned value in the interpreter, the other assumes that
-       it already is.</p></li>
+<li><p>Feature (Developer support). Merged pull request #96 from
+       sebres/main-direct-invoke. Enables direct invokation of the
+       &quot;<b class="file">main.tcl</b>&quot; file for starkits from within a dev checkout,
+       i.e. outside of a starkit, or starpack.</p></li>
+<li><p>Feature. Added channel types to the set of builtin argument and
+       result types. The argument types are for simple channel access,
+       access requiring unshared channels, and taking the channel
+       fully into the C level, away from Tcl. The result type comes in
+       variants for newly created channels, known channels, and to
+       return taken channels back to Tcl. The first will register the
+       returned value in the interpreter, the second assumes that it
+       already is.</p></li>
 <li><p>Bugfix. Issue #96. Reworked the documentation around the
        argument type <b class="type">Tcl_Interp*</b> to make its special status
        more visible, explain uses, and call it out from result types
