@@ -22,9 +22,9 @@ information.
 
     critcl::argtypesupport pstring {
         typedef struct critcl_pstring {
-            Tcl_Obj* o;
-            char*    s;
-            int      len;
+            Tcl_Obj*    o;
+            const char* s;
+            int         len;
         } critcl_pstring;
     }
 }]
@@ -50,9 +50,9 @@ argument of [cmd critcl::cproc].
 
     critcl::argtypesupport pstring {
         typedef struct critcl_pstring {
-            Tcl_Obj* o;
-            char*    s;
-            int      len;
+            Tcl_Obj*    o;
+            const char* s;
+            int         len;
         } critcl_pstring;
     }
 
@@ -63,11 +63,8 @@ argument of [cmd critcl::cproc].
 
 Note, the above example shows only the most simple case of an
 allocated argument, with a conversion that cannot fail (namely, string
-retrieval). If the conversion can fail then either allocation has to
-be defered to happen only on successful conversion, or the conversion
-code has to release the allocated memory itself in the failure path,
-because it will never reach the code defined via
+retrieval). If the conversion can fail then either the allocation has
+to be defered to happen only on successful conversion, or the
+conversion code has to release the allocated memory itself in the
+failure path, because it will never reach the code defined via
 [cmd critcl::argtyperelease] in that case.
-
-
-

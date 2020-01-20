@@ -5437,7 +5437,7 @@ proc ::critcl::Initialize {} {
 
     argtype char* {
 	@A = Tcl_GetString(@@);
-    }
+    } {const char*} {const char*}
 
     argtype pstring {
 	@A.s = Tcl_GetStringFromObj(@@, &(@A.len));
@@ -5446,22 +5446,22 @@ proc ::critcl::Initialize {} {
 
     argtypesupport pstring {
 	typedef struct critcl_pstring {
-	    Tcl_Obj* o;
-	    char*    s;
-	    int      len;
+	    Tcl_Obj*    o;
+	    const char* s;
+	    int         len;
 	} critcl_pstring;
     }
 
     argtype list {
-	if (Tcl_ListObjGetElements (interp, @@, &(@A.c), &(@A.v)) != TCL_OK) return TCL_ERROR;
+	if (Tcl_ListObjGetElements (interp, @@, &(@A.c), (Tcl_Obj***) &(@A.v)) != TCL_OK) return TCL_ERROR;
 	@A.o = @@;
     } critcl_list critcl_list
 
     argtypesupport list {
 	typedef struct critcl_list {
-	    Tcl_Obj*  o;
-	    Tcl_Obj** v;
-	    int       c;
+	    Tcl_Obj*        o;
+	    Tcl_Obj* const* v;
+	    int             c;
 	} critcl_list;
     }
 
