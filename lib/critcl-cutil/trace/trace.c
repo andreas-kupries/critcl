@@ -126,7 +126,7 @@ critcl_trace_header (int on, int ind, const char* filename, int line)
 
 void
 critcl_trace_printf (int on, const char *format, ...)
-{    
+{
     /*
      * 1MB output-buffer. We may trace large data structures. This is also a
      * reason why the implementation can be compiled out entirely.
@@ -137,7 +137,7 @@ critcl_trace_printf (int on, const char *format, ...)
     va_list args;
     if (!on) return;
     if (closed) critcl_trace_header (1, 1, 0, 0);
-	
+
     va_start(args, format);
     len = vsnprintf(msg, MSGMAX, format, args);
     va_end(args);
@@ -155,20 +155,46 @@ critcl_trace_cmd_args (const char* scopename, int argc, Tcl_Obj*const* argv)
 	indent();
 	scope();
 	separator();
-	critcl_trace_printf (1, "ARG [%3d] = '%s'\n",
-			     i, Tcl_GetString((Tcl_Obj*) argv[i]));
+	critcl_trace_printf (1, "ARG [%3d] = %p (^%d:%s) '%s'\n",
+			     i, argv[i], argv[i]->refCount,
+			     argv[i]->typePtr ? argv[i]->typePtr->name : "<unknown>",
+			     Tcl_GetString((Tcl_Obj*) argv[i]));
     }
 }
 
 int
 critcl_trace_cmd_result (int status, Tcl_Interp* ip)
 {
-    char* result = Tcl_GetString (Tcl_GetObjResult (ip));
+    Tcl_Obj*    robj = Tcl_GetObjResult (ip);
+    const char* rstr = Tcl_GetString (robj);
+    const char* rstate;
+    const char* rtype;
+    static const char* state_str[] = {
+	/* 0 */ "OK",
+	/* 1 */ "ERROR",
+	/* 2 */ "RETURN",
+	/* 3 */ "BREAK",
+	/* 4 */ "CONTINUE",
+    };
+    char buf [TCL_INTEGER_SPACE];
+    if (status <= TCL_CONTINUE) {
+	rstate = state_str [status];
+    } else {
+	sprintf (buf, "%d", status);
+	rstate = (const char*) buf;
+    }
+    if (robj->typePtr) {
+	rtype = robj->typePtr->name;
+    } else {
+	rtype = "<unknown>";
+    }
+
     // No location information
     indent();
     scope();
     separator();
-    critcl_trace_printf (1, "RESULT = %d '%s'\n", status, result);
+    critcl_trace_printf (1, "RESULT = %s %p (^%d:%s) '%s'\n",
+			 rstate, robj, robj->refCount, rtype, rstr);
     critcl_trace_pop ();
     return status;
 }
