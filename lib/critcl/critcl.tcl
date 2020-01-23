@@ -162,8 +162,10 @@ proc ::critcl::CCodeCore {file text} {
 
     set block {}
     lassign [HeaderLines $text] leadoffset text
-    append block [at::CPragma $leadoffset -3 $file] $text \n
-
+    if {$v::options(lines)} {
+	append block [at::CPragma $leadoffset -3 $file]
+    }
+    append block $text \n
     dict update v::code($file) config c {
 	dict lappend c fragments $digest
 	dict set     c block     $digest $block
