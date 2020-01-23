@@ -43,7 +43,7 @@ if {![catch {package require Trf 2.0}]} {
     # can use omit these.
 
     proc ::md5::hmac {key text} {
-	# if key is longer than 64 bytes, reset it to MD5(key).  If shorter, 
+	# if key is longer than 64 bytes, reset it to MD5(key).  If shorter,
 	# pad it out with null (\x00) chars.
 	set keyLen [string length $key]
 	if {$keyLen > 64} {
@@ -51,7 +51,7 @@ if {![catch {package require Trf 2.0}]} {
 	    set key [::md5 $key]
 	    set keyLen [string length $key]
 	}
-    
+
 	# ensure the key is padded out to 64 chars with nulls.
 	set padLen [expr {64 - $keyLen}]
 	append key [binary format "a$padLen" {}]
@@ -66,7 +66,7 @@ if {![catch {package require Trf 2.0}]} {
 	    append k_ipad [binary format i [expr {$i ^ 0x36363636}]]
 	    append k_opad [binary format i [expr {$i ^ 0x5c5c5c5c}]]
 	}
-    
+
 	# Perform inner md5, appending its results to the outer key
 	append k_ipad $text
 	#old: append k_opad [binary format H* [md5 $k_ipad]]
@@ -163,7 +163,7 @@ if {![catch {package require Trf 2.0}]} {
 	# code demonstrates little-endian
 	# This step limits our input to size 2^32b or 2^24B
 	append msg [binary format "i1i1" [expr {8*$msgLen}] 0]
-	
+
 	#
 	# 3.3 Step 3. Initialize MD Buffer
 	#
@@ -308,7 +308,7 @@ if {![catch {package require Trf 2.0}]} {
     }
 
     #
-    # Here we inline/regsub the functions F, G, H, I and <<< 
+    # Here we inline/regsub the functions F, G, H, I and <<<
     #
 
     namespace eval ::md5 {
@@ -336,7 +336,7 @@ if {![catch {package require Trf 2.0}]} {
 		# but Tcl does sign extension on right shifts so we
 		# shift it 1 bit, mask off the sign, and finally shift
 		# it the rest of the way.
-		
+
 		# expr {($x << $i) | ((($x >> 1) & 0x7fffffff) >> (31-$i))}
 
 		#
@@ -354,24 +354,24 @@ if {![catch {package require Trf 2.0}]} {
 
 	# now replace the R and S
 	set map {}
-	foreach i { 
+	foreach i {
 	    7 12 17 22
 	    5  9 14 20
 	    4 11 16 23
-	    6 10 15 21 
+	    6 10 15 21
 	} {
 	    lappend map R$i [expr {32 - $i}] S$i [expr {0x7fffffff >> (31-$i)}]
 	}
-	
+
 	# inline the values of T
 	foreach \
 		tName {
-	    T01 T02 T03 T04 T05 T06 T07 T08 T09 T10 
-	    T11 T12 T13 T14 T15 T16 T17 T18 T19 T20 
-	    T21 T22 T23 T24 T25 T26 T27 T28 T29 T30 
-	    T31 T32 T33 T34 T35 T36 T37 T38 T39 T40 
-	    T41 T42 T43 T44 T45 T46 T47 T48 T49 T50 
-	    T51 T52 T53 T54 T55 T56 T57 T58 T59 T60 
+	    T01 T02 T03 T04 T05 T06 T07 T08 T09 T10
+	    T11 T12 T13 T14 T15 T16 T17 T18 T19 T20
+	    T21 T22 T23 T24 T25 T26 T27 T28 T29 T30
+	    T31 T32 T33 T34 T35 T36 T37 T38 T39 T40
+	    T41 T42 T43 T44 T45 T46 T47 T48 T49 T50
+	    T51 T52 T53 T54 T55 T56 T57 T58 T59 T60
 	    T61 T62 T63 T64 } \
 		tVal {
 	    0xd76aa478 0xe8c7b756 0x242070db 0xc1bdceee
@@ -397,7 +397,7 @@ if {![catch {package require Trf 2.0}]} {
 	    lappend map \$$tName $tVal
 	}
 	set md5body [string map $map $md5body]
-	
+
 
 	# Finally, define the proc
 	proc md5 {msg} $md5body
@@ -417,7 +417,7 @@ if {![catch {package require Trf 2.0}]} {
 
     # hmac: hash for message authentication
     proc ::md5::hmac {key text} {
-	# if key is longer than 64 bytes, reset it to MD5(key).  If shorter, 
+	# if key is longer than 64 bytes, reset it to MD5(key).  If shorter,
 	# pad it out with null (\x00) chars.
 	set keyLen [string length $key]
 	if {$keyLen > 64} {
@@ -428,7 +428,7 @@ if {![catch {package require Trf 2.0}]} {
 	# ensure the key is padded out to 64 chars with nulls.
 	set padLen [expr {64 - $keyLen}]
 	append key [binary format "a$padLen" {}]
-	
+
 	# Split apart the key into a list of 16 little-endian words
 	binary scan $key i16 blocks
 
@@ -439,7 +439,7 @@ if {![catch {package require Trf 2.0}]} {
 	    append k_ipad [binary format i [expr {$i ^ 0x36363636}]]
 	    append k_opad [binary format i [expr {$i ^ 0x5c5c5c5c}]]
 	}
-    
+
 	# Perform inner md5, appending its results to the outer key
 	append k_ipad $text
 	append k_opad [binary format H* [md5 $k_ipad]]

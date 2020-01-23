@@ -205,7 +205,7 @@ platform.
 
 [comment {============================================================}]
 [enum] A line of the special form
-"[arg platform] [const when] [arg expression]" 
+"[arg platform] [const when] [arg expression]"
 marks the [arg platform] and all the settings in its
 [term {configuration block}] as conditional on the [arg expression].
 
@@ -233,7 +233,7 @@ universality.
 
 [comment {============================================================}]
 [enum] A line of the special form
-"[arg platform] [const copy] [arg sourceplatform]" 
+"[arg platform] [const copy] [arg sourceplatform]"
 copies the configuration variables and values currently defined in the
 [term {configuration block}] for [arg sourceplatform] to that of
 [arg platform], overwriting existing values, and creating missing

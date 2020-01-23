@@ -82,7 +82,7 @@ It returns a boolean value, [const true] if the type is known and
 This command defines the argument type [arg name], and associates it
 with the C code doing the conversion ([arg body]) from Tcl to C.
 
-[arg ctype] is the C type of the variable to hold the conversion result 
+[arg ctype] is the C type of the variable to hold the conversion result
 and [arg ctypefun] is the type of the function argument itself.
 Both types default to [arg name] if they are the empty string or are not
 provided.

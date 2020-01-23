@@ -14,8 +14,6 @@
 #
 # See the file "license.terms" for information on usage and redistribution
 # of this file, and for a DISCLAIMER OF ALL WARRANTIES.
-#
-# RCS: @(#) $Id: queuec.tcl,v 1.1 2008/06/19 23:03:35 andreas_kupries Exp $
 
 package require Tcl 8.4
 package require critcl 3.1
@@ -64,7 +62,7 @@ critcl::class::define ::queuec {
 	List object holding unget'ted elements.
     } {
 	instance->unget  = Tcl_NewListObj (0,NULL);
-	Tcl_IncrRefCount (instance->unget); 
+	Tcl_IncrRefCount (instance->unget);
     } {
 	Tcl_DecrRefCount (instance->unget);
     }
@@ -74,7 +72,7 @@ critcl::class::define ::queuec {
 	List object holding the main queue.
     } {
 	instance->queue  = Tcl_NewListObj (0,NULL);
-	Tcl_IncrRefCount (instance->queue); 
+	Tcl_IncrRefCount (instance->queue);
     } {
 	Tcl_DecrRefCount (instance->queue);
     }
@@ -113,8 +111,8 @@ critcl::class::define ::queuec {
 	instance->queue  = Tcl_NewListObj (0,NULL);
 	instance->append = Tcl_NewListObj (0,NULL);
 
-	Tcl_IncrRefCount (instance->unget); 
-	Tcl_IncrRefCount (instance->queue); 
+	Tcl_IncrRefCount (instance->unget);
+	Tcl_IncrRefCount (instance->queue);
 	Tcl_IncrRefCount (instance->append);
     }
 
@@ -332,7 +330,7 @@ critcl::class::define ::queuec {
 		    QueueShift (instance);
 		    Tcl_ListObjGetElements (interp, instance->queue, &listc, &listv);
 		    for (j = instance->at;
-			 j < listc && i < n; 
+			 j < listc && i < n;
 			 j++, i++) {
 				    ASSERT_BOUNDS(i,n);
 				    ASSERT_BOUNDS(j,listc);
@@ -347,7 +345,7 @@ critcl::class::define ::queuec {
 			/* XX */
 			Tcl_ListObjGetElements (interp, instance->append, &listc, &listv);
 			for (j = 0;
-			     j < listc && i < n; 
+			     j < listc && i < n;
 			     j++, i++) {
 					ASSERT_BOUNDS(i,n);
 					ASSERT_BOUNDS(j,listc);
@@ -368,7 +366,7 @@ critcl::class::define ::queuec {
 		    QueueShift (instance);
 		    Tcl_ListObjGetElements (interp, instance->queue, &listc, &listv);
 		    for (j = instance->at;
-			 j < listc && i < n; 
+			 j < listc && i < n;
 			 j++, i++) {
 			    ASSERT_BOUNDS(i,n);
 			    ASSERT_BOUNDS(j,listc);

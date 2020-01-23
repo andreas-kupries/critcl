@@ -15,22 +15,22 @@ char*       | const char*    | Any       | [strong Read-only], [strong {string r
 pstring     | critcl_pstring | Any       | [strong Read-only]
 bytes       | critcl_bytes   | ByteArray | [strong Read-only]
 ----------- | -------------- | --------- | ------------------------------
-int         | int            | Int       | 
-long        | long           | Long      | 
-wideint     | Tcl_WideInt    | WideInt   | 
-double      | double         | Double    | 
-float       | float          | Double    | 
+int         | int            | Int       |
+long        | long           | Long      |
+wideint     | Tcl_WideInt    | WideInt   |
+double      | double         | Double    |
+float       | float          | Double    |
 ----------- | -------------- | --------- | ------------------------------
 X > 0       |                |           | For X in [type int] ... [type float] above.
 X >= 0      |                |           | C types as per the base type X.
 X < 0       |                |           | Allowed argument values are
 X <= 0      |                |           | restricted as per the shown
 X > 1       |                |           | relation
-X >= 1      |                |           | 
+X >= 1      |                |           |
 X < 1       |                |           | This is not a general mechanism
 X <= 1      |                |           | open to other values. Only 0/1.
 ----------- | -------------- | --------- | ------------------------------
-boolean     | int            | Boolean   | 
+boolean     | int            | Boolean   |
 bool        |                |           | Alias of [type boolean] above
 ----------- | -------------- | --------- | ------------------------------
 bytearray   |                |           | [strong DEPRECATED]

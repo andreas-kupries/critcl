@@ -44,7 +44,7 @@ critcl::cheaders   cstackInt.h
 # # ## ### ##### ######## ############# #####################
 ## Exported API
 
-# 
+#
 #  Notes
 #  - push -- Item allocation is responsibility of caller.
 #            Stack takes ownership of the item.
@@ -54,7 +54,7 @@ critcl::cheaders   cstackInt.h
 #  - del  -- Releases stack, cell array, and items, if any.
 #  - drop -- Like pop, but doesn't free, assumes that caller
 #            is taking ownership of the pointer.
-# 
+#
 
 critcl::api function CSTACK     cstack_new  {CSTACK_CELL_FREE freeCell void* clientdata}
 critcl::api function void       cstack_del  {CSTACK s}

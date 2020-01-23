@@ -8,7 +8,7 @@
 # Copyright (c) 1998-2000 by Ajuba Solutions.
 # See the file "license.terms" for information on usage and redistribution
 # of this file, and for a DISCLAIMER OF ALL WARRANTIES.
-# 
+#
 # RCS: @(#) $Id: cmdline.tcl 1239 2007-03-09 16:17:14Z jcw $
 
 package require Tcl 8.2
@@ -23,7 +23,7 @@ source [file join [file dirname [info script]] typedCmdline.tcl]
 # cmdline::getopt --
 #
 #	The cmdline::getopt works in a fashion like the standard
-#	C based getopt function.  Given an option string and a 
+#	C based getopt function.  Given an option string and a
 #	pointer to an array or args this command will process the
 #	first argument and return info on how to procede.
 #
@@ -34,8 +34,8 @@ source [file join [file dirname [info script]] typedCmdline.tcl]
 #			are removed from the start of the list.
 #	optstring	A list of command options that the application
 #			will accept.  If the option ends in ".arg" the
-#			getopt routine will use the next argument as 
-#			an argument to the option.  Otherwise the option	
+#			getopt routine will use the next argument as
+#			an argument to the option.  Otherwise the option
 #			is a boolean that is set to 1 if present.
 #	optVar		The variable pointed to by optVar
 #			contains the option that was found (without the
@@ -114,10 +114,10 @@ proc cmdline::getopt {argvVar optstring optVar valVar} {
 #	arglistVar	The name of the argument list, typically argv
 #	optlist		A list-of-lists where each element specifies an option
 #			in the form:
-#				(where flag takes no argument) 
-#					flag comment 
+#				(where flag takes no argument)
+#					flag comment
 #
-#				(or where flag takes an argument) 
+#				(or where flag takes an argument)
 #					flag default comment
 #
 #			If flag ends in ".arg" then the value is taken from the
@@ -137,7 +137,7 @@ proc cmdline::getoptions {arglistVar optlist {usage options:}} {
 	set name [lindex $opt 0]
 	if {[regsub -- .secret$ $name {} name] == 1} {
 	    # Need to hide this from the usage display and getopt
-	}   
+	}
 	lappend opts $name
 	if {[regsub -- .arg$ $name {} name] == 1} {
 
@@ -240,7 +240,7 @@ proc cmdline::getfiles {patterns quiet} {
 	# Make file an absolute path so that we will never conflict
 	# with files that might be contained in our zip file.
 	set fullPath [file join [pwd] $file]
-	
+
 	if {[file isfile $fullPath]} {
 	    lappend files $fullPath
 	} elseif {! $quiet} {

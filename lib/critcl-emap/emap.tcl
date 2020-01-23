@@ -74,7 +74,7 @@ proc critcl::emap::DecoderTclSearch {name last} {
     lappend map @NAME@  $name
     lappend map @UNAME@ [string toupper $name]
     lappend map @LAST@  $last
-    
+
     critcl::ccode \n[critcl::at::here!][string map $map {
 	Tcl_Obj*
 	@NAME@_decode (Tcl_Interp* interp, int state)
@@ -142,7 +142,7 @@ proc critcl::emap::DecoderTclDirect {name} {
 
 	    i = @NAME@_direct (state);
 	    if (i < 0) { goto error; }
-	    
+
 	    /* Return the chosen string */
 	    return context->tcl [i];
 
@@ -195,7 +195,7 @@ proc critcl::emap::DirectTable {min max iv dv} {
 
     set table {}
     set fmt   %[string length $max]d
-    
+
     for {set i $min} {$i <= $max} {incr i} {
 	if {[info exists direct($i)]} {
 	    set sym [lindex $direct($i) 0]
@@ -222,7 +222,7 @@ proc critcl::emap::Offset {min} {
 
 proc critcl::emap::DecideIfDirect {dict minv maxv dv} {
     upvar 1 $minv min $maxv max $dv direct
-    
+
     set min  {}
     set max  {}
 
@@ -237,7 +237,7 @@ proc critcl::emap::DecideIfDirect {dict minv maxv dv} {
 	    return 0
 	}
     }
-    
+
     if {$min eq {}}        { return 0 }
     if {$max eq {}}        { return 0 }
     if {($max-$min) >= 50} { return 0 }
@@ -376,7 +376,7 @@ proc critcl::emap::EncoderCNocase {name last} {
     }]
     return
 }
-    
+
 proc critcl::emap::DecoderC {name isdirect last} {
     if {$isdirect} {
 	DecoderCDirect $name
@@ -393,7 +393,7 @@ proc critcl::emap::DecoderCSearch {name last} {
     lappend map @NAME@  $name
     lappend map @UNAME@ [string toupper $name]
     lappend map @LAST@  $last
-    
+
     critcl::ccode \n[critcl::at::here!][string map $map {
 	const char*
 	@NAME@_decode_cstr (int state)

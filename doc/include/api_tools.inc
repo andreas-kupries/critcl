@@ -4,7 +4,7 @@ The following commands provide tools like
 [manpage {CriTcl Application}] or similar with
 deeper access to the package's internals.
 
-[vset not_needed_for_critcl_script] 
+[vset not_needed_for_critcl_script]
 
 [list_begin definitions]
 

@@ -34,7 +34,7 @@ high-level stack example packages. I am intentionally bypassing the
 
 [para]	If any command throws an error, i.e. has a problem, then all
 	following commands will run into some other error as well,
-	as a consequence of the first problem. 
+	as a consequence of the first problem.
 
 [item]	Use of option [option -keep] causes critcl to leave the
 	generated .c files behind, for edification. Normally this

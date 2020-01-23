@@ -2,7 +2,7 @@
 
 The following commands control the [sectref {Result Cache}].
 
-[vset not_needed_for_critcl_script] 
+[vset not_needed_for_critcl_script]
 
 [list_begin definitions]
 [comment ---------------------------------------------------------------------]

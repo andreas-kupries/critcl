@@ -27,11 +27,11 @@ As our example now an excerpt taken from real code, the top of the
         #include "sha1.h"
         #include <stdlib.h>
         #include <assert.h>
-        
+
         static
         Tcl_ObjType sha1_type; /* fast internal access representation */
-        
-        static void 
+
+        static void
         sha1_free_rep(Tcl_Obj* obj)
         {
             SHA1_CTX* mp = (SHA1_CTX*) obj->internalRep.otherValuePtr;

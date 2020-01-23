@@ -6,7 +6,7 @@
 # Copyright (c) 2000 by Ross Palmer Mohn.
 # See the file "license.terms" for information on usage and redistribution
 # of this file, and for a DISCLAIMER OF ALL WARRANTIES.
-# 
+#
 # RCS: @(#) $Id: typedCmdline.tcl 1239 2007-03-09 16:17:14Z jcw $
 
 namespace eval cmdline {
@@ -187,7 +187,7 @@ proc cmdline::typedGetopt {argvVar optstring optVar argVar} {
                                     set oneof ", one of $charclass"
                                     set charclass an
                                 }
-    
+
                                 if {$quantifier == "?"} {
                                     set retval 1
                                     set retvar $opt
@@ -229,7 +229,7 @@ proc cmdline::typedGetopt {argvVar optstring optVar argVar} {
                                 set optarg "Option requires $charclass argument$oneof -- $opt"
                                 set retvar $opt
                                 set retval -3
-    
+
                                 if {$quantifier == "?"} {
                                     set retval 1
                                     set optarg ""
@@ -422,7 +422,7 @@ proc cmdline::typedUsage {optlist {usage {options:}}} {
 # cmdline::prefixSearch --
 #
 #	Search a Tcl list for a pattern; searches first for an exact match,
-#	and if that fails, for a unique prefix that matches the pattern 
+#	and if that fails, for a unique prefix that matches the pattern
 #	(ie, first "lsearch -exact", then "lsearch -glob $pattern*"
 #
 # Arguments:

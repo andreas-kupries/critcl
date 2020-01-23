@@ -38,7 +38,7 @@
     	about knowing if the argument is default or not is now able to
     	check that quickly, without having to code the default value
     	inside.
-    
+
 	NOTE: This change is visible in the output of the advanced
     	      commands "argcnames", "argcsignature", "argvardecls",
     	      and "argconversion".

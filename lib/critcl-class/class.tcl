@@ -64,11 +64,11 @@ proc ::critcl::class::define {classname script} {
     #       syntax
     #     >>
     #     typedef -> ^instancetype
-    #     menum   -> 
-    #     typekey -> 
+    #     menum   ->
+    #     typekey ->
     #     prefix  -> ''|'class_' (see *1*)
-    #     startn  -> 
-    #     starte  -> 
+    #     startn  ->
+    #     starte  ->
     #   >>
     #   (class)variable     -> dict <<
     #     names   -> list (string)
@@ -80,8 +80,8 @@ proc ::critcl::class::define {classname script} {
     #   >>
     #   stop         -> bool|presence
     #   includes     -> string (C code fragment)
-    #   include      -> 
-    #   instancetype -> 
+    #   include      ->
+    #   instancetype ->
     #   ivardecl     -> string (C code fragment)
     #   ivarrelease  -> string (C code fragment)
     #   ivarerror    -> string (C code fragment)
@@ -92,7 +92,7 @@ proc ::critcl::class::define {classname script} {
     #   (class_)method_enumeration
     #   (class_)method_dispatch
     #   (class_)method_implementations
-    # >> 
+    # >>
 
     catch { unset state }
 
@@ -107,7 +107,7 @@ proc ::critcl::class::define {classname script} {
     # Pull the package we are working on out of the system.
 
     set package [critcl::meta? name]
-    set qpackage [expr {[string match ::* $package] 
+    set qpackage [expr {[string match ::* $package]
 			? "$package"
 			: "::$package"}]
     lassign [uplevel 1 [list ::critcl::name2c $classname]] ns  cns  classname cclassname

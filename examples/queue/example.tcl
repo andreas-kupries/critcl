@@ -9,4 +9,4 @@ ex queuec1 size
 ex queuec1 clear
 ex queuec1 size
 ex queuec1 destroy
-ex queuec1 
+ex queuec1

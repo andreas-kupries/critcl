@@ -120,7 +120,7 @@ proc ::critcl::HandleDeclAfterBuild {} {
     append err [lindex [info level -1] 0]
     append err $cloc
     append err ": Illegal attempt to define C code in [This] after it was built."
-    append err \n [at::SHOWFRAMES] 
+    append err \n [at::SHOWFRAMES]
     error $err
 }
 
@@ -605,7 +605,7 @@ proc ::critcl::app::ProcessInput {} {
 	set v::org      {} ; # Organization the package is licensed by.
 	set v::ver      {} ; # Version of the package.
 	set v::cfiles   {} ; # Companion files (.tcl, .c, .h, etc).
-	set v::teasrc   {} ; # Input file(s) transformed for use in the Makefile.in. 
+	set v::teasrc   {} ; # Input file(s) transformed for use in the Makefile.in.
 	set v::imported {} ; # List of stubs APIs imported from elsewhere.
 	set v::config   {} ; # List of user-specified configuration settings.
 
@@ -1087,7 +1087,7 @@ proc ::critcl::app::PreloadSearchPath {shlib} {
 	}
     }
 
-    set ext [critcl::sharedlibext]	    
+    set ext [critcl::sharedlibext]
     return [list \
 		$tail$ext \
 		[file join $dir $tail$ext] \
@@ -1407,12 +1407,12 @@ proc ::critcl::app::AssembleTEA {} {
     # Get a proper version number
     set ver 0.0
     if {[llength $v::ver]} {
-	set ver [lindex $v::ver 0] 
+	set ver [lindex $v::ver 0]
     }
     # Get a proper organization this is licensed by
     set org Unknown
     if {[llength $v::org]} {
-	set org [lindex $v::org 0] 
+	set org [lindex $v::org 0]
     }
 
     PlaceTEASupport    $pkgdir $libname $ver $org

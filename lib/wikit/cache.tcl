@@ -9,9 +9,9 @@ package require Wikit::Db
 
 namespace eval Wikit {
   namespace export BuildTitleCache AdjustTitleCache
-  
+
   variable titleCache	;# an array mapping name to id
-  
+
   # AdjustTitleCache for renamed page
   proc AdjustTitleCache {name newName id {db wdb}} {
     variable titleCache
@@ -21,7 +21,7 @@ namespace eval Wikit {
     }
     set titleCache($db,[string tolower $newName]) $id
   }
-  
+
   # BuildTitleCache by traversing all pages and caching their title
   proc BuildTitleCache {{db wdb}} {
     variable titleCache
@@ -35,11 +35,11 @@ namespace eval Wikit {
       }
     }
   }
-  
+
   # LookupPage - find a name in the titleCache
   proc LookupPage {name {db wdb}} {
     variable titleCache
-    
+
     set lcname [string tolower $name]
     if {[info exists titleCache($db,$lcname)]} {
       set n $titleCache($db,$lcname)
@@ -47,14 +47,14 @@ namespace eval Wikit {
       set n [mk::select $db.pages -count 1 name $name]
       set titleCache($db,$lcname) $n
     }
-    
+
     if {$n == ""} {
       set n [mk::view size $db.pages]
       mk::set $db.pages!$n name $name
       set titleCache($db,$lcname) $n
       DoCommit $db
     }
-    
+
     return $n
   }
 }

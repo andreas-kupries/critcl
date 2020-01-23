@@ -19,13 +19,13 @@ where [file /path/to/tclsh] is the tclsh of your Tcl installation, and
 [para]
 
 This builds all packages and then places them in a directory where the
-[cmd tclsh] will find them. 
+[cmd tclsh] will find them.
 
 [para]
 
 It further creates a [file critcl] application script and places it
 into the directory [cmd tclsh] resides in, making it a sibling of that
-executable. 
+executable.
 
 [para][emph Attention!] Note that while the installed critcl
 application is modified to use the chosen tclsh instead of searching

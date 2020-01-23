@@ -20,7 +20,7 @@ typedef struct CSTACK_ {
     long int        top;   /* Index of the topmost _unused_ cell in the
 			    * array === Index of the _next_ cell to use
 			    * === Size of the stack. */
-    CSTACK_CELL_FREE freeCell; 
+    CSTACK_CELL_FREE freeCell;
     void*           clientData;
 
     void**          cell;  /* Array of the stack cells. */

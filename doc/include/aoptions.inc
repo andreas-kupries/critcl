@@ -249,7 +249,7 @@ The named target must exist in the chosen configuration file.
 Use [option -targets] (see below) to get a list of the
 acceptable targets.
 
-Use [option -config] to select the configuration file. 
+Use [option -config] to select the configuration file.
 
 [vset teaignored]
 
@@ -259,7 +259,7 @@ Use [option -config] to select the configuration file.
 Prints the list of all known targets from the chosen configuration file to
 [const stdout] and then exits.
 
-Use [option -config] to select the configuration file. 
+Use [option -config] to select the configuration file.
 
 [comment %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%]
 [opt_def -tea]
@@ -277,7 +277,7 @@ If both [option -pkg] and [option -tea] are specified the last occurrence wins.
 
 [option -I], [option -L], [option -clean],
 [option -force], [option -cache], [option -includedir], [option -enable],
-[option -disable], and [option -with-[var FOO]] are 
+[option -disable], and [option -with-[var FOO]] are
 ignored. In contrast, the option [option -libdir] is relevant in both
 this and [option -pkg] mode.
 

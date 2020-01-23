@@ -30,4 +30,4 @@ namespace eval Wikit {
       }
       LocalInterface $topwin $id
    }
-} 
+}

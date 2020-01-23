@@ -88,7 +88,7 @@ proc ::stubs::gen::header::gen {table name} {
 }
 
 proc ::stubs::gen::header::rewrite@ {basedir table name} {
-    rewrite [path $basedir $name] $table $name    
+    rewrite [path $basedir $name] $table $name
 }
 
 proc ::stubs::gen::header::rewrite {path table name} {

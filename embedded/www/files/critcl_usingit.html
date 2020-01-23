@@ -587,11 +587,9 @@ As our example now an excerpt taken from real code, the top of the
         #include &quot;sha1.h&quot;
         #include &lt;stdlib.h&gt;
         #include &lt;assert.h&gt;
-        
         static
         Tcl_ObjType sha1_type; /* fast internal access representation */
-        
-        static void 
+        static void
         sha1_free_rep(Tcl_Obj* obj)
         {
             SHA1_CTX* mp = (SHA1_CTX*) obj-&gt;internalRep.otherValuePtr;
@@ -633,7 +631,7 @@ available to scripts we do not only have to make the relevant
 functions available as commands, often we also have to know all
 the various constants, flags, etc. these functions take.</p>
 <p>Rather than writing such magic numbers directly we would
-greatly prefer to use symbolic names instead. 
+greatly prefer to use symbolic names instead.
 Instead of providing one or more commands to list and map the magic
 numbers to strings critcl <em>only</em> provides a single command which
 allows the export of C defines and enumeration values, mapping them to

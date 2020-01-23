@@ -31,7 +31,7 @@ namespace eval ::critcl::cutil {}
 proc critcl::cutil::alloc {} {
     variable selfdir
     critcl::cheaders -I$selfdir/allocs
-    critcl::include critcl_alloc.h 
+    critcl::include critcl_alloc.h
     return
 }
 

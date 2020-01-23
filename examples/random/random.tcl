@@ -280,7 +280,7 @@ critcl::ccode {
 	    Tcl_SetAssocData (interp, KEY, proc,
 			      (ClientData) rnmathglobal);
 	}
-	    
+
 	rnmathglobal->counter ++;
 	sprintf (rnmathglobal->buf, PREFIX "%s%d", rtype, rnmathglobal->counter);
 	return rnmathglobal->buf;
@@ -333,7 +333,7 @@ critcl::ccode {
 	    Tcl_AppendToObj    (err, "command \"", -1);
 	    Tcl_AppendObjToObj (err, fqn);
 	    Tcl_AppendToObj    (err, "\" already exists, unable to create generator", -1);
-	    
+
 	    Tcl_DecrRefCount (fqn);
 	    Tcl_SetObjResult (interp, err);
 	    return NULL;

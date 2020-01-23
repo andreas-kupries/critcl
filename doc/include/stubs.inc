@@ -178,7 +178,7 @@ extern const RngStubs *rngStubsPtr;
 
 [def [file rngStubLib.h]:]
 [example {
-/* 
+/*
  * rngStubLib.c --
  *
  * Stub object that will be statically linked into extensions that wish

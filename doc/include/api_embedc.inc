@@ -39,7 +39,7 @@ complete control over the handling of the arguments to the command.
 
 See section [sectref {Runtime Behaviour}].
 
-[para] 
+[para]
 Returns the empty string.
 
 [para]

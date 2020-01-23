@@ -39,7 +39,7 @@ compiler, linke, etc. are found first in the [var PATH].
 
 First, to choose among several possible C compiler available on the
 build host. The standard configuration for most unix platforms uses
-the platform's native compiler, for example, and 
+the platform's native compiler, for example, and
 
 
 }]

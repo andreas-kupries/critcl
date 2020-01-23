@@ -22,14 +22,14 @@ if {[catch {
 tclLog ==============================
 
 # 1-5-2001: new logic to work with a cache for *much* higher performance
-# 
+#
 # To make this work, create a "main" dir, reachable from the web, and store
 # a special ".htaccess" file in it, (adjust as needed):
 #	DirectoryIndex /home/jcw/wikit.cgi/0
 #	ErrorDocument 404 /home/jcw/wikit.cgi
 #
 # Then config this wikit to maintain pages in that cache:
-#	WIKI_CACHE=/home/jcw/www/tcl ./wikit.tkd 
+#	WIKI_CACHE=/home/jcw/www/tcl ./wikit.tkd
 #
 # Operation without this new env var, or with the CGI url remains unaffected.
 
@@ -88,11 +88,11 @@ proc Wikit::ProcessCGI {} {
     admin_mail_addr nowhere@to.go
   }
   #debug -on
-  
+
   # 2002-06-17: moved to app-wikit/start.tcl
   #input "n=1"
   suffix ""
-  
+
   # support AOLserver, fix by Pascal Scheffers from http://mini.net/tcl/4416
   if { [string first "AOLserver/3" $env(SERVER_SOFTWARE)] > -1 } {
     #Aolserver does not provide a correct SCRIPT_NAME
@@ -152,19 +152,19 @@ proc Wikit::ProcessCGI {} {
 
     set path ""
     catch {set path $::env(PATH_INFO)}
-    
+
     set query ""
     catch {set query $::env(QUERY_STRING)}
     regsub {^Q=} $query {} query
     regsub {&.*} $query {} query
-    
+
     set cmd ""
     set section ""
       # Updated 3Mar03, edit and references are now subdirs to allow
-      # for site indexing. 
+      # for site indexing.
       if {![regexp {^/(edit/|references/)?([0-9]+)(.*)$} $path x section N cmd] || $N >= [mk::view size wdb.pages]} {
       set N 0
-    
+
         # try to locate a page by name, using various search heuristics
       if {[regexp {^/(.*)} $path x arg] && $arg != "" && $query == ""} {
         set N [mk::select wdb.pages name $arg -min date 1]
@@ -198,17 +198,17 @@ proc Wikit::ProcessCGI {} {
 
     if {$query != ""} {
       set N 2
-      variable searchKey 
+      variable searchKey
       variable searchLong
       set searchKey [unquote_input $query]
       set searchLong [regexp {^(.*)\*$} $searchKey x searchKey]
       set query "?$query"
     }
-    
+
     pagevars $N name date who
     set origtag [list $date $who]
     set refs [mk::select wdb.refs to $N]
-    
+
     # added 2004-05-17 wru cookie identification
     catch {source $::env(WIKIT_WRU)}
 
@@ -237,7 +237,7 @@ proc Wikit::ProcessCGI {} {
 	    p [italic {Please restart a new edit and merge your
 	       version, which is shown in full below.}]
 	    hr size=1
-	    p "<pre>[quote_html $C]</pre>" 
+	    p "<pre>[quote_html $C]</pre>"
 	    hr size=1
 	    p
 	  }
@@ -294,9 +294,9 @@ proc Wikit::ProcessCGI {} {
 	# end of changes
       }
     }
-    
+
     # set up a few standard URLs an strings
-    
+
     switch [llength $refs] {
       0 {
 	set backRef ""
@@ -308,7 +308,7 @@ proc Wikit::ProcessCGI {} {
 	# copy stays valid when more page references are added later
 	#set backRef [mk::get wdb.refs!$refs from]
 	set backRef references/$N!
-        set Refs "[Wiki Reference $backRef] - " 
+        set Refs "[Wiki Reference $backRef] - "
         set Title [Wiki $name $backRef]
       }
       default {
@@ -317,7 +317,7 @@ proc Wikit::ProcessCGI {} {
         set Title [Wiki $name $backRef]
       }
     }
-    
+
     set Edit "Edit [Wiki - edit/$N@]"
 
     if { $section eq "" } {
@@ -341,11 +341,11 @@ proc Wikit::ProcessCGI {} {
     if {$N == 2} { set Search "" }
     if {$N == 3} { set Help "" }
     if {$N == 4} { set Changes "" }
-    
+
     if {$date != 0} {
       set date [clock format $date -gmt 1 -format {%e %b %Y, %R GMT}]
     }
-    
+
     set updated "Updated [cgi_font size=-1 $date]"
 
     # added 2004-05-17
@@ -366,16 +366,16 @@ proc Wikit::ProcessCGI {} {
       }
       append menu [nl]
     }
-    
+
     append menu "$Search$Changes$Refs$About$Home$Help"
-    
+
     cgi_http_head {
       cgi_content_type
       pragma no-cache
     }
 
     # now dispatch on the type of request
-    
+
     cgi_html {
 
       switch -- $cmd {
@@ -392,10 +392,10 @@ proc Wikit::ProcessCGI {} {
 	      cgi_base href=$::env(WIKIT_BASE)edit/
 	    }
 	  }
-	  
+
 	  cgi_body bgcolor=#ffffff {
 	    cgi_h2 [Wiki - ../$N]
-	    
+
 	    cgi_form $::script_name/$N {
 	      cgi_export O=$origtag
 	      catch {
@@ -434,7 +434,7 @@ proc Wikit::ProcessCGI {} {
 	    }
 	  }
 	}
-	      
+
 	! { # called to generate a page with references
 	  cgi_head {
 	    cgi_http_equiv Content-type "text/html; charset=utf-8"
@@ -450,14 +450,14 @@ proc Wikit::ProcessCGI {} {
 
 	  cgi_body bgcolor=#ffffff {
 	    cgi_h2 "References to [Wiki - ../$N]"
-	
+
 	    set refList ""
 	    foreach r $refs {
 	      set r [mk::get wdb.refs!$r from]
 	      pagevars $r name
 	      lappend refList [list $name $r]
 	    }
-	    
+
 	    bullet_list {
 	      # the items are a list, if we would just sort on them, then all
 	      # single-item entries come first (the rest has {}'s around it)
@@ -468,8 +468,8 @@ proc Wikit::ProcessCGI {} {
 		li "[GetTimeStamp $date] . . . [Wiki - ../$r] . . . $who"
 	      }
 	    }
-	    
-	    hr noshade	    
+
+	    hr noshade
 	    cgi_puts [cgi_font size=-1 "$Search - $Changes - $About - $Home"]
 	  }
 	}
@@ -493,15 +493,15 @@ proc Wikit::ProcessCGI {} {
 	    set noTitle [regsub {^<p>(<img src=".*?")>} $C \
 					[link - {\1 border=0>} $backRef] C]
 	    if {!$noTitle} { h2 $Title }
-	
+
 	    if {$N == 2} {
 	      # thx Alistair Grant, see http://mini.net/tcl/9748
 	      isindex "prompt=Enter the search phrase. \
 	      	Append an asterisk (*) to search page contents as well: "
 	    }
-	    
+
 	    p $C
-	  
+
 	    hr noshade
 	    #cgi_puts $menu
 	    cgi_puts "<p id='footer'>$menu</p>"
@@ -509,7 +509,7 @@ proc Wikit::ProcessCGI {} {
 	}
       }
     }
-	
+
     if {[info exists ::htmlcopy]} { saveCopy $N }
   }
 }

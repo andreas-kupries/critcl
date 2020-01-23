@@ -487,7 +487,7 @@ proc _install {args} {
 	# Local MD5 hash implementation.
 
 	puts "\nInstalled C package:\tcritcl::md5c"
-	
+
 	# It is special because it is a critcl-based package, not pure
 	# Tcl as everything else of critcl. Its installation makes it
 	# the first package which will be compiled with critcl on this
@@ -527,7 +527,7 @@ proc _install {args} {
 	# the second package which will be compiled with critcl on this
 	# machine. It uses the just-installed application for
 	# that.
-	
+
 	set src     [file join $selfdir lib critcl-callback callback.tcl]
 	set version [version $src]
 	set name    critcl_callback

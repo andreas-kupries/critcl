@@ -7,7 +7,7 @@ package provide Wikit::Lock 1.0
 
 namespace eval Wikit {
   namespace export AcquireLock ReleaseLock
-  
+
   proc AcquireLock {lockFile {maxAge 900}} {
     for {set i 0} {$i < 60} {incr i} {
       catch {
@@ -23,7 +23,7 @@ namespace eval Wikit {
         }
       }
       catch {close $fd}
-      
+
       if {![catch {open $lockFile {CREAT EXCL WRONLY}} fd]} {
         puts $fd [pid]
         close $fd
@@ -31,12 +31,12 @@ namespace eval Wikit {
       }
       after 1000
     }
-    
+
     # if the file is older than maxAge, we grab the lock anyway
     if {[catch {file mtime $lockFile} t]} { return 0 }
     return [expr {[clock seconds] > $t + $maxAge}]
   }
-  
+
   proc ReleaseLock {lockFile} {
     file delete $lockFile
   }

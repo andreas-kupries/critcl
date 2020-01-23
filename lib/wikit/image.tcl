@@ -7,7 +7,7 @@ package require Wikit::Format
 
 namespace eval Wikit {
   namespace export LocalImages
-  
+
   proc ScanForInlinedImages {{db wdb}} {
     array set inlined {}
     mk::loop c wdb.pages {
@@ -24,7 +24,7 @@ namespace eval Wikit {
     }
     array get inlined
   }
-  
+
   proc LocalImages {cmd} {
     mk::view layout wdb.images {url date:I image:B}
     switch -- $cmd {
@@ -112,5 +112,5 @@ namespace eval Wikit {
       }
     }
   }
-  
+
 }

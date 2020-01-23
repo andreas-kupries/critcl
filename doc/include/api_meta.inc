@@ -1,5 +1,5 @@
 
-Critcl versions 3 and later can create TEApot meta-data to be placed into 
+Critcl versions 3 and later can create TEApot meta-data to be placed into
 [file teapot.txt] in a format suitable for use by the
 [uri {http://docs.activestate.com/activetcl/8.5/tpm/toc.html} {TEApot tools}].
 
@@ -45,7 +45,7 @@ through the generic API [cmd ::critcl::meta].
 
 Ignored in "compile & run" mode.
 
-[para] 
+[para]
 In "generate package" mode places a longer description of the package into the
 meta data file [file teapot.txt], under the key [term description].  The data
 specified by this command takes precedence over any information specified

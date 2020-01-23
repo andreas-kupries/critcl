@@ -81,7 +81,7 @@ proc log {args} {
 
     .t insert end-1c $text $tag
     set tag {}
-    if {$newline} { 
+    if {$newline} {
 	.t insert end-1c \n
     }
 

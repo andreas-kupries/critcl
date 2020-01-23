@@ -10,7 +10,7 @@ Uses of this option are cumulative.
 
 [vset not_needed_for_critcl_script "
 These commands are not needed to simply write a [term {Critcl script}].
-"] 
+"]
 
 [vset pkg_namerules "
 The basename of the first file is the name of the package to generate. If

@@ -53,7 +53,7 @@ proc ::stubs::gen::init::gen {table} {
 }
 
 proc ::stubs::gen::init::make@ {basedir table} {
-    make [path $basedir $table] $table    
+    make [path $basedir $table] $table
 }
 
 proc ::stubs::gen::init::make {path table} {
@@ -66,12 +66,12 @@ proc ::stubs::gen::init::make {path table} {
 	     $template]
     close $c
 
-    rewrite $path $table    
+    rewrite $path $table
     return
 }
 
 proc ::stubs::gen::init::rewrite@ {basedir table} {
-    rewrite [path $basedir $table] $table    
+    rewrite [path $basedir $table] $table
     return
 }
 

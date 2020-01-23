@@ -5,7 +5,7 @@ package provide Wikit::Format 1.1
 namespace eval Wikit::Format {
     namespace export TextToStream StreamToTk StreamToHTML StreamToRefs \
             StreamToUrls Expand_HTML
-    
+
     # In this file:
     #
     # proc TextToStream {text} -> stream
@@ -20,13 +20,13 @@ namespace eval Wikit::Format {
     # The "Refs"   format is a list with details about embedded references.
     # The "Urls"   format is a list of external references, bracketed or not.
     # The "Stream" format is a Tcl list, it's only used as interim format.
-    
+
     # =========================================================================
-    
+
     ### More format documentation
-    
+
     # =========================================================================
-    
+
     #
     # Ad "Tk")     This is a list of pairs {text taglist text taglist ...}
     #              which can be directly inserted into any text widget.
@@ -76,7 +76,7 @@ namespace eval Wikit::Format {
     #             O	List item (enumerated)	Nesting level
     #             I	List item (term)		Nesting level
     #             D	List item (term def)	Nesting level
-    #             H	Horizontal rule			Line-width		
+    #             H	Horizontal rule			Line-width
 	#			  C code lines
     #             ------------------------------------------------------
     #
@@ -84,26 +84,26 @@ namespace eval Wikit::Format {
     #                   level 0 and a line-width 1. The current backend
     #                   renderers ignore this information.
     #
-    
+
     # =========================================================================
     # =========================================================================
-    
+
     ### Frontend renderer                         :: Wiki Markup ==> Stream ###
-    
+
     # =========================================================================
     # =========================================================================
-    	
+
     ## Basic operation: Each line is classified via regexes and then handled
     ## according to its type. Text lines are coalesced into paragraphs, with
     ## some special code to deal with the boundary between normal text and
     ## verbatim quoted text. Each collected line is then separated into chunks
     ## of text, highlighting command and links (wiki page / external). This is
     ## then added to the internal representation.
-    
+
     proc TextToStream {text {fixed 0} {code 0}} {
         # Based upon ideas from the kiwi renderer. One step rendering into
         # the internal representation without a script as intermediate step.
-   
+
         set irep      [list]  ; # Internal representation generated here.
         set paragraph ""      ; # Buffer for the text of a single paragraph
         set empty_std 0       ; # boolean - set if the preceding line was empty
@@ -111,13 +111,13 @@ namespace eval Wikit::Format {
 		set mode_code $code   ; # indicates code block (no markup)
 		set mode_option 0	  ; # options (fixed option, variable description)
 		set optnum 0	 	  ; # option block number
-		set optlen 0	 	  ; # length of option block fixed part	
+		set optlen 0	 	  ; # length of option block fixed part
         foreach line [split $text \n] {
             # Per line, classify the it and extract the main textual information.
             foreach {tag depth txt aux} [linetype $line] break ; # lassign
             if {$mode_fixed && $tag ne "FIXED" && $tag ne "CODE" \
 				 	&& $tag ne "EVAL"} {
-				# if already in fixed mode, then line must be fixed 
+				# if already in fixed mode, then line must be fixed
 				# or code content, or eval output
 				set tag FIXED_CONTENT
 			}
@@ -134,7 +134,7 @@ namespace eval Wikit::Format {
 			# CODE		 = fixed font, no markup
 			# FIXED		 = fixed font, markup
 			# OPTION	 = start/end of option list
-            
+
             ## Whenever we encounter a special line, not quoted, any
             ## preceding empty line has no further effect.
             #
@@ -143,7 +143,7 @@ namespace eval Wikit::Format {
                 HR - UL - OL - DL {set empty_std 0}
                 default {}
             }
-            
+
             ## Whenever we encounter a special line, including quoted, we
             ## have to render the data of the preceding paragraph, if
             ## there is any.
@@ -157,7 +157,7 @@ namespace eval Wikit::Format {
                 }
                 default {}
             }
-            
+
             ## Now processs the lines according to their types.
             #
             # Tag   | depth         | txt             | pfx           | aux
@@ -168,10 +168,10 @@ namespace eval Wikit::Format {
             # PRE   | 1             | text to display |
             # HR    | 0             | text of ruler   |
             # STD   | 0             | text to display |
-			# FIXED | 1			 	| text to display |	
-			# CODE  | 1			 	| text to display |				
+			# FIXED | 1			 	| text to display |
+			# CODE  | 1			 	| text to display |
             # ------+---------------+-----------------+---------------+---------
-            
+
             # HR     - Trivial
             # UL, OL - Mark their beginning and then render their text
             #        - like a normal paragraph.
@@ -185,7 +185,7 @@ namespace eval Wikit::Format {
             #          encountered. This closes the paragraph.
 			# CODE	 - fixed font - no markup
 			# FIXED  - like CODE, but markup respected
-            
+
             switch -exact -- $tag {
                 HR  {lappend irep H 1}
                 UL  {lappend irep U 0 ; render $txt}
@@ -198,7 +198,7 @@ namespace eval Wikit::Format {
                     # Transform a preceding 'STD {}' into an empty Q line,
                     # i.e make it part of the verbatim section, enforce
                     # visual distance.
-                    
+
                     if {$empty_std} {lappend irep Q 0 {} {}; set empty_std 0}
                     lappend irep Q 0
                     if {$txt != {}} {rlinks $txt}
@@ -217,7 +217,7 @@ namespace eval Wikit::Format {
                     }
                 }
 				CODE -
-                FIXED {	
+                FIXED {
 					if {$tag eq "CODE"} {
 						set mode_code 1
 					}
@@ -232,7 +232,7 @@ namespace eval Wikit::Format {
 						}
 						set mode_fixed 0
 					} else {
-						if {$paragraph ne ""} { 
+						if {$paragraph ne ""} {
 							lappend irep T 0
 							render $paragraph
 						}
@@ -256,15 +256,15 @@ namespace eval Wikit::Format {
 						set optlen 0
 					} else {
 						# start new option list
-						if {$empty_std} { 
+						if {$empty_std} {
 							lappend irep C 0 {} {}
-							set empty_std 0 
+							set empty_std 0
 						}
 						if {$paragraph ne ""} {
 							lappend irep T 0
 							render $paragraph
 							set paragraph ""
-						}	                    
+						}
 						set mode_option 1
 						set optlen 0
 						lappend irep L [incr optnum]
@@ -299,13 +299,13 @@ namespace eval Wikit::Format {
 
 						# set auto_path in the interp to look for packages
 						# in common places
-							
+
 						# lib directory next to dir containing the wiki
 						set lib [file join [file dirname $wikidir] lib]
 						if {[file isdirectory $lib]} {
 							eval_interp eval [list lappend auto_path $lib]
 						}
-						
+
 						# starkit.vfs/lib
 						if {[info exists starkit::topdir]} {
 							set lib [file join $starkit::topdir lib]
@@ -352,9 +352,9 @@ namespace eval Wikit::Format {
                 }
             }
         }
-        
+
         # Render the last paragraph, if any.
-        
+
         if {$paragraph != {}} {
 			if {$mode_fixed} {
 				set paragraph [join $paragraph \n]
@@ -362,7 +362,7 @@ namespace eval Wikit::Format {
 					lappend irep {} $paragraph
 				} else {
 					render $paragraph
-				} 
+				}
 			} else {
 				lappend irep T 0
 				render $paragraph
@@ -370,15 +370,15 @@ namespace eval Wikit::Format {
         }
         return $irep
     }
-    
+
 	# returns the largest of two integers
 	proc max {a b} {expr {$a > $b ? $a : $b}}
-		
+
     proc linetype {line} {
         # Categorize a line of wiki text based on indentation and prefix
-        
+
         set line [string trimright $line]
-        
+
         ## Compat: retain tabs ...
         ## regsub -all "\t" $line "    " line
         #
@@ -386,21 +386,21 @@ namespace eval Wikit::Format {
         ## The list tags allow non-multiples of 3 if the prefix contains at
         ## least 3 spaces. The standard wiki accepts anything beyond 3 spaces.
         ## Keep the kiwi regexes around for future enhancements.
-        
+
         foreach {tag re} {
             UL	{^(   + {0,2})(\*) (\S.*)$}
             OL	{^(   + {0,2})(\d)\. (\S.*)$}
             DL	{^(   + {0,2})([^:]+):   (\S.*)$}
-            
+
             UL	{^(   +)(\*) (\S.*)$}
             OL	{^(   +)(\d)\. (\S.*)$}
             DL	{^(   +)([^:]+):   (\S.*)$}
-            
+
             FIXED  {^(===)$}
             CODE   {^(======)$}
 			OPTION {^(\+\+\+)$}
 			INDEX  {^(\+index)(\s?)(.+)$}
-			EVAL {^(\+eval)(\s?)(.+)$}	
+			EVAL {^(\+eval)(\s?)(.+)$}
         } {
             # Compat: Remove restriction to multiples of 3 spaces.
             if {[regexp $re $line - pfx aux txt]} {
@@ -408,11 +408,11 @@ namespace eval Wikit::Format {
                 return [list $tag [expr {[string length $pfx]/3}] $txt $aux]
             }
         }
-        
+
         # PO	{^\+-\S+([^\S]+)\S+(\S.*)$}
-        
+
         # Compat: Accept a leading TAB is marker for quoted text too.
-        
+
         if {([string index $line 0] == " ") || ([string index $line 0] == "\t")} {
             return [list PRE 1 $line]
         }
@@ -421,20 +421,20 @@ namespace eval Wikit::Format {
         }
         return [list STD 0 $line]
     }
-    
+
     proc rlinks {text} {
         # Convert everything which looks like a link into a link. This
         # command is called for quoted lines, and only quoted lines.
-        
+
         upvar irep irep
-        
+
 	# Compat: (Bugfix) Added " to the regexp as proper boundary of an url.
         set re {\m(https?|ftp|news|mailto|file):(\S+[^\]\)\s\.,!\?;:'>"])}
         set txt 0
         set end [string length $text]
-        
+
         ## Find the places where an url is inside of the quoted text.
-        
+
         foreach {match dummy dummy} [regexp -all -indices -inline $re $text] {
             # Skip the inner matches of the RE.
             foreach {a e} $match break
@@ -452,10 +452,10 @@ namespace eval Wikit::Format {
         }
         return
     }
-    
+
     proc render {text {mode ""}} {
         # Rendering of regular text: links, markup, brackets.
-        
+
         # The main idea/concept behind the code below is to find the
         # special features in the text and to isolate them from the normal
         # text through special markers (\0\1...\0). As none of the regular
@@ -465,23 +465,23 @@ namespace eval Wikit::Format {
         # the internal representation. This way of doing things keeps the
         # difficult stuff at the C-level and avoids to have to repeatedly
         # match and process parts of the string.
-        
+
         upvar irep irep
         variable codemap
-        
+
         ## puts stderr \]>>$irep<<\[
         ## puts stderr >>>$text<<<
-        
+
         # Detect page references, external links, bracketed external
         # links, brackets and markup (hilites).
-        
+
         # Complex RE's used to process the string
         set pre  {\[([^\]]*)]}  ; # page references ; # compat
 		set lre  {\m(https?|ftp|news|mailto|file):(\S+[^\]\)\s\.,!\?;:'>"])} ; # links
 		set blre "\\\[\0\1u\2(\[^\0\]*)\0\\\]"
 
         # " - correct emacs hilite
-        
+
         # Order of operation:
         # - Remap double brackets to avoid their interference.
         # - Detect embedded links to external locations.
@@ -500,68 +500,68 @@ namespace eval Wikit::Format {
         # disallowed colon in page titles. Which is in conflict with
         # existing wiki pages which already use that character in titles
         # (f.e. [COMPANY: Oracle].
-        
+
         # Make sure that double brackets do not interfere with the
         # detection of links.
         regsub -all {\[\[} $text {\&!} text
-        
+
         ## puts stderr A>>$text<<*
-        
+
         # Isolate external links.
         regsub -all $lre $text "\0\1u\2\\1:\\2\0" text
         ## puts stderr C>>$text<<*
-        
+
         # External links in brackets are simpler cause we know where the
         # links are already.
         regsub -all $blre $text "\0\1x\2\\1\0" text
         ## puts stderr D>>$text<<*
-        
+
         # Now handle wiki page references
         regsub -all $pre $text "\0\1g\2\\1\0" text
         ## puts stderr B>>$text<<*
-        
+
         # Hilites are transformed into on and off directives.
         # This is a bit more complicated ... Hilites can be written
         # together and possible nested once, so it has make sure that
         # it recognizes everything in the correct order!
-        
+
         # Examples ...
         # {''italic'''''bold'''}         {} {<i>italic</i><b>bold</b>}
         # {'''bold'''''italic''}         {} {<b>bold</b><i>italic</i>}
         # {'''''italic_bold'''''}        {} {<b><i>italic_bold</i></b>}
 		# {`fixed`}						 {} {... to be added ...}
-        
+
         # First get all un-nested hilites
         while {
             [regsub -all {'''([^']+?)'''} $text "\0\1b+\0\\1\0\1b-\0" text] ||
             [regsub -all {''([^']+?)''}   $text "\0\1i+\0\\1\0\1i-\0" text] ||
 			[regsub -all {`(.+?)`}   $text "\0\1f+\0\\1\0\1f-\0" text]
         } {}
-        
+
         # And then the remaining ones. This also captures the hilites
         # where the highlighted text contains single apostrophes.
-        
+
         regsub -all {'''(.+?)'''} $text "\0\1b+\0\\1\0\1b-\0" text
         regsub -all {''(.+?)''}   $text "\0\1i+\0\\1\0\1i-\0" text
-        
-        
+
+
         # Normalize brackets ...
         set text [string map {&! [ ]] ]} $text]
-        
+
         # Listify and generate the final representation of the paragraph.
-        
+
         ## puts stderr *>>$text<<*
-        
+
 		set len 0
         foreach item [split $text \0] {
             ## puts stderr ====>>$item<<<
-            
+
             set cmd {} ; set detail {}
             foreach {cmd detail} [split $item \2] break
             set cmd [string trimleft $cmd \1]
-            
+
             ## puts stderr ====>>$cmd|$detail<<<
-            
+
             switch -exact -- $cmd {
                 b+    {lappend irep b 1}
                 b-    {lappend irep b 0}
@@ -585,21 +585,21 @@ namespace eval Wikit::Format {
                     }
                 }
             }
-            
+
             ## puts stderr ======\]>>$irep<<\[
         }
         ## puts stderr ======\]>>$irep<<\[
         return $len
     }
-    
+
     # =========================================================================
     # =========================================================================
-    
+
     ### Backend renderer                                   :: Stream ==> Tk ###
-    
+
     # =========================================================================
     # =========================================================================
-    
+
     # Output specific conversion. Takes a token stream and converts this into
     # a three-element list. The first element is a list of text fragments and
     # tag-lists, as described at the beginning as the "Tk" format. The second
@@ -611,7 +611,7 @@ namespace eval Wikit::Format {
     # page-local numeric id of url (required for and used in tags) and
     # reference text, in this order.  The third list is a list of embedded
     # images (i.e. stored in "images" view), to be displayed in text widget.
-    
+
     # Note: The first incarnation of the rewrite to adapt to the new
     # "Stream" format had considerable complexity in the part
     # assembling the output. It kept knowledge about the last used
@@ -628,7 +628,7 @@ namespace eval Wikit::Format {
     # the gain through the simplification was much more than the drain
     # later. I gained 0.3 usecs in this stage and lost 0.13 in the
     # next (nearly double time), overall gain 0.17.
-    
+
     proc StreamToTk {s {ip ""}} {
         variable tagmap ; # pre-assembled information, tags and spacing
         variable vspace ; # ....
@@ -664,32 +664,32 @@ namespace eval Wikit::Format {
                     lappend urls g $n $text
                     set     tags [set base $tagmap($state$b$i)]
                     lappend tags url g$n
-                    
+
                     if {$ip == ""} {
                         lappend result $text $tags
                         continue
                     }
-                    
+
                     set info [lindex [eval $ip [list $text]] 2]
-                    
+
                     if {$info == "" || $info == 0} {
                         lappend result \[ $tags $text $base \] $tags
                         continue
                     }
-                    
+
                     lappend result $text $tags
                 }
                 u {
                     set n [incr count]
                     lappend urls u $n $text
-                    
+
                     set tags $tagmap($state$b$i)
                     if {[lindex $tags 0] == "fixed"} {
                         lappend tags urlq u$n
                     } else {
                         lappend tags url u$n
                     }
-                    
+
                     lappend result $text $tags
                 }
                 x {
@@ -713,7 +713,7 @@ namespace eval Wikit::Format {
                     } else {
                         set n [incr xcount]
                         lappend urls x $n $text
-                        
+
                         set     tags [set base $tagmap($state$b$i)]
                         lappend tags url x$n
                         lappend result \[ $base $n $tags \] $base
@@ -784,10 +784,10 @@ namespace eval Wikit::Format {
         }
         list [lappend result "" body] $urls $eims
     }
-    
+
     # Map from the tagcodes used in StreamToTk above to the taglist
     # used in the text widget the generated text will be inserted into.
-    
+
     variable  tagmap
     array set tagmap {
         T00 body     T01 {body i}    T10 {body b}    T11 {body bi}
@@ -804,10 +804,10 @@ namespace eval Wikit::Format {
         Hxx {hr thin}
 
     }
-    
+
     # Define amount of vertical space used between each logical section of text.
     #			| Current              (. <=> 1)
-    #  Last		| T  Q  U  O  I  D  H  C  X  Y 
+    #  Last		| T  Q  U  O  I  D  H  C  X  Y
     # ----------+-----------------------------
     #  Text   T | 2  2  2  2  2  1  2  1  0  0
     #  Quote  Q | 2  1  2  2  2  1  3  1  0  0
@@ -820,7 +820,7 @@ namespace eval Wikit::Format {
 	#  INCL   X | 0  0  0  0  0  0  2  0  0  0
 	#  fixed  Y | 0  0  0  0  0  0  2  0  0  0
     # ----------+-----------------------------
-    
+
     variable  vspace
     proc vs {last current dummy n} {
         variable vspace
@@ -835,12 +835,12 @@ namespace eval Wikit::Format {
     vs I T --- 2 ; vs I Q --- 2 ; vs I U --- 1 ; vs I O --- 1 ; vs I I --- 1
     vs D T --- 2 ; vs D Q --- 2 ; vs D U --- 1 ; vs D O --- 1 ; vs D I --- 1
     vs H T --- 1 ; vs H Q --- 1 ; vs H U --- 1 ; vs H O --- 1 ; vs H I --- 1
-  
-	vs T D --- 1 ; vs T H --- 2 	
+
+	vs T D --- 1 ; vs T H --- 2
 	vs Q D --- 1 ; vs Q H --- 3
 	vs U D --- 1 ; vs U H --- 2
-	vs O D --- 1 ; vs O H --- 2 
-	vs I D --- 1 ; vs I H --- 2 
+	vs O D --- 1 ; vs O H --- 2
+	vs I D --- 1 ; vs I H --- 2
 	vs D D --- 1 ; vs D H --- 2
 	vs H D --- 1 ; vs H H --- 2
 
@@ -854,45 +854,45 @@ namespace eval Wikit::Format {
 	# support for options
 	vs L F --- 0 ; vs F V -- 0 ; vs V T --- 1 ; vs T F --- 1 ; vs L T --- 1
 	vs F T --- 1
-	
+
 	# support for included files/evals
 	vs X T --- 0 ; vs X Q --- 0 ; vs X U --- 0 ; vs X O --- 0 ; vs X I --- 0
 	vs X D --- 0 ; vs X H --- 1 ; vs X C --- 0 ; vs X X --- 0 ; vs X Y --- 0
-	
+
 	# fixed font
 	vs Y T --- 0 ; vs Y Q --- 0 ; vs Y U --- 0 ; vs Y O --- 0 ; vs Y I --- 0
 	vs Y D --- 0 ; vs Y H --- 1 ; vs Y C --- 0 ; vs Y X --- 0 ; vs Y I --- 0
-	
+
   	rename vs {}
-    
+
     # =========================================================================
     # =========================================================================
-    
+
     ### Backend renderer                                 :: Stream ==> HTML ###
-    
+
     # =========================================================================
-    
+
     # expand a page string to HTML
     proc Expand_HTML {str {db wdb}} {
         StreamToHTML [TextToStream $str] $::env(SCRIPT_NAME) \
 					 [list ::Wikit::InfoProc $db]
     }
-    
+
     # =========================================================================
-    
+
     # Output specific conversion. Takes a token stream and converts this
     # into HTML. The result is a 2-element list. The first element is the
     # HTML to render. The second element is alist of triplets listing all
     # references found in the stream (each triplet consists reference
     # type, page-local numeric id and reference text).
-    
+
     proc StreamToHTML {s {cgi ""} {ip ""}} {
         set result ""
         set state H   ; # bogus hline as initial state.
         set vstate "" ; # Initial state of visual FSM
         set count 0
         variable html_frag
-        
+
         foreach {mode text} $s {
             switch -exact -- $mode {
                 {}    {append result [quote $text]}
@@ -909,16 +909,16 @@ namespace eval Wikit::Format {
                                 [quote $text] $html_frag(_a)
                         continue
                     }
-                    
+
                     set info [eval $ip [list $text]]
                     foreach {id name date} $info break
-                    
+
                     if {$id == ""} {
                         # not found, don't turn into an URL
                         append result "\[[quote $text]\]"
                         continue
                     }
-                    
+
                     regsub {^/} $id {} id
                     if {$date > 0} {
                         # exists, use ID
@@ -927,7 +927,7 @@ namespace eval Wikit::Format {
                                 [quote $text] $html_frag(_a)
                         continue
                     }
-                    
+
                     # missing, use ID -- editor link on the brackets.
                     append result \
                           $html_frag(a_) $id $html_frag(tc) \[ $html_frag(_a) \
@@ -960,7 +960,7 @@ namespace eval Wikit::Format {
         regsub -all "<pre>\n" $result "<pre>" result
         list $result {}
     }
-    
+
     proc quote {q} {
         regsub -all {&} $q {\&amp;}  q
         regsub -all {"} $q {\&quot;} q ; # "
@@ -969,8 +969,8 @@ namespace eval Wikit::Format {
         regsub -all {&amp;(#\d+;)} $q {\&\1}   q
         return $q
     }
-    
-    # Define inter-section tagging, logical vertical space used between each 
+
+    # Define inter-section tagging, logical vertical space used between each
 	# logical section of text.
     #		| Current              (. <=> 1)
     #  Last	| T  Q  U  O  I  D  H
@@ -983,14 +983,14 @@ namespace eval Wikit::Format {
     #  T/def  D |
     #  HRULE  H |
     # ----------+----------------------
-    
+
     variable  html_frag
     proc vs {last current text} {
         variable html_frag
         set      html_frag($last$current) $text
         return
     }
-    
+
     vs T T   </p><p> ;vs T Q  </p><pre> ;vs T U   </p><ul><li> ;vs T O   </p><ol><li>
     vs Q T </pre><p> ;vs Q Q \n         ;vs Q U </pre><ul><li> ;vs Q O </pre><ol><li>
     vs U T  </ul><p> ;vs U Q </ul><pre> ;vs U U         \n<li> ;vs U O  </ul><ol><li>
@@ -998,7 +998,7 @@ namespace eval Wikit::Format {
     vs I T  </dl><p> ;vs I Q </dl><pre> ;vs I U  </dl><ul><li> ;vs I O  </dl><ol><li>
     vs D T  </dl><p> ;vs D Q </dl><pre> ;vs D U  </dl><ul><li> ;vs D O  </dl><ol><li>
     vs H T       <p> ;vs H Q      <pre> ;vs H U       <ul><li> ;vs H O       <ol><li>
-    
+
     vs T I   </p><dl><dt> ;vs T D   </p><dl><dd>  ;vs T H   "</p><hr size=1>"  ;vs T _   </p>
     vs Q I </pre><dl><dt> ;vs Q D </pre><dl><dd>  ;vs Q H "</pre><hr size=1>"  ;vs Q _ </pre>
     vs U I  </ul><dl><dt> ;vs U D  </ul><dl><dd>  ;vs U H  "</ul><hr size=1>"  ;vs U _  </ul>
@@ -1007,45 +1007,45 @@ namespace eval Wikit::Format {
     vs D I           <dt> ;vs D D           <dd>  ;vs D H  "</dl><hr size=1>"  ;vs D _  </dl>
     vs H I       <dl><dt> ;vs H D       <dl><dd>  ;vs H H       "<hr size=1>"  ;vs H _     {}
     rename vs {}
-    
+
     array set html_frag {
 	a_ {<a href="}  b0 </b>
 	_a {</a>}       b1 <b>
         i_ {<img src="} i0 </i>
 	tc {">}         i1 <i>
     } ; # "
-    
+
     # =========================================================================
     # =========================================================================
-    
+
     ### Backend renderer                                 :: Stream ==> Refs ###
-    
+
     # =========================================================================
     # =========================================================================
-    
+
     # Output specific conversion. Extracts all wiki internal page references
     # from the token stream and returns them as a list of page id's.
-    
+
     proc StreamToRefs {s ip} {
         array set pages {}
-        
+
         foreach {mode text} $s {
             if {![string equal $mode g]} {continue}
-            
+
             set info [eval $ip [list $text]]
             foreach {id name date} $info break
             if {$id == ""} {continue}
-            
+
             regexp {[0-9]+} $id id
             set pages($id) ""
         }
-        
+
         array names pages
     }
-    
+
     # Output specific conversion. Extracts all external references
     # from the token stream and returns them as a list of urls.
-    
+
     proc StreamToUrls {s} {
         array set urls {}
         foreach {mode text} $s {
@@ -1054,7 +1054,7 @@ namespace eval Wikit::Format {
         }
         array get urls
     }
-    
+
 } ;# end of namespace
 
 ### Local Variables: ***

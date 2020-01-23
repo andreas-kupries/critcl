@@ -44,7 +44,7 @@ proc critcl::bitmap::def {name dict {exclusions {}}} {
 	incr i
     }
     set last $i
- 
+
     set hasexcl [llength $exclusions]
     set excl {}
     foreach e $exclusions {

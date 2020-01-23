@@ -5586,7 +5586,7 @@ proc ::critcl::Initialize {} {
 	    Tcl_UnregisterChannel(interp, @A);
 	}
     } Tcl_Channel Tcl_Channel
-    
+
     resulttype void {
 	return TCL_OK;
     }

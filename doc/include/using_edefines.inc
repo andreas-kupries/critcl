@@ -6,7 +6,7 @@ functions available as commands, often we also have to know all
 the various constants, flags, etc. these functions take.
 
 [para] Rather than writing such magic numbers directly we would
-greatly prefer to use symbolic names instead. 
+greatly prefer to use symbolic names instead.
 
 Instead of providing one or more commands to list and map the magic
 numbers to strings critcl [emph only] provides a single command which

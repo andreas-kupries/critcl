@@ -311,7 +311,7 @@ package can skip them.</p>
 <div id="section2" class="doctools_section"><h2><a name="section2">API</a></h2>
 <p>A short note ahead of the documentation: Instead of repeatedly talking
 about
-&quot;a Tcl script with embbedded C code&quot;, or 
+&quot;a Tcl script with embbedded C code&quot;, or
 &quot;a Tcl script containing Critcl commands&quot;,
 we call such a script a <i class="term">Critcl script</i>.  A file containing a
 <i class="term">Critcl script</i> usually has the extension <b class="const">.tcl</b> or
@@ -579,22 +579,22 @@ char*       | const char*    | Any       | <em>Read-only</em>, <em>string rep</e
 pstring     | critcl_pstring | Any       | <em>Read-only</em>
 bytes       | critcl_bytes   | ByteArray | <em>Read-only</em>
 ----------- | -------------- | --------- | ------------------------------
-int         | int            | Int       | 
-long        | long           | Long      | 
-wideint     | Tcl_WideInt    | WideInt   | 
-double      | double         | Double    | 
-float       | float          | Double    | 
+int         | int            | Int       |
+long        | long           | Long      |
+wideint     | Tcl_WideInt    | WideInt   |
+double      | double         | Double    |
+float       | float          | Double    |
 ----------- | -------------- | --------- | ------------------------------
 X &gt; 0       |                |           | For X in <b class="type">int</b> ... <b class="type">float</b> above.
 X &gt;= 0      |                |           | C types as per the base type X.
 X &lt; 0       |                |           | Allowed argument values are
 X &lt;= 0      |                |           | restricted as per the shown
 X &gt; 1       |                |           | relation
-X &gt;= 1      |                |           | 
+X &gt;= 1      |                |           |
 X &lt; 1       |                |           | This is not a general mechanism
 X &lt;= 1      |                |           | open to other values. Only 0/1.
 ----------- | -------------- | --------- | ------------------------------
-boolean     | int            | Boolean   | 
+boolean     | int            | Boolean   |
 bool        |                |           | Alias of <b class="type">boolean</b> above
 ----------- | -------------- | --------- | ------------------------------
 bytearray   |                |           | <em>DEPRECATED</em>
@@ -1001,7 +1001,7 @@ generated &quot;<b class="file">configure(.in)</b>&quot; so that a user may spec
 locations for the headers of any imported API.</p>
 </div>
 <div id="subsection3" class="doctools_subsection"><h3><a name="subsection3">Package Meta Data</a></h3>
-<p>Critcl versions 3 and later can create TEApot meta-data to be placed into 
+<p>Critcl versions 3 and later can create TEApot meta-data to be placed into
 &quot;<b class="file">teapot.txt</b>&quot; in a format suitable for use by the
 <a href="http://docs.activestate.com/activetcl/8.5/tpm/toc.html">TEApot tools</a>.</p>
 <p>In version 2, some meta data support was already present through
@@ -1239,7 +1239,7 @@ packages built on it print messages to <i class="term">stdout</i>.</p></dd>
 same thing as <b class="cmd">::puts</b>.  Tools directly using either the Critcl package or
 the Critcl application package may redefine this procedure to implement their
 own output functionality.</p>
-<p>For example, the newest revisions of  
+<p>For example, the newest revisions of
 <a href="https://chiselapp.com/user/andreas_kupries/repository/Kettle/index">Kettle</a>
 use this to highlight build warnings.</p></dd>
 <dt><a name="39"><b class="cmd">::critcl::compiled</b></a></dt>
@@ -1300,7 +1300,7 @@ Tcl 8.4 provided that it was compiled with the define
 code, either directly or indirectly through critcl, should
 also read section <span class="sectref"><a href="#subsection12">Advanced: Location management</a></span> to see how
 critcl helps them in generating their directives.
-Examples of such packages come with critcl itself. See 
+Examples of such packages come with critcl itself. See
 <b class="package"><a href="critcl_iassoc.html">critcl::iassoc</a></b> and <b class="package"><a href="critcl_class.html">critcl::class</a></b>.</p></dd>
 <dt><b class="option">trace</b> bool</dt>
 <dd><p>When <b class="const">false</b> (the default), no code tracing the entry and exit of
@@ -1777,7 +1777,7 @@ It returns a boolean value, <b class="const">true</b> if the type is known and
 <dt><a name="98"><b class="cmd">::critcl::argtype</b> <i class="arg">name</i> <i class="arg">body</i> <span class="opt">?<i class="arg">ctype</i>?</span> <span class="opt">?<i class="arg">ctypefun</i>?</span></a></dt>
 <dd><p>This command defines the argument type <i class="arg">name</i>, and associates it
 with the C code doing the conversion (<i class="arg">body</i>) from Tcl to C.
-<i class="arg">ctype</i> is the C type of the variable to hold the conversion result 
+<i class="arg">ctype</i> is the C type of the variable to hold the conversion result
 and <i class="arg">ctypefun</i> is the type of the function argument itself.
 Both types default to <i class="arg">name</i> if they are the empty string or are not
 provided.</p>
@@ -2143,7 +2143,7 @@ identifies the platform the setting is for. All settings with the same
 identification string form the <i class="term">configuration block</i> for this
 platform.</p></li>
 <li><p>A line of the special form
-&quot;<i class="arg">platform</i> <b class="const">when</b> <i class="arg">expression</i>&quot; 
+&quot;<i class="arg">platform</i> <b class="const">when</b> <i class="arg">expression</i>&quot;
 marks the <i class="arg">platform</i> and all the settings in its
 <i class="term">configuration block</i> as conditional on the <i class="arg">expression</i>.</p>
 <p>If the build platform is not a prefix of <i class="arg">platform</i>,
@@ -2161,7 +2161,7 @@ etc. I.e. it chooses whether the output is universal or not, and
 whether it is old-style (ix86 + ppc) versus new-style (ix86 32+64) of
 universality.</p></li>
 <li><p>A line of the special form
-&quot;<i class="arg">platform</i> <b class="const">copy</b> <i class="arg">sourceplatform</i>&quot; 
+&quot;<i class="arg">platform</i> <b class="const">copy</b> <i class="arg">sourceplatform</i>&quot;
 copies the configuration variables and values currently defined in the
 <i class="term">configuration block</i> for <i class="arg">sourceplatform</i> to that of
 <i class="arg">platform</i>, overwriting existing values, and creating missing
@@ -2319,7 +2319,7 @@ extern const RngStubs *rngStubsPtr;
 <dt>&quot;<b class="file">rngStubLib.h</b>&quot;:</dt>
 <dd>
 <pre class="doctools_example">
-/* 
+/*
  * rngStubLib.c --
  *
  * Stub object that will be statically linked into extensions that wish
@@ -2629,7 +2629,6 @@ Rng_InitStubs(Tcl_Interp *interp, CONST char *version, int exact)
     	about knowing if the argument is default or not is now able to
     	check that quickly, without having to code the default value
     	inside.
-    
 	NOTE: This change is visible in the output of the advanced
     	      commands &quot;argcnames&quot;, &quot;argcsignature&quot;, &quot;argvardecls&quot;,
     	      and &quot;argconversion&quot;.</p></li>

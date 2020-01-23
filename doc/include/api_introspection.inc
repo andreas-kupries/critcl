@@ -39,7 +39,7 @@ same thing as [cmd ::puts].  Tools directly using either the Critcl package or
 the Critcl application package may redefine this procedure to implement their
 own output functionality.
 
-[para] For example, the newest revisions of  
+[para] For example, the newest revisions of
 [uri https://chiselapp.com/user/andreas_kupries/repository/Kettle/index Kettle]
 use this to highlight build warnings.
 

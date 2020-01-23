@@ -88,7 +88,7 @@ sourced.
 [comment ---------------------------------------------------------------------]
 [call [cmd ::critcl::cflags] [opt [arg arg]...]]
 
-[para] Each [arg arg] is an argument to the compiler. 
+[para] Each [arg arg] is an argument to the compiler.
 
 [para] [vset cumulative]
 
@@ -112,7 +112,7 @@ unconditionally.
 [call [cmd ::critcl::tcl] [arg version]]
 
 Specifies the minimum version of the Tcl runtime
-to compile and link the package for.  The default is [const 8.4]. 
+to compile and link the package for.  The default is [const 8.4].
 
 [comment ---------------------------------------------------------------------]
 [call [cmd ::critcl::tk]]

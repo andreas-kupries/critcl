@@ -22,9 +22,9 @@ if {[catch {package require gbutton}]} {
 } else {
     package provide Wikit::Gui 1.1
     package require autoscroll
-    
+
     namespace eval Wikit {
-        
+
         namespace eval Color {
             variable wikiFg     "#000000"    # black
             variable wikiBg     "#ffffff"    # white
@@ -38,17 +38,17 @@ if {[catch {package require gbutton}]} {
             variable copyBg     "#fafad2"    # Lightgoldenrodyellow
             variable bnormal    black        # normal button text
             variable bdisabled  darkgrey     # disabled button text
-            
+
         }
-        
+
         variable searchPage "" ;# avoid error when viewing before searching
         variable refPage 0     ;# boolean that indicates a reference page is currently displayed
         variable isLink 0      ;# boolean that indicates a link is being processed
         variable geomID	""	   ;# after ID for tracking geometry changes
 		variable geomLast ""   ;# last saved geometry
-	
+
 		variable bindkey	   ;# keyboard bindings
-		
+
 		switch [tk windowingsystem] {
 			aqua {
 				set bindkey(Back)    {Command-[}
@@ -73,21 +73,21 @@ if {[catch {package require gbutton}]} {
 				set bindkey(Home) ""
 			}
 		}
-		
+
         proc Expand_Tk {str} {
             global tcl_platform
             variable D
-            
+
             set result [StreamToTk [TextToStream $str] [list ::Wikit::InfoProc wdb]]
-            
+
             foreach {a b c} [lindex $result 1] {
                 set tag $a$b
-                
+
                 $D tag bind $tag <Any-Enter> \
                         [namespace code [list linkActive $D $tag $Color::linkActive $c]]
                 $D tag bind $tag <Any-Leave> \
                         [namespace code [list linkInactive $D $tag $Color::linkFg]]
-                
+
                 if {$a == "u" || $a == "x"} {
                     # Browsing in local mode is consistent for Windows,
                     # so render an underline and add a binding.
@@ -97,16 +97,16 @@ if {[catch {package require gbutton}]} {
                                 "eval exec [auto_execok start] $c &"
                     }
                 }
-                
+
                 if {$a == "g"} {
                     set id [LookupPage $c]
                     $D tag bind $tag <ButtonPress-1> "Wikit::showLinkedPage $id"
                 }
             }
-            
+
             return [lreplace $result 1 1]
         }
-        
+
         # highlight the link under the pointer
         proc linkActive { w tag color text } {
             variable linkText
@@ -119,14 +119,14 @@ if {[catch {package require gbutton}]} {
             $w tag configure $tag -foreground $color
             set linkText ""
         }
-        
+
         # Set the isLink value when following a link
         proc showLinkedPage { id } {
             variable isLink
             set isLink 1
             Wikit::ShowPage $id
         }
-        
+
         # Show a page containing a list of links to all pages
         # referring to the page with the given id.
         proc ShowRefsPage {id} {
@@ -135,21 +135,21 @@ if {[catch {package require gbutton}]} {
             variable top
             variable topwin
             variable refPage
-            
+
             # set the refPage value when a reference page is displayed
             set refPage 1
-            
+
             $D configure -cursor watch
             # Retrieve the title and list of references for the page with this id
             pagevars $id name
-            
+
             # wm title $topwin "References to $name - WiKit"
-            
+
             buttonState Edit disabled
             $D configure -state normal -font wiki_default
             $D delete 1.0 end
             $D insert end "References to $name" title
-            
+
             # Generate a wiki formatted list of links.  One link for each reference
             set contents "\n"
             foreach r [mk::select wdb.refs to $id] {
@@ -172,7 +172,7 @@ if {[catch {package require gbutton}]} {
         # Argument is the numerical id of the page as stored in the underlying
         # database. If no argument is given the history is used to step back
         # to the last page visited by the user.
-        
+
         proc ShowPage {{id ""}} {
             variable D
             variable urlSeq
@@ -181,10 +181,10 @@ if {[catch {package require gbutton}]} {
             variable readonly
             variable top
             variable toppage
-			variable HelpButton 
-			
+			variable HelpButton
+
             set urlSeq 0
-            
+
             $D configure -cursor watch
             if {!$readonly} {
 				if {[getButton one] ne "Back"} {
@@ -197,7 +197,7 @@ if {[catch {package require gbutton}]} {
                 }
                 buttonState Edit normal
             }
-            
+
             # Record new page in transient viewing history (or retrieve it
             # from the history) and also import the relevant information from
             # the database into this context (the title of the page, its
@@ -205,24 +205,24 @@ if {[catch {package require gbutton}]} {
             # page is displayed we reset the entry to prevent further
             # incremental searching from interfering with the display, until
             # the user starts typing again.
-            
+
             set id [History $id]
             pagevars $id name
-            
+
             if {$id == 2} {
                 set page $searchPage
             } else {
                 set page [GetPage $id]
             }
-            
+
             $top.n.mode configure -text Search:
             if {$id != 2} {
                 set currMode ""
             }
-            
+
             $D configure -state normal -font wikit_default
             $D delete 1.0 end
-            
+
             # Setup for title backlinks
             if {[llength [mk::select wdb.refs to $id]] == 0} {
                 set titleTags title
@@ -230,23 +230,23 @@ if {[catch {package require gbutton}]} {
                 set titleTags [list title backlink]
                 $D tag bind backlink <ButtonPress> "Wikit::ShowRefsPage $id"
             }
-            
+
             # First we dynamically generate a script containing commands to
             # update the page window, then we execute the script, thus
             # rendering the page.
-            
+
             set cmd "$D insert end {$name} {$titleTags} "
-            
+
             set etk [Expand_Tk $page]
             append cmd [lindex $etk 0]
-            
+
             eval $cmd
             foreach x [lindex $etk 1] {
                 $D image create $x.first -image $x
             }
-            
+
             $D configure -state disabled
-            
+
             focus $top.n.enter
             if {$id == $toppage} {
                 buttonState Home disabled
@@ -265,21 +265,21 @@ if {[catch {package require gbutton}]} {
 			}
             $D configure -cursor ""
         }
-        
+
         proc EditPage {} {
             variable D
             variable currMode
             variable pageStack
             variable top
 			variable HelpButton
-			
+
             set id [lindex $pageStack end]
-            
+
             pagevars $id name page
-            
+
             $D tag configure fixed -foreground {} -background {} \
 					-font wikit_edit -wrap word
-					
+
 			setButton one Cancel "Wikit::EditCancel $id"
 	      	setButton two Save "Wikit::EditSave $id"
 			setButton three Copy Wikit::Copy disabled
@@ -293,9 +293,9 @@ if {[catch {package require gbutton}]} {
             $D configure -state normal -font wikit_edit
             $D delete 1.0 end
             $D insert end $page wikit_edit \n wikit_edit
-            
+
             $D mark set insert 1.0
-            
+
             focus $D
         }
 
@@ -305,7 +305,7 @@ if {[catch {package require gbutton}]} {
  				-background $Color::fixedBg -font wikit_fixed -wrap none
 			Wikit::ShowPage $id
 		}
-        
+
 		proc EditSave {id} {
 			variable D
 			variable top
@@ -313,8 +313,8 @@ if {[catch {package require gbutton}]} {
 	 				-background $Color::fixedBg -font wikit_fixed -wrap none
 	        Wikit::SavePage $id [$D get 1.0 end] local [$top.n.enter get]
 	        Wikit::ShowPage $id
-		} 
-		
+		}
+
         proc History {page} {
             variable pageStack
             variable forwStack
@@ -351,7 +351,7 @@ if {[catch {package require gbutton}]} {
             # Back button may have been modified by ref page call so
             # restore Back button behavior
 			setButton one Back Wikit::ShowPage
-            
+
             if {[llength $forwStack] == 0} {
                 buttonState Forward disabled
             }
@@ -359,14 +359,14 @@ if {[catch {package require gbutton}]} {
             if {[llength $pageStack] <= 1} {
 				buttonState Back disabled
 			}
-            
+
             # puts "history $page: $pageStack : $forwStack"
             # reset reference page flags
             set refPage 0
             set isLink 0
             return $page
         }
-        
+
         proc LocalInterface {{win ""} {page 0}}  {
             global tcl_platform
             variable D
@@ -383,13 +383,13 @@ if {[catch {package require gbutton}]} {
 			variable fixedwid
 			variable entry
 			variable HelpButton
-			
+
             set pageStack ""
             set forwStack ""
-            
+
             set toppage $page
             set top $win
-            
+
             set family arial
             set title 16
             set thin 4
@@ -400,7 +400,7 @@ if {[catch {package require gbutton}]} {
                 set default 12
                 set buttonsize 11
             }
-            
+
             catch {
                 font create wikit_default -family $family -size $default
                 font create wikit_underline -family $family -size $default \
@@ -419,14 +419,14 @@ if {[catch {package require gbutton}]} {
 				font create wikit_fixeditalic -family courier -size $default \
 											-weight normal -slant italic
 				font create wikit_fixedbolditalic -family courier
-			 						-size $default -weight bold -slant italic	        
-		
-                
+			 						-size $default -weight bold -slant italic
+
+
                 gButton::init -bg $Color::wikiBg -font wikit_button -disabledfill $Color::btnDisable
             }
-            
+
 			set fixedwid [font measure wikit_fixed " "]
-			
+
             if {$top == ""} {
                 set topwin "."
             } else {
@@ -458,7 +458,7 @@ if {[catch {package require gbutton}]} {
                 set b1 [gButton #auto $top.n.f1]
                 $b1 new five
                 $b1 size
-                
+
                 pack $top.n.f1 -side left -padx 0 -pady 0
                 scrollbar $top.scroll -orient vertical -command [list $top.details yview]
                 scrollbar $top.hbar -orient horizontal -command [list $top.details xview]
@@ -473,7 +473,7 @@ if {[catch {package require gbutton}]} {
                         -bg $Color::wikiBg -fg $Color::wikiFg -relief flat \
                         -exportselection 1 -selectbackground $Color::copyBg \
                         -selectforeground $Color::wikiFg
-                
+
                 grid $top.n -row 0 -column 0 -columnspan 2 -sticky new
                 grid $top.details -row 1 -column 0 -sticky news
                 grid $top.scroll -row 1 -column 1 -sticky ns
@@ -511,7 +511,7 @@ if {[catch {package require gbutton}]} {
 				$D tag configure optfix -font wikit_fixed \
 								-foreground $Color::codeFg \
 								-background $Color::codeBg
-				
+
 				$D tag configure optvar -font wikit_default -wrap word \
  								-lmargin1 3 -lmargin2 3
 
@@ -519,7 +519,7 @@ if {[catch {package require gbutton}]} {
                 $D tag configure urlq -font wikit_fixed -foreground $Color::linkFg
 
 				# calculate the indent based on 3 spaces, a bullet and 2 spaces
-				set in [expr {[font measure wikit_default "   \u2022  "] + 3}]			
+				set in [expr {[font measure wikit_default "   \u2022  "] + 3}]
                 $D tag configure ul -font wikit_default -tabs 30 -lmargin1 3 \
 														-lmargin2 $in
 
@@ -529,7 +529,7 @@ if {[catch {package require gbutton}]} {
                 $D tag configure i -font wikit_italic
                 $D tag configure b -font wikit_bold
                 $D tag configure bi -font wikit_bolditalic
-				$D tag configure fb -font wikit_fixedbold 
+				$D tag configure fb -font wikit_fixedbold
 				$D tag configure fi -font wikit_fixeditalic
 				$D tag configure fbi -font wikit_fixedbolditalic
 
@@ -537,7 +537,7 @@ if {[catch {package require gbutton}]} {
                 $D tag configure thin -font wikit_thin
                 $D tag configure hr -relief sunken -borderwidth 1 -wrap none
                 bind $D <Configure> {%W tag configure hr -tabs [expr {%w-10}]}
-				
+
 				setButton one Back Wikit::ShowPage
                 setButton two Forward "Wikit::ShowPage -1"
 				set HelpButton [lindex [GetTitle 3] 0]
@@ -546,7 +546,7 @@ if {[catch {package require gbutton}]} {
 
             setButton three Home "Wikit::ShowPage $toppage"
             Wikit::ShowPage $page
-            
+
             trace variable currMode w { after cancel Wikit::KeyTracker; after 500 Wikit::KeyTracker }
             wm title $topwin [GetTitle $page]
             wm protocol $topwin WM_DELETE_WINDOW [list destroy $topwin]
@@ -568,13 +568,13 @@ if {[catch {package require gbutton}]} {
 			variable geomLast
 			if {$geomID ne ""} {
 				after cancel $geomID
-			} 	
-			set geom [winfo geom $win]	
+			}
+			set geom [winfo geom $win]
 			if {$geom ne $geomLast} {
 				set geomID [after 1000 [namespace code [list save_geom $geom]]]
 			}
 		}
-		
+
 		proc save_geom {geom} {
 			variable geomLast
 			set name [file tail $Wikit::wikifile]
@@ -602,7 +602,7 @@ if {[catch {package require gbutton}]} {
 			}
 			set geomLast $geom
 		}
-		
+
 		proc load_geom {win} {
 			variable geomLast
 			set name [file tail $Wikit::wikifile]
@@ -636,7 +636,7 @@ if {[catch {package require gbutton}]} {
 				set geomLast $geom
 			}
 		}
-		
+
 		proc check_geom {win geom {yoffset 0}} {
 			# yoffset can be used to allow for a menubar (as in MacOS X Aqua)
 			# or space at the bottom for window manager controls
@@ -650,7 +650,7 @@ if {[catch {package require gbutton}]} {
 			if {$h + $y > $sh} {
 				set y [expr {($sh - $y)/2}]
 				set geom ""
-			}	
+			}
 			if {$y < $yoffset} {
 				set y $yoffset
 				set geom ""
@@ -664,7 +664,7 @@ if {[catch {package require gbutton}]} {
 			}
 			return $geom
 		}
-		
+
 		proc check_geom_aqua {win geom} {
 			scan $geom "%ix%i+%i+%i" w h x y
 			set cmd /usr/sbin/system_profiler
@@ -677,8 +677,8 @@ if {[catch {package require gbutton}]} {
 		            switch -- [lindex $fields 0] {
 		                Resolution { incr displaynum }
 		                Mirror     { set mirror [expr {$arg ne "Off"}] }
-		            }   
-		        }   
+		            }
+		        }
 		        close $fd
 		        if {$displaynum == 1 || $mirror} {
 					# if a single display or mirrored we can trust Tk to
@@ -745,10 +745,10 @@ if {[catch {package require gbutton}]} {
 
 					}
 		        }
-		    } 
+		    }
 			return $geom
 		}
-		
+
 
 		# creates a tag to set the fixed width part of an option block
 		# 	- converts from length to pixels using width of space char in the
@@ -766,18 +766,18 @@ if {[catch {package require gbutton}]} {
 									-background $Color::codeBg
 			$D tag configure optvar$n -font wikit_default -wrap word \
 					 			  	  -lmargin1 3 -lmargin2 $margin2
-			$D tag configure vb -font wikit_bold 
+			$D tag configure vb -font wikit_bold
 			$D tag configure vi -font wikit_italic
-			$D tag configure vbi -font wikit_bolditalic			                
+			$D tag configure vbi -font wikit_bolditalic
 		}
-        
+
         proc KeyTracker {v op} {
             variable currMode
             variable searchKey
             variable searchLong
             variable searchPage
             variable pageStack
-            
+
             # don't perform a search if:
             # we're not in browse mode
             #   (in edit mode, the entry field is used for the page title)
@@ -788,43 +788,43 @@ if {[catch {package require gbutton}]} {
             # or
             # we're on page 2 and the search box is empty
             #   (return to previous page)
-            
+
             #puts "KeyTracker [getButton four] [lindex $pageStack end] $currMode"
-            
+
 			set txt [getButton four]
             if {$txt != "" && $txt != "Edit"} return
-            
+
             if {$currMode == ""} {
                 if {[lindex $pageStack end] == 2} Wikit::ShowPage ;# pop last
                 return
             }
-            
+
             # keep iterating while the "currMode" search request changes
             while {1} {
                 set cMode $currMode
                 set sKey $currMode
                 set sLong [regexp {^(.*)\*$} $sKey x sKey]
-                
+
                 if {$searchKey == $sKey && $searchLong == $sLong} break
-                
+
                 set searchKey $sKey
                 set searchLong $sLong
                 set rows [SearchList] ;# this takes time
-                
+
                 after cancel Wikit::KeyTracker
                 update
                 if {$currMode != $cMode} continue
-                
+
                 set searchPage [SearchResults $rows]
-                
+
                 after cancel Wikit::KeyTracker
                 update
                 if {$currMode == $cMode} break
             }
-            
+
             Wikit::ShowPage 2
         }
-        
+
         proc Copy {} {
 	puts "Copy"
             clipboard clear
@@ -833,14 +833,14 @@ if {[catch {package require gbutton}]} {
             }
 puts $txt
         }
-        
+
         proc Paste {} {
             variable D
             if {![catch {set txt [clipboard get]}] && $txt != ""} {
                 $D insert insert [clipboard get] wikit_edit
             }
         }
-        
+
         proc CopyCheck {} {
             if {[catch {set txt [selection get]}] || $txt == ""} {
                 set state disabled
@@ -893,11 +893,11 @@ puts $txt
 			set button($name) $num
 			buttonState $name $state
 		}
-		
+
 		proc getButton {num} {
 			return [gButton::cget $num -text]
 		}
-        
+
     }
 }
 

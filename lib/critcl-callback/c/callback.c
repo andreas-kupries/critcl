@@ -37,7 +37,7 @@ critcl_callback_new (Tcl_Interp* interp, int objc, Tcl_Obj** objv, int nargs)
 	TRACE ("D [%3d] = n/a", i);
 	c->command [i] = 0;
     }
-  
+
     TRACE_RETURN ("(critcl_callback_p) %p", c);
 }
 
@@ -54,7 +54,7 @@ critcl_callback_extend (critcl_callback_p callback, Tcl_Obj* argument)
 
     callback->nargs  --;
     callback->nfixed ++;
-    
+
     TRACE_RETURN_VOID;
 }
 
@@ -69,7 +69,7 @@ critcl_callback_destroy (critcl_callback_p callback)
     }
     FREE (callback->command);
     FREE (callback);
-    
+
     TRACE_RETURN_VOID;
 }
 
@@ -78,7 +78,7 @@ critcl_callback_invoke (critcl_callback_p callback, int objc, Tcl_Obj** objv)
 {
     TRACE_FUNC ("((critcl_callback_p) %p, objc %d, (Tcl_Obj**) %p)", callback, objc, objv);
     ASSERT (objc <= callback->nargs, "Too many arguments");
-    
+
     int i, j;
 
     for (i = 0; i < callback->nfixed; i++) {
@@ -92,14 +92,14 @@ critcl_callback_invoke (critcl_callback_p callback, int objc, Tcl_Obj** objv)
     }
 
     int res = Tcl_EvalObjv (callback->interp, i, callback->command, TCL_EVAL_GLOBAL);
-    
+
     for (i = 0; i < callback->nfixed; i++) {
 	Tcl_DecrRefCount (callback->command [i]);
     }
     for (j = 0 ; j < objc; j++) {
 	Tcl_DecrRefCount (objv [j]);
     }
-    
+
     TRACE ("R (Tcl_Obj*) %p = '%s'", Tcl_GetObjResult (callback->interp),
 	   Tcl_GetString (Tcl_GetObjResult (callback->interp)));
     TRACE_RETURN ("(int) %d", res);

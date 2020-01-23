@@ -2,7 +2,7 @@
 The following commands manage the build configuration, i.e. the per-platform
 information about compilers, linkers, and their commandline options.
 
-[vset not_needed_for_critcl_script] 
+[vset not_needed_for_critcl_script]
 
 [list_begin definitions]
 

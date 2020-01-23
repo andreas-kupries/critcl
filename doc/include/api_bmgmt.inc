@@ -30,7 +30,7 @@ code, either directly or indirectly through critcl, should
 also read section [sectref {Advanced: Location management}] to see how
 critcl helps them in generating their directives.
 
-Examples of such packages come with critcl itself. See 
+Examples of such packages come with critcl itself. See
 [package critcl::iassoc] and [package critcl::class].
 
 [opt_def trace bool]

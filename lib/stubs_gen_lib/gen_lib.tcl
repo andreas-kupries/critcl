@@ -93,7 +93,7 @@ proc ::stubs::gen::lib::Block {list} {
 }
 
 proc ::stubs::gen::lib::make@ {basedir table} {
-    make [path $basedir [c::library? $table]] $table    
+    make [path $basedir [c::library? $table]] $table
 }
 
 proc ::stubs::gen::lib::make {path table} {
@@ -128,7 +128,7 @@ namespace eval ::stubs::gen::lib {
     variable template [string map {{
 	} {
 }} {
-	/* 
+	/*
 	 * @@StubLib.c --
 	 *
 	 * Stub object that will be statically linked into extensions that wish

@@ -23,7 +23,7 @@ critcl::class::define ::queuec {
 	List object unget elements
     } {
 	instance->unget = Tcl_NewListObj (0,NULL);
-	Tcl_IncrRefCount (instance->unget); 
+	Tcl_IncrRefCount (instance->unget);
     } {
 	Tcl_DecrRefCount (instance->unget);
     }
@@ -32,7 +32,7 @@ critcl::class::define ::queuec {
 	List object holding the main queue
     } {
 	instance->queue = Tcl_NewListObj (0,NULL);
-	Tcl_IncrRefCount (instance->queue); 
+	Tcl_IncrRefCount (instance->queue);
     } {
 	Tcl_DecrRefCount (instance->queue);
     }

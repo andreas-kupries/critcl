@@ -33,7 +33,7 @@ specific revision, the easiest way of retrieving it is to:
 [list_begin enum]
 [enum] Go to this site.
 [enum] Follow the 'Fork me on Github' link (top-right corner) to the project sources.
-[enum] Choose the revision under the Commits panel you wish to have and 
+[enum] Choose the revision under the Commits panel you wish to have and
 [enum] follow its 'Browse code' link to its detailed information page.
 [enum] On that page, choose either the "ZIP" link to get a copy of this revision as a Zip archive.
 [list_end]
