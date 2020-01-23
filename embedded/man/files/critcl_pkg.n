@@ -1733,12 +1733,6 @@ cached shared library\&.
 \fBlines\fR bool
 When \fBtrue\fR (the default), #line directives are embedded into the
 generated C code\&.
-.TP
-\fBtrace\fR bool
-When \fBfalse\fR (the default), no code tracing the entry and exit of
-Critcl-backed commands in the \fICritcl script\fR is inserted\&.  Insertion of
-such code implicitly activates the tracing facility in general\&.  See
-\fBcritcl::cutil\fR\&.
 .sp
 This facility requires the use of a tclsh that provides
 \fBinfo frame\fR\&.  Otherwise, no \fI#line\fR directives are emitted\&. The
@@ -1752,6 +1746,12 @@ also read section \fBAdvanced: Location management\fR to see how
 critcl helps them in generating their directives\&.
 Examples of such packages come with critcl itself\&. See
 \fBcritcl::iassoc\fR and \fBcritcl::class\fR\&.
+.TP
+\fBtrace\fR bool
+When \fBfalse\fR (the default), no code tracing the entry and exit of
+Critcl-backed commands in the \fICritcl script\fR is inserted\&.  Insertion of
+such code implicitly activates the tracing facility in general\&.  See
+\fBcritcl::cutil\fR\&.
 .TP
 \fBI\fR path
 A single global include path to use for all files\&. Not set by default\&.

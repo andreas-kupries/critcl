@@ -23,13 +23,6 @@ cached shared library.
 When [const true] (the default), #line directives are embedded into the
 generated C code.
 
-[opt_def trace bool]
-
-When [const false] (the default), no code tracing the entry and exit of
-Critcl-backed commands in the [vset critcl_script] is inserted.  Insertion of
-such code implicitly activates the tracing facility in general.  See
-[package critcl::cutil].
-
 [include rq_cline.inc]
 
 [para] Developers of higher-level packages generating their own C
@@ -39,6 +32,13 @@ critcl helps them in generating their directives.
 
 Examples of such packages come with critcl itself. See 
 [package critcl::iassoc] and [package critcl::class].
+
+[opt_def trace bool]
+
+When [const false] (the default), no code tracing the entry and exit of
+Critcl-backed commands in the [vset critcl_script] is inserted.  Insertion of
+such code implicitly activates the tracing facility in general.  See
+[package critcl::cutil].
 
 [opt_def I path]
 

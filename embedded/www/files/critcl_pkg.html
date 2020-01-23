@@ -1290,12 +1290,7 @@ or similar tools.</p>
 cached shared library.</p></dd>
 <dt><b class="option">lines</b> bool</dt>
 <dd><p>When <b class="const">true</b> (the default), #line directives are embedded into the
-generated C code.</p></dd>
-<dt><b class="option">trace</b> bool</dt>
-<dd><p>When <b class="const">false</b> (the default), no code tracing the entry and exit of
-Critcl-backed commands in the <i class="term">Critcl script</i> is inserted.  Insertion of
-such code implicitly activates the tracing facility in general.  See
-<b class="package"><a href="critcl_cutil.html">critcl::cutil</a></b>.</p>
+generated C code.</p>
 <p>This facility requires the use of a tclsh that provides
 <b class="cmd">info frame</b>.  Otherwise, no <i class="term">#line</i> directives are emitted. The
 command is supported by Tcl 8.5 and higher. It is also supported by
@@ -1307,6 +1302,11 @@ also read section <span class="sectref"><a href="#subsection12">Advanced: Locati
 critcl helps them in generating their directives.
 Examples of such packages come with critcl itself. See 
 <b class="package"><a href="critcl_iassoc.html">critcl::iassoc</a></b> and <b class="package"><a href="critcl_class.html">critcl::class</a></b>.</p></dd>
+<dt><b class="option">trace</b> bool</dt>
+<dd><p>When <b class="const">false</b> (the default), no code tracing the entry and exit of
+Critcl-backed commands in the <i class="term">Critcl script</i> is inserted.  Insertion of
+such code implicitly activates the tracing facility in general.  See
+<b class="package"><a href="critcl_cutil.html">critcl::cutil</a></b>.</p></dd>
 <dt><b class="option">I</b> path</dt>
 <dd><p>A single global include path to use for all files. Not set by default.</p></dd>
 <dt><b class="option">combine</b> enum</dt>
