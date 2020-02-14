@@ -4,7 +4,7 @@
 '\" Copyright (c) Steve Landers
 '\" Copyright (c) 2011-2018 Andreas Kupries
 '\"
-.TH "critcl-cproc-types" n 3\&.1\&.17 doc "C Runtime In Tcl (CriTcl)"
+.TH "critcl-cproc-types" n 3\&.1\&.18 doc "C Runtime In Tcl (CriTcl)"
 .\" The -*- nroff -*- definitions below are for supplemental macros used
 .\" in Tcl/Tk manual entries.
 .\"
@@ -278,7 +278,7 @@ critcl-cproc-types \- Critcl - cproc Type Reference
 .SH SYNOPSIS
 package require \fBTcl  8\&.4\fR
 .sp
-package require \fBcritcl  ?3\&.1\&.17?\fR
+package require \fBcritcl  ?3\&.1\&.18?\fR
 .sp
 \fB::critcl::has-resulttype\fR \fIname\fR
 .sp
