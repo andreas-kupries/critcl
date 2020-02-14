@@ -1,5 +1,4 @@
-
-<html><head>
+<!DOCTYPE html><html><head>
 <title>critcl_install_guide - C Runtime In Tcl (CriTcl)</title>
 <style type="text/css"><!--
     HTML {
@@ -25,7 +24,7 @@
 	background: 	transparent;
 	text-align:		left;
     }
-    H1.title {
+    H1.doctools_title {
 	text-align: center;
     }
     UL,OL {
@@ -42,11 +41,11 @@
     DT {
 	padding-top: 	1ex;
     }
-    UL.toc,UL.toc UL, UL.toc UL UL {
+    UL.doctools_toc,UL.doctools_toc UL, UL.doctools_toc UL UL {
 	font:		normal 12pt/14pt sans-serif;
 	list-style:	none;
     }
-    LI.section, LI.subsection {
+    LI.doctools_section, LI.doctools_subsection {
 	list-style: 	none;
 	margin-left: 	0em;
 	text-indent:	0em;
@@ -63,18 +62,18 @@
 	padding-right:	1ex;
 	width:		100%;
     }
-    PRE.example {
+    PRE.doctools_example {
 	color: 		black;
 	background: 	#f5dcb3;
 	border:		1px solid black;
     }
-    UL.requirements LI, UL.syntax LI {
+    UL.doctools_requirements LI, UL.doctools_syntax LI {
 	list-style: 	none;
 	margin-left: 	0em;
 	text-indent:	0em;
 	padding:	0em;
     }
-    DIV.synopsis {
+    DIV.doctools_synopsis {
 	color: 		black;
 	background: 	#80ffff;
 	border:		1px solid black;
@@ -82,66 +81,66 @@
 	margin-top: 	1em;
 	margin-bottom: 	1em;
     }
-    UL.syntax {
+    UL.doctools_syntax {
 	margin-top: 	1em;
 	border-top:	1px solid black;
     }
-    UL.requirements {
+    UL.doctools_requirements {
 	margin-bottom: 	1em;
 	border-bottom:	1px solid black;
     }
 --></style>
 </head>
-<! -- Generated from file 'critcl_installer.man' by tcllib/doctools with format 'html'
+<!-- Generated from file 'critcl_installer.man' by tcllib/doctools with format 'html'
    -->
-<! -- Copyright &copy; Jean-Claude Wippler   -- Copyright &copy; Steve Landers   -- Copyright &copy; 2011-2015 Andreas Kupries
+<!-- Copyright &amp;copy; Jean-Claude Wippler   -- Copyright &amp;copy; Steve Landers   -- Copyright &amp;copy; 2011-2018 Andreas Kupries
    -->
-<! -- CVS: $Id$ critcl_install_guide.n
+<!-- critcl_install_guide.n
    -->
-<body><div class="doctools">
-<hr> [
+<body><hr> [
    <a href="../toc.html">Table Of Contents</a>
 | <a href="../index.html">Keyword Index</a>
  ] <hr>
-<h1 class="title">critcl_install_guide(n) 3.1.17 doc &quot;C Runtime In Tcl (CriTcl)&quot;</h1>
-<div id="name" class="section"><h2><a name="name">Name</a></h2>
+<div class="doctools">
+<h1 class="doctools_title">critcl_install_guide(n) 3.1.18 doc &quot;C Runtime In Tcl (CriTcl)&quot;</h1>
+<div id="name" class="doctools_section"><h2><a name="name">Name</a></h2>
 <p>critcl_install_guide - Critcl - The Installer's Guide</p>
 </div>
-<div id="toc" class="section"><h2><a name="toc">Table Of Contents</a></h2>
-<ul class="toc">
-<li class="section"><a href="#toc">Table Of Contents</a></li>
-<li class="section"><a href="#section1">Description</a></li>
-<li class="section"><a href="#section2">Requisites</a>
+<div id="toc" class="doctools_section"><h2><a name="toc">Table Of Contents</a></h2>
+<ul class="doctools_toc">
+<li class="doctools_section"><a href="#toc">Table Of Contents</a></li>
+<li class="doctools_section"><a href="#section1">Description</a></li>
+<li class="doctools_section"><a href="#section2">Requisites</a>
 <ul>
-<li class="subsection"><a href="#subsection1">Tcl</a></li>
-<li class="subsection"><a href="#subsection2">Tcllib</a></li>
-<li class="subsection"><a href="#subsection3">C compiler</a></li>
+<li class="doctools_subsection"><a href="#subsection1">Tcl</a></li>
+<li class="doctools_subsection"><a href="#subsection2">Tcllib</a></li>
+<li class="doctools_subsection"><a href="#subsection3">C compiler</a></li>
 </ul>
 </li>
-<li class="section"><a href="#section3">Build &amp; Installation Instructions</a>
+<li class="doctools_section"><a href="#section3">Build &amp; Installation Instructions</a>
 <ul>
-<li class="subsection"><a href="#subsection4">Build &amp; Installation (Unix)</a></li>
-<li class="subsection"><a href="#subsection5">Build &amp; Installation (Windows)</a></li>
-<li class="subsection"><a href="#subsection6">First Use, Testing the Installation</a></li>
+<li class="doctools_subsection"><a href="#subsection4">Build &amp; Installation (Unix)</a></li>
+<li class="doctools_subsection"><a href="#subsection5">Build &amp; Installation (Windows)</a></li>
+<li class="doctools_subsection"><a href="#subsection6">First Use, Testing the Installation</a></li>
 </ul>
 </li>
-<li class="section"><a href="#section4">Authors</a></li>
-<li class="section"><a href="#section5">Bugs, Ideas, Feedback</a></li>
-<li class="section"><a href="#keywords">Keywords</a></li>
-<li class="section"><a href="#category">Category</a></li>
-<li class="section"><a href="#copyright">Copyright</a></li>
+<li class="doctools_section"><a href="#section4">Authors</a></li>
+<li class="doctools_section"><a href="#section5">Bugs, Ideas, Feedback</a></li>
+<li class="doctools_section"><a href="#keywords">Keywords</a></li>
+<li class="doctools_section"><a href="#category">Category</a></li>
+<li class="doctools_section"><a href="#copyright">Copyright</a></li>
 </ul>
 </div>
-<div id="section1" class="section"><h2><a name="section1">Description</a></h2>
-<p>Welcome to the <i class="term">C Runtime In Tcl</i>, <i class="term"><a href="critcl_pkg.html">CriTcl</a></i> for short, a
-system to build C extension packages for Tcl on the fly, from C code
-embedded within Tcl scripts, for all who wish to make their code go
-faster.</p>
+<div id="section1" class="doctools_section"><h2><a name="section1">Description</a></h2>
+<p><i class="term">C Runtime In Tcl</i>, or <i class="term"><a href="critcl_pkg.html">CriTcl</a></i> , is a system for compiling C code
+embedded in Tcl on the fly and either loading the resulting objects into Tcl for
+immediate use or packaging them for distribution.  Use <i class="term"><a href="critcl_pkg.html">CriTcl</a></i> to improve
+performance by rewriting in C those routines that are performance bottlenecks.</p>
 <p>The audience of this document is anyone wishing to build the
 packages, for either themselves, or others.</p>
 <p>For a developer intending to extend or modify the packages we
 additionally provide</p>
-<ol class="enumerated">
+<ol class="doctools_enumerated">
 <li><p><i class="term"><a href="license.html">Critcl - License</a></i>.</p></li>
 <li><p><i class="term"><a href="critcl_devguide.html">Critcl - The Developer's Guide</a></i>.</p></li>
 </ol>
@@ -149,9 +148,9 @@ additionally provide</p>
 not done already. Here we assume that the sources are already
 available in a directory of your choice.</p>
 </div>
-<div id="section2" class="section"><h2><a name="section2">Requisites</a></h2>
+<div id="section2" class="doctools_section"><h2><a name="section2">Requisites</a></h2>
 <p>Before Critcl can be build and used a number of requisites must be installed. These are:</p>
-<ol class="enumerated">
+<ol class="doctools_enumerated">
 <li><p>The scripting language Tcl.
        For details see <span class="sectref"><a href="#subsection1">Tcl</a></span>.</p></li>
 <li><p>Various packages from the Tcllib bundle for <b class="syscmd">Tcl</b>.
@@ -163,7 +162,7 @@ essentially clean. Of course, if parts of the dependencies listed
 below are already installed the associated steps can be skipped. It is
 still recommended to read their sections though, to validate that the
 dependencies they talk about are indeed installed.</p>
-<div id="subsection1" class="subsection"><h3><a name="subsection1">Tcl</a></h3>
+<div id="subsection1" class="doctools_subsection"><h3><a name="subsection1">Tcl</a></h3>
 <p>As we are building a Tcl package that should be pretty much obvious
 that a working Tcl installation is needed, and I will not belabor the
 point.</p>
@@ -181,7 +180,7 @@ most familiar with it.</p>
 ActiveTcl 8.5 for your platform and install it as directed by
 ActiveState.</p>
 <p>Assuming that ActiveTcl got installed I usually run the command</p>
-<pre class="example">
+<pre class="doctools_example">
     teacup update
 </pre>
 <p>to install all packages ActiveState provides, and the kitchensink, as
@@ -191,35 +190,35 @@ present, and more.</p>
 <p>If that is not to your liking you have to read the sections for
 Critcl to determine the exact set of packages required, and install
 only these using</p>
-<pre class="example">
+<pre class="doctools_example">
     teacup install $packagename
 </pre>
 <p>Both <b class="syscmd">teacup</b> commands above assume that ActiveState's
 TEApot repository at <a href="http://teapot.activestate.com">http://teapot.activestate.com</a> is in the
 list of repositories accessible to <b class="syscmd">teacup</b>. This is automatically
 ensured for the ActiveTcl distribution. Others may have to run</p>
-<pre class="example">
+<pre class="doctools_example">
     teacup archive add http://teapot.activestate.com
 </pre>
 <p>to make this happen.</p>
 <p>For those wishing to build Tcl/Tk on their own, their sources
 can be found at</p>
-<dl class="definitions">
+<dl class="doctools_definitions">
 <dt>Tcl</dt>
 <dd><p><a href="http://core.tcl.tk/tcl/">http://core.tcl.tk/tcl/</a></p></dd>
 <dt>Tk</dt>
 <dd><p><a href="http://core.tcl.tk/tk/">http://core.tcl.tk/tk/</a></p></dd>
 </dl>
 </div>
-<div id="subsection2" class="subsection"><h3><a name="subsection2">Tcllib</a></h3>
+<div id="subsection2" class="doctools_subsection"><h3><a name="subsection2">Tcllib</a></h3>
 <p>To use Critcl a few packages found in the Tcllib bundle are
 required. These packages are:</p>
-<ol class="enumerated">
+<ol class="doctools_enumerated">
 <li><p><b class="package">cmdline</b></p></li>
 <li><p><b class="package">md5</b>.</p>
 <p>And to accelerate this package, it is recommend to get and
 install one of</p>
-<ol class="enumerated">
+<ol class="doctools_enumerated">
 <li><p><b class="package">tcllibc</b></p></li>
 <li><p><b class="package">md5c</b></p></li>
 <li><p><b class="package">Trf</b></p></li>
@@ -231,14 +230,14 @@ especially when handling large code blocks.</p></li>
 <p>Assuming that ActiveTcl is installed, or some other Tcl
 installation with <b class="syscmd">teacup</b> available, most (not md5c) of these
 packages can be installed via</p>
-<pre class="example">
+<pre class="doctools_example">
     teacup install $packagename
 </pre>
 <p>The <b class="syscmd">teacup</b> command above assumes that ActiveState's
 TEApot repository at <a href="http://teapot.activestate.com">http://teapot.activestate.com</a> is in the
 list of repositories accessible to <b class="syscmd">teacup</b>. This is automatically
 ensured for the ActiveTcl distribution. Others may have to run</p>
-<pre class="example">
+<pre class="doctools_example">
     teacup archive add http://teapot.activestate.com
 </pre>
 <p>to make this happen.</p>
@@ -252,7 +251,7 @@ These will not be repeated here. If there are problems with their
 directions please file a bug against the Tcllib project at the above
 url, and not CriTcl.</p>
 </div>
-<div id="subsection3" class="subsection"><h3><a name="subsection3">C compiler</a></h3>
+<div id="subsection3" class="doctools_subsection"><h3><a name="subsection3">C compiler</a></h3>
 <p>To actually build packages based on critcl we need a working C
 compiler.</p>
 <p>How to install such and all the associated header files,
@@ -261,7 +260,7 @@ outside of the scope of this document.
 Note that I am willing to extend this section with links of interest
 to tutorials, howtos and references for the various platforms.</p>
 <p>The important pieces of information are this:</p>
-<ol class="enumerated">
+<ol class="doctools_enumerated">
 <li><p>The path to the C compiler binary must be found in the
 	environment variable <b class="variable">PATH</b>, for critcl to find it.</p></li>
 <li><p>On Windows(tm) the environment variable <b class="variable">LIB</b> must be
@@ -271,20 +270,20 @@ to tutorials, howtos and references for the various platforms.</p>
 	settings based on available libraries and compiler version.</p></li>
 </ol>
 <p>Links of interest:</p>
-<dl class="definitions">
+<dl class="doctools_definitions">
 <dt><a href="http://www.tldp.org/HOWTO/HOWTO-INDEX/programming.html">http://www.tldp.org/HOWTO/HOWTO-INDEX/programming.html</a></dt>
 <dd></dd>
 </dl>
 </div>
 </div>
-<div id="section3" class="section"><h2><a name="section3">Build &amp; Installation Instructions</a></h2>
-<div id="subsection4" class="subsection"><h3><a name="subsection4">Build &amp; Installation (Unix)</a></h3>
+<div id="section3" class="doctools_section"><h2><a name="section3">Build &amp; Installation Instructions</a></h2>
+<div id="subsection4" class="doctools_subsection"><h3><a name="subsection4">Build &amp; Installation (Unix)</a></h3>
 <p>This section describes the actions required to install CriTcl on Unix
 systems (Linux, BSD, and related, including OS X).
 If you have to install CriTcl on a Windows machine see section
 <span class="sectref"><a href="#subsection5">Build &amp; Installation (Windows)</a></span> instead.
 To install Critcl simply run</p>
-<pre class="example">
+<pre class="doctools_example">
     /path/to/tclsh /path/to/critcl/build.tcl install
 </pre>
 <p>where &quot;<b class="file">/path/to/tclsh</b>&quot; is the tclsh of your Tcl installation, and
@@ -293,7 +292,7 @@ To install Critcl simply run</p>
 <b class="cmd">tclsh</b> will find them.</p>
 <p>It further creates a &quot;<b class="file">critcl</b>&quot; application script and places it
 into the directory <b class="cmd">tclsh</b> resides in, making it a sibling of that
-executable. 
+executable.
 Note that the installed critcl application is modified to use the
 chosen tclsh instead of searching for one on the <b class="variable">PATH</b>.</p>
 <p>On Windows you can invoke the file &quot;<b class="file">build.tcl</b>&quot; with a
@@ -306,18 +305,18 @@ This GUI is accessible by invoking &quot;<b class="file">build.tcl</b>&quot; wit
 arguments.</p>
 <p>To get help about the methods of &quot;<b class="file">build.tcl</b>&quot;, and their complete
 syntax, invoke  &quot;<b class="file">build.tcl</b>&quot; with argument <b class="method">help</b>, i.e., like</p>
-<pre class="example">
+<pre class="doctools_example">
     /path/to/tclsh /path/to/critcl/build.tcl help
 </pre>
 </div>
-<div id="subsection5" class="subsection"><h3><a name="subsection5">Build &amp; Installation (Windows)</a></h3>
+<div id="subsection5" class="doctools_subsection"><h3><a name="subsection5">Build &amp; Installation (Windows)</a></h3>
 <p>This section describes the actions required to install CriTcl on
 Windows(tm) systems.
 If you have to install CriTcl on a Unix machine (Linux, BSD, and
 related, including OS X) see section
 <span class="sectref"><a href="#subsection4">Build &amp; Installation (Unix)</a></span> instead.
 To install Critcl simply run</p>
-<pre class="example">
+<pre class="doctools_example">
     /path/to/tclsh /path/to/critcl/build.tcl install
 </pre>
 <p>where &quot;<b class="file">/path/to/tclsh</b>&quot; is the tclsh of your Tcl installation, and
@@ -345,11 +344,11 @@ handling of a double-click is restricted to Windows only however.</p>
 arguments.</p>
 <p>To get help about the methods of &quot;<b class="file">build.tcl</b>&quot;, and their complete
 syntax, invoke  &quot;<b class="file">build.tcl</b>&quot; with argument <b class="method">help</b>, i.e., like</p>
-<pre class="example">
+<pre class="doctools_example">
     /path/to/tclsh /path/to/critcl/build.tcl help
 </pre>
 </div>
-<div id="subsection6" class="subsection"><h3><a name="subsection6">First Use, Testing the Installation</a></h3>
+<div id="subsection6" class="doctools_subsection"><h3><a name="subsection6">First Use, Testing the Installation</a></h3>
 <p>With critcl installed it is now the time to try at least one of the
 examples distributed with it. This will also test if the installation
 was successful.</p>
@@ -358,12 +357,12 @@ high-level stack example packages. I am intentionally bypassing the
 &quot;<b class="file">build.tcl</b>&quot; file the example is coming with, to show the use of
 <b class="cmd"><a href="critcl_pkg.html">critcl</a></b> itself.</p>
 <p>Some more explanations before running the example:</p>
-<ul class="itemized">
+<ul class="doctools_itemized">
 <li><p>Here &quot;<b class="file">path/to/critcl</b>&quot; is the path to the installed
 	critcl application, not the critcl source directory.</p>
 <p>Also, on Windows(tm) this part of the example must be
 	replaced with</p>
-<pre class="example"> /path/to/tclsh /path/to/critcl </pre>
+<pre class="doctools_example"> /path/to/tclsh /path/to/critcl </pre>
 <p>as the installed application has no extension and
 	thus Windows will not know how to execute the script.</p>
 <p>Only if the installed application was manually renamed to
@@ -385,7 +384,7 @@ high-level stack example packages. I am intentionally bypassing the
 	<em>same</em> <b class="option">-cache</b> so that <b class="package">stackc</b> will
 	find the stub table headers exported by <b class="package">cstack</b>.</p></li>
 </ul>
-<pre class="example">
+<pre class="doctools_example">
     &gt; cd examples/stack
     &gt; /path/to/critcl -keep -cache B -pkg cstack.tcl
     &gt; /path/to/critcl -keep -cache B -pkg stackc.tcl
@@ -402,10 +401,10 @@ high-level stack example packages. I am intentionally bypassing the
 </pre>
 </div>
 </div>
-<div id="section4" class="section"><h2><a name="section4">Authors</a></h2>
+<div id="section4" class="doctools_section"><h2><a name="section4">Authors</a></h2>
 <p>Jean Claude Wippler, Steve Landers, Andreas Kupries</p>
 </div>
-<div id="section5" class="section"><h2><a name="section5">Bugs, Ideas, Feedback</a></h2>
+<div id="section5" class="doctools_section"><h2><a name="section5">Bugs, Ideas, Feedback</a></h2>
 <p>This document, and the package it describes, will undoubtedly contain
 bugs and other problems.
 Please report them at <a href="https://github.com/andreas-kupries/critcl/issues">https://github.com/andreas-kupries/critcl/issues</a>.
@@ -413,15 +412,15 @@ Ideas for enhancements you may have for either package, application,
 and/or the documentation are also very welcome and should be reported
 at <a href="https://github.com/andreas-kupries/critcl/issues">https://github.com/andreas-kupries/critcl/issues</a> as well.</p>
 </div>
-<div id="keywords" class="section"><h2><a name="keywords">Keywords</a></h2>
+<div id="keywords" class="doctools_section"><h2><a name="keywords">Keywords</a></h2>
 <p><a href="../index.html#key8">C code</a>, <a href="../index.html#key3">Embedded C Code</a>, <a href="../index.html#key6">code generator</a>, <a href="../index.html#key0">compile &amp; run</a>, <a href="../index.html#key10">compiler</a>, <a href="../index.html#key1">dynamic code generation</a>, <a href="../index.html#key2">dynamic compilation</a>, <a href="../index.html#key9">generate package</a>, <a href="../index.html#key4">linker</a>, <a href="../index.html#key5">on demand compilation</a>, <a href="../index.html#key7">on-the-fly compilation</a></p>
 </div>
-<div id="category" class="section"><h2><a name="category">Category</a></h2>
+<div id="category" class="doctools_section"><h2><a name="category">Category</a></h2>
 <p>Glueing/Embedded C code</p>
 </div>
-<div id="copyright" class="section"><h2><a name="copyright">Copyright</a></h2>
+<div id="copyright" class="doctools_section"><h2><a name="copyright">Copyright</a></h2>
 <p>Copyright &copy; Jean-Claude Wippler<br>
 Copyright &copy; Steve Landers<br>
-Copyright &copy; 2011-2015 Andreas Kupries</p>
+Copyright &copy; 2011-2018 Andreas Kupries</p>
 </div>
 </div></body></html>
