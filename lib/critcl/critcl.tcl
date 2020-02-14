@@ -11,7 +11,7 @@
 # # ## ### ##### ######## ############# #####################
 # CriTcl Core.
 
-package provide critcl 3.1.17
+package provide critcl 3.1.18
 
 namespace eval ::critcl {}
 
