@@ -7,7 +7,7 @@
 # class made easy, with code for object command and method dispatch
 # generated.
 
-package provide critcl::class 1.1
+package provide critcl::class 1.1.1
 
 # # ## ### ##### ######## ############# #####################
 ## Requirements.
@@ -366,7 +366,7 @@ proc ::critcl::class::ProcessMethods {key} {
 	incr maxn 3
 
 	foreach name [lsort -dict [dict get $state $key names]] {
-	    set enum                    [dict get $state $key def $name enum]
+	    set enum   [string map $map [dict get $state $key def $name enum]]
 	    set case   [string map $map [dict get $state $key def $name case]]
 	    set code   [string map $map [dict get $state $key def $name code]]
 	    set syntax [string map $map [dict get $state $key def $name syntax]]
