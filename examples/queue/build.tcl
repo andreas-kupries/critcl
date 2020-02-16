@@ -129,6 +129,14 @@ proc _install {{ldir {}}} {
     file mkdir $ldir
 
     package require critcl::app
+    package require critcl
+    package require critcl::class
+
+    puts v=[set v  [package present critcl]]
+    puts [package ifneeded critcl        $v]
+
+    puts v=[set vc [package present critcl::class]]
+    puts [package ifneeded critcl::class $vc]
 
     foreach p $packages {
 	puts ""
