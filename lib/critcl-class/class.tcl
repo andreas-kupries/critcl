@@ -174,6 +174,7 @@ proc ::critcl::class::ProcessFlags {} {
     }
 
     dict set state buildflags [join $flags {, }]
+    critcl::msg "\n\tClass flags:     $flags"
     return
 }
 
@@ -485,7 +486,7 @@ proc ::critcl::class::MakeMap {} {
 proc ::critcl::class::Template {path} {
     variable selfdir
     set path $selfdir/$path
-    #puts T=$path
+    critcl::msg "\tClass templates: $path"
     return [critcl::util::Get $path]
 }
 
@@ -511,6 +512,7 @@ proc ::critcl::class::CAPIPrefix {name} {
 }
 
 proc ::critcl::class::Flag {key flag} {
+    critcl::msg " ($key = $flag)"
     variable state
     dict set state $key $flag
     return
