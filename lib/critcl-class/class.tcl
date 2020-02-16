@@ -487,7 +487,19 @@ proc ::critcl::class::Template {path} {
     variable selfdir
     set path $selfdir/$path
     critcl::msg "\tClass templates: $path"
-    return [critcl::util::Get $path]
+    return [Get $path]
+}
+
+proc ::critcl::class::Get {path} {
+    if {[catch {
+	set c [open $path r]
+	fconfigure $c -eofchar {}
+	set d [read $c]
+	close $c
+    }]} {
+	set d {}
+    }
+    return $d
 }
 
 proc ::critcl::class::Dedent {pfx text} {
