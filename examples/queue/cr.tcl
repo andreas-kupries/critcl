@@ -5,6 +5,13 @@
 
 cd [file dirname [file normalize [info script]]]
 source ../../lib/critcl/critcl.tcl
+source ../../lib/critcl-class/class.tcl
+
+puts v=[set v [package present critcl]]
+puts [package ifneeded critcl $v]
+
+puts v=[set vc [package present critcl::class]]
+puts [package ifneeded critcl::class $vc]
 
 # Show the config
 puts ""

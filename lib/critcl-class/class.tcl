@@ -7,7 +7,7 @@
 # class made easy, with code for object command and method dispatch
 # generated.
 
-package provide critcl::class 1.1
+package provide critcl::class 1.1.1
 
 # # ## ### ##### ######## ############# #####################
 ## Requirements.
@@ -174,6 +174,7 @@ proc ::critcl::class::ProcessFlags {} {
     }
 
     dict set state buildflags [join $flags {, }]
+    critcl::msg "\n\tClass flags:     $flags"
     return
 }
 
@@ -366,7 +367,7 @@ proc ::critcl::class::ProcessMethods {key} {
 	incr maxn 3
 
 	foreach name [lsort -dict [dict get $state $key names]] {
-	    set enum                    [dict get $state $key def $name enum]
+	    set enum   [string map $map [dict get $state $key def $name enum]]
 	    set case   [string map $map [dict get $state $key def $name case]]
 	    set code   [string map $map [dict get $state $key def $name code]]
 	    set syntax [string map $map [dict get $state $key def $name syntax]]
@@ -485,8 +486,20 @@ proc ::critcl::class::MakeMap {} {
 proc ::critcl::class::Template {path} {
     variable selfdir
     set path $selfdir/$path
-    #puts T=$path
-    return [critcl::util::Get $path]
+    critcl::msg "\tClass templates: $path"
+    return [Get $path]
+}
+
+proc ::critcl::class::Get {path} {
+    if {[catch {
+	set c [open $path r]
+	fconfigure $c -eofchar {}
+	set d [read $c]
+	close $c
+    }]} {
+	set d {}
+    }
+    return $d
 }
 
 proc ::critcl::class::Dedent {pfx text} {
@@ -511,6 +524,7 @@ proc ::critcl::class::CAPIPrefix {name} {
 }
 
 proc ::critcl::class::Flag {key flag} {
+    critcl::msg " ($key = $flag)"
     variable state
     dict set state $key $flag
     return

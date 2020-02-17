@@ -5,7 +5,7 @@
 #       [x] Pure Tcl Implementation.
 #
 # Mainly demonstrates the utility package for the creation of classes
-# and objects in C, with both claaes and their instances represented
+# and objects in C, with both classes and their instances represented
 # as Tcl commands. In contrast to the stackc demo this does not use a
 # separate data structure package, nor separately written method
 # implementations.
@@ -50,7 +50,7 @@ critcl::class::define ::queuec {
 
     constructor {
 	if (objc > 0) {
-	    Tcl_AppendResult (interp, "wrong\#args for constructor, expected none", NULL);
+	    Tcl_AppendResult (interp, "wrong#args for constructor, expected none", NULL);
 	    goto error;
 	}
     }
