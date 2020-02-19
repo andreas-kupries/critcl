@@ -1000,7 +1000,9 @@ proc ::critcl::class::spec::method {name op detail args} {
 
     ::critcl::at::caller
     ::critcl::at::incrt $detail
-    ::critcl::class::MethodExplicit $name $op [string trim $detail] {*}$args
+
+    eval [linsert $args 0 ::critcl::class::MethodExplicit $name $op [string trim $detail]]
+    #::critcl::class::MethodExplicit $name $op [string trim $detail] {*}$args
     return
 }
 
@@ -1079,7 +1081,8 @@ proc ::critcl::class::spec::classmethod {name op detail args} {
 
     ::critcl::at::caller
     ::critcl::at::incrt $detail
-    ::critcl::class::ClassMethodExplicit $name $op [string trim $detail] {*}$args
+    eval [linsert $args 0 ::critcl::class::ClassMethodExplicit $name $op [string trim $detail]]
+    # ::critcl::class::ClassMethodExplicit $name $op [string trim $detail] {*}$args
     return
 }
 
