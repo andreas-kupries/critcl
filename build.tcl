@@ -142,12 +142,9 @@ proc savedoc {tmpdir} {
     file copy -force [file join embedded www] [file join $tmpdir doc]
     return
 }
-
 proc pkgdirname {name version} {
 	return $name$version
 }
-
-
 proc placedoc {tmpdir} {
     file delete -force doc
     file copy -force [file join $tmpdir doc] doc
@@ -167,7 +164,6 @@ proc reminder {commit} {
 proc shquote value {
     return "\"[string map [list \\ \\\\ $ \\$ ` \\`] $value]\""
 }
-
 proc targets libdir {
     if {$libdir eq {} } {
 	set exe  [file dirname [file normalize [file join [info nameofexecutable] ...]]]
@@ -183,7 +179,15 @@ proc targets libdir {
     }
     list $dsta $dsti $dstl
 }
-
+proc query {q c} {
+    puts -nonewline "$q ? "
+    flush stdout
+    set a [string tolower [gets stdin]]
+    if {($a ne "y" ) && ($a ne "yes")} {
+	puts "$c"
+	exit 1
+    }
+}
 proc Hsynopsis {} { return "\n\tGenerate a synopsis of procs and builtin types" }
 proc _synopsis {} {
     puts Public:
@@ -308,14 +312,9 @@ proc _release {} {
     # Get scratchpad to assemble the release in.
     # Get version and hash of the commit to be released.
 
-    puts -nonewline "Have you run the tests ? "
-    flush stdout
-    set a [string tolower [gets stdin]]
-
-    if {($a ne "y" ) && ($a ne "yes")} {
-	puts "Please do"
-	exit 1
-    }
+    query "Have you run the tests"              "Please do"
+    query "Have you run the examples"           "Please do"
+    query "Have you bumped the version numbers" "Came back after doing so!"
 
     set tmpdir [tmpdir]
     id commit version
@@ -323,28 +322,28 @@ proc _release {} {
     savedoc $tmpdir
 
     # # ## ### ##### ######## #############
-    puts {Generate starkit...}
-    _starkit [file join $tmpdir critcl31.kit]
+    #puts {Generate starkit...}
+    #_starkit [file join $tmpdir critcl31.kit]
 
     # # ## ### ##### ######## #############
-    puts {Collecting starpack prefix...}
+    #puts {Collecting starpack prefix...}
     # which we use the existing starpack for, from the gh-pages branch
 
-    exec 2>@ stderr >@ stdout git checkout gh-pages
-    file copy [file join download critcl31.exe] [file join $tmpdir prefix.exe]
-    exec 2>@ stderr >@ stdout git checkout $commit
+    #exec 2>@ stderr >@ stdout git checkout gh-pages
+    #file copy [file join download critcl31.exe] [file join $tmpdir prefix.exe]
+    #exec 2>@ stderr >@ stdout git checkout $commit
 
     # # ## ### ##### ######## #############
-    puts {Generate starpack...}
-    _starpack [file join $tmpdir prefix.exe] [file join $tmpdir critcl31.exe]
+    #puts {Generate starpack...}
+    #_starpack [file join $tmpdir prefix.exe] [file join $tmpdir critcl31.exe]
     # TODO: vacuum the thing. fix permissions if so.
 
     # # ## ### ##### ######## #############
     2website
     placedoc $tmpdir
 
-    file copy -force [file join $tmpdir critcl31.kit] [file join downloadcritcl31.kit]
-    file copy -force [file join $tmpdir critcl31.exe] [file join download critcl31.exe]
+    #file copy -force [file join $tmpdir critcl31.kit] [file join download critcl31.kit]
+    #file copy -force [file join $tmpdir critcl31.exe] [file join download critcl31.exe]
 
     set index   [fileutil::cat index.html]
     set pattern   "\\\[commit .*\\\] \\(v\[^)\]*\\)<!-- current"
