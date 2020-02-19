@@ -74,8 +74,11 @@ proc critapp {dst} {
     }
     return $app
 }
-
-
+proc vfile {dir vfile} {
+    global me
+    set selfdir [file dirname $me]
+    eval [linsert $vfile 0 file join $selfdir lib $dir]
+}
 proc grep {file pattern} {
     set lines [split [read [set chan [open $file r]]] \n]
     close $chan
@@ -437,7 +440,7 @@ proc _install {args} {
 	    }
 
 	    if {$vfile ne {}} {
-		set version  [version [file join $selfdir lib $dir {*}$vfile]]
+		set version [version [vfile $dir $vfile]]
 	    } else {
 		set version {}
 	    }
@@ -566,11 +569,11 @@ proc _install {args} {
     return
 }
 proc Huninstall {} { Hdrop }
-proc _uninstall {args} { _drop {*}$args }
+proc _uninstall {args} { eval [linsert $args 0 _drop] }
 
 proc Hdrop {} { return "?destination?\n\tRemove packages.\n\tdestination = path of package directory, default \[info library\]." }
 proc _drop {{dst {}}} {
-    global packages
+    global packages me
 
     if {[llength [info level 0]] < 2} {
 	set dstl [info library]
@@ -584,6 +587,8 @@ proc _drop {{dst {}}} {
     # Add the special package (see install). Not special with regard
     # to removal. Except for the name
     lappend packages [list critcl-md5c md5c.tcl critcl_md5c]
+
+    set selfdir [file dirname $me]
 
     foreach item $packages {
 	# Package: /name/
@@ -600,16 +605,16 @@ proc _drop {{dst {}}} {
 	}
 
 	if {$vfile ne {}} {
-	    set version  [version [file join [file dirname $::me] lib $dir $vfile]]
+	    set version [version [vfile $dir $vfile]]
 	} else {
 	    set version {}
 	}
 
+	set namevers [file join $dstl $name$version]
+
 	file delete -force $namevers
 	puts "Removed package:     $namevers"
     }
-
-    set namevers [file join $dstl $name$version]
 
     # Application: critcl
     set theapp [critapp $dsta]
