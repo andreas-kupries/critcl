@@ -362,7 +362,7 @@ critcl::class::define ::queuec {
 		 */
 
 		if (i < n) {
-		    ASSERT(get,"Impossible 2nd return pull witohut get");
+		    ASSERT(get,"Impossible 2nd return pull without get");
 		    QueueShift (instance);
 		    Tcl_ListObjGetElements (interp, instance->queue, &listc, &listv);
 		    for (j = instance->at;

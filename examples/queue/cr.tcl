@@ -4,11 +4,13 @@
 # Note: generic code, same in all examples.
 
 cd [file dirname [file normalize [info script]]]
-source ../../lib/critcl/critcl.tcl
-source ../../lib/critcl-class/class.tcl
+
+package require critcl
 
 puts v=[set v [package present critcl]]
 puts [package ifneeded critcl $v]
+
+package require critcl::class
 
 puts v=[set vc [package present critcl::class]]
 puts [package ifneeded critcl::class $vc]
