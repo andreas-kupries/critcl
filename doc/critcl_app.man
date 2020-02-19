@@ -1,6 +1,6 @@
 [comment {-*- tcl -*- doctools manpage}]
 [include include/global.inc]
-[include version.inc]
+[include pkg_version.inc]
 [manpage_begin critcl_app n [vset VERSION]]
 [include include/module.inc]
 [titledesc {CriTcl Application}]

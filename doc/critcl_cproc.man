@@ -1,5 +1,5 @@
 [comment {-*- tcl -*- doctools manpage}]
-[include version.inc]
+[include pkg_version.inc]
 [manpage_begin critcl-cproc-types n [vset VERSION]]
 [include include/module.inc]
 [titledesc {Critcl - cproc Type Reference}]

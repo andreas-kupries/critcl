@@ -4,7 +4,7 @@
 '\" Copyright (c) Steve Landers
 '\" Copyright (c) 2011-2018 Andreas Kupries
 '\"
-.TH "critcl_introduction" n 3\&.1\&.18 doc "C Runtime In Tcl (CriTcl)"
+.TH "critcl_introduction" n 3\&.1\&.18\&.1 doc "C Runtime In Tcl (CriTcl)"
 .\" The -*- nroff -*- definitions below are for supplemental macros used
 .\" in Tcl/Tk manual entries.
 .\"
@@ -461,6 +461,21 @@ overall picture shown by the large examples mentioned in the previous
 paragraph\&.
 .PP
 The latest changes are found at the top\&.
+.SH "CHANGES FOR VERSION 3\&.1\&.18\&.1"
+.IP [1]
+\fIAttention\fR: While the overall version (of the bundle)
+moves to 3\&.1\&.18\&.1 the versions of packages \fBcritcl\fR and
+\fBcritcl::app\fR are \fIunchanged\fR\&.
+.IP [2]
+\fIBugfix\fR Generally removed a number of 8\&.5-isms which
+slipped into 3\&.1\&.18, breaking ability to use it with Tcl 8\&.4\&.
+.IP [3]
+\fIBugfix\fR Corrected broken \fIbuild\&.tcl uninstall\fR\&.
+.IP [4]
+\fIBugfix\fR Package \fBcritcl::class\fR bumped to
+version 1\&.1\&.1\&. Fixed partial template substitution breaking
+compilation of the generated code\&.
+.PP
 .SH "CHANGES FOR VERSION 3\&.1\&.18"
 .IP [1]
 Feature (Developer support)\&. Merged pull request #96 from
