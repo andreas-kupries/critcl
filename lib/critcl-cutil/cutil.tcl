@@ -7,7 +7,7 @@
 #
 # Copyright (c) 2017-2020 Andreas Kupries <andreas_kupries@users.sourceforge.net>
 
-package provide critcl::cutil 0.2
+package provide critcl::cutil 0.2.1
 
 # # ## ### ##### ######## ############# #####################
 ## Requirements.
