@@ -2754,7 +2754,7 @@ proc ::critcl::setconfig {targetconfig} {
     # as well.
 
     set v::targetplatform $targetconfig
-    foreach p {gcc cc_r xlc xlc_r cc cl} {
+    foreach p {gcc cc_r xlc xlc_r cc cl clang([[:digit:]])*} {
 	if {[regsub -- "-$p\$" $v::targetplatform {} v::targetplatform]} break
     }
 
