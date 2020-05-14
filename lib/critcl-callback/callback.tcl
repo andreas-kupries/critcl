@@ -22,10 +22,10 @@ if {![critcl::compiling]} {
 # (1) Assertions, and tracing
 # (2) Debugging symbols, memory tracking
 
-critcl::cutil::assertions on
+critcl::cutil::assertions off
 critcl::cutil::tracer     off
 
-critcl::debug symbols
+#critcl::debug symbols
 
 #Activate when in need of memory debugging - Valgrind is an alternative
 #critcl::debug symbols memory
