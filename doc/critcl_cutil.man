@@ -1,4 +1,4 @@
-[vset VERSION 0.2]
+[vset VERSION 0.3]
 [comment {-*- tcl -*- doctools manpage}]
 [manpage_begin critcl::cutil n [vset VERSION]]
 [include include/module2.inc]
@@ -102,6 +102,28 @@ well.
 [sectref Assertions].
 
 [para] The result of the command is an empty string.
+
+[comment {* * ** *** ***** ******** ************* *********************}]
+[call [cmd ::critcl::cutil::endian]]
+
+This command provides a number of C preprocessor macros indicating the
+endianess of the system we are compiling for, i.e. the target.
+
+[para] When invoked the header file [file critcl_endian.h] is directly
+made available to the [file .critcl] file containing the command, and
+becomes available for use in [cmd {#include}] directives of companion
+C code declared via [cmd critcl::csources].
+
+[para] The macro definitions and their signatures provided by this
+header are
+
+[example {
+    CRITCL_BIG_ENDIAN
+    CRITCL_LITTLE_ENDIAN
+}]
+
+[strong {Exactly one}] of these macros will defined, indicating the
+endianess of the target.
 
 [comment {* * ** *** ***** ******** ************* *********************}]
 [call [cmd ::critcl::cutil::tracer] [opt [arg enable]]]

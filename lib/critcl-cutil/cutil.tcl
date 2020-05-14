@@ -7,7 +7,7 @@
 #
 # Copyright (c) 2017-2020 Andreas Kupries <andreas_kupries@users.sourceforge.net>
 
-package provide critcl::cutil 0.2.1
+package provide critcl::cutil 0.3
 
 # # ## ### ##### ######## ############# #####################
 ## Requirements.
@@ -41,6 +41,13 @@ proc critcl::cutil::assertions {{enable 0}} {
     critcl::include critcl_assert.h
     if {!$enable} return
     critcl::cflags -DCRITCL_ASSERT
+    return
+}
+
+proc critcl::cutil::endian {} {
+    variable selfdir
+    critcl::cheaders -I$selfdir/endian
+    critcl::include critcl_endian.h
     return
 }
 

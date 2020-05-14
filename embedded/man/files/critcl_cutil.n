@@ -2,7 +2,7 @@
 '\" Generated from file 'critcl_cutil\&.man' by tcllib/doctools with format 'nroff'
 '\" Copyright (c) 2011-2018 Andreas Kupries
 '\"
-.TH "critcl::cutil" n 0\&.2 doc "C Runtime In Tcl (CriTcl)"
+.TH "critcl::cutil" n 0\&.3 doc "C Runtime In Tcl (CriTcl)"
 .\" The -*- nroff -*- definitions below are for supplemental macros used
 .\" in Tcl/Tk manual entries.
 .\"
@@ -278,11 +278,13 @@ package require \fBTcl  8\&.4\fR
 .sp
 package require \fBcritcl  ?2\&.1?\fR
 .sp
-package require \fBcritcl::cutil  ?0\&.2?\fR
+package require \fBcritcl::cutil  ?0\&.3?\fR
 .sp
 \fB::critcl::cutil::alloc\fR
 .sp
 \fB::critcl::cutil::assertions\fR ?\fIenable\fR?
+.sp
+\fB::critcl::cutil::endian\fR
 .sp
 \fB::critcl::cutil::tracer\fR ?\fIenable\fR?
 .sp
@@ -477,6 +479,28 @@ The details of the semantics are explained in section
 \fBAssertions\fR\&.
 .sp
 The result of the command is an empty string\&.
+.TP
+\fB::critcl::cutil::endian\fR
+This command provides a number of C preprocessor macros indicating the
+endianess of the system we are compiling for, i\&.e\&. the target\&.
+.sp
+When invoked the header file "\fIcritcl_endian\&.h\fR" is directly
+made available to the "\fI\&.critcl\fR" file containing the command, and
+becomes available for use in \fB#include\fR directives of companion
+C code declared via \fBcritcl::csources\fR\&.
+.sp
+The macro definitions and their signatures provided by this
+header are
+.CS
+
+
+    CRITCL_BIG_ENDIAN
+    CRITCL_LITTLE_ENDIAN
+
+.CE
+.IP
+\fIExactly one\fR of these macros will defined, indicating the
+endianess of the target\&.
 .TP
 \fB::critcl::cutil::tracer\fR ?\fIenable\fR?
 This command provides a number C-preprocessor macros for tracing
