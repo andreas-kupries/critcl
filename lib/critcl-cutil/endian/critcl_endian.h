@@ -23,14 +23,11 @@
 /*
  * - - -- --- ----- -------- ------------- ---------------------
  * The code below was taken from tclInt.h
+ * Modification: Here we assume existence of the necessary sys headers.
  */
 
-#ifdef HAVE_SYS_TYPES_H
-#    include <sys/types.h>
-#endif
-#ifdef HAVE_SYS_PARAM_H
-#    include <sys/param.h>
-#endif
+#include <sys/types.h>
+#include <sys/param.h>
 
 #undef CRITCL_BIG_ENDIAN
 #undef CRITCL_LITTLE_ENDIAN
