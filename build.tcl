@@ -85,6 +85,8 @@ proc grep {file pattern} {
     return [lsearch -all -inline -glob $lines $pattern]
 }
 proc version {file} {
+    set provisions [grep $file {set version__*}]
+    if {$provisions ne {}} {return [lindex $provisions 0 2] }
     set provisions [grep $file {*package provide*}]
     #puts /$provisions/
     return [lindex $provisions 0 3]
@@ -188,6 +190,48 @@ proc query {q c} {
 	exit 1
     }
 }
+
+proc special {pkg pdirbase srcdir cdir {hdir {}}} {
+    # Import context
+    upvar 1 dstl dstl dsti dsti selfdir selfdir target target theapp theapp prefix prefix
+
+    puts "\nInstalled C package:\t$pkg"
+
+    # Compute destinations and other information
+    set src     [glob -dir [file join $selfdir lib $srcdir] *.tcl]
+    set version [version $src]
+    set dst     [file join $dstl [pkgdirname $pdirbase $version]]
+    set dsth    [file join $dsti $pdirbase]
+
+    # Assemble the critcl command to build the package, and run it.
+    set cmd     {}
+    lappend cmd exec >@ stdout 2>@ stderr
+    lappend cmd [info nameofexecutable]
+    lappend cmd $theapp
+    if {$target ne {}} { lappend cmd -target $target }
+    set dstl_tmp [file join $dstl tmp]
+    lappend cmd -libdir     $dstl_tmp
+    lappend cmd -includedir $dstl_tmp
+    lappend cmd -pkg $src
+
+    puts [list executing $cmd]
+    eval $cmd
+
+    # Process build results, place into install destinations.
+    file delete -force $dst $dsth
+    file rename  [file join $dstl_tmp $cdir] $dst
+    if {$hdir ne {}} {
+	file rename [file join $dstl_tmp $hdir] $dsth
+    }
+    file delete -force $dstl_tmp
+
+    puts "${prefix}Installed package:      $dst"
+    if {$hdir ne {}} {
+	puts "${prefix}Installed headers:      [file join $dsti $hdir]"
+    }
+    return
+}
+
 proc Hsynopsis {} { return "\n\tGenerate a synopsis of procs and builtin types" }
 proc _synopsis {} {
     puts Public:
@@ -485,78 +529,16 @@ proc _install {args} {
 
 	puts "${prefix}Installed application:  $theapp"
 
-	# Special package: critcl_md5c
-	# Local MD5 hash implementation.
+	# Special packages:
+	# - critcl_md5c		Local MD5 hash implementation.
+	# - critcl::callback	C/Tcl callback utility code.
+	# - critcl::objtrack	C/Tcl Tcl_Obj* tracking (Support leak investigations)
+	# Note: All compilation uses package mode, which does not use MD5.
+	# Thus there is no chicken vs egg problem with the first special.
 
-	puts "\nInstalled C package:\tcritcl::md5c"
-
-	# It is special because it is a critcl-based package, not pure
-	# Tcl as everything else of critcl. Its installation makes it
-	# the first package which will be compiled with critcl on this
-	# machine. It uses the just-installed application for
-	# that. This is package-mode, where MD5 itself is not used, so
-	# there is no chicken vs. egg.
-
-	set src     [file join $selfdir lib critcl-md5c md5c.tcl]
-	set version [version $src]
-	set name    critcl_md5c
-	set dst     [file join $dstl [pkgdirname $name $version]]
-	set cmd     {}
-
-	lappend cmd exec >@ stdout 2>@ stderr
-	lappend cmd [info nameofexecutable]
-	lappend cmd $theapp
-	if {$target ne {}} {
-	    lappend cmd -target $target
-	}
-	lappend cmd -libdir [file join $dstl tmp] -pkg $src
-	puts [list executing $cmd]
-	eval $cmd
-
-	file delete -force $dst
-	file rename        [file join $dstl tmp md5c] $dst
-	file delete -force [file join $dstl tmp]
-
-	puts "${prefix}Installed package:      $dst"
-
-	# Special package: critcl::callback
-	# C/Tcl callback utility code.
-
-	puts "\nInstalled C package:\tcritcl::callback"
-
-	# It is special because it is a critcl-based package, not pure
-	# Tcl as everything else of critcl. Its installation makes it
-	# the second package which will be compiled with critcl on this
-	# machine. It uses the just-installed application for
-	# that.
-
-	set src     [file join $selfdir lib critcl-callback callback.tcl]
-	set version [version $src]
-	set name    critcl_callback
-	set dst     [file join $dstl $name$version]
-	set dsth    [file join $dsti $name]
-	set cmd     {}
-
-	lappend cmd exec >@ stdout 2>@ stderr
-	lappend cmd [info nameofexecutable]
-	lappend cmd $theapp
-	if {$target ne {}} {
-	    lappend cmd -target $target
-	}
-	set dstl_tmp [file join $dstl tmp]
-	lappend cmd -libdir     $dstl_tmp
-	lappend cmd -includedir $dstl_tmp
-	lappend cmd -pkg $src
-	eval $cmd
-
-	file delete -force $dst $dsth
-	file rename  [file join $dstl tmp callback] $dst
-	file rename  [file join $dstl tmp critcl_callback] $dsth
-	file delete -force $dstl_tmp
-
-	puts "${prefix}Installed package:      $dst"
-	puts "${prefix}Installed headers:      [
-	    file join $dsti critcl_callback]"
+	special critcl::md5c     critcl_md5c     critcl-md5c     md5c
+	special critcl::callback critcl_callback critcl-callback callback critcl_callback
+	special critcl::objtrack critcl_objtrack critcl-objtrack objtrack critcl_objtrack
 
     } msg]} {
 	if {![string match {*permission denied*} $msg]} {
