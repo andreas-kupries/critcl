@@ -306,6 +306,9 @@ doc
 \fBcritcl::literals\fR
 \fIfiles/critcl_literals\&.n\fR: CriTcl Utilities: Constant string pools
 .TP
+\fBcritcl::objtype\fR
+\fIfiles/critcl_objtype\&.n\fR: CriTcl Utilities: Custom Tcl_ObjTypes
+.TP
 \fBcritcl::util\fR
 \fIfiles/critcl_util\&.n\fR: CriTcl Utilities
 .TP

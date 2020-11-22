@@ -35,7 +35,7 @@ proc ::critcl::objtype::define {name script} {
     # Pull the package we are working on out of the system.
 
     set package [critcl::meta? name]
-    set qpackage [expr {[string match ::* $package] 
+    set qpackage [expr {[string match ::* $package]
 			? "$package"
 			: "::$package"}]
 
@@ -56,81 +56,89 @@ proc ::critcl::objtype::define {name script} {
     set stem  ${pcns}${cpackage}_$cns$cname
     set stemb [Camelize ${pcns}${cpackage}]_[Camelize $cns$cname]
 
+    # State initialization
+    # Keys:
+    # - package
+    # - name
+    # - stem
+    # - objtypevar
+    #
+    # - intrep	    = C name of int.rep type.
+    #
+    # - constructor | list        |
+    # - get         | C fragments | optional, ...
+    # - destructor  |             | optional, nothing
+    # - copy        |             | optional, assignment (mem copy)
+    # - stringify   |             | optional, error
+    # - from-any    |             |
+    # - support     |             | optional, nothing
+
     dict set state package     $package
     dict set state name        $name
     dict set state stem        $stem
     dict set state objtypevar  ${stem}_ObjType
 
     # Overridable by spec, indirect.
-    dict set state free ${stem}_ReleaseIntRep
-    dict set state dupl ${stem}_DuplicateIntRep
-    dict set state 2str ${stem}_StringOfIntRep
-    dict set state from ${stem}_IntRepFromAny
+    dict set state fun_destructor ${stem}_ReleaseIntRep
+    dict set state fun_copy       ${stem}_DuplicateIntRep
+    dict set state fun_stringify  ${stem}_StringOfIntRep
+    dict set state fun_from_any   ${stem}_IntRepFromAny
 
-    dict set state havefree 1
-    dict set state havedupl 1
-    dict set state have2str 1
-    dict set state havefrom 1
+    # Code fragment indicators
+    foreach n {
+	constructor
+	copy
+	destructor
+	from_any
+	get
+	stringify
+	support
+    } { dict set state have_$n 0 }
 
     # Overridable by spec.
     dict set state api_public 0
     dict set state api_new  ${stemb}NewObj
     dict set state api_from ${stemb}FromObj
 
-    # Check if the 'info frame' information for
-    # 'script' passes through properly.
+    # Process the specification.
+    # TODO: check if the 'info frame' information for 'script' passes through properly.
     spec::Process $script
 
-    # state keys
-    # - package
-    # - name
-    # - stem
-    # - objtypevar
-    # - intrep	    = C name of int.rep type.
-    # - constructor | list        | 
-    # - get         | C fragments | optional, ...
-    # - destructor  |             | optional, nothing
-    # - copy        |             | optional, assignment
-    # - 2string     |             | optional, error
-    # - parse       |             | 
-    # - support     |             | optional, nothing
+    # Postprocess the specification.
 
-    # Process... (post-processing)
-    # Fill defaults for some optional fragments.
-
+    # Validation: Was the intrep type specified ?
     ProcessType
 
-    #Default destructor | Nulled if not defined.
-    #Default copy       | Nulled copy defaults to assignment in core itself.
+    # Reset function names for the optional destructor and copy
+    # constructor when not specified.
 
-    if {![dict exists $state destructor]} {
-	dict set state free NULL
-	dict set state havefree 0
+    if {![dict get $state have_destructor]} {
+	dict set state fun_destructor NULL
     }
-    if {![dict exists $state copy]} {
-	dict set state dupl NULL
-	dict set state havedupl 0
+    if {![dict get $state have_copy]} {
+	dict set state fun_copy NULL
     }
 
-    Default constructor {
-	OT_PTR (obj) = (void*) value;
-    }
-    Default get {
-	*value = (@intrep@) OT_PTR (obj);
-    }
-    Default 2string
-    Default parse {
-	Tcl_AppendResult (interp, "No string representation available.");
+    # Set the standard behaviour for all the unspecified optional
+    # fragments.
+
+    Default support     {}
+    Default constructor { OT_PTR (obj) = (void*) value; }
+    Default get         { *value = (@intrep@) OT_PTR (obj); }
+    Default stringify   {}
+    Default from_any    {
+	Tcl_AppendResult (interp, "Unable to shimmer into type @name@.");
 	return TCL_ERROR;
     }
-    Default support 
+
+    # Rewrite all code fragments from lists into a single block.
 
     ProcessFragment constructor "\{\n" " " "\}"
     ProcessFragment destructor  "\{\n" " " "\}"
     ProcessFragment get         "\{\n" " " "\}"
     ProcessFragment copy        "\{\n" " " "\}"
-    ProcessFragment 2string     "\{\n" " " "\}"
-    ProcessFragment parse       "\{\n" " " "\}"
+    ProcessFragment stringify   "\{\n" " " "\}"
+    ProcessFragment from-any    "\{\n" " " "\}"
     ProcessFragment support     "" \n ""
 
     # Data needed from the specification...
@@ -166,25 +174,25 @@ proc ::critcl::objtype::ProcessType {} {
     return -code error "Mandatory intrep C type is missing."
 }
 
-proc ::critcl::objtype::Default {key args} {
+proc ::critcl::objtype::Default {section code} {
     variable state
-    if {[dict exists $state $key]} return
-    dict set state $key $args
+    if {[dict exists $state code_$section]} return
+    CodeFragment $section $code
     return
 }
 
-proc ::critcl::objtype::ProcessFragment {key prefix sep suffix} {
+proc ::critcl::objtype::ProcessFragment {section prefix sep suffix} {
     # Process code fragments into a single block, if any.
     # Ensure it exists, even if empty. Required by template.
     # Optional in specification.
 
     variable state
-    if {![dict exists $state $key]} {
+    if {![dict exists $state code_$section]} {
 	set new {}
     } else {
-	set new ${prefix}[join [dict get $state $key] $suffix$sep$prefix]$suffix
+	set new ${prefix}[join [dict get $state code_$section] $suffix$sep$prefix]$suffix
     }
-    dict set state $key $new
+    dict set state code_$section $new
     return
 }
 
@@ -258,7 +266,8 @@ proc ::critcl::objtype::CodeFragment {section code} {
     variable state
     set code [string trim $code \n]
     if {$code ne {}} {
-	dict lappend state $section $code
+	dict lappend state code_$section $code
+	dict set     state have_$section 1
     }
     return
 }
@@ -340,14 +349,14 @@ proc ::critcl::objtype::spec::get {code} {
     # optional.
     # Default is to return obj->internalRep.otherValuePtr
     # Cast to the representation type.
-    # - environment: 
+    # - environment:
     ::critcl::objtype::CodeFragment get $code;#[critcl::at::get*]$code
     return
 }
 
 proc ::critcl::objtype::spec::destructor {code} {
     # release intrep. optional. default: nothing
-    ::critcl::objtype::CodeFragment destructor [critcl::at::get*]$code
+    ::critcl::objtype::CodeFragment destructor $code;#[critcl::at::get*]$code
     return
 }
 
@@ -357,15 +366,15 @@ proc ::critcl::objtype::spec::copy {code} {
     return
 }
 
-proc ::critcl::objtype::spec::2string {code} {
+proc ::critcl::objtype::spec::stringify {code} {
     # generate string from intrep. optional. default: error.
-    ::critcl::objtype::CodeFragment 2string $code;#[critcl::at::get*]$code
+    ::critcl::objtype::CodeFragment stringify $code;#[critcl::at::get*]$code
     return
 }
 
-proc ::critcl::objtype::spec::parse {code} {
+proc ::critcl::objtype::spec::from-any {code} {
     # parse string, generate intrep.
-    ::critcl::objtype::CodeFragment parse $code;#[critcl::at::get*]$code
+    ::critcl::objtype::CodeFragment from_any $code;#[critcl::at::get*]$code
     return
 }
 
