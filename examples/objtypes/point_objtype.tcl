@@ -99,5 +99,23 @@ critcl::objtype define point {
 }
 
 # ### ### ### ######### ######### #########
+## Interface for testing
+
+critcl::cproc point-new {double x double y} point {
+    static point p;
+    p.x = x;
+    p.y = y;
+    return &p;
+}
+
+critcl::cproc point-x {point p} double {
+    return p->x;
+}
+
+critcl::cproc point-y {point p} double {
+    return p->y;
+}
+
+# ### ### ### ######### ######### #########
 ## Ready
 package provide point_objtype 1

@@ -27,7 +27,7 @@ critcl::subject Tcl_ObjType double
 # # ## ### ##### ######## ############# #####################
 ## Implementation.
 
-critcl::objtype define double {
+critcl::objtype define newdouble {
     support {
 	#include <stdlib.h> /* atof */
     }

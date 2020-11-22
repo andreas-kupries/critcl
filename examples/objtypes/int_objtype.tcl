@@ -27,7 +27,7 @@ critcl::subject Tcl_ObjType integer
 # # ## ### ##### ######## ############# #####################
 ## Implementation.
 
-critcl::objtype define int {
+critcl::objtype define newint {
     support {
 	#include <stdlib.h> /* atoi */
     }

@@ -199,14 +199,17 @@ proc ::critcl::objtype::ProcessFragment {section prefix sep suffix} {
 proc ::critcl::objtype::GenerateCode {} {
     variable state
 
+    set name     [dict get $state name]
     set stem     [dict get $state stem]
+    set intrep   [dict get $state intrep]
     set hdr      ${stem}_objtype.h
     set header   [file join [critcl::cache] $hdr]
 
     file mkdir [critcl::cache]
     set template [Template objtype.h]
     #puts T=[string length $template]
-    critcl::util::Put $header [string map [MakeMap] $template]
+    set map [MakeMap]
+    critcl::util::Put $header [string map $map $template]
 
     critcl::ccode "#include <$hdr>"
 
@@ -218,6 +221,19 @@ proc ::critcl::objtype::GenerateCode {} {
 	critcl::api function Tcl_Obj* $n [list $t value]
 	critcl::api function int      $f [list Tcl_Interp* interp Tcl_Obj* obj ${t}* value]
     }
+
+    critcl::argtype $name \n[critcl::at::here!][string map $map {
+	if (@api_from@ (interp, @@, &@A) != TCL_OK) return TCL_ERROR;
+    }] $intrep $intrep
+
+    critcl::resulttype $name \n[critcl::at::here!][string map $map {
+	/* @api_new@ result is 0-refcount */
+	{ Tcl_Obj* ro = @api_new@ (rv);
+	if (ro == NULL) { return TCL_ERROR; }
+	Tcl_SetObjResult (interp, ro);
+	return TCL_OK; }
+    }] $intrep
+
     return
 }
 
