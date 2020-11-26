@@ -6,68 +6,49 @@
 #ifndef @stem@_IMPLEMENTATION
 #define @stem@_IMPLEMENTATION (1)
 
-#include <string.h> /* memcpy (OT_DUP_STR) */
+#include <string.h> /* memcpy */
+#include <tcl.h>
+#include <critcl_trace.h>
+
+@trace@ (@stem@);
 
 /* # # ## ### ##### ######## ############# ##################### */
 /*
  * Declarations - Tcl_ObjType internals.
  */
 
-#if @have_destructor@
-static void @fun_destructor@ (Tcl_Obj* objPtr);
-#endif
-#if @have_copy@
+static void @fun_destructor@   (Tcl_Obj* objPtr);
 static void @fun_copy@ (Tcl_Obj* objPtr, Tcl_Obj* dupObjPtr);
-#endif
-static void @fun_stringify@ (Tcl_Obj* objPtr);
-static int  @fun_from_any@ (Tcl_Interp* interp, Tcl_Obj* objPtr);
+static void @fun_stringify@  (Tcl_Obj* objPtr);
+static int  @fun_from_any@   (Tcl_Interp* interp, Tcl_Obj* objPtr);
 
 static Tcl_ObjType @objtypevar@ = {
   "@name@",
-  @fun_destructor@, /* Release Internal Representation            */
-  @fun_copy@,       /* Duplicate Internal Representation          */
+  @fun_destructor@,   /* Release Internal Representation            */
+  @fun_copy@, /* Duplicate Internal Representation          */
   @fun_stringify@,  /* Convert Internal Representation to String  */
   @fun_from_any@    /* Convert String To Internal Representation  */
 };
 
-#ifndef FreeIntRep
-#define FreeIntRep(objPtr) \
-    if ((objPtr)->typePtr != NULL) { \
-	if ((objPtr)->typePtr->freeIntRepProc != NULL) { \
-	    (objPtr)->typePtr->freeIntRepProc(objPtr); \
+#define COT_FIR(o) \
+    if ((o)->typePtr != NULL) { \
+	if ((o)->typePtr->freeIntRepProc != NULL) { \
+	    (o)->typePtr->freeIntRepProc (o); \
 	} \
-	(objPtr)->typePtr = NULL; \
+	(o)->typePtr = NULL; \
     }
-#endif
 
-#ifndef OT_LONG
-#define OT_LONG(o)    ((o)->internalRep.longValue)
-#define OT_DOUBLE(o)  ((o)->internalRep.doubleValue)
-#define OT_PTR(o)     ((o)->internalRep.otherValuePtr)
-#define OT_WIDE(o)    ((o)->internalRep.wideValue)
-#define OT_PTR2(o)    ((o)->internalRep.twoPtr.ptr2)
-#define OT_LONG2(o)   ((o)->internalRep.ptrAndLongRep.value)
-#define OT_STR_VAL(o) (Tcl_GetString (o))
-#define OT_STR_LEN(o) ((o)->length)
+#define COT_PTR(o)      (o)->internalRep.twoPtrValue.ptr1
+#define COT_PTB(o)      (o)->internalRep.twoPtrValue.ptr2
+#define COT_SET_TYPE(o) (o)->typePtr = &@objtypevar@
+#define COT_IS_TYPE(o)  ((o)->typePtr == &@objtypevar@)
 
-#define OT_STR_DUP(o, len, buffer)		       \
-    (o)->bytes = ckalloc((len) + 1);		       \
-    memcpy ((o)->bytes, buffer, (unsigned) (len) + 1); \
-    (o)->bytes[(len)] = '\0';			       \
-    (o)->length = (len)
-
-#define OT_STR_SET(o, len, buffer)	\
-    (o)->bytes = (buffer);		\
-    (o)->length = (len)
-
-#define OT_STR_DS(o,ds) \
-    OT_STR_DUP (o, Tcl_DStringLength (ds), Tcl_DStringValue (ds)); \
-    Tcl_DStringFree ((ds))
-#endif
+#define COT_RCO(o) (o), ((o) ? (o)->refCount : -1)
+#define COT_RCV(v) (v), ((v) ? (@refcount@ (v)) : -1)
 
 /* # # ## ### ##### ######## User: General support */
 @code_support@
-#line 68 "objtype.h"
+#line 48 "objtype.h"
 /* # # ## ### ##### ######## */
 
 /* # # ## ### ##### ######## ############# ##################### */
@@ -77,26 +58,28 @@ static Tcl_ObjType @objtypevar@ = {
 
 /*
  * Generate a Tcl_Obj* representing the 'value'.
- * -
- * The value is essentially copied in, the Tcl_Obj* becomes
- * responsible for any release which might be necessary.
  */
 
 Tcl_Obj*
 @api_new@ (@intrep@ value)
 {
-  Tcl_Obj* obj = Tcl_NewObj ();
-  Tcl_InvalidateStringRep (obj);
+    TRACE_TAG_FUNC (@stem@,
+		    "((@intrep@) %p^[%d])",
+		    COT_RCV (value));
 
-  @code_constructor@
-#line 90 "objtype.h"
-  obj->typePtr = &@objtypevar@;
-  return obj;
+    Tcl_Obj* obj = Tcl_NewObj ();
+    Tcl_InvalidateStringRep (obj);
+    COT_PTR (obj) = value;
+    @ref@ (value);
+    COT_SET_TYPE (obj);
+
+    TRACE_TAG_RETURN (@stem@,
+		      "(Tcl_Obj*) %p", obj);
 }
 
 /*
- * Extract the 'value' from the Tcl_Obj*, assume or convert to
- * @intrep@ stored in the 'obj', or fail.
+ * Extract the 'value' from the Tcl_Obj*, convert to @intrep@ stored in the
+ * 'obj' if necessary, or fail.
  */
 
 int
@@ -104,62 +87,106 @@ int
 	    Tcl_Obj*    obj,
 	    @intrep@*   value)
 {
-  if (obj->typePtr != &@objtypevar@) {
-      if (@fun_from_any@ (interp, obj) != TCL_OK) {
-	  return TCL_ERROR;
-      }
-  }
+    TRACE_TAG_FUNC (@stem@,
+		    "((Tcl_Interp*) %p, (Tcl_Obj*) %p^[%d], (@intrep@*) %p)",
+		    interp, COT_RCO (obj), value);
 
-  @code_get@
-#line 112 "objtype.h"
-  return TCL_OK;
+    if (!COT_IS_TYPE (obj)) {
+	if (@fun_from_any@ (interp, obj) != TCL_OK) {
+	    TRACE_TAG_RETURN (@stem@,
+			      "(error) %d", TCL_ERROR);
+	}
+    }
+    *value = (@intrep@) COT_PTR (obj);
+
+    TRACE_TAG (@stem@,
+	       "RESULT: (@intrep@) %p^[%d]", COT_RCV (*value));
+    TRACE_TAG_RETURN (@stem@,
+		      "(ok) %d", TCL_OK);
 }
 
 /* # # ## ### ##### ######## ############# ##################### */
 /*
  * Definitions - ObjType Internals.
  */
-#if @have_destructor@
 static void
 @fun_destructor@ (Tcl_Obj* obj)
 {
-  @code_destructor@
-#line 125 "objtype.h"
+    TRACE_TAG_FUNC (@stem@,
+		    "((Tcl_Obj*) %p^[%d])",
+		    COT_RCO (obj));
+
+    @intrep@ value = (@intrep@) COT_PTR (obj);
+    @unref@ (value);
+
+    TRACE_TAG_RETURN_VOID (@stem@);
 }
-#endif
-#if @have_copy@
+
 static void
-@fun_copy@ (Tcl_Obj* obj, Tcl_Obj* dupobj)
+@fun_copy@ (Tcl_Obj* obj, Tcl_Obj* dupObj)
 {
-  @code_copy@
-#line 133 "objtype.h"
+    TRACE_TAG_FUNC (@stem@,
+		    "((Tcl_Obj*) src %p^[%d], (Tcl_Obj*) dst %p^[%d])",
+		    COT_RCO (obj), COT_RCO (dupObj));
+
+    @intrep@ value = (@intrep@) COT_PTR (obj);
+    COT_PTR (dupObj) = value;
+    @ref@ (value);
+    COT_SET_TYPE (dupObj);
+
+    TRACE_TAG_RETURN_VOID (@stem@);
 }
-#endif
 
 static void
 @fun_stringify@ (Tcl_Obj* obj)
 {
-  @code_stringify@
-#line 141 "objtype.h"
+    TRACE_TAG_FUNC (@stem@,
+		    "((Tcl_Obj*) %p^[%d])",
+		    COT_RCO (obj));
+
+    @intrep@ value = (@intrep@) COT_PTR (obj);
+    Tcl_DString      ds;
+    Tcl_DStringInit (&ds);
+
+    @2string@ (value, &ds);
+
+    unsigned int len = Tcl_DStringLength (&ds);
+    obj->bytes = ckalloc (len + 1);
+    memcpy (obj->bytes, Tcl_DStringValue (&ds), len + 1);
+    obj->bytes [len] = '\0';
+    obj->length = len;
+    Tcl_DStringFree (&ds);
+
+    TRACE_TAG_RETURN_VOID (@stem@);
 }
 
 static int
 @fun_from_any@ (Tcl_Interp* interp, Tcl_Obj* obj)
 {
-  @intrep@ value;
+    TRACE_TAG_FUNC (@stem@,
+		    "((Tcl_Interp*) %p, (Tcl_Obj*) %p^[%d])",
+		    interp, COT_RCO (obj));
 
-  @code_from_any@
-#line 150 "objtype.h"
-  /*
-   * Kill the old intrep. This was delayed as much as possible.
-   */
+    @intrep@ value = @2value@ (interp, obj);
+    if (!value) { TRACE_TAG_RETURN (@stem@,
+				    "(error) %d", TCL_ERROR); }
+    COT_FIR (obj);
+    COT_PTR (obj) = value;
+    @ref@ (value);
+    COT_SET_TYPE (obj);
 
-  FreeIntRep (obj);
-  @code_constructor@
-#line 157 "objtype.h"
-  obj->typePtr = &@objtypevar@;
-  return TCL_OK;
+    TRACE_TAG_RETURN (@stem@,
+		      "(ok) %d", TCL_OK);
 }
+
+#undef COT_FIR
+#undef COT_PTR
+#undef COT_PTB
+#undef COT_SET_TYPE
+#undef COT_IS_TYPE
+#undef COT_RCO
+#undef COT_RCV
+
 #endif /* @stem@_IMPLEMENTATION */
 /* # # ## ### ##### ######## ############# ##################### */
 

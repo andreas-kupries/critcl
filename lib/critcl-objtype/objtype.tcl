@@ -11,37 +11,207 @@ package provide critcl::objtype 1
 # # ## ### ##### ######## ############# #####################
 ## Requirements.
 
-package require Tcl    8.4   ; # Min supported version.
-package require critcl 3.1   ; # Need 'meta?' to get the package name.
-package require critcl::util ; # Use the package's Get/Put commands.
+package require Tcl    8.4    ; # Min supported version.
+package require critcl 3.1    ; # Need 'meta?' to get the package name.
+package require critcl::util  ; # Use the package's Get/Put commands.
+package require critcl::cutil ; # We are using the C level TRACE macros.
 
 namespace eval ::critcl::objtype {}
 
 # # ## ### ##### ######## ############# #####################
-## API: Generate the declaration and implementation files for the objtype.
+## API: Generate declarations and implementation for a custom Tcl_ObjType
 
-proc ::critcl::objtype::define {name script} {
+# Arguments:
+# - Name of the Tcl_ObjType.
+# - Script specifying the setup. Two possibilities:
+#
+#   1. Values are opaque handles. They come with 4 functions to:
+#      a. Aquire a reference
+#      b. Release a reference
+#      c. ToString
+#      d. FromString
+#
+#      Items (a) and (b) mean that whatever is behind a handle is
+#      reference counted and the functions of the Tcl_ObjType
+#      simply copy the handles around and manage references
+#      properly.
+#
+#      And items (c) and (d) mean that the conversions from and to
+#      string representations are delegated to the handle
+#      functionality.
+#
+#      Specification commands:
+#
+#		handle typename ?spec?
+#
+#		spec :: dict ('ref'     -> ... aquire a reference
+#                         'unref'   -> ... release a reference
+#                         '2string' -> ... convert value to string
+#                         '2value'  -> ... convert string to value)
+#           where ... <=> name of function to
+#
+#           Missing function names (including a missing spec)
+#           causes the generator derive the function names from
+#           the name of the Tcl_ObjType.
+##
+#   2. Values are exposed structures. The obj type declares the
+#      fields (name and types (*)) and the generator creates all
+#      the functions needed to allocate and copy things around.
+#
+#      (*) Type names have to have associated critcl arg __and__
+#          result types.  The associated C conversion fragments
+#          are used in the conversions from and to the string
+#          representations.
+#
+#	   ATTENTION: For the moment let us support only simple
+#	   fields, IOW directly copy-able without need for additional
+#	   management (memory (de)allocation, reference counts).
+#
+#      When that works we can look into ways of making that work
+#      too. Especially if the underlying type is something made by
+#      this generator.
+#
+#      May need a way to access/declare copy constructors.  This
+#      may need extension of the core critcl facilities around argument
+#      and result types.
+#
+#      Specification commands:
+#
+#		structure spec
+#
+#		spec :: dict (field_name -> field_type)
+#
+#		Note: Order is important and taken into account.
+
+proc ::critcl::objtype::structure {name spec args} {
+    variable state
+    Init $name
+
+    set format  tagged-dict
+    set traced 0
+    set tagged  1
+    set format  dict
+    set formats {dict list}
+
+    while {[string match -* [set option [lindex $args 0]]]} {
+	set v [lindex $args 1]
+	switch -exact -- $option {
+	    -format {
+		if {$v ni $formats} {
+		    set formats [linsert [join $formats {, }] end-1 or]
+		    return -code error "Illegal format $v, expected one of $formats"
+		}
+		set format $v
+	    }
+	    -trace {
+		if {![string is bool -strict $v]} {
+		    return -code error "Expected boolean, got $v"
+		}
+		set traced $v
+	    }
+	    -tagged {
+		if {![string is bool -strict $v]} {
+		    return -code error "Expected boolean, got $v"
+		}
+		set tagged [expr {!!$v}] ;#normalization of the boolean to 0/1
+	    }
+	    default {
+		return -code error "Unknown option $option, expected one of -format, trace, or -tagged"
+	    }
+	}
+	set args [lrange $args 2 end]
+    }
+
+    dict set state intrep    ${name}*
+    dict set state mode      structure
+    dict set state structure $spec
+    dict set state format    $format
+    dict set state tagged    $tagged
+    dict set state traced    $traced
+
+    Complete
+    return
+}
+
+proc ::critcl::objtype::handle {name args} {
+    variable state
+    Init $name
+
+    set ctype    $name
+    set traced   0
+    set ref      {}
+    set unref    {}
+    set 2value   {}
+    set 2string  {}
+    set refcount {}
+
+    while {[string match -* [set option [lindex $args 0]]]} {
+	set v [lindex $args 1]
+	switch -exact -- $option {
+	    -trace {
+		if {![string is bool -strict $v]} {
+		    return -code error "Expected boolean, got $v"
+		}
+		set traced [expr {!!$v}]
+	    }
+	    -type {
+		if {$v eq {}} {
+		    return -code error "Expected non-empty string"
+		}
+		set ctype $v
+	    }
+	    -ref -
+	    -unref -
+	    -refcount -
+	    -2value -
+	    -2string {
+		if {$v eq {}} {
+		    return -code error "Expected non-empty string"
+		}
+		# Chopping leading `-` maps option to variable name.
+		set [string range $option 1 end] $v
+	    }
+	    default {
+		return -code error "Unknown option $option, expected one of -trace, -type, -ref, -unref, -refcount, -2string, or -2value"
+	    }
+	}
+	set args [lrange $args 2 end]
+    }
+    foreach k {
+	ref unref refcount 2string 2value
+    } {
+	if {[set $k] ne {}} continue
+	set $k ${ctype}_$k
+    }
+
+    dict set state intrep   $ctype
+    dict set state mode     handle
+    dict set state ref      $ref
+    dict set state unref    $unref
+    dict set state refcount $refcount
+    dict set state 2value   ${2value}
+    dict set state 2string  ${2string}
+    dict set state traced   $traced
+
+    Complete
+    return
+}
+
+proc ::critcl::objtype::Init {name} {
     variable state
     catch { unset state }
 
-    # Arguments:
-    # - name of the Tcl_ObjType.
-    # - script specifying the internal representation and various pieces
-    #   of code.
-
     #puts "=== |$name|"
-    #puts "--- $script"
-
     # Pull the package we are working on out of the system.
 
-    set package [critcl::meta? name]
+    set package  [critcl::meta? name]
     set qpackage [expr {[string match ::* $package]
 			? "$package"
 			: "::$package"}]
 
     # Compute the various C identifiers to use.
-    lassign [uplevel 1 [list ::critcl::name2c $name]]      ns  cns  cname
-    lassign [uplevel 1 [list ::critcl::name2c $qpackage]]  pns pcns cpackage
+    lassign [uplevel 2 [list ::critcl::name2c $name]]      ns  cns  cname
+    lassign [uplevel 2 [list ::critcl::name2c $qpackage]]  pns pcns cpackage
 
     #puts "%%% Pkg  |$package|"
     #puts "%%% pNS  |$pns|"
@@ -53,111 +223,20 @@ proc ::critcl::objtype::define {name script} {
     #puts "%%% CNS   |$cns|"
     #puts "%%% CCN   |$cname|"
 
-    set stem  ${pcns}${cpackage}_$cns$cname
+    set stema ${pcns}${cpackage}_$cns$cname
     set stemb [Camelize ${pcns}${cpackage}]_[Camelize $cns$cname]
-
-    # State initialization
-    # Keys:
-    # - package
-    # - name
-    # - stem
-    # - objtypevar
-    #
-    # - intrep	    = C name of int.rep type.
-    #
-    # - constructor | list        |
-    # - get         | C fragments | optional, ...
-    # - destructor  |             | optional, nothing
-    # - copy        |             | optional, assignment (mem copy)
-    # - stringify   |             | optional, error
-    # - from-any    |             |
-    # - support     |             | optional, nothing
 
     dict set state package     $package
     dict set state name        $name
-    dict set state stem        $stem
-    dict set state objtypevar  ${stem}_ObjType
+    dict set state stem        $stema
+    dict set state objtypevar  ${stema}_ObjType
 
-    # Overridable by spec, indirect.
-    dict set state fun_destructor ${stem}_ReleaseIntRep
-    dict set state fun_copy       ${stem}_DuplicateIntRep
-    dict set state fun_stringify  ${stem}_StringOfIntRep
-    dict set state fun_from_any   ${stem}_IntRepFromAny
+    dict set state api_public   0
+    dict set state api_new      ${stemb}NewObj
+    dict set state api_from     ${stemb}FromObj
+    dict set state code_support {}
 
-    # Code fragment indicators
-    foreach n {
-	constructor
-	copy
-	destructor
-	from_any
-	get
-	stringify
-	support
-    } { dict set state have_$n 0 }
-
-    # Overridable by spec.
-    dict set state api_public 0
-    dict set state api_new  ${stemb}NewObj
-    dict set state api_from ${stemb}FromObj
-
-    # Process the specification.
-    # TODO: check if the 'info frame' information for 'script' passes through properly.
-    spec::Process $script
-
-    # Postprocess the specification.
-
-    # Validation: Was the intrep type specified ?
-    ProcessType
-
-    # Reset function names for the optional destructor and copy
-    # constructor when not specified.
-
-    if {![dict get $state have_destructor]} {
-	dict set state fun_destructor NULL
-    }
-    if {![dict get $state have_copy]} {
-	dict set state fun_copy NULL
-    }
-
-    # Set the standard behaviour for all the unspecified optional
-    # fragments.
-
-    Default support     {}
-    Default constructor { OT_PTR (obj) = (void*) value; }
-    Default get         { *value = (@intrep@) OT_PTR (obj); }
-    Default stringify   {}
-    Default from_any    {
-	Tcl_AppendResult (interp, "Unable to shimmer into type @name@.");
-	return TCL_ERROR;
-    }
-
-    # Rewrite all code fragments from lists into a single block.
-
-    ProcessFragment constructor "\{\n" " " "\}"
-    ProcessFragment destructor  "\{\n" " " "\}"
-    ProcessFragment get         "\{\n" " " "\}"
-    ProcessFragment copy        "\{\n" " " "\}"
-    ProcessFragment stringify   "\{\n" " " "\}"
-    ProcessFragment from-any    "\{\n" " " "\}"
-    ProcessFragment support     "" \n ""
-
-    # Data needed from the specification...
-    # - C type of the intrep.
-    # - How to create a Tcl_Obj* with intrep.
-    # - How to retrieve and return an intrep.
-    # - Base names for the create/retrieve functions.
-    #   (These are the public functions of the generated code)
-    #   (Could be defaulted to objtype name, or full stem).
-    # - Can we support generating the necessary stubs decls
-    #   for the public functions ?
-    # - Code to release the intrep
-    # - Code to duplicate the intrep
-    # - Code to generate string from intrep
-    # - Code to generate intrep from string
-
-    GenerateCode
-
-    unset state
+    dict set state trace TRACE_TAG_OFF
     return
 }
 
@@ -167,36 +246,306 @@ proc ::critcl::objtype::Camelize {s} {
     return [join $r {}]
 }
 
-proc ::critcl::objtype::ProcessType {} {
+proc ::critcl::objtype::Complete {} {
     variable state
-    if {[dict exists $state intrep]} return
 
-    return -code error "Mandatory intrep C type is missing."
-}
+    GenerateCode
+    Emit
 
-proc ::critcl::objtype::Default {section code} {
-    variable state
-    if {[dict exists $state code_$section]} return
-    CodeFragment $section $code
-    return
-}
-
-proc ::critcl::objtype::ProcessFragment {section prefix sep suffix} {
-    # Process code fragments into a single block, if any.
-    # Ensure it exists, even if empty. Required by template.
-    # Optional in specification.
-
-    variable state
-    if {![dict exists $state code_$section]} {
-	set new {}
-    } else {
-	set new ${prefix}[join [dict get $state code_$section] $suffix$sep$prefix]$suffix
-    }
-    dict set state code_$section $new
+    unset state
     return
 }
 
 proc ::critcl::objtype::GenerateCode {} {
+    variable state
+
+    set stem   [dict get $state stem]
+    set traced [dict get $state traced]
+
+    critcl::cutil::tracer on
+
+    # Hook function names
+    Set fun_destructor ${stem}_ReleaseIntRep
+    Set fun_copy       ${stem}_DuplicateIntRep
+    Set fun_stringify  ${stem}_StringOfIntRep
+    Set fun_from_any   ${stem}_IntRepFromAny
+    Set trace          [expr {$traced ? "TRACE_TAG_ON" : "TRACE_TAG_OFF"}]
+
+    GC/[dict get $state mode]
+
+    dict unset state mode
+    dict unset state traced
+    return
+}
+
+proc ::critcl::objtype::GC/handle {} {
+    # TODO: objtrack integration.
+    return
+}
+
+proc ::critcl::objtype::GC/structure {} {
+    variable state
+    # TODO: objtrack integration.
+
+    # Create structure support code allowing for use as a handle.
+
+    set name   [dict get $state name]
+    set stem   [dict get $state stem]
+
+    set format [dict get $state format]    ; dict unset state format
+    set tagged [dict get $state tagged]    ; dict unset state tagged
+    set spec   [dict get $state structure] ; dict unset state structure
+
+    # Generate the code for a (semi)opaque type usable by the
+    # low-level parts of the generator (handle type).
+
+    dict set state ref      ${stem}_ref
+    dict set state unref    ${stem}_unref
+    dict set state 2string  ${stem}_to_string
+    dict set state 2value   ${stem}_to_value
+    dict set state refcount ${stem}_refcount
+
+    foreach {
+	ftype
+	fname
+    } $spec {
+	lassign [critcl::argtype-def $ftype] _ _ val _ _ str
+	if {$str eq {}} {
+	    return -code error "Bad type $ftype: No conversion to string available"
+	}
+
+	lappend fields "$ftype $fname;"
+	lappend strc   $fname $str
+	lappend valc   $fname $val
+    }
+
+    dict set state fields [join $fields "\n\t    "]
+
+    # Wrap the field conversions as per the chosen string
+    # representation (list|dict tagged|untagged)
+
+    dict set state c2string [GC/structure/2string $format $tagged $name $strc]
+    dict set state c2value  [GC/structure/2value  $format $tagged $name $valc]
+    dict set state stype    [string range [dict get $state intrep] 0 end-1]
+
+    Set code_support [join [list [critcl::at::here!]\n {
+	typedef struct @stype@ {
+	    unsigned int refCount;
+	    @fields@
+	} @stype@;
+
+	static int @stem@_refcount (@intrep@ value)
+	{
+	    return value->refCount;
+	}
+
+	static void @stem@_ref (@intrep@ value)
+	{
+	    value->refCount ++;
+	}
+
+	static void @stem@_unref (@intrep@ value)
+	{
+	    if (value->refCount > 1) { value->refCount --; return; }
+	    ckfree ((char*) value);
+	}
+
+	static void @stem@_to_string (@intrep@ value, Tcl_DString* ds)
+	{
+	    @c2string@
+	}
+
+	static int @stem@_to_value_do (Tcl_Interp* interp, Tcl_Obj* obj, @intrep@ value)
+	{
+	    @c2value@
+	    return TCL_OK;
+	}
+
+	static @intrep@ @stem@_to_value (Tcl_Interp* interp, Tcl_Obj* obj)
+	{
+	    @intrep@ value = (@intrep@) ckalloc (sizeof (@stype@));
+	    int res = @stem@_to_value_do (interp, obj, value);
+	    if (res == TCL_OK) { return value; }
+	    ckfree ((char*) value);
+	    return NULL;
+	}
+    }] {}]
+
+    GC/handle
+    return
+}
+
+proc ::critcl::objtype::GC/structure/2value {format tagged name valc} {
+    return [join [GC/structure/2value/$format$tagged $name $valc] "\n\t    "]
+}
+
+proc ::critcl::objtype::GC/structure/2value/list1 {name valc} {
+    set tovalue {}
+    set n       [expr {1 + ([llength $valc] >> 1)}]
+    set index   1
+
+    GC/structure/2value/list-setup
+
+    lappend tovalue "if (strcmp (Tcl_GetString (lv\[0\]), \"$name\") != 0) \{"
+    lappend tovalue "    Tcl_AppendResult (interp,"
+    lappend tovalue "        \"Bad tag, expected '$name'\","
+    lappend tovalue "        NULL);"
+    lappend tovalue "    return TCL_ERROR;"
+    lappend tovalue "\}"
+
+    GC/structure/2value/list-fields $valc
+    return $tovalue
+}
+
+proc ::critcl::objtype::GC/structure/2value/list0 {name valc} {
+    set tovalue {}
+    set n       [expr {[llength $valc] >> 1}]
+    set index   0
+
+    GC/structure/2value/list-setup
+    GC/structure/2value/list-fields $valc
+    return $tovalue
+}
+
+proc ::critcl::objtype::GC/structure/2value/list-setup {} {
+    upvar 1 tovalue tovalue n n
+    lappend tovalue "int       lc;"
+    lappend tovalue "Tcl_Obj** lv;"
+    lappend tovalue "int res = Tcl_ListObjGetElements (interp, obj, &lc, &lv);"
+    lappend tovalue "if (res != TCL_OK) \{ return TCL_ERROR; \}"
+    lappend tovalue "if (lc != $n) \{"
+    lappend tovalue "    Tcl_AppendResult (interp,"
+    lappend tovalue "        \"Bad number of elements, expected $n\","
+    lappend tovalue "        NULL);"
+    lappend tovalue "    return TCL_ERROR;"
+    lappend tovalue "\}"
+    return
+}
+
+proc ::critcl::objtype::GC/structure/2value/list-fields {valc} {
+    upvar 1 tovalue tovalue index index
+    foreach {fname ftov} $valc {
+	set map [list @@ "lv\[$index\]" @A value->$fname]
+	lappend tovalue "/* == $fname ====================================== */"
+	lappend tovalue [string map $map $ftov]
+	incr index
+    }
+    lappend tovalue "/* == ====================================== */"
+    return
+}
+
+proc ::critcl::objtype::GC/structure/2value/dict1 {name valc} {
+    set tovalue {}
+    set n       [expr {[llength $valc] >> 1}]
+
+    lappend tovalue "int size, res;"
+
+    GC/structure/2value/dict-setup 1
+
+    lappend tovalue "Tcl_Obj* inner;"
+    lappend tovalue "Tcl_Obj* key = Tcl_NewStringObj (\"$name\", -1);"
+    lappend tovalue "res = Tcl_DictObjGet (interp, obj, key, &inner);"
+    lappend tovalue "Tcl_DecrRefCount (key);"
+    lappend tovalue "if (res != TCL_OK) \{ return res; \}"
+    lappend tovalue "obj = inner;"
+
+    GC/structure/2value/dict-setup $n
+    GC/structure/2value/dict-fields $name $valc
+
+    return $tovalue
+}
+
+proc ::critcl::objtype::GC/structure/2value/dict0 {name valc} {
+    set tovalue {}
+    set n       [expr {[llength $valc] >> 1}]
+
+    lappend tovalue "int size, res;"
+
+    GC/structure/2value/dict-setup $n
+
+    lappend tovalue "Tcl_Obj* key;"
+
+    GC/structure/2value/dict-fields $name $valc
+
+    return $tovalue
+}
+
+proc ::critcl::objtype::GC/structure/2value/dict-setup {n} {
+    upvar 1 tovalue tovalue
+    lappend tovalue "res = Tcl_DictObjSize (interp, obj, &size);"
+    lappend tovalue "if (res != TCL_OK) \{ return res; \}"
+    lappend tovalue "if (size != $n) \{"
+    lappend tovalue "    Tcl_AppendResult (interp,"
+    lappend tovalue "        \"Bad number of entries, expected $n\","
+    lappend tovalue "        NULL);"
+    lappend tovalue "    return TCL_ERROR;"
+    lappend tovalue "\}"
+    return
+}
+
+proc ::critcl::objtype::GC/structure/2value/dict-fields {name valc} {
+    upvar 1 tovalue tovalue n n
+
+    lappend tovalue "Tcl_Obj* field;"
+    foreach {fname ftov} $valc {
+	# TODO: Use a `critcl::literals::def` for the keys to
+	# eradicate the Tcl_Obj* churn we have here.
+
+	lappend tovalue "/* == $fname ====================================== */"
+	lappend tovalue "key = Tcl_NewStringObj (\"$fname\", -1);"
+	lappend tovalue "res = Tcl_DictObjGet (interp, obj, key, &field);"
+	lappend tovalue "Tcl_DecrRefCount (key);"
+	lappend tovalue "if (res != TCL_OK) \{ return TCL_ERROR; \}"
+	set map [list @@ field @A value->$fname]
+	lappend tovalue [string map $map $ftov]
+	incr index
+    }
+    lappend tovalue "/* == ====================================== */"
+    return
+}
+
+proc ::critcl::objtype::GC/structure/2string {format tagged name strc} {
+    set tostring {}
+    if {$tagged} {
+	switch -exact -- $format {
+	    dict {
+		lappend tostring "Tcl_DStringAppendElement (ds, \"$name\");"
+		lappend tostring "Tcl_DStringStartSublist (ds);"
+	    }
+	    list {
+		lappend tostring "Tcl_DStringAppendElement (ds, \"$name\");"
+	    }
+	}
+    }
+    switch -exact -- $format {
+	dict {
+	    foreach {fname ftos} $strc {
+		set map [list @DS ds @A value->$fname]
+		lappend tostring "Tcl_DStringAppendElement (ds, \"$fname\");"
+		lappend tostring [string map $map "{ $ftos }"]
+	    }
+	}
+	list {
+	    foreach {fname ftos} $strc {
+		set map [list @DS ds @A value->$fname]
+		lappend tostring [string map $map "{ $ftos }"]
+	    }
+	}
+    }
+    if {$tagged && ($format eq "dict")} {
+	lappend tostring "Tcl_DStringEndSublist (ds);"
+    }
+
+    return [join $tostring "\n\t    "]
+}
+
+proc ::critcl::objtype::Set {key value} {
+    variable state
+    dict set state $key $value
+    return
+}
+
+proc ::critcl::objtype::Emit {} {
     variable state
 
     set name     [dict get $state name]
@@ -263,143 +612,6 @@ proc ::critcl::objtype::Template {path} {
     return [critcl::util::Get $path]
 }
 
-proc ::critcl::objtype::Dedent {pfx text} {
-    set result {}
-    foreach l [split $text \n] {
-	lappend result [regsub ^$pfx $l {}]
-    }
-    join $result \n
-}
-
-# # ## ### ##### ######## ############# #####################
-##
-# Internal: All the helper commands providing access to the system
-# state to the specification commands (see next section)
-##
-# # ## ### ##### ######## ############# #####################
-
-proc ::critcl::objtype::CodeFragment {section code} {
-    variable state
-    set code [string trim $code \n]
-    if {$code ne {}} {
-	dict lappend state code_$section $code
-	dict set     state have_$section 1
-    }
-    return
-}
-
-proc ::critcl::objtype::Set {key value} {
-    variable state
-    dict set state $key $value
-    return
-}
-
-# # ## ### ##### ######## ############# #####################
-##
-# Internal: Namespace holding the objtype specification commands. The
-# associated state resides in the outer namespace, as do all the
-# procedures actually accessing that state (see above). Treat it like
-# a sub-package, with a proper API.
-##
-# # ## ### ##### ######## ############# #####################
-
-namespace eval ::critcl::objtype::spec {}
-
-proc ::critcl::objtype::spec::Process {script} {
-    # Note how this script is evaluated within the 'spec' namespace,
-    # providing it with access to the specification methods.
-
-    # Point the global namespace resolution into the spec namespace,
-    # to ensure that the commands are properly found even if the
-    # script moved through helper commands and other namespaces.
-
-    # Note that even this will not override the builtin 'variable'
-    # command with ours, which is why ours is now called
-    # 'insvariable'.
-
-    namespace eval :: [list namespace path [list [namespace current] ::]]
-
-    eval $script
-
-    namespace eval :: {namespace path {}}
-    return
-}
-
-proc ::critcl::objtype::spec::intrep {name} {
-    # Declare C type of the internal representation.
-    # Must be specified.
-    ::critcl::objtype::Set intrep $name
-    return
-}
-
-proc ::critcl::objtype::spec::api {name} {
-    newobj ${name}NewObj
-    getobj ${name}GetFromObj
-    return
-}
-
-proc ::critcl::objtype::spec::fromobj {name} {
-    ::critcl::objtype::Set api_from $name
-    return
-}
-
-proc ::critcl::objtype::spec::newobj {name} {
-    ::critcl::objtype::Set api_new $name
-    return
-}
-
-proc ::critcl::objtype::spec::stubs {} {
-    ::critcl::objtype::Set api_public 1
-    return
-}
-
-proc ::critcl::objtype::spec::constructor {code} {
-    # create internal representation.
-    # - argument list ?
-    ::critcl::objtype::CodeFragment constructor $code;#[critcl::at::get*]$code
-    return
-}
-
-proc ::critcl::objtype::spec::get {code} {
-    # return internal representation.
-    # optional.
-    # Default is to return obj->internalRep.otherValuePtr
-    # Cast to the representation type.
-    # - environment:
-    ::critcl::objtype::CodeFragment get $code;#[critcl::at::get*]$code
-    return
-}
-
-proc ::critcl::objtype::spec::destructor {code} {
-    # release intrep. optional. default: nothing
-    ::critcl::objtype::CodeFragment destructor $code;#[critcl::at::get*]$code
-    return
-}
-
-proc ::critcl::objtype::spec::copy {code} {
-    # duplicate intrep. optional. default: C assignment.
-    ::critcl::objtype::CodeFragment copy $code;#[critcl::at::get*]$code
-    return
-}
-
-proc ::critcl::objtype::spec::stringify {code} {
-    # generate string from intrep. optional. default: error.
-    ::critcl::objtype::CodeFragment stringify $code;#[critcl::at::get*]$code
-    return
-}
-
-proc ::critcl::objtype::spec::from-any {code} {
-    # parse string, generate intrep.
-    ::critcl::objtype::CodeFragment from_any $code;#[critcl::at::get*]$code
-    return
-}
-
-proc ::critcl::objtype::spec::support {code} {
-    # additional support code. optional. default: nothing
-    ::critcl::objtype::CodeFragment support $code;#[critcl::at::get*]$code
-    return
-}
-
 # # ## ### ##### ######## ############# #####################
 ## State
 
@@ -411,7 +623,7 @@ namespace eval ::critcl::objtype {
 ## Export API
 
 namespace eval ::critcl::objtype {
-    namespace export define
+    namespace export structure handle
     catch { namespace ensemble create }
 }
 

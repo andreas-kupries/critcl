@@ -924,6 +924,7 @@ proc ::critcl::argtype-def {name} {
     lappend def [ArgumentConversion $name]
     lappend def [ArgumentRelease    $name]
     lappend def [ArgumentSupport    $name]
+    lappend def [Argument2String    $name]
     return $def
 }
 
@@ -933,6 +934,7 @@ proc ::critcl::argtype {name conversion {ctype {}} {ctypeb {}}} {
     variable v::aconv
     variable v::acrel
     variable v::acsup
+    variable v::a2string
 
     # ctype  Type of variable holding the argument.
     # ctypeb Type of formal C function argument.
@@ -954,6 +956,10 @@ proc ::critcl::argtype {name conversion {ctype {}} {ctypeb {}}} {
 	    #puts COPY/R:$ctype
 	    set acrel($name) $acrel($ctype)
 	}
+	if {[info exists a2string($ctype)]} {
+	    #puts COPY/2S:$ctype
+	    set a2string($name) $a2string($ctype)
+	}
 
 	set conversion $aconv($ctype)
 	set ctypeb     $actypeb($ctype)
@@ -974,12 +980,31 @@ proc ::critcl::argtype {name conversion {ctype {}} {ctypeb {}}} {
 	 ($actype($name)  ne $ctype) ||
 	 ($actypeb($name) ne $ctypeb))
     } {
-	return -code error "Illegal duplicate definition of '$name'."
+	return -code error \
+	    "Illegal duplicate definition of '$name'."
     }
 
     set aconv($name)   $conversion
     set actype($name)  $ctype
     set actypeb($name) $ctypeb
+    return
+}
+
+proc ::critcl::argtype2string {name code} {
+    variable v::aconv
+    variable v::a2string
+    if {![info exists aconv($name)]} {
+	return -code error "No definition for '$name'."
+    }
+
+    if {[info exists a2string($name)] &&
+	($a2string($name) ne $code)
+    } {
+	return -code error \
+	    "Illegal duplicate string conversion of '$name'."
+    }
+
+    set a2string($name) $code
     return
 }
 
@@ -3856,6 +3881,11 @@ proc ::critcl::ArgumentRelease {type} {
     return {}
 }
 
+proc ::critcl::Argument2String {type} {
+    if {[info exists v::a2string($type)]} { return $v::a2string($type) }
+    return {}
+}
+
 proc ::critcl::ArgumentCType {type} {
     if {[info exists v::actype($type)]} { return $v::actype($type) }
     return -code error "Unknown argument type \"$type\""
@@ -5388,31 +5418,39 @@ proc ::critcl::Initialize {} {
     argtype int {
 	if (Tcl_GetIntFromObj(interp, @@, &@A) != TCL_OK) return TCL_ERROR;
     }
+    argtype2string int { char buf [TCL_INTEGER_SPACE]; sprintf (buf, "%d", @A); Tcl_DStringAppendElement (@DS, buf); }
+
     argtype boolean {
 	if (Tcl_GetBooleanFromObj(interp, @@, &@A) != TCL_OK) return TCL_ERROR;
     } int int
+    argtype2string boolean { char buf [TCL_INTEGER_SPACE]; sprintf (buf, "%d", @A ? 1 : 0); Tcl_DStringAppendElement (@DS, buf); }
     argtype bool = boolean
 
     argtype long {
 	if (Tcl_GetLongFromObj(interp, @@, &@A) != TCL_OK) return TCL_ERROR;
     }
+    argtype2string long { char buf [TCL_INTEGER_SPACE]; sprintf (buf, "%ld", @A); Tcl_DStringAppendElement (@DS, buf); }
 
     argtype wideint {
 	if (Tcl_GetWideIntFromObj(interp, @@, &@A) != TCL_OK) return TCL_ERROR;
     } Tcl_WideInt Tcl_WideInt
+    # TODO: 2string
 
     argtype double {
 	if (Tcl_GetDoubleFromObj(interp, @@, &@A) != TCL_OK) return TCL_ERROR;
     }
+    argtype2string double { char buf [TCL_DOUBLE_SPACE]; Tcl_PrintDouble (0, @A, buf); Tcl_DStringAppendElement (@DS, buf); }
     argtype float {
 	double t;
 	if (Tcl_GetDoubleFromObj(interp, @@, &t) != TCL_OK) return TCL_ERROR;
 	@A = (float) t;
     }
+    argtype2string float { char buf [TCL_DOUBLE_SPACE]; double t = @A; Tcl_PrintDouble (0, t, buf); Tcl_DStringAppendElement (@DS, buf); }
 
     # Premade scalar type derivations for common range restrictions.
-    # Look to marker XXXA for the places where auto-creation would
-    # need fitting in (future).
+    # See marker XXXA for the places where auto-creation would need
+    # fitting in (future).
+
     foreach type {
 	int long wideint double float
     } {
@@ -5433,7 +5471,8 @@ proc ::critcl::Initialize {} {
 		"\n    return TCL_ERROR;" \
 		"\n\}"
 
-	    argtype $ntype $new $ctype $ctype
+	    argtype        $ntype $new $ctype $ctype
+	    argtype2string $ntype [Argument2String $type]
 	}
     }
 
@@ -5818,13 +5857,22 @@ namespace eval ::critcl {
 	variable  actypeb
 	array set actypeb {}
 
-	# In the code fragments below we have the following environment (placeholders, variables):
+	# In the code fragments below we have the following
+	# environment (placeholders, variables):
+	#
 	# ip - C variable, Tcl_Interp* of the interpreter providing the arguments.
 	# @@ - Tcl_Obj* valued expression returning the Tcl argument value.
 	# @A - Name of the C-level argument variable.
 	#
 	variable  aconv
 	array set aconv {}
+
+	# More conversions for a type, to strings. Note that
+	# converting from string (rather: Tcl_Obj*) is the basic part
+	# of the type definition.
+
+	variable  a2string
+	array set a2string {}
 
 	# Mapping from cproc result to C result type of the function.
 	# This is also the C type of the helper variable holding the result.

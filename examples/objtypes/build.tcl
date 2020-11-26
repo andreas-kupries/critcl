@@ -3,10 +3,13 @@
 exec tclsh "$0" ${1+"$@"}
 set me [file normalize [info script]]
 set packages {
-    int_objtype
-    double_objtype
-    point_objtype
-    pointrc_objtype
+    point2_objtype
+    point2a_objtype
+    point2b_objtype
+    point2c_objtype
+    point2t_objtype
+    point3_objtype
+    point3t_objtype
 }
 proc main {} {
     global argv tcl_platform tag
@@ -84,7 +87,7 @@ proc log {args} {
 
     .t insert end-1c $text $tag
     set tag {}
-    if {$newline} { 
+    if {$newline} {
 	.t insert end-1c \n
     }
 
@@ -142,7 +145,7 @@ proc _install {{ldir {}}} {
 	set version [version $src]
 
 	file delete -force             [pwd]/BUILD_$p
-	critcl::app::main [list -cache [pwd]/BUILD_$p -libdir $ldir -includedir $idir -pkg $src]
+	critcl::app::main [list -keep -cache [pwd]/BUILD_$p -libdir $ldir -includedir $idir -pkg $src]
 
 	if {![file exists $ldir/$p]} {
 	    set ::NOTE {warn {DONE, with FAILURES}}
