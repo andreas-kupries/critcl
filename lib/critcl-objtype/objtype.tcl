@@ -3,8 +3,9 @@
 # Pragmas for MetaData Scanner.
 # n/a
 
-# CriTcl Utility Commands. Generation of Tcl_ObjType handling conversion
-# from and to a C representation.
+# CriTcl Utility Commands. Generator for Tcl_ObjTypes handling
+# conversion from and to a C type (opaque pointer, or structure).
+# Note, internally the second case is reduced to the first.
 
 package provide critcl::objtype 1
 
@@ -14,7 +15,9 @@ package provide critcl::objtype 1
 package require Tcl    8.4    ; # Min supported version.
 package require critcl 3.1    ; # Need 'meta?' to get the package name.
 package require critcl::util  ; # Use the package's Get/Put commands.
+
 package require critcl::cutil ; # We are using the C level TRACE macros.
+critcl::cutil::tracer on      ; # Set the necessary includes up.
 
 namespace eval ::critcl::objtype {}
 
@@ -262,8 +265,6 @@ proc ::critcl::objtype::GenerateCode {} {
     set stem   [dict get $state stem]
     set traced [dict get $state traced]
 
-    critcl::cutil::tracer on
-
     # Hook function names
     Set fun_destructor ${stem}_ReleaseIntRep
     Set fun_copy       ${stem}_DuplicateIntRep
@@ -326,13 +327,12 @@ proc ::critcl::objtype::GC/structure {} {
 
     dict set state c2string [GC/structure/2string $format $tagged $name $strc]
     dict set state c2value  [GC/structure/2value  $format $tagged $name $valc]
-    dict set state stype    [string range [dict get $state intrep] 0 end-1]
 
     Set code_support [join [list [critcl::at::here!]\n {
-	typedef struct @stype@ {
+	typedef struct @intrep@_s {
 	    unsigned int refCount;
 	    @fields@
-	} @stype@;
+	} @intrep@_s;
 
 	static int @stem@_refcount (@intrep@ value)
 	{
@@ -363,7 +363,7 @@ proc ::critcl::objtype::GC/structure {} {
 
 	static @intrep@ @stem@_to_value (Tcl_Interp* interp, Tcl_Obj* obj)
 	{
-	    @intrep@ value = (@intrep@) ckalloc (sizeof (@stype@));
+	    @intrep@ value = (@intrep@) ckalloc (sizeof (@intrep@_s));
 	    int res = @stem@_to_value_do (interp, obj, value);
 	    if (res == TCL_OK) { return value; }
 	    ckfree ((char*) value);
