@@ -574,6 +574,14 @@ proc ::critcl::objtype::Emit {} {
     critcl::argtype $name \n[critcl::at::here!][string map $map {
 	if (@api_from@ (interp, @@, &@A) != TCL_OK) return TCL_ERROR;
     }] $intrep $intrep
+    # TODO: field use => ref code.
+
+    critcl::argtype2string $name \n[critcl::at::here!][string map $map {
+	Tcl_DStringStartSublist (@DS);
+	@stem@_to_string (@A, @DS);
+	Tcl_DStringEndSublist (@DS);
+    }]
+    # TODO: field release => unref code.
 
     critcl::resulttype $name \n[critcl::at::here!][string map $map {
 	/* @api_new@ result is 0-refcount */
