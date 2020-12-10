@@ -1,3 +1,4 @@
+
 <!DOCTYPE html><html><head>
 <title>critcl::objtype - C Runtime In Tcl (CriTcl)</title>
 <style type="text/css"><!--
@@ -112,16 +113,17 @@
 <li class="doctools_section"><a href="#synopsis">Synopsis</a></li>
 <li class="doctools_section"><a href="#section1">Description</a></li>
 <li class="doctools_section"><a href="#section2">API</a></li>
-<li class="doctools_section"><a href="#section3">Supporting definitions</a></li>
-<li class="doctools_section"><a href="#section4">Examples</a>
+<li class="doctools_section"><a href="#section3">Examples</a>
 <ul>
-<li class="doctools_subsection"><a href="#subsection1">Simple Values</a></li>
-<li class="doctools_subsection"><a href="#subsection2">Structure Values</a></li>
-<li class="doctools_subsection"><a href="#subsection3">Structure values, reference counted</a></li>
+<li class="doctools_subsection"><a href="#subsection1">Handle</a></li>
+<li class="doctools_subsection"><a href="#subsection2">Structure - Tagged Dict</a></li>
+<li class="doctools_subsection"><a href="#subsection3">Structure - Dict</a></li>
+<li class="doctools_subsection"><a href="#subsection4">Structure - Tagged List</a></li>
+<li class="doctools_subsection"><a href="#subsection5">Structure - List</a></li>
 </ul>
 </li>
-<li class="doctools_section"><a href="#section5">Authors</a></li>
-<li class="doctools_section"><a href="#section6">Bugs, Ideas, Feedback</a></li>
+<li class="doctools_section"><a href="#section4">Authors</a></li>
+<li class="doctools_section"><a href="#section5">Bugs, Ideas, Feedback</a></li>
 <li class="doctools_section"><a href="#keywords">Keywords</a></li>
 <li class="doctools_section"><a href="#category">Category</a></li>
 <li class="doctools_section"><a href="#copyright">Copyright</a></li>
@@ -135,19 +137,8 @@
 <li>package require <b class="pkgname">critcl::objtype <span class="opt">?0?</span></b></li>
 </ul>
 <ul class="doctools_syntax">
-<li><a href="#1"><b class="cmd">::critcl::objtype define</b> <i class="arg">name</i> <i class="arg">script</i></a></li>
-<li><a href="#2"><b class="cmd">support</b> <i class="arg">code</i></a></li>
-<li><a href="#3"><b class="cmd">intrep</b> <i class="arg">name</i></a></li>
-<li><a href="#4"><b class="cmd">fromobj</b> <i class="arg">name</i></a></li>
-<li><a href="#5"><b class="cmd">newobj</b> <i class="arg">name</i></a></li>
-<li><a href="#6"><b class="cmd">api</b> <i class="arg">name</i></a></li>
-<li><a href="#7"><b class="cmd">constructor</b> <i class="arg">code</i></a></li>
-<li><a href="#8"><b class="cmd">get</b> <i class="arg">code</i></a></li>
-<li><a href="#9"><b class="cmd">copy</b> <i class="arg">code</i></a></li>
-<li><a href="#10"><b class="cmd">destructor</b> <i class="arg">code</i></a></li>
-<li><a href="#11"><b class="cmd">stringify</b> <i class="arg">code</i></a></li>
-<li><a href="#12"><b class="cmd">from-any</b> <i class="arg">code</i></a></li>
-<li><a href="#13"><b class="cmd">stubs</b></a></li>
+<li><a href="#1"><b class="cmd">::critcl::objtype handle</b> <i class="arg">name</i> <span class="opt">?<i class="arg">option...</i>?</span></a></li>
+<li><a href="#2"><b class="cmd">::critcl::objtype structure</b> <i class="arg">name</i> <i class="arg">spec</i> <span class="opt">?<i class="arg">option...</i>?</span></a></li>
 </ul>
 </div>
 </div>
@@ -157,395 +148,171 @@ embedded in Tcl on the fly and either loading the resulting objects into Tcl for
 immediate use or packaging them for distribution.  Use <i class="term"><a href="critcl_pkg.html">CriTcl</a></i> to improve
 performance by rewriting in C those routines that are performance bottlenecks.</p>
 <p>This document is the reference manpage for the <b class="package">critcl::objtype</b>
-package. This package provides convenience commands for advanced
-functionality built on top of the critcl core.</p>
+package. This package provides convenience commands for advanced functionality
+built on top of the critcl core.</p>
 <p>While Tcl comes with a variety of useful value types
-(<b class="type">Tcl_ObjType</b>) built into the core there are situations which
-are best dealt with using a custom Tcl_ObjType to handle the special
-values it came with.</p>
-<p>With this package a developer can focus on the core of the
-custom value handling, i.e. allocation, conversion into and out of
-strings, release, without having to deal with the boilerplate around
-it.</p>
-<p>Its intended audience are mainly developers wishing to write
-Tcl packages with embedded C code.</p>
+(<b class="type">Tcl_ObjType</b>) built into the core there are situations which are best
+dealt by using a custom Tcl_ObjType to handle the special values it came with.</p>
+<p>With this package a developer can focus on the core handling for the
+custom value, i.e. allocation, conversion into and out of strings, release,
+etc., without having to deal with the boilerplate around it.</p>
+<p>It's intended audience are mainly developers wishing to write Tcl
+packages with embedded C code.</p>
 <p>This package resides in the Core Package Layer of CriTcl.</p>
 <p><img alt="arch_core" src="../image/arch_core.png"></p>
 </div>
 <div id="section2" class="doctools_section"><h2><a name="section2">API</a></h2>
 <dl class="doctools_definitions">
-<dt><a name="1"><b class="cmd">::critcl::objtype define</b> <i class="arg">name</i> <i class="arg">script</i></a></dt>
-<dd><p>This command creates C code containing a static <b class="type">Tcl_ObjType</b>
-structure and associated functions implementing a custom value type
-for Tcl.</p>
-<p>This creation is guided by the definition commands in
-<i class="arg">script</i> specifying the various parts of the type. The available
-commands are documented after this.</p>
+<dt><a name="1"><b class="cmd">::critcl::objtype handle</b> <i class="arg">name</i> <span class="opt">?<i class="arg">option...</i>?</span></a></dt>
+<dd><p>This command creates the C code for a custom <b class="type">Tcl_ObjType</b> with the
+specified <i class="arg">name</i>.
+<em>By default</em> it assumes the existence of a reference-counted opaque C
+type of the same name, with five C functions to access the same, whose names
+are derived from the name of the C type. The functions are expected to have
+the signatures and behaviour given below:</p>
+<dl class="doctools_definitions">
+<dt>void <b class="function"><i class="arg">name</i>_ref</b> (&lt;name&gt; <i class="arg">x</i>)</dt>
+<dd><p>Aquire a reference to object <i class="arg">x</i>.</p></dd>
+<dt>void <b class="function"><i class="arg">name</i>_unref</b> (&lt;name&gt; <i class="arg">x</i>)</dt>
+<dd><p>Release a reference to object <i class="arg">x</i>. The function has to destroy <i class="arg">x</i>
+when its reference counts drops below <b class="const">1</b>.</p></dd>
+<dt>void <b class="function"><i class="arg">name</i>_to_string</b> (&lt;name&gt; <i class="arg">x</i>, Tcl_DString* <i class="arg">ds</i>)</dt>
+<dd><p>Serialize object <i class="arg">x</i> into the <b class="type">Tcl_DString*</b> variable <i class="arg">ds</i>.
+The DString is initialized and empty when the function is called.</p></dd>
+<dt>&lt;name&gt; <b class="function"><i class="arg">name</i>_to_value</b> (Tcl_Interp* <i class="arg">interp</i>, Tcl_Obj* <i class="arg">obj</i>)</dt>
+<dd><p>Deserialize (the string representation of) <i class="arg">obj</i> into an object of the
+type and return it. The function has to return <b class="const">NULL</b> on error.</p></dd>
+<dt>int <b class="function"><i class="arg">name</i>_refcount</b> (&lt;name&gt; <i class="arg">x</i>)</dt>
+<dd><p>Return the number of references to <i class="arg">x</i>. Note that the generated C code
+uses this function only in <b class="const">TRACE_...</b> statements.</p></dd>
+</dl>
+<p>All of the above can be overridden by one or more option arguments following
+the <i class="arg">name</i>. The recognized options are:</p>
+<dl class="doctools_options">
+<dt><b class="option">-type</b> <i class="arg">string</i></dt>
+<dd><p>This option overrides the name of the C type managed by the new type. The
+names of the expected functions change accordingly, if not overridden by any
+of the following options.</p></dd>
+<dt><b class="option">-ref</b> <i class="arg">string</i></dt>
+<dd></dd>
+<dt><b class="option">-unref</b> <i class="arg">string</i></dt>
+<dd></dd>
+<dt><b class="option">-refcount</b> <i class="arg">string</i></dt>
+<dd></dd>
+<dt><b class="option">-2value</b> <i class="arg">string</i></dt>
+<dd></dd>
+<dt><b class="option">-2string</b> <i class="arg">string</i></dt>
+<dd><p>These options override the names of the functions used to access the C type.</p></dd>
+<dt><b class="option">-trace</b> <i class="arg">bool</i></dt>
+<dd><p>By default the <b class="const">TRACE...</b> statements embedded into the generated C code
+of the new type are inactive.
+This option allows them to activated. Note, this will be a source change,
+affecting the package build. This is not a runtime flag.</p></dd>
+</dl>
 <p>The result of the command is an empty string.</p>
 <p>The actual results are found in the header file generated by
 the command.</p></dd>
-<dt><a name="2"><b class="cmd">support</b> <i class="arg">code</i></a></dt>
-<dd><p>This command specifies general supporting C code for the type. The
-code fragment is global, and placed between the declarations and
-definitions of the Tcl_ObjType (structures, functions).</p>
-<p>The result of the command is an empty string.</p></dd>
-<dt><a name="3"><b class="cmd">intrep</b> <i class="arg">name</i></a></dt>
-<dd><p>This command specifies the C type to use for the internal
-representation of values. The type has to be known or declared before
-the function definitions. The <b class="cmd">support</b> command is a good place
-for that, if the type is not builtin C type.</p></dd>
-<dt><a name="4"><b class="cmd">fromobj</b> <i class="arg">name</i></a></dt>
-<dd><p>This command specifies the name of the function extracting a C value
-of type <b class="cmd">intrep</b> (see above) from a <b class="type">Tcl_Obj*</b>.</p>
-<p>If not specified the generator falls back to &quot;<i class="arg">name</i>FromObj&quot;
-using the <i class="arg">name</i> from <b class="cmd">::critcl::objtype define</b>.</p>
-<p>The C signature of the function is</p>
-<pre class="doctools_example">
-    int &lt;name&gt; (Tcl_Interp* interp, Tcl_Obj* obj, &lt;intrep&gt;* value);
-</pre>
-<p>The <b class="cmd">get</b> command specifies the parts of the function body which
-are not boilerplate.</p>
-<p>The result of the command is an empty string.</p></dd>
-<dt><a name="5"><b class="cmd">newobj</b> <i class="arg">name</i></a></dt>
-<dd><p>This command specifies the name of the function creating a
-<b class="type">Tcl_Obj*</b> from a C value of type <b class="cmd">intrep</b> (see above).</p>
-<p>If not specified the generator falls back to &quot;<i class="arg">name</i>NewObj&quot;
-using the <i class="arg">name</i> from <b class="cmd">::critcl::objtype define</b>.</p>
-<p>The C signature of the function is</p>
-<pre class="doctools_example">
-    Tcl_Obj* &lt;name&gt; (&lt;intrep&gt;* value);
-</pre>
-<p>The <b class="cmd">constructor</b> command specifies the parts of the function body
-which are not boilerplate.</p>
-<p>The result of the command is an empty string.</p></dd>
-<dt><a name="6"><b class="cmd">api</b> <i class="arg">name</i></a></dt>
-<dd><p>This command is a convenience command performing the actions of both
-<b class="cmd">fromobj</b> and <b class="cmd">newobj</b>.</p>
-<p>The result of the command is an empty string.</p></dd>
-<dt><a name="7"><b class="cmd">constructor</b> <i class="arg">code</i></a></dt>
-<dd><p>This command specifies how a C value of type <b class="cmd">intrep</b> is converted
-into a <b class="type">Tcl_Obj*</b>.
-This is the part of the <b class="cmd">newobj</b> function which is not boiler
-plate.</p>
-<p>The code has access to the two variables <b class="variable">obj</b> and
-<b class="variable">value</b>. The first refers to a newly allocated <b class="type">Tcl_Obj*</b> to
-fill, and the second contains the value to convert.</p>
-<p>If this code is not specified the generator falls back to
-casting the value to a <b class="type">void*</b> before copying it into the
-<b class="variable">ptr1</b> field of the <b class="type">Tcl_Obj*</b>.</p>
-<p>The result of the command is an empty string.</p></dd>
-<dt><a name="8"><b class="cmd">get</b> <i class="arg">code</i></a></dt>
-<dd><p>This command specifies how a C value of type <b class="cmd">intrep</b> is retrieved
-from a <b class="type">Tcl_Obj*</b>.
-This is the part of the <b class="cmd">fromobj</b> function which is not boiler
-plate.</p>
-<p>The code has access to the three variables <b class="variable">interp</b>,
-<b class="variable">obj</b> and <b class="variable">value</b>.  The first is a <b class="type">Tcl_Interp*</b> of the
-interpreter we are in, the second is the <b class="type">Tcl_Obj*</b> we query, and
-the last a pointer to the destination to store the retrieved value
-into.</p>
-<p>If this code is not specified the generator falls back to
-casting the value of the <b class="variable">obj</b>'s <b class="variable">ptr1</b> to the <b class="cmd">intrep</b>
-type and then copying the result to the destination.</p>
-<p>Note that shimmering the <b class="variable">obj</b> to this type, if it does
-not have that type, is part of the standard behaviour of the function.
-This makes use of the conversion code specified by <b class="cmd">parse</b>.</p>
-<p>The result of the command is an empty string.</p></dd>
-<dt><a name="9"><b class="cmd">copy</b> <i class="arg">code</i></a></dt>
-<dd><p>This command specifies how a <b class="type">Tcl_Obj*</b> of this type is
-duplicated, i.e. copied.</p>
-<p>The code has access to two variables, <b class="variable">obj</b> and
-<b class="variable">dupobj</b>. The first references the <b class="type">Tcl_Obj*</b> to duplicate,
-and the second references a newly allocated, empty <b class="type">Tcl_Obj*</b> to
-fill with the duplicated <b class="cmd">intrep</b>.</p>
-<p>If this code is not specified the copy constructor is left as
-<b class="const">NULL</b> and the Tcl core standard behaviour applies, which simply
-copies the intrep over.</p>
-<p>The result of the command is an empty string.</p></dd>
-<dt><a name="10"><b class="cmd">destructor</b> <i class="arg">code</i></a></dt>
-<dd><p>This command specifies how a <b class="type">Tcl_Obj*</b> of this type releases it
-<b class="cmd">intrep</b> when the core destroys it.</p>
-<p>The code has access to a single variable, <b class="variable">obj</b>, which
-references the <b class="type">Tcl_Obj*</b> being released.</p>
-<p>If this code is not specified the destructor is left as
-<b class="const">NULL</b> and the Tcl core standard behaviour applies, which simply
-does nothing.</p>
-<p>The result of the command is an empty string.</p></dd>
-<dt><a name="11"><b class="cmd">stringify</b> <i class="arg">code</i></a></dt>
-<dd><p>This command specifies how to construct a string representation
-from the <b class="cmd">intrep</b> of this type.</p>
-<p>The code has access to a single variable, <b class="variable">obj</b>, which
-references the <b class="type">Tcl_Obj*</b> whose string representation has to be
-filled in.</p>
-<p>If this code is not specified then <em>nothing</em> is done. In
-other words, values of this type have no string representation.  This
-not only prevents printing such values, but also the conversion to any
-other <b class="type">Tcl_ObjType</b> using an intermediate string representation
-as part of shimmering to it.</p>
-<p>Note the supporting macros <b class="function">OT_STR_SET</b>, <b class="function">OT_STR_DUP</b>,
-and <b class="function">OT_STR_DS</b>. See the <span class="sectref"><a href="#section3">Supporting definitions</a></span>.</p>
-<p>The result of the command is an empty string.</p></dd>
-<dt><a name="12"><b class="cmd">from-any</b> <i class="arg">code</i></a></dt>
-<dd><p>This command specifies how to shimmer a <b class="type">Tcl_Obj*</b> from whatever
-current type it has to this type.</p>
-<p>The code has access to the three variables <b class="variable">interp</b>,
-<b class="variable">obj</b> and <b class="variable">value</b>.  The first is a <b class="type">Tcl_Interp*</b> of the
-interpreter we are in, the second is the <b class="type">Tcl_Obj*</b> to shimmer,
-and the last is the place where to construct the new <b class="cmd">intrep</b>.</p>
-<p>The function using this code will call this first before
-releasing the old internal representation and at last using the
-<b class="cmd">constructor</b> code to store the new internal representation found
-in <b class="variable">value</b> into the object.</p>
-<p>The result of the command is an empty string.</p></dd>
-<dt><a name="13"><b class="cmd">stubs</b></a></dt>
-<dd><p>This command tells the generator that the <b class="cmd">fromobj</b> and
-<b class="cmd">newobj</b> functions of this type are to be made public,
-i.e. exported through the stubs table of the package the code will be
-made a part of.</p></dd>
+<dt><a name="2"><b class="cmd">::critcl::objtype structure</b> <i class="arg">name</i> <i class="arg">spec</i> <span class="opt">?<i class="arg">option...</i>?</span></a></dt>
+<dd><p>This command creates the C code for a custom <b class="type">Tcl_ObjType</b> with the
+specified <i class="arg">name</i> and the structure fields defined by the <i class="arg">spec</i>.</p>
+<p>Internally this form is reduced to a <b class="cmd">handle</b>, with the generator
+not only emitting the boiler plate needed for the type itself, but also
+emitting the code implementing the C structure and opaque type it uses.</p>
+<p>The <i class="arg">spec</i> is expected to be a single list of alternating type and
+field names, i.e. each type name is followed by the name of field the type
+applies to.
+The acceptable type names are all known Critcl argument types which have an
+associated <b class="cmd">critcl::argtype2string</b> definition. This definition specifies
+how to serialize a value of the type into a <b class="type">Tcl_DString*</b> variable.</p>
+<p>Currently the only types doing so are a subset of the basic scalars,
+namely <b class="type">int</b>, <b class="type">long</b>, <b class="type">boolean</b>, <b class="type">double</b>, and
+<b class="type">float</b>, further their aliases, and the associated sets of common range
+restrictions.</p>
+<p>The nature of the string representation used for the new type is guided
+by the options following <i class="arg">name</i> and <i class="arg">spec</i>.</p>
+<dl class="doctools_options">
+<dt><b class="option">-format</b> <b class="const">dict</b>|<b class="const">list</b></dt>
+<dd><p>This option chooses between dictionary and list representations.  In a
+dictionary representation the fields are named, enabling deserialization from
+any order. In the list representation the values are simply listed in their
+order of specification, and deserialized in that same order.</p>
+<p>The default is <b class="const">dict</b>.</p></dd>
+<dt><b class="option">-tagged</b> <i class="arg">boolean</i></dt>
+<dd><p>This option determines if the string representation comes with a leading tag
+indicating the type of the entire string value, or not.</p>
+<p>The default is <b class="const">true</b>, i.e. <em>tagged</em>.</p></dd>
+<dt><b class="option">-trace</b> <i class="arg">boolean</i></dt>
+<dd><p>By default the <b class="const">TRACE...</b> statements embedded into the generated C code
+of the new type are inactive.
+This option allows them to activated. Note, this will be a source change,
+affecting the package build. This is not a runtime flag.</p></dd>
+</dl>
+<p>The result of the command is an empty string.</p>
+<p>The actual results are found in the header file generated by
+the command.</p></dd>
 </dl>
 </div>
-<div id="section3" class="doctools_section"><h2><a name="section3">Supporting definitions</a></h2>
-<p>All <i class="arg">code</i> argument not only have access to the variables listed
-in their documentation above, the definitions from the <b class="cmd">support</b>
-cmd, but also to</p>
-<dl class="doctools_definitions">
-<dt><b class="const">@have_destructor@</b></dt>
-<dd><p>Boolean (<b class="const">0</b>/<b class="const">1</b>).
-True indicates that the <b class="cmd">destructor</b> was specified.</p></dd>
-<dt><b class="const">@have_copy@</b></dt>
-<dd><p>Boolean (<b class="const">0</b>/<b class="const">1</b>).
-True indicates that the <b class="cmd">copy</b> constructor was specified.</p></dd>
-<dt><b class="const">@fun_destructor@</b></dt>
-<dd><p>Name of the destructor function.</p></dd>
-<dt><b class="const">@fun_copy@</b></dt>
-<dd><p>Name of the copy constructor function.</p></dd>
-<dt><b class="const">@fun_stringify@</b></dt>
-<dd><p>Name of the function generating the
-string representation.</p></dd>
-<dt><b class="const">@fun_from_any@</b></dt>
-<dd><p>Name of the function generating the
-<b class="cmd">intrep</b>'s internal representation from any other type, i.e. the
-function to shimmer a <b class="type">Tcl_Obj*</b> to this type.</p></dd>
-<dt><b class="const">@api_new@</b></dt>
-<dd><p>Name of the main constructor function.
-See <b class="cmd">newobj</b>.</p></dd>
-<dt><b class="const">@api_from@</b></dt>
-<dd><p>Name of the main retrieval function.
-See <b class="cmd">fromobj</b>.</p></dd>
-<dt><b class="const">@intrep@</b></dt>
-<dd><p>Name of the C type to use for the internal
-representation. See <b class="cmd">intrep</b>.</p></dd>
-<dt><b class="function">OT_DOUBLE(o)</b></dt>
-<dd></dd>
-<dt><b class="function">OT_LONG(o)</b></dt>
-<dd></dd>
-<dt><b class="function">OT_LONG2(o)</b></dt>
-<dd></dd>
-<dt><b class="function">OT_PTR(o)</b></dt>
-<dd></dd>
-<dt><b class="function">OT_PTR2(o)</b></dt>
-<dd></dd>
-<dt><b class="function">OT_WIDE(o)</b></dt>
-<dd><p>These macros are shorthands for easy access to the various sub-fields
-of the <b class="variable">internalRep</b> of a <b class="type">Tcl_Obj*</b>.
-Their arguments are a <b class="type">Tcl_Obj*</b> value, and the result can be
-used on either side of an assignment.</p></dd>
-<dt><b class="function">OT_STR_DUP(o,len,str)</b></dt>
-<dd></dd>
-<dt><b class="function">OT_STR_SET(o,len,str)</b></dt>
-<dd><p>These macros are shorthands for setting the string representation of
-an <b class="type">Tcl_Obj*</b>.
-<i class="arg">o</i> is the <b class="type">Tcl_Obj*</b> value to modify, <i class="arg">len</i> the integer
-length of the new string, and <i class="arg">str</i> the <b class="type">char*</b> value to set.</p>
-<p>The <b class="const">DUP</b> variant duplicates the <i class="arg">str</i> before making
-it the string representation of <i class="arg">o</i>, while the <b class="const">SET</b> variant
-directly assigns string and length, without copying, and leaving
-memory management to the caller.</p></dd>
-<dt><b class="function">OT_STR_DS(o,ds)</b></dt>
-<dd><p>This macro sets the string representation of a <b class="type">Tcl_Obj*</b> from a
-<b class="type">Tcl_DString</b> value.
-<i class="arg">o</i> is the <b class="type">Tcl_Obj*</b> value to modify, while <i class="arg">ds</i> is the
-<b class="type">Tcl_DString*</b> holding the string to set.
-<em>Note</em> that the macro copies the value in the
-<b class="type">Tcl_DString*</b> into the object, and then release the origin.</p></dd>
-<dt><b class="function">OT_STR_VAL(o)</b></dt>
-<dd></dd>
-<dt><b class="function">OT_STR_LEN(o)</b></dt>
-<dd><p>These macros are shorthands for easy access to the string
-representation of a <b class="type">Tcl_Obj*</b>, returning the <b class="type">char*</b> array
-and length, respectively.</p></dd>
-</dl>
-</div>
-<div id="section4" class="doctools_section"><h2><a name="section4">Examples</a></h2>
-<div id="subsection1" class="doctools_subsection"><h3><a name="subsection1">Simple Values</a></h3>
-<p>This example is a slightly simplified copy of Tcl's builtin
-<b class="type">double</b> type.</p>
-<p>The main simplicity of this <b class="type">Tcl_ObjType</b> in general is
-due to the internal representation fitting into one of the predefined
-fields of the <b class="type">Tcl_Obj</b> structure, voiding the need for memory
-management during construction, copying, and destruction.</p>
+<div id="section3" class="doctools_section"><h2><a name="section3">Examples</a></h2>
+<p>The examples show the various forms of specification, and for structure the
+different possible string representations the generator can emit.</p>
+<div id="subsection1" class="doctools_subsection"><h3><a name="subsection1">Handle</a></h3>
 <pre class="doctools_example">
-critcl::objtype define double {
-    support {
-	#include &lt;stdlib.h&gt; /* atof */
-    }
-    intrep double
-    get { *value = OT_DOUBLE (obj); }
-    constructor { OT_DOUBLE (obj) = value; }
-    stringify {
-	char buffer[TCL_DOUBLE_SPACE+1];
-	int len = sprintf (buffer, &quot;%g&quot;, OT_DOUBLE (obj));
-	OT_STR_DUP (obj, len, buffer);
-    }
-    from-any {
-	value = atof (OT_STR_VAL (obj));
-    }
-}
+    # All defaults
+    critcl::objtype handle point
+    # C type override
+    critcl::objtype handle point -type pointxy
+    # Full override, C type and function names.
+    critcl::objtype handle point -type pointxy	\\
+        -ref      2d_aquire			\\
+        -unref    2d_release			\\
+        -refcount 2d_references			\\
+        -2string  2d_serialize			\\
+        -2value   2d_deserialize
 </pre>
 </div>
-<div id="subsection2" class="doctools_subsection"><h3><a name="subsection2">Structure Values</a></h3>
-<p>This example does not match any of Tcl's builtin types.</p>
-<p>It demonstrates the memory management needed when using an
-internal representation not fitting directly into any of the
-predefined field, thus requiring a pointer to the value instead.</p>
-<p>In this example the <b class="type">Tcl_Obj*</b> makes a copy of incoming
-structures. This simplifies ownership. The structure always belongs to
-the <b class="type">Tcl_Obj*</b>, and external structures belong to the caller.</p>
-<p>The example in the next section changes that so that point
-structures are reference counted as well. This reduces memory churn,
-at the expense of a bit more complicated management.</p>
+<div id="subsection2" class="doctools_subsection"><h3><a name="subsection2">Structure - Tagged Dict</a></h3>
 <pre class="doctools_example">
-critcl::objtype define point {
-    support {
-        typedef struct point {
-	    double x;
-	    double y;
-        } point;
+    critcl::objtype structure pointxy {
+        double x
+        double y
     }
-    intrep point*
-    get { *value = (@intrep@) OT_PTR (obj); }
-    constructor {
-        OT_PTR (obj)    = Tcl_Alloc (sizeof (point));
-        ((@intrep@) OT_PTR (obj))-&gt;x = value-&gt;x;
-        ((@intrep@) OT_PTR (obj))-&gt;y = value-&gt;y;
-    }
-    destructor { /* Tcl_Obj* obj */
-        Tcl_Free (OT_PTR (obj));
-        OT_PTR (obj) = NULL;
-    }
-    copy { /* Tcl_Obj* obj, Tcl_Obj* dupobj */
-        OT_PTR (dupobj) = Tcl_Alloc (sizeof (point));
-        ((@intrep@) OT_PTR (dupobj))-&gt;x = ((@intrep@) OT_PTR (obj))-&gt;x;
-        ((@intrep@) OT_PTR (dupobj))-&gt;y = ((@intrep@) OT_PTR (obj))-&gt;y;
-    }
-    stringify { /* Tcl_Obj* obj */
-        /* Create a string rep which is usable as list.
-	 * That makes the parsing (see below) simpler on us.
-	 * We make it simple, no tagging. Just the coordinates.
-	 */
-        @intrep@ p = (@intrep@) OT_PTR (obj);
-        Tcl_DString      ds;
-        Tcl_DStringInit (&amp;ds);
-        char buf [TCL_DOUBLE_SPACE+1];
-        Tcl_PrintDouble (0, p-&gt;x, buf); Tcl_DStringAppendElement (&amp;ds, buf);
-        Tcl_PrintDouble (0, p-&gt;y, buf); Tcl_DStringAppendElement (&amp;ds, buf);
-        OT_STR_DS (obj, &amp;ds);
-    }
-    from-any { /* Tcl_Interp* interp, Tcl_Obj* obj, @intrep@ value */
-        /* Shimmers incoming intrep to list, then get the elements, and
-	 * at last the doubles we need out of these.
-	 */
-        Tcl_Obj** cv;
-        int       cc, res;
-        point     vp;
-        res = Tcl_ListObjGetElements (interp, obj, &amp;cc, &amp;cv);
-        if (res != TCL_OK) { return res; }
-        if (cc != 2) {
-            Tcl_AppendResult (interp, &quot;@name@ expected exactly 2 doubles&quot;, NULL);
-            return TCL_ERROR;
-        }
-        res = Tcl_GetDoubleFromObj (interp, cv[0], &amp;vp.x);
-        if (res != TCL_OK) { return res; }
-        res = Tcl_GetDoubleFromObj (interp, cv[1], &amp;vp.y);
-        if (res != TCL_OK) { return res; }
-        value = &amp;vp;
-    }
-}
+    # string rep: {pointxy {x 0.0 y 0.0}}
 </pre>
 </div>
-<div id="subsection3" class="doctools_subsection"><h3><a name="subsection3">Structure values, reference counted</a></h3>
-<p>This example is a variant of the example in the previous section.
-Instead of making internal copies the structure is extended to hold a
-reference count, which is then managed by constructor, copy
-constructor, and destructor. Less memory, for the price of more
-complex management.</p>
+<div id="subsection3" class="doctools_subsection"><h3><a name="subsection3">Structure - Dict</a></h3>
 <pre class="doctools_example">
-critcl::objtype define point {
-    support {
-        typedef struct point {
-            int refCount;
-	    double x;
-	    double y;
-        } point;
-    }
-    intrep point*
-    get { *value = (@intrep@) OT_PTR (obj); }
-    constructor {
-        OT_PTR (obj) = value;
-        value-&gt;refCount ++;
-    }
-    destructor { /* Tcl_Obj* obj */
-        @intrep@ value = ((@intrep@) OT_PTR (obj));
-        OT_PTR (obj) = NULL;
-        if (value-&gt;refCount &gt; 1) { value-&gt;refCount --; return; }
-        Tcl_Free (OT_PTR (obj));
-    }
-    copy { /* Tcl_Obj* obj, Tcl_Obj* dupobj */
-        OT_PTR (dupobj) = OT_PTR (obj);
-        ((@intrep@) OT_PTR (obj))-&gt;refCount ++;
-    }
-    stringify { /* Tcl_Obj* obj */
-        /* Create a string rep which is usable as list.
-	 * That makes the parsing (see below) simpler on us.
-	 * We make it simple, no tagging. Just the coordinates.
-	 */
-        @intrep@ p = (@intrep@) OT_PTR (obj);
-        Tcl_DString      ds;
-        Tcl_DStringInit (&amp;ds);
-        char buf [TCL_DOUBLE_SPACE+1];
-        Tcl_PrintDouble (0, p-&gt;x, buf); Tcl_DStringAppendElement (&amp;ds, buf);
-        Tcl_PrintDouble (0, p-&gt;y, buf); Tcl_DStringAppendElement (&amp;ds, buf);
-        OT_STR_DS (obj, &amp;ds);
-    }
-    from-any { /* Tcl_Interp* interp, Tcl_Obj* obj, @intrep@ value */
-        /* Shimmers incoming intrep to list, then get the elements, and
-	 * at last the doubles we need out of these.
-	 */
-        Tcl_Obj** cv;
-        int       cc, res;
-        point     vp;
-        res = Tcl_ListObjGetElements (interp, obj, &amp;cc, &amp;cv);
-        if (res != TCL_OK) { return res; }
-        if (cc != 2) {
-            Tcl_AppendResult (interp, &quot;@name@ expected exactly 2 doubles&quot;, NULL);
-            return TCL_ERROR;
-        }
-        res = Tcl_GetDoubleFromObj (interp, cv[0], &amp;vp.x);
-        if (res != TCL_OK) { return res; }
-        res = Tcl_GetDoubleFromObj (interp, cv[1], &amp;vp.y);
-        if (res != TCL_OK) { return res; }
-        vp.refCount = 0;
-        value = (@intrep@) Tcl_Alloc (sizeof (point));
-        *value = vp;
-    }
-}
+    critcl::objtype structure pointxy {
+        double x
+        double y
+    } -tagged false
+    # string rep: {x 0.0 y 0.0}
+</pre>
+</div>
+<div id="subsection4" class="doctools_subsection"><h3><a name="subsection4">Structure - Tagged List</a></h3>
+<pre class="doctools_example">
+    critcl::objtype structure pointxy {
+        double x
+        double y
+    } -format list
+    # string rep: {pointxy 0.0 0.0}
+    #                      x   y
+</pre>
+</div>
+<div id="subsection5" class="doctools_subsection"><h3><a name="subsection5">Structure - List</a></h3>
+<pre class="doctools_example">
+    critcl::objtype structure pointxy {
+        double x
+        double y
+    } -format list -tagged false
+    # string rep: {0.0 0.0}
+    #              x   y
 </pre>
 </div>
 </div>
-<div id="section5" class="doctools_section"><h2><a name="section5">Authors</a></h2>
+<div id="section4" class="doctools_section"><h2><a name="section4">Authors</a></h2>
 <p>Andreas Kupries</p>
 </div>
-<div id="section6" class="doctools_section"><h2><a name="section6">Bugs, Ideas, Feedback</a></h2>
+<div id="section5" class="doctools_section"><h2><a name="section5">Bugs, Ideas, Feedback</a></h2>
 <p>This document, and the package it describes, will undoubtedly contain
 bugs and other problems.
 Please report such at <a href="https://github.com/andreas-kupries/critcl">https://github.com/andreas-kupries/critcl</a>.

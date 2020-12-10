@@ -280,31 +280,9 @@ package require \fBcritcl  ?3\&.1?\fR
 .sp
 package require \fBcritcl::objtype  ?0?\fR
 .sp
-\fB::critcl::objtype define\fR \fIname\fR \fIscript\fR
+\fB::critcl::objtype handle\fR \fIname\fR ?\fIoption\&.\&.\&.\fR?
 .sp
-\fBsupport\fR \fIcode\fR
-.sp
-\fBintrep\fR \fIname\fR
-.sp
-\fBfromobj\fR \fIname\fR
-.sp
-\fBnewobj\fR \fIname\fR
-.sp
-\fBapi\fR \fIname\fR
-.sp
-\fBconstructor\fR \fIcode\fR
-.sp
-\fBget\fR \fIcode\fR
-.sp
-\fBcopy\fR \fIcode\fR
-.sp
-\fBdestructor\fR \fIcode\fR
-.sp
-\fBstringify\fR \fIcode\fR
-.sp
-\fBfrom-any\fR \fIcode\fR
-.sp
-\fBstubs\fR
+\fB::critcl::objtype structure\fR \fIname\fR \fIspec\fR ?\fIoption\&.\&.\&.\fR?
 .sp
 .BE
 .SH DESCRIPTION
@@ -315,21 +293,19 @@ immediate use or packaging them for distribution\&.  Use \fICriTcl\fR to improve
 performance by rewriting in C those routines that are performance bottlenecks\&.
 .PP
 This document is the reference manpage for the \fBcritcl::objtype\fR
-package\&. This package provides convenience commands for advanced
-functionality built on top of the critcl core\&.
+package\&. This package provides convenience commands for advanced functionality
+built on top of the critcl core\&.
 .PP
 While Tcl comes with a variety of useful value types
-(\fBTcl_ObjType\fR) built into the core there are situations which
-are best dealt with using a custom Tcl_ObjType to handle the special
-values it came with\&.
+(\fBTcl_ObjType\fR) built into the core there are situations which are best
+dealt by using a custom Tcl_ObjType to handle the special values it came with\&.
 .PP
-With this package a developer can focus on the core of the
-custom value handling, i\&.e\&. allocation, conversion into and out of
-strings, release, without having to deal with the boilerplate around
-it\&.
+With this package a developer can focus on the core handling for the
+custom value, i\&.e\&. allocation, conversion into and out of strings, release,
+etc\&., without having to deal with the boilerplate around it\&.
 .PP
-Its intended audience are mainly developers wishing to write
-Tcl packages with embedded C code\&.
+It's intended audience are mainly developers wishing to write Tcl
+packages with embedded C code\&.
 .PP
 This package resides in the Core Package Layer of CriTcl\&.
 .PP
@@ -359,476 +335,183 @@ This package resides in the Core Package Layer of CriTcl\&.
 .PP
 .SH API
 .TP
-\fB::critcl::objtype define\fR \fIname\fR \fIscript\fR
-This command creates C code containing a static \fBTcl_ObjType\fR
-structure and associated functions implementing a custom value type
-for Tcl\&.
-.sp
-This creation is guided by the definition commands in
-\fIscript\fR specifying the various parts of the type\&. The available
-commands are documented after this\&.
+\fB::critcl::objtype handle\fR \fIname\fR ?\fIoption\&.\&.\&.\fR?
+This command creates the C code for a custom \fBTcl_ObjType\fR with the
+specified \fIname\fR\&.
+\fIBy default\fR it assumes the existence of a reference-counted opaque C
+type of the same name, with five C functions to access the same, whose names
+are derived from the name of the C type\&. The functions are expected to have
+the signatures and behaviour given below:
+.RS
+.TP
+void \fB\fIname\fR_ref\fR (<name> \fIx\fR)
+Aquire a reference to object \fIx\fR\&.
+.TP
+void \fB\fIname\fR_unref\fR (<name> \fIx\fR)
+Release a reference to object \fIx\fR\&. The function has to destroy \fIx\fR
+when its reference counts drops below \fB1\fR\&.
+.TP
+void \fB\fIname\fR_to_string\fR (<name> \fIx\fR, Tcl_DString* \fIds\fR)
+Serialize object \fIx\fR into the \fBTcl_DString*\fR variable \fIds\fR\&.
+The DString is initialized and empty when the function is called\&.
+.TP
+<name> \fB\fIname\fR_to_value\fR (Tcl_Interp* \fIinterp\fR, Tcl_Obj* \fIobj\fR)
+Deserialize (the string representation of) \fIobj\fR into an object of the
+type and return it\&. The function has to return \fBNULL\fR on error\&.
+.TP
+int \fB\fIname\fR_refcount\fR (<name> \fIx\fR)
+Return the number of references to \fIx\fR\&. Note that the generated C code
+uses this function only in \fBTRACE_\&.\&.\&.\fR statements\&.
+.RE
+.IP
+All of the above can be overridden by one or more option arguments following
+the \fIname\fR\&. The recognized options are:
+.RS
+.TP
+\fB-type\fR \fIstring\fR
+This option overrides the name of the C type managed by the new type\&. The
+names of the expected functions change accordingly, if not overridden by any
+of the following options\&.
+.TP
+\fB-ref\fR \fIstring\fR
+.TP
+\fB-unref\fR \fIstring\fR
+.TP
+\fB-refcount\fR \fIstring\fR
+.TP
+\fB-2value\fR \fIstring\fR
+.TP
+\fB-2string\fR \fIstring\fR
+These options override the names of the functions used to access the C type\&.
+.TP
+\fB-trace\fR \fIbool\fR
+By default the \fBTRACE\&.\&.\&.\fR statements embedded into the generated C code
+of the new type are inactive\&.
+This option allows them to activated\&. Note, this will be a source change,
+affecting the package build\&. This is not a runtime flag\&.
+.RE
 .sp
 The result of the command is an empty string\&.
 .sp
 The actual results are found in the header file generated by
 the command\&.
 .TP
-\fBsupport\fR \fIcode\fR
-This command specifies general supporting C code for the type\&. The
-code fragment is global, and placed between the declarations and
-definitions of the Tcl_ObjType (structures, functions)\&.
+\fB::critcl::objtype structure\fR \fIname\fR \fIspec\fR ?\fIoption\&.\&.\&.\fR?
+This command creates the C code for a custom \fBTcl_ObjType\fR with the
+specified \fIname\fR and the structure fields defined by the \fIspec\fR\&.
+.sp
+Internally this form is reduced to a \fBhandle\fR, with the generator
+not only emitting the boiler plate needed for the type itself, but also
+emitting the code implementing the C structure and opaque type it uses\&.
+.sp
+The \fIspec\fR is expected to be a single list of alternating type and
+field names, i\&.e\&. each type name is followed by the name of field the type
+applies to\&.
+The acceptable type names are all known Critcl argument types which have an
+associated \fBcritcl::argtype2string\fR definition\&. This definition specifies
+how to serialize a value of the type into a \fBTcl_DString*\fR variable\&.
+.sp
+Currently the only types doing so are a subset of the basic scalars,
+namely \fBint\fR, \fBlong\fR, \fBboolean\fR, \fBdouble\fR, and
+\fBfloat\fR, further their aliases, and the associated sets of common range
+restrictions\&.
+.sp
+The nature of the string representation used for the new type is guided
+by the options following \fIname\fR and \fIspec\fR\&.
+.RS
+.TP
+\fB-format\fR \fBdict\fR|\fBlist\fR
+This option chooses between dictionary and list representations\&.  In a
+dictionary representation the fields are named, enabling deserialization from
+any order\&. In the list representation the values are simply listed in their
+order of specification, and deserialized in that same order\&.
+.sp
+The default is \fBdict\fR\&.
+.TP
+\fB-tagged\fR \fIboolean\fR
+This option determines if the string representation comes with a leading tag
+indicating the type of the entire string value, or not\&.
+.sp
+The default is \fBtrue\fR, i\&.e\&. \fItagged\fR\&.
+.TP
+\fB-trace\fR \fIboolean\fR
+By default the \fBTRACE\&.\&.\&.\fR statements embedded into the generated C code
+of the new type are inactive\&.
+This option allows them to activated\&. Note, this will be a source change,
+affecting the package build\&. This is not a runtime flag\&.
+.RE
 .sp
 The result of the command is an empty string\&.
-.TP
-\fBintrep\fR \fIname\fR
-This command specifies the C type to use for the internal
-representation of values\&. The type has to be known or declared before
-the function definitions\&. The \fBsupport\fR command is a good place
-for that, if the type is not builtin C type\&.
-.TP
-\fBfromobj\fR \fIname\fR
-This command specifies the name of the function extracting a C value
-of type \fBintrep\fR (see above) from a \fBTcl_Obj*\fR\&.
 .sp
-If not specified the generator falls back to "\fIname\fRFromObj"
-using the \fIname\fR from \fB::critcl::objtype define\fR\&.
-.sp
-The C signature of the function is
-.CS
-
-
-    int <name> (Tcl_Interp* interp, Tcl_Obj* obj, <intrep>* value);
-
-.CE
-.IP
-The \fBget\fR command specifies the parts of the function body which
-are not boilerplate\&.
-.sp
-The result of the command is an empty string\&.
-.TP
-\fBnewobj\fR \fIname\fR
-This command specifies the name of the function creating a
-\fBTcl_Obj*\fR from a C value of type \fBintrep\fR (see above)\&.
-.sp
-If not specified the generator falls back to "\fIname\fRNewObj"
-using the \fIname\fR from \fB::critcl::objtype define\fR\&.
-.sp
-The C signature of the function is
-.CS
-
-
-    Tcl_Obj* <name> (<intrep>* value);
-
-.CE
-.IP
-The \fBconstructor\fR command specifies the parts of the function body
-which are not boilerplate\&.
-.sp
-The result of the command is an empty string\&.
-.TP
-\fBapi\fR \fIname\fR
-This command is a convenience command performing the actions of both
-\fBfromobj\fR and \fBnewobj\fR\&.
-.sp
-The result of the command is an empty string\&.
-.TP
-\fBconstructor\fR \fIcode\fR
-This command specifies how a C value of type \fBintrep\fR is converted
-into a \fBTcl_Obj*\fR\&.
-This is the part of the \fBnewobj\fR function which is not boiler
-plate\&.
-.sp
-The code has access to the two variables \fBobj\fR and
-\fBvalue\fR\&. The first refers to a newly allocated \fBTcl_Obj*\fR to
-fill, and the second contains the value to convert\&.
-.sp
-If this code is not specified the generator falls back to
-casting the value to a \fBvoid*\fR before copying it into the
-\fBptr1\fR field of the \fBTcl_Obj*\fR\&.
-.sp
-The result of the command is an empty string\&.
-.TP
-\fBget\fR \fIcode\fR
-This command specifies how a C value of type \fBintrep\fR is retrieved
-from a \fBTcl_Obj*\fR\&.
-This is the part of the \fBfromobj\fR function which is not boiler
-plate\&.
-.sp
-The code has access to the three variables \fBinterp\fR,
-\fBobj\fR and \fBvalue\fR\&.  The first is a \fBTcl_Interp*\fR of the
-interpreter we are in, the second is the \fBTcl_Obj*\fR we query, and
-the last a pointer to the destination to store the retrieved value
-into\&.
-.sp
-If this code is not specified the generator falls back to
-casting the value of the \fBobj\fR's \fBptr1\fR to the \fBintrep\fR
-type and then copying the result to the destination\&.
-.sp
-Note that shimmering the \fBobj\fR to this type, if it does
-not have that type, is part of the standard behaviour of the function\&.
-This makes use of the conversion code specified by \fBparse\fR\&.
-.sp
-The result of the command is an empty string\&.
-.TP
-\fBcopy\fR \fIcode\fR
-This command specifies how a \fBTcl_Obj*\fR of this type is
-duplicated, i\&.e\&. copied\&.
-.sp
-The code has access to two variables, \fBobj\fR and
-\fBdupobj\fR\&. The first references the \fBTcl_Obj*\fR to duplicate,
-and the second references a newly allocated, empty \fBTcl_Obj*\fR to
-fill with the duplicated \fBintrep\fR\&.
-.sp
-If this code is not specified the copy constructor is left as
-\fBNULL\fR and the Tcl core standard behaviour applies, which simply
-copies the intrep over\&.
-.sp
-The result of the command is an empty string\&.
-.TP
-\fBdestructor\fR \fIcode\fR
-This command specifies how a \fBTcl_Obj*\fR of this type releases it
-\fBintrep\fR when the core destroys it\&.
-.sp
-The code has access to a single variable, \fBobj\fR, which
-references the \fBTcl_Obj*\fR being released\&.
-.sp
-If this code is not specified the destructor is left as
-\fBNULL\fR and the Tcl core standard behaviour applies, which simply
-does nothing\&.
-.sp
-The result of the command is an empty string\&.
-.TP
-\fBstringify\fR \fIcode\fR
-This command specifies how to construct a string representation
-from the \fBintrep\fR of this type\&.
-.sp
-The code has access to a single variable, \fBobj\fR, which
-references the \fBTcl_Obj*\fR whose string representation has to be
-filled in\&.
-.sp
-If this code is not specified then \fInothing\fR is done\&. In
-other words, values of this type have no string representation\&.  This
-not only prevents printing such values, but also the conversion to any
-other \fBTcl_ObjType\fR using an intermediate string representation
-as part of shimmering to it\&.
-.sp
-Note the supporting macros \fBOT_STR_SET\fR, \fBOT_STR_DUP\fR,
-and \fBOT_STR_DS\fR\&. See the \fBSupporting definitions\fR\&.
-.sp
-The result of the command is an empty string\&.
-.TP
-\fBfrom-any\fR \fIcode\fR
-This command specifies how to shimmer a \fBTcl_Obj*\fR from whatever
-current type it has to this type\&.
-.sp
-The code has access to the three variables \fBinterp\fR,
-\fBobj\fR and \fBvalue\fR\&.  The first is a \fBTcl_Interp*\fR of the
-interpreter we are in, the second is the \fBTcl_Obj*\fR to shimmer,
-and the last is the place where to construct the new \fBintrep\fR\&.
-.sp
-The function using this code will call this first before
-releasing the old internal representation and at last using the
-\fBconstructor\fR code to store the new internal representation found
-in \fBvalue\fR into the object\&.
-.sp
-The result of the command is an empty string\&.
-.TP
-\fBstubs\fR
-This command tells the generator that the \fBfromobj\fR and
-\fBnewobj\fR functions of this type are to be made public,
-i\&.e\&. exported through the stubs table of the package the code will be
-made a part of\&.
-.PP
-.SH "SUPPORTING DEFINITIONS"
-All \fIcode\fR argument not only have access to the variables listed
-in their documentation above, the definitions from the \fBsupport\fR
-cmd, but also to
-.TP
-\fB@have_destructor@\fR
-Boolean (\fB0\fR/\fB1\fR)\&.
-True indicates that the \fBdestructor\fR was specified\&.
-.TP
-\fB@have_copy@\fR
-Boolean (\fB0\fR/\fB1\fR)\&.
-True indicates that the \fBcopy\fR constructor was specified\&.
-.TP
-\fB@fun_destructor@\fR
-Name of the destructor function\&.
-.TP
-\fB@fun_copy@\fR
-Name of the copy constructor function\&.
-.TP
-\fB@fun_stringify@\fR
-Name of the function generating the
-string representation\&.
-.TP
-\fB@fun_from_any@\fR
-Name of the function generating the
-\fBintrep\fR's internal representation from any other type, i\&.e\&. the
-function to shimmer a \fBTcl_Obj*\fR to this type\&.
-.TP
-\fB@api_new@\fR
-Name of the main constructor function\&.
-See \fBnewobj\fR\&.
-.TP
-\fB@api_from@\fR
-Name of the main retrieval function\&.
-See \fBfromobj\fR\&.
-.TP
-\fB@intrep@\fR
-Name of the C type to use for the internal
-representation\&. See \fBintrep\fR\&.
-.TP
-\fBOT_DOUBLE(o)\fR
-.TP
-\fBOT_LONG(o)\fR
-.TP
-\fBOT_LONG2(o)\fR
-.TP
-\fBOT_PTR(o)\fR
-.TP
-\fBOT_PTR2(o)\fR
-.TP
-\fBOT_WIDE(o)\fR
-These macros are shorthands for easy access to the various sub-fields
-of the \fBinternalRep\fR of a \fBTcl_Obj*\fR\&.
-Their arguments are a \fBTcl_Obj*\fR value, and the result can be
-used on either side of an assignment\&.
-.TP
-\fBOT_STR_DUP(o,len,str)\fR
-.TP
-\fBOT_STR_SET(o,len,str)\fR
-These macros are shorthands for setting the string representation of
-an \fBTcl_Obj*\fR\&.
-\fIo\fR is the \fBTcl_Obj*\fR value to modify, \fIlen\fR the integer
-length of the new string, and \fIstr\fR the \fBchar*\fR value to set\&.
-.sp
-The \fBDUP\fR variant duplicates the \fIstr\fR before making
-it the string representation of \fIo\fR, while the \fBSET\fR variant
-directly assigns string and length, without copying, and leaving
-memory management to the caller\&.
-.TP
-\fBOT_STR_DS(o,ds)\fR
-This macro sets the string representation of a \fBTcl_Obj*\fR from a
-\fBTcl_DString\fR value\&.
-\fIo\fR is the \fBTcl_Obj*\fR value to modify, while \fIds\fR is the
-\fBTcl_DString*\fR holding the string to set\&.
-\fINote\fR that the macro copies the value in the
-\fBTcl_DString*\fR into the object, and then release the origin\&.
-.TP
-\fBOT_STR_VAL(o)\fR
-.TP
-\fBOT_STR_LEN(o)\fR
-These macros are shorthands for easy access to the string
-representation of a \fBTcl_Obj*\fR, returning the \fBchar*\fR array
-and length, respectively\&.
+The actual results are found in the header file generated by
+the command\&.
 .PP
 .SH EXAMPLES
-.SS "SIMPLE VALUES"
-This example is a slightly simplified copy of Tcl's builtin
-\fBdouble\fR type\&.
-.PP
-The main simplicity of this \fBTcl_ObjType\fR in general is
-due to the internal representation fitting into one of the predefined
-fields of the \fBTcl_Obj\fR structure, voiding the need for memory
-management during construction, copying, and destruction\&.
+The examples show the various forms of specification, and for structure the
+different possible string representations the generator can emit\&.
+.SS HANDLE
 .CS
 
 
-critcl::objtype define double {
-    support {
-	#include <stdlib\&.h> /* atof */
-    }
-    intrep double
+    # All defaults
+    critcl::objtype handle point
 
-    get { *value = OT_DOUBLE (obj); }
+    # C type override
+    critcl::objtype handle point -type pointxy
 
-    constructor { OT_DOUBLE (obj) = value; }
-
-    stringify {
-	char buffer[TCL_DOUBLE_SPACE+1];
-	int len = sprintf (buffer, "%g", OT_DOUBLE (obj));
-	OT_STR_DUP (obj, len, buffer);
-    }
-
-    from-any {
-	value = atof (OT_STR_VAL (obj));
-    }
-}
+    # Full override, C type and function names\&.
+    critcl::objtype handle point -type pointxy	\\\\
+        -ref      2d_aquire			\\\\
+        -unref    2d_release			\\\\
+        -refcount 2d_references			\\\\
+        -2string  2d_serialize			\\\\
+        -2value   2d_deserialize
 
 .CE
-.SS "STRUCTURE VALUES"
-This example does not match any of Tcl's builtin types\&.
-.PP
-It demonstrates the memory management needed when using an
-internal representation not fitting directly into any of the
-predefined field, thus requiring a pointer to the value instead\&.
-.PP
-In this example the \fBTcl_Obj*\fR makes a copy of incoming
-structures\&. This simplifies ownership\&. The structure always belongs to
-the \fBTcl_Obj*\fR, and external structures belong to the caller\&.
-.PP
-The example in the next section changes that so that point
-structures are reference counted as well\&. This reduces memory churn,
-at the expense of a bit more complicated management\&.
+.SS "STRUCTURE - TAGGED DICT"
 .CS
 
 
-critcl::objtype define point {
-    support {
-        typedef struct point {
-	    double x;
-	    double y;
-        } point;
+    critcl::objtype structure pointxy {
+        double x
+        double y
     }
-
-    intrep point*
-
-    get { *value = (@intrep@) OT_PTR (obj); }
-
-    constructor {
-        OT_PTR (obj)    = Tcl_Alloc (sizeof (point));
-        ((@intrep@) OT_PTR (obj))->x = value->x;
-        ((@intrep@) OT_PTR (obj))->y = value->y;
-    }
-
-    destructor { /* Tcl_Obj* obj */
-        Tcl_Free (OT_PTR (obj));
-        OT_PTR (obj) = NULL;
-    }
-
-    copy { /* Tcl_Obj* obj, Tcl_Obj* dupobj */
-        OT_PTR (dupobj) = Tcl_Alloc (sizeof (point));
-        ((@intrep@) OT_PTR (dupobj))->x = ((@intrep@) OT_PTR (obj))->x;
-        ((@intrep@) OT_PTR (dupobj))->y = ((@intrep@) OT_PTR (obj))->y;
-    }
-
-    stringify { /* Tcl_Obj* obj */
-        /* Create a string rep which is usable as list\&.
-	 * That makes the parsing (see below) simpler on us\&.
-	 * We make it simple, no tagging\&. Just the coordinates\&.
-	 */
-        @intrep@ p = (@intrep@) OT_PTR (obj);
-        Tcl_DString      ds;
-        Tcl_DStringInit (&ds);
-
-        char buf [TCL_DOUBLE_SPACE+1];
-
-        Tcl_PrintDouble (0, p->x, buf); Tcl_DStringAppendElement (&ds, buf);
-        Tcl_PrintDouble (0, p->y, buf); Tcl_DStringAppendElement (&ds, buf);
-
-        OT_STR_DS (obj, &ds);
-    }
-
-    from-any { /* Tcl_Interp* interp, Tcl_Obj* obj, @intrep@ value */
-        /* Shimmers incoming intrep to list, then get the elements, and
-	 * at last the doubles we need out of these\&.
-	 */
-        Tcl_Obj** cv;
-        int       cc, res;
-        point     vp;
-
-        res = Tcl_ListObjGetElements (interp, obj, &cc, &cv);
-        if (res != TCL_OK) { return res; }
-        if (cc != 2) {
-            Tcl_AppendResult (interp, "@name@ expected exactly 2 doubles", NULL);
-            return TCL_ERROR;
-        }
-
-        res = Tcl_GetDoubleFromObj (interp, cv[0], &vp\&.x);
-        if (res != TCL_OK) { return res; }
-
-        res = Tcl_GetDoubleFromObj (interp, cv[1], &vp\&.y);
-        if (res != TCL_OK) { return res; }
-
-        value = &vp;
-    }
-}
+    # string rep: {pointxy {x 0\&.0 y 0\&.0}}
 
 .CE
-.SS "STRUCTURE VALUES, REFERENCE COUNTED"
-This example is a variant of the example in the previous section\&.
-Instead of making internal copies the structure is extended to hold a
-reference count, which is then managed by constructor, copy
-constructor, and destructor\&. Less memory, for the price of more
-complex management\&.
+.SS "STRUCTURE - DICT"
 .CS
 
 
-critcl::objtype define point {
-    support {
-        typedef struct point {
-            int refCount;
-	    double x;
-	    double y;
-        } point;
-    }
+    critcl::objtype structure pointxy {
+        double x
+        double y
+    } -tagged false
+    # string rep: {x 0\&.0 y 0\&.0}
 
-    intrep point*
+.CE
+.SS "STRUCTURE - TAGGED LIST"
+.CS
 
-    get { *value = (@intrep@) OT_PTR (obj); }
 
-    constructor {
-        OT_PTR (obj) = value;
-        value->refCount ++;
-    }
+    critcl::objtype structure pointxy {
+        double x
+        double y
+    } -format list
+    # string rep: {pointxy 0\&.0 0\&.0}
+    #                      x   y
 
-    destructor { /* Tcl_Obj* obj */
-        @intrep@ value = ((@intrep@) OT_PTR (obj));
-        OT_PTR (obj) = NULL;
-        if (value->refCount > 1) { value->refCount --; return; }
-        Tcl_Free (OT_PTR (obj));
-    }
+.CE
+.SS "STRUCTURE - LIST"
+.CS
 
-    copy { /* Tcl_Obj* obj, Tcl_Obj* dupobj */
-        OT_PTR (dupobj) = OT_PTR (obj);
-        ((@intrep@) OT_PTR (obj))->refCount ++;
-    }
 
-    stringify { /* Tcl_Obj* obj */
-        /* Create a string rep which is usable as list\&.
-	 * That makes the parsing (see below) simpler on us\&.
-	 * We make it simple, no tagging\&. Just the coordinates\&.
-	 */
-        @intrep@ p = (@intrep@) OT_PTR (obj);
-        Tcl_DString      ds;
-        Tcl_DStringInit (&ds);
-
-        char buf [TCL_DOUBLE_SPACE+1];
-
-        Tcl_PrintDouble (0, p->x, buf); Tcl_DStringAppendElement (&ds, buf);
-        Tcl_PrintDouble (0, p->y, buf); Tcl_DStringAppendElement (&ds, buf);
-
-        OT_STR_DS (obj, &ds);
-    }
-
-    from-any { /* Tcl_Interp* interp, Tcl_Obj* obj, @intrep@ value */
-        /* Shimmers incoming intrep to list, then get the elements, and
-	 * at last the doubles we need out of these\&.
-	 */
-        Tcl_Obj** cv;
-        int       cc, res;
-        point     vp;
-
-        res = Tcl_ListObjGetElements (interp, obj, &cc, &cv);
-        if (res != TCL_OK) { return res; }
-        if (cc != 2) {
-            Tcl_AppendResult (interp, "@name@ expected exactly 2 doubles", NULL);
-            return TCL_ERROR;
-        }
-
-        res = Tcl_GetDoubleFromObj (interp, cv[0], &vp\&.x);
-        if (res != TCL_OK) { return res; }
-
-        res = Tcl_GetDoubleFromObj (interp, cv[1], &vp\&.y);
-        if (res != TCL_OK) { return res; }
-
-        vp\&.refCount = 0;
-
-        value = (@intrep@) Tcl_Alloc (sizeof (point));
-        *value = vp;
-    }
-}
+    critcl::objtype structure pointxy {
+        double x
+        double y
+    } -format list -tagged false
+    # string rep: {0\&.0 0\&.0}
+    #              x   y
 
 .CE
 .SH AUTHORS
