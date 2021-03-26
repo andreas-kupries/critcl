@@ -33,6 +33,22 @@ package require cmdline
 namespace eval ::critcl::app {}
 
 # # ## ### ##### ######## ############# #####################
+## https://github.com/andreas-kupries/critcl/issues/112
+## Ensure that we have maximal 'info frame' data, if supported
+#
+## ATTENTION: This slows the Tcl core down by about 10%, sometimes
+## more, due to the need to track location information in some
+## critical paths of Tcl_Obj management.
+#
+## I am willing to pay that price here, because this is isolated to
+## the operation of the critcl application itself. While some more
+## time is spent in the ahead-of-time compilation the result is not
+## affected. And I want the more precise location information for when
+## compilation fails.
+
+catch { interp debug {} -frame 1 }
+
+# # ## ### ##### ######## ############# #####################
 ## Intercept 'package' calls.
 #
 # This code is present to handle the possibility of building multiple
