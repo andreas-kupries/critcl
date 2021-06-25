@@ -23,7 +23,7 @@ respectively.
 [section {Source Location}]
 
 The official repository for Critcl can be found at
-[uri http://andreas-kupries.github.com/critcl]
+[uri http://andreas-kupries.github.io/critcl]
 
 [section Retrieval]
 

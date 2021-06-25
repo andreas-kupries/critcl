@@ -7,7 +7,7 @@
 
 # Website
 
- *  The main website of this project is http://andreas-kupries.github.com/critcl
+ *  The main website of this project is http://andreas-kupries.github.io/critcl
 
     It provides access to pre-made binaries and archives for various
     platforms, and the full documentation, especially the guides to
@@ -96,7 +96,7 @@
 
 # Documentation
 
- *  Too much to cover here. Please go to http://andreas-kupries.github.com/critcl
+ *  Too much to cover here. Please go to http://andreas-kupries.github.io/critcl
     for online reading, or the directories **embedded/www** and
     **embedded/man** for local copies of the documentation in HTML
     and nroff formats, respectively.
