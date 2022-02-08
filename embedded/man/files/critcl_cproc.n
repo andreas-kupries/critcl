@@ -986,7 +986,7 @@ for doing that\&.
 .PP
 .SH EXAMPLES
 The examples shown here have been drawn from section "Embedding C" in
-the document about \fIUsing CriTcl\fR\&. Please see that document
+the document about \fIUsing Critcl\fR\&. Please see that document
 for many more examples\&.
 .SS "A SIMPLE PROCEDURE"
 Starting simple, let us assume that the Tcl code in question is
@@ -1023,6 +1023,141 @@ We now also have to declare the type of the result, here
 .IP [3]
 The reference manpage lists all the legal C types supported as
 arguments and results\&.
+.PP
+.PP
+While the above example was based on type \fBdouble\fR for
+both arguments and result we have a number of additional types in the
+same category, i\&.e\&. simple types\&. These are:
+.CS
+
+
+Critcl type | C type         | Tcl type  | Notes
+----------- | -------------- | --------- | ------------------------------
+bool        |                |           | Alias of \fBboolean\fR below
+boolean     | int            | Boolean   |
+double      | double         | Double    |
+float       | float          | Double    |
+int         | int            | Int       |
+long        | long           | Long      |
+wideint     | Tcl_WideInt    | WideInt   |
+
+.CE
+.PP
+A slightly advanced form of these simple types are a limited
+set of constraints on the argument value\&. Note that \fBbool\fR and
+alias do not support this\&.
+.CS
+
+
+    critcl::cproc sqrt {{double >= 0} x} double {
+        return sqrt(x);
+    }
+
+.CE
+.PP
+In the example above Critcl's argument handling will reject
+calling the command with a negative number, without ever invoking the
+C code\&.
+.PP
+These constraints are called \fIlimited\fR because only
+\fB0\fR and \fB1\fR can be used as the borders, although all the
+operators \fB<\fR, \fB<=\fR, \fB>\fR, and \fB>=\fR are
+possible\&. It is also not possible to combine restrictions\&.
+.SS "MORE BUILTIN TYPES: STRINGS"
+.PP
+Given that "Everything is a String" is a slogan of Tcl the ability of \fBcproc\fRs
+to receive strings as arguments, and return them as results is quite important\&.
+.PP
+We actually have a variety of builtin string types, all alike, yet different\&.
+.PP
+For arguments we have:
+.CS
+
+
+Critcl type | C type         | Tcl type  | Notes
+----------- | -------------- | --------- | ------------------------------
+char*       | const char*    | Any       | \fIRead-only\fR, \fIstring rep\fR
+pstring     | critcl_pstring | Any       | \fIRead-only\fR
+bytes       | critcl_bytes   | ByteArray | \fIRead-only\fR
+
+.CE
+In C
+.CS
+
+
+    critcl::cproc takeStrings {
+        char*   cstring
+	pstring pstring
+	bytes   barray
+    } void {
+        printf ("len %d = %s\\n", strlen(cstring), cstring);
+	printf ("len %d = %s\\n", pstring\&.len, pstring\&.s);
+	printf ("len %d = %s\\n", barray\&.len, barray\&.s);
+        return; // void result, no result
+    }
+
+.CE
+Notable about the above:
+.IP [1]
+The \fBcstring\fR is a plain \fBconst char*\fR\&. It \fIpoints directly\fR
+into the \fBTcl_Obj*\fR holding the argument in the script\&.
+.IP [2]
+The \fBpstring\fR is a slight extension to that\&. The value is actually a structure
+containing the string pointer like \fBcstring\fR (field \fB\&.s\fR), the length of the
+string (field \fB\&.len\fR), and a pointer to the \fBTcl_Obj*\fR these came from\&.
+.IP [3]
+The last, \fBbarray\fR is like \fBpstring\fR, however it has ensured that the
+\fBTcl_Obj*\fR is a Tcl ByteArray, i\&.e\&. binary data\&.
+.PP
+.PP
+Treat all of them as \fIRead Only\fR\&. Do not modify ever\&.
+.PP
+On the other side, string results, we have:
+.CS
+
+
+Critcl type   | C type         | Tcl type  | Notes
+------------- | -------------- | --------- | ------------------------------
+char*         | char*          | String    | \fIMakes a copy\fR
+vstring       |                |           | Alias of \fBchar*\fR above
+const char*   | const char*    |           | Behavior of \fBchar*\fR above
+------------- | -------------- | --------- | ------------------------------
+string        | char*          | String    | Freeable string set directly
+              |                |           | \fINo copy is made\fR
+dstring       |                |           | Alias of \fBstring\fR above
+
+.CE
+.CS
+
+
+    critcl::cproc returnCString {} char* {
+        return "a string";
+    }
+    critcl::cproc returnString {} string {
+        char* str = Tcl_Alloc (200);
+	sprintf (str, "hello world");
+        return str;
+    }
+
+.CE
+Notable about the above:
+.IP [1]
+The type \fBchar*\fR is best used for static strings, or strings in some kind
+fixed buffer\&.
+.sp
+Critcl's translation layer makes a copy of it for the result of the command\&. While
+it is possible to return heap-allocated strings it is the C code who is responsible for
+freeing such at some point\&. If that is not done they will leak\&.
+.IP [2]
+The type \fBstring\fR on the other hand is exactly for returning strings allocated
+with \fBTcl_Alloc\fR and associates\&.
+.sp
+For these the translation layer makes no copy at all, and sets them directly as the
+result of the command\&. A \fIvery important effect\fR of this is that the ownership of
+the string pointer moves from the function to Tcl\&.
+.sp
+\fITcl\fR will release the allocated memory when it does not need it any
+longer\&. The C code has no say in that\&.
 .PP
 .SS "CUSTOM TYPES, INTRODUCTION"
 When writing bindings to external libraries \fBcritcl::cproc\fR is

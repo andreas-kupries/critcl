@@ -47,7 +47,7 @@ load the package.  The last occurrence of [option -pkg] and [option -tea], if
 provided, selects the corresponding alternative mode of operations.
 
 For a larger set of examples please see section "Building Critcl Packages"
-in the document about [manpage {Using CriTcl}].
+in the document about [manpage {Using Critcl}].
 
 
 [list_end]

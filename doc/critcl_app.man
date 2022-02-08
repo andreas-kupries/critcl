@@ -32,7 +32,7 @@ The exact set of options supported, their meaning, and interaction is
 detailed in section [sectref {Application Options}] below.
 
 For a larger set of examples please see section "Building Critcl Packages"
-in the document about [manpage {Using CriTcl}].
+in the document about [manpage {Using Critcl}].
 
 [list_end]
 

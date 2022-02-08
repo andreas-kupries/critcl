@@ -326,7 +326,7 @@ The application supports the following general command line:
 The exact set of options supported, their meaning, and interaction is
 detailed in section \fBApplication Options\fR below\&.
 For a larger set of examples please see section "Building Critcl Packages"
-in the document about \fIUsing CriTcl\fR\&.
+in the document about \fIUsing Critcl\fR\&.
 .PP
 .SH "APPLICATION OPTIONS"
 The following options are understood:

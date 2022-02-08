@@ -27,10 +27,11 @@ packages with embedded C code.
 [section Examples]
 
 The examples shown here have been drawn from section "Embedding C" in
-the document about [manpage {Using CriTcl}]. Please see that document
+the document about [manpage {Using Critcl}]. Please see that document
 for many more examples.
 
 [include include/using_eproc.inc]        [comment {%% cproc}]
+[include include/using_eprocstr.inc]     [comment {%% cproc, strings}]
 [include include/using_eproctypes.inc]   [comment {%% cproc types, intro & trivial}]
 [include include/using_eproctypes2.inc]  [comment {%% cproc types, semi-trivial}]
 [include include/using_eproctypes3.inc]  [comment {%% cproc types, support (incl alloc'd)}]

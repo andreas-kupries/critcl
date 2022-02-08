@@ -3101,7 +3101,7 @@ Rng_InitStubs(Tcl_Interp *interp, CONST char *version, int exact)
 .CE
 .PP
 .SH EXAMPLES
-See section "Embedding C" in \fIUsing CriTcl\fR\&.
+See section "Embedding C" in \fIUsing Critcl\fR\&.
 .PP
 The latest changes are found at the top\&.
 .SH "CHANGES FOR VERSION 3\&.1\&.18\&.1"

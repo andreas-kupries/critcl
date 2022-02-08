@@ -117,10 +117,11 @@
 <li class="doctools_section"><a href="#section5">Examples</a>
 <ul>
 <li class="doctools_subsection"><a href="#subsection1">A Simple Procedure</a></li>
-<li class="doctools_subsection"><a href="#subsection2">Custom Types, Introduction</a></li>
-<li class="doctools_subsection"><a href="#subsection3">Custom Types, Semi-trivial</a></li>
-<li class="doctools_subsection"><a href="#subsection4">Custom Types, Support structures</a></li>
-<li class="doctools_subsection"><a href="#subsection5">Custom Types, Results</a></li>
+<li class="doctools_subsection"><a href="#subsection2">More Builtin Types: Strings</a></li>
+<li class="doctools_subsection"><a href="#subsection3">Custom Types, Introduction</a></li>
+<li class="doctools_subsection"><a href="#subsection4">Custom Types, Semi-trivial</a></li>
+<li class="doctools_subsection"><a href="#subsection5">Custom Types, Support structures</a></li>
+<li class="doctools_subsection"><a href="#subsection6">Custom Types, Results</a></li>
 </ul>
 </li>
 <li class="doctools_section"><a href="#section6">Authors</a></li>
@@ -741,7 +742,7 @@ for doing that.</p></dd>
 </div>
 <div id="section5" class="doctools_section"><h2><a name="section5">Examples</a></h2>
 <p>The examples shown here have been drawn from section &quot;Embedding C&quot; in
-the document about <i class="term">Using CriTcl</i>. Please see that document
+the document about <i class="term"><a href="critcl_usingit.html">Using Critcl</a></i>. Please see that document
 for many more examples.</p>
 <div id="subsection1" class="doctools_subsection"><h3><a name="subsection1">A Simple Procedure</a></h3>
 <p>Starting simple, let us assume that the Tcl code in question is
@@ -771,8 +772,111 @@ slow. Converting this to C we get:</p>
 <li><p>The reference manpage lists all the legal C types supported as
        arguments and results.</p></li>
 </ol>
+<p>While the above example was based on type <b class="type">double</b> for
+both arguments and result we have a number of additional types in the
+same category, i.e. simple types. These are:</p>
+<pre class="doctools_example">
+Critcl type | C type         | Tcl type  | Notes
+----------- | -------------- | --------- | ------------------------------
+bool        |                |           | Alias of <b class="type">boolean</b> below
+boolean     | int            | Boolean   |
+double      | double         | Double    |
+float       | float          | Double    |
+int         | int            | Int       |
+long        | long           | Long      |
+wideint     | Tcl_WideInt    | WideInt   |
+</pre>
+<p>A slightly advanced form of these simple types are a limited
+set of constraints on the argument value. Note that <b class="type">bool</b> and
+alias do not support this.</p>
+<pre class="doctools_example">
+    critcl::cproc sqrt {{double &gt;= 0} x} double {
+        return sqrt(x);
+    }
+</pre>
+<p>In the example above Critcl's argument handling will reject
+calling the command with a negative number, without ever invoking the
+C code.</p>
+<p>These constraints are called <em>limited</em> because only
+<b class="const">0</b> and <b class="const">1</b> can be used as the borders, although all the
+operators <b class="const">&lt;</b>, <b class="const">&lt;=</b>, <b class="const">&gt;</b>, and <b class="const">&gt;=</b> are
+possible. It is also not possible to combine restrictions.</p>
 </div>
-<div id="subsection2" class="doctools_subsection"><h3><a name="subsection2">Custom Types, Introduction</a></h3>
+<div id="subsection2" class="doctools_subsection"><h3><a name="subsection2">More Builtin Types: Strings</a></h3>
+<p>Given that &quot;Everything is a String&quot; is a slogan of Tcl the ability of <b class="cmd">cproc</b>s
+to receive strings as arguments, and return them as results is quite important.</p>
+<p>We actually have a variety of builtin string types, all alike, yet different.</p>
+<p>For arguments we have:</p>
+<pre class="doctools_example">
+Critcl type | C type         | Tcl type  | Notes
+----------- | -------------- | --------- | ------------------------------
+char*       | const char*    | Any       | <em>Read-only</em>, <em>string rep</em>
+pstring     | critcl_pstring | Any       | <em>Read-only</em>
+bytes       | critcl_bytes   | ByteArray | <em>Read-only</em>
+</pre>
+<p>In C</p>
+<pre class="doctools_example">
+    critcl::cproc takeStrings {
+        char*   cstring
+	pstring pstring
+	bytes   barray
+    } void {
+        printf (&quot;len %d = %s\n&quot;, strlen(cstring), cstring);
+	printf (&quot;len %d = %s\n&quot;, pstring.len, pstring.s);
+	printf (&quot;len %d = %s\n&quot;, barray.len, barray.s);
+        return; // void result, no result
+    }
+</pre>
+<p>Notable about the above:</p>
+<ol class="doctools_enumerated">
+<li><p>The <b class="variable">cstring</b> is a plain <b class="type">const char*</b>. It <em>points directly</em>
+into the <b class="type">Tcl_Obj*</b> holding the argument in the script.</p></li>
+<li><p>The <b class="variable">pstring</b> is a slight extension to that. The value is actually a structure
+containing the string pointer like <b class="variable">cstring</b> (field <b class="const">.s</b>), the length of the
+string (field <b class="const">.len</b>), and a pointer to the <b class="type">Tcl_Obj*</b> these came from.</p></li>
+<li><p>The last, <b class="variable">barray</b> is like <b class="variable">pstring</b>, however it has ensured that the
+<b class="type">Tcl_Obj*</b> is a Tcl ByteArray, i.e. binary data.</p></li>
+</ol>
+<p>Treat all of them as <em>Read Only</em>. Do not modify ever.</p>
+<p>On the other side, string results, we have:</p>
+<pre class="doctools_example">
+Critcl type   | C type         | Tcl type  | Notes
+------------- | -------------- | --------- | ------------------------------
+char*         | char*          | String    | <em>Makes a copy</em>
+vstring       |                |           | Alias of <b class="type">char*</b> above
+const char*   | const char*    |           | Behavior of <b class="type">char*</b> above
+------------- | -------------- | --------- | ------------------------------
+string        | char*          | String    | Freeable string set directly
+              |                |           | <em>No copy is made</em>
+dstring       |                |           | Alias of <b class="type">string</b> above
+</pre>
+<pre class="doctools_example">
+    critcl::cproc returnCString {} char* {
+        return &quot;a string&quot;;
+    }
+    critcl::cproc returnString {} string {
+        char* str = Tcl_Alloc (200);
+	sprintf (str, &quot;hello world&quot;);
+        return str; 
+    }
+</pre>
+<p>Notable about the above:</p>
+<ol class="doctools_enumerated">
+<li><p>The type <b class="type">char*</b> is best used for static strings, or strings in some kind
+fixed buffer.</p>
+<p>Critcl's translation layer makes a copy of it for the result of the command. While
+it is possible to return heap-allocated strings it is the C code who is responsible for
+freeing such at some point. If that is not done they will leak.</p></li>
+<li><p>The type <b class="type">string</b> on the other hand is exactly for returning strings allocated
+with <b class="function">Tcl_Alloc</b> and associates.</p>
+<p>For these the translation layer makes no copy at all, and sets them directly as the
+result of the command. A <em>very important effect</em> of this is that the ownership of
+the string pointer moves from the function to Tcl.</p>
+<p><em>Tcl</em> will release the allocated memory when it does not need it any
+longer. The C code has no say in that.</p></li>
+</ol>
+</div>
+<div id="subsection3" class="doctools_subsection"><h3><a name="subsection3">Custom Types, Introduction</a></h3>
 <p>When writing bindings to external libraries <b class="cmd">critcl::cproc</b> is
 usually the most convenient way of writing the lower layers. This is
 however hampered by the fact that critcl on its own only supports a
@@ -809,7 +913,7 @@ as the underlying library functions themselves.</p>
     ...
 </pre>
 </div>
-<div id="subsection3" class="doctools_subsection"><h3><a name="subsection3">Custom Types, Semi-trivial</a></h3>
+<div id="subsection4" class="doctools_subsection"><h3><a name="subsection4">Custom Types, Semi-trivial</a></h3>
 <p>A more involved custom argument type would be to map from Tcl strings
 to some internal representation, like an integer code.</p>
 <p>The first example is taken from the <b class="package">tclyaml</b> package,
@@ -893,7 +997,7 @@ rules we may need different types).</p>
     ...
 </pre>
 </div>
-<div id="subsection4" class="doctools_subsection"><h3><a name="subsection4">Custom Types, Support structures</a></h3>
+<div id="subsection5" class="doctools_subsection"><h3><a name="subsection5">Custom Types, Support structures</a></h3>
 <p>The adjunct command <b class="cmd">critcl::argtypesupport</b> is for when the
 conversion needs additional definitions, for example a helper
 structure.</p>
@@ -953,7 +1057,7 @@ conversion code has to release the allocated memory itself in the
 failure path, because it will never reach the code defined via
 <b class="cmd">critcl::argtyperelease</b> in that case.</p>
 </div>
-<div id="subsection5" class="doctools_subsection"><h3><a name="subsection5">Custom Types, Results</a></h3>
+<div id="subsection6" class="doctools_subsection"><h3><a name="subsection6">Custom Types, Results</a></h3>
 <p>All of the previous sections dealt with argument conversions,
 i.e. going from Tcl into C.
 Custom result types are for the reverse direction, from C to Tcl.

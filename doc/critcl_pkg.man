@@ -39,7 +39,7 @@ This package resides in the Core Package Layer of CriTcl.
 
 [section Examples]
 
-See section "Embedding C" in [manpage {Using CriTcl}].
+See section "Embedding C" in [manpage {Using Critcl}].
 
 [comment {===================================================================}]
 [include include/changes.inc]

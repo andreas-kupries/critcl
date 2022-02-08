@@ -32,3 +32,38 @@ Notable about this translation:
 [enum] The reference manpage lists all the legal C types supported as
        arguments and results.
 [list_end]
+
+[para] While the above example was based on type [type double] for
+both arguments and result we have a number of additional types in the
+same category, i.e. simple types. These are:
+
+[example_begin]
+Critcl type | C type         | Tcl type  | Notes
+----------- | -------------- | --------- | ------------------------------
+bool        |                |           | Alias of [type boolean] below
+boolean     | int            | Boolean   |
+double      | double         | Double    |
+float       | float          | Double    |
+int         | int            | Int       |
+long        | long           | Long      |
+wideint     | Tcl_WideInt    | WideInt   |
+[example_end]
+
+[para] A slightly advanced form of these simple types are a limited
+set of constraints on the argument value. Note that [type bool] and
+alias do not support this.
+
+[example {
+    critcl::cproc sqrt {{double >= 0} x} double {
+        return sqrt(x);
+    }
+}]
+
+[para] In the example above Critcl's argument handling will reject
+calling the command with a negative number, without ever invoking the
+C code.
+
+[para] These constraints are called [strong limited] because only
+[const 0] and [const 1] can be used as the borders, although all the
+operators [const <], [const <=], [const >], and [const >=] are
+possible. It is also not possible to combine restrictions.
