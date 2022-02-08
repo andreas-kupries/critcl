@@ -315,7 +315,9 @@ On that page, choose either the "ZIP" link to get a copy of this revision as a Z
 For the curious (or a developer-to-be), the sources are managed by the
 \fIGit SCM\fR [http://www\&.git-scm\&.com]\&.
 Binaries for popular platforms can be found directly at its
-\fIdownload page\fR [http://www\&.fossil-scm\&.org/downloads]\&.
+\fIdownload page\fR [https://git-scm\&.com/downloads]\&.
+See also if your operating system's package manager provides it and
+associated tools for installation\&.
 .PP
 With that tool available the full history can be retrieved via:
 .CS

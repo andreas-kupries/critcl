@@ -44,7 +44,10 @@ For the curious (or a developer-to-be), the sources are managed by the
 [uri http://www.git-scm.com {Git SCM}].
 
 Binaries for popular platforms can be found directly at its
-[uri http://www.fossil-scm.org/downloads {download page}].
+[uri https://git-scm.com/downloads {download page}].
+
+See also if your operating system's package manager provides it and
+associated tools for installation.
 
 [para]
 
