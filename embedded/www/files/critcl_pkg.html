@@ -413,36 +413,37 @@ For the latter see section <span class="sectref"><a href="#subsection15">Advance
 Unless otherwise noted, the Tcl return code is always <b class="const">TCL_OK</b>.
 Before going into the details first a quick overview:</p>
 <pre class="doctools_example">
-Critcl type   | C type         | Tcl type  | Notes
-------------- | -------------- | --------- | ------------------------------
-void          | n/a            | n/a       | Always OK. Body sets result
-ok            | int            | n/a       | Result code. Body sets result
-------------- | -------------- | --------- | ------------------------------
-int           | int            | Int       |
-boolean       |                |           | Alias of <b class="type">int</b> above
-bool          |                |           | Alias of <b class="type">int</b> above
-long          | long           | Long      |
-wideint       | Tcl_WideInt    | WideInt   |
-double        | double         | Double    |
-float         | float          | Double    |
-------------- | -------------- | --------- | ------------------------------
-char*         | char*          | String    | <em>Makes a copy</em>
-vstring       |                |           | Alias of <b class="type">char*</b> above
-const char*   | const char*    |           | Behavior of <b class="type">char*</b> above
-------------- | -------------- | --------- | ------------------------------
-string        |                | String    | Freeable string set directly
-              |                |           | <em>No copy is made</em>
-dstring       |                |           | Alias of <b class="type">string</b> above
-------------- | -------------- | --------- | ------------------------------
-              |                |           | For all below: Null is ERROR
-              |                |           | Body has to set any message
-Tcl_Obj*      | Tcl_Obj*       | Any       | <em>refcount --</em>
-object        |                |           | Alias of <b class="type">Tcl_Obj*</b> above
-Tcl_Obj*0     |                | Any       | <em>refcount unchanged</em>
-object0       |                |           | Alias of <b class="type">Tcl_Obj*0</b> above
-------------- | -------------- | --------- | ------------------------------
-known-channel | Tcl_Channel    | String    | Assumes to already be registered
-new-channel   | Tcl_Channel    | String    | New channel, will be registered
+Critcl type    | C type         | Tcl type  | Notes
+-------------- | -------------- | --------- | ------------------------------
+void           | n/a            | n/a       | Always OK. Body sets result
+ok             | int            | n/a       | Result code. Body sets result
+-------------- | -------------- | --------- | ------------------------------
+int            | int            | Int       |
+boolean        |                |           | Alias of <b class="type">int</b> above
+bool           |                |           | Alias of <b class="type">int</b> above
+long           | long           | Long      |
+wideint        | Tcl_WideInt    | WideInt   |
+double         | double         | Double    |
+float          | float          | Double    |
+-------------- | -------------- | --------- | ------------------------------
+char*          | char*          | String    | <em>Makes a copy</em>
+vstring        |                |           | Alias of <b class="type">char*</b> above
+const char*    | const char*    |           | Behavior of <b class="type">char*</b> above
+-------------- | -------------- | --------- | ------------------------------
+string         |                | String    | Freeable string set directly
+               |                |           | <em>No copy is made</em>
+dstring        |                |           | Alias of <b class="type">string</b> above
+-------------- | -------------- | --------- | ------------------------------
+               |                |           | For all below: Null is ERROR
+               |                |           | Body has to set any message
+Tcl_Obj*       | Tcl_Obj*       | Any       | <em>refcount --</em>
+object         |                |           | Alias of <b class="type">Tcl_Obj*</b> above
+Tcl_Obj*0      |                | Any       | <em>refcount unchanged</em>
+object0        |                |           | Alias of <b class="type">Tcl_Obj*0</b> above
+-------------- | -------------- | --------- | ------------------------------
+known-channel  | Tcl_Channel    | String    | Assumes to already be registered
+new-channel    | Tcl_Channel    | String    | New channel, will be registered
+return-channel | Tcl_Channel    | String    | Inversion of take-channel
 </pre>
 <p>And now the details:</p>
 <dl class="doctools_definitions">
@@ -568,43 +569,47 @@ body of the function.</p>
 custom type. For the latter see <span class="sectref"><a href="#subsection15">Advanced: Extending cproc</a></span>.
 Before going into the details first a quick overview:</p>
 <pre class="doctools_example">
-Critcl type | C type         | Tcl type  | Notes
------------ | -------------- | --------- | ------------------------------
-Tcl_Interp* | Tcl_Interp*    | n/a       | <em>Special</em>, only first
------------ | -------------- | --------- | ------------------------------
-Tcl_Obj*    | Tcl_Obj*       | Any       | <em>Read-only</em>
-object      |                |           | Alias of <b class="type">Tcl_Obj*</b> above
-list        | critcl_list    | List      | <em>Read-only</em>
------------ | -------------- | --------- | ------------------------------
-char*       | const char*    | Any       | <em>Read-only</em>, <em>string rep</em>
-pstring     | critcl_pstring | Any       | <em>Read-only</em>
-bytes       | critcl_bytes   | ByteArray | <em>Read-only</em>
------------ | -------------- | --------- | ------------------------------
-int         | int            | Int       |
-long        | long           | Long      |
-wideint     | Tcl_WideInt    | WideInt   |
-double      | double         | Double    |
-float       | float          | Double    |
------------ | -------------- | --------- | ------------------------------
-X &gt; 0       |                |           | For X in <b class="type">int</b> ... <b class="type">float</b> above.
-X &gt;= 0      |                |           | C types as per the base type X.
-X &lt; 0       |                |           | Allowed argument values are
-X &lt;= 0      |                |           | restricted as per the shown
-X &gt; 1       |                |           | relation
-X &gt;= 1      |                |           |
-X &lt; 1       |                |           | This is not a general mechanism
-X &lt;= 1      |                |           | open to other values. Only 0/1.
------------ | -------------- | --------- | ------------------------------
-boolean     | int            | Boolean   |
-bool        |                |           | Alias of <b class="type">boolean</b> above
------------ | -------------- | --------- | ------------------------------
-bytearray   |                |           | <em>DEPRECATED</em>
-rawchar     |                |           | <em>DEPRECATED</em>
-rawchar*    |                |           | <em>DEPRECATED</em>
-double*     |                |           | <em>DEPRECATED</em>
-float*      |                |           | <em>DEPRECATED</em>
-int*        |                |           | <em>DEPRECATED</em>
-void*       |                |           | <em>DEPRECATED</em>
+Critcl type      | C type         | Tcl type  | Notes
+---------------- | -------------- | --------- | ------------------------------
+Tcl_Interp*      | Tcl_Interp*    | n/a       | <em>Special</em>, only first
+---------------- | -------------- | --------- | ------------------------------
+Tcl_Obj*         | Tcl_Obj*       | Any       | <em>Read-only</em>
+object           |                |           | Alias of <b class="type">Tcl_Obj*</b> above
+list             | critcl_list    | List      | <em>Read-only</em>
+---------------- | -------------- | --------- | ------------------------------
+char*            | const char*    | Any       | <em>Read-only</em>, <em>string rep</em>
+pstring          | critcl_pstring | Any       | <em>Read-only</em>
+bytes            | critcl_bytes   | ByteArray | <em>Read-only</em>
+---------------- | -------------- | --------- | ------------------------------
+int              | int            | Int       |
+long             | long           | Long      |
+wideint          | Tcl_WideInt    | WideInt   |
+double           | double         | Double    |
+float            | float          | Double    |
+---------------- | -------------- | --------- | ------------------------------
+X &gt; 0            |                |           | For X in <b class="type">int</b> ... <b class="type">float</b> above.
+X &gt;= 0           |                |           | C types as per the base type X.
+X &lt; 0            |                |           | Allowed argument values are
+X &lt;= 0           |                |           | restricted as per the shown
+X &gt; 1            |                |           | relation
+X &gt;= 1           |                |           |
+X &lt; 1            |                |           | This is not a general mechanism
+X &lt;= 1           |                |           | open to other values. Only 0/1.
+---------------- | -------------- | --------- | ------------------------------
+boolean          | int            | Boolean   |
+bool             |                |           | Alias of <b class="type">boolean</b> above
+---------------- | -------------- | --------- | ------------------------------
+channel          | Tcl_Channel    | String    | Assumed to be registered
+unshared-channel | Tcl_Channel    | String    | As above, limited to current interpreter
+take-channel     | Tcl_Channel    | String    | As above, C code takes ownership
+---------------- | -------------- | --------- | ------------------------------
+bytearray        |                |           | <em>DEPRECATED</em>
+rawchar          |                |           | <em>DEPRECATED</em>
+rawchar*         |                |           | <em>DEPRECATED</em>
+double*          |                |           | <em>DEPRECATED</em>
+float*           |                |           | <em>DEPRECATED</em>
+int*             |                |           | <em>DEPRECATED</em>
+void*            |                |           | <em>DEPRECATED</em>
 </pre>
 <p>And now the details:</p>
 <dl class="doctools_definitions">

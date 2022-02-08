@@ -114,43 +114,44 @@
 <ul>
 <li class="doctools_subsection"><a href="#subsection1">A Simple Procedure</a></li>
 <li class="doctools_subsection"><a href="#subsection2">More Builtin Types: Strings</a></li>
-<li class="doctools_subsection"><a href="#subsection3">Custom Types, Introduction</a></li>
-<li class="doctools_subsection"><a href="#subsection4">Custom Types, Semi-trivial</a></li>
-<li class="doctools_subsection"><a href="#subsection5">Custom Types, Support structures</a></li>
-<li class="doctools_subsection"><a href="#subsection6">Custom Types, Results</a></li>
-<li class="doctools_subsection"><a href="#subsection7">Handling A Variable Number Of Arguments</a></li>
-<li class="doctools_subsection"><a href="#subsection8">Data As A Tcl Command</a></li>
-<li class="doctools_subsection"><a href="#subsection9">Blocks of arbitrary C</a></li>
-<li class="doctools_subsection"><a href="#subsection10">Constant values</a></li>
-<li class="doctools_subsection"><a href="#subsection11">Lifting constants</a></li>
-<li class="doctools_subsection"><a href="#subsection12">Finding header files</a></li>
-<li class="doctools_subsection"><a href="#subsection13">Separate C sources</a></li>
-<li class="doctools_subsection"><a href="#subsection14">Finding external libraries</a></li>
-<li class="doctools_subsection"><a href="#subsection15">Customizing the compile and link steps</a></li>
-<li class="doctools_subsection"><a href="#subsection16">Having both C and Tcl functionality</a></li>
-<li class="doctools_subsection"><a href="#subsection17">Using C with Tcl functionality as fallback</a></li>
-<li class="doctools_subsection"><a href="#subsection18">Unlazy Packages</a></li>
+<li class="doctools_subsection"><a href="#subsection3">A Simple Procedure</a></li>
+<li class="doctools_subsection"><a href="#subsection4">Custom Types, Introduction</a></li>
+<li class="doctools_subsection"><a href="#subsection5">Custom Types, Semi-trivial</a></li>
+<li class="doctools_subsection"><a href="#subsection6">Custom Types, Support structures</a></li>
+<li class="doctools_subsection"><a href="#subsection7">Custom Types, Results</a></li>
+<li class="doctools_subsection"><a href="#subsection8">Handling A Variable Number Of Arguments</a></li>
+<li class="doctools_subsection"><a href="#subsection9">Data As A Tcl Command</a></li>
+<li class="doctools_subsection"><a href="#subsection10">Blocks of arbitrary C</a></li>
+<li class="doctools_subsection"><a href="#subsection11">Constant values</a></li>
+<li class="doctools_subsection"><a href="#subsection12">Lifting constants</a></li>
+<li class="doctools_subsection"><a href="#subsection13">Finding header files</a></li>
+<li class="doctools_subsection"><a href="#subsection14">Separate C sources</a></li>
+<li class="doctools_subsection"><a href="#subsection15">Finding external libraries</a></li>
+<li class="doctools_subsection"><a href="#subsection16">Customizing the compile and link steps</a></li>
+<li class="doctools_subsection"><a href="#subsection17">Having both C and Tcl functionality</a></li>
+<li class="doctools_subsection"><a href="#subsection18">Using C with Tcl functionality as fallback</a></li>
+<li class="doctools_subsection"><a href="#subsection19">Unlazy Packages</a></li>
 </ul>
 </li>
 <li class="doctools_section"><a href="#section3">Checking your C</a>
 <ul>
-<li class="doctools_subsection"><a href="#subsection19">Which Tcl ?</a></li>
-<li class="doctools_subsection"><a href="#subsection20">Making A Widget</a></li>
-<li class="doctools_subsection"><a href="#subsection21">Checking The Environment</a></li>
-<li class="doctools_subsection"><a href="#subsection22">License Invoked</a></li>
+<li class="doctools_subsection"><a href="#subsection20">Which Tcl ?</a></li>
+<li class="doctools_subsection"><a href="#subsection21">Making A Widget</a></li>
+<li class="doctools_subsection"><a href="#subsection22">Checking The Environment</a></li>
+<li class="doctools_subsection"><a href="#subsection23">License Invoked</a></li>
 </ul>
 </li>
 <li class="doctools_section"><a href="#section4">Building Critcl Packages</a>
 <ul>
-<li class="doctools_subsection"><a href="#subsection23">Getting Help ...</a></li>
-<li class="doctools_subsection"><a href="#subsection24">Pre-Filling The Result Cache</a></li>
-<li class="doctools_subsection"><a href="#subsection25">Building A Package</a></li>
-<li class="doctools_subsection"><a href="#subsection26">Building And Installing A Package</a></li>
-<li class="doctools_subsection"><a href="#subsection27">Building For Debugging</a></li>
-<li class="doctools_subsection"><a href="#subsection28">Retargeting The Binaries</a></li>
-<li class="doctools_subsection"><a href="#subsection29">Custom Configurations</a></li>
-<li class="doctools_subsection"><a href="#subsection30">Custom Header Path</a></li>
-<li class="doctools_subsection"><a href="#subsection31">Introspection of Targets And Configurations</a></li>
+<li class="doctools_subsection"><a href="#subsection24">Getting Help ...</a></li>
+<li class="doctools_subsection"><a href="#subsection25">Pre-Filling The Result Cache</a></li>
+<li class="doctools_subsection"><a href="#subsection26">Building A Package</a></li>
+<li class="doctools_subsection"><a href="#subsection27">Building And Installing A Package</a></li>
+<li class="doctools_subsection"><a href="#subsection28">Building For Debugging</a></li>
+<li class="doctools_subsection"><a href="#subsection29">Retargeting The Binaries</a></li>
+<li class="doctools_subsection"><a href="#subsection30">Custom Configurations</a></li>
+<li class="doctools_subsection"><a href="#subsection31">Custom Header Path</a></li>
+<li class="doctools_subsection"><a href="#subsection32">Introspection of Targets And Configurations</a></li>
 </ul>
 </li>
 <li class="doctools_section"><a href="#section5">Authors</a></li>
@@ -199,7 +200,7 @@ you consider investigating this line of making your code go faster as
 well.</p>
 <p>Now, with these introductory words out of the way, lets jump into the
 meat of things.</p>
-<div id="subsection1" class="doctools_subsection"><h3><a name="subsection1">A Simple Procedure</a></h3>
+<div id="subsection3" class="doctools_subsection"><h3><a name="subsection3">A Simple Procedure</a></h3>
 <p>Starting simple, let us assume that the Tcl code in question is
 something like</p>
 <pre class="doctools_example">
@@ -331,7 +332,36 @@ the string pointer moves from the function to Tcl.</p>
 longer. The C code has no say in that.</p></li>
 </ol>
 </div>
-<div id="subsection3" class="doctools_subsection"><h3><a name="subsection3">Custom Types, Introduction</a></h3>
+<div id="subsection3" class="doctools_subsection"><h3><a name="subsection3">A Simple Procedure</a></h3>
+<p>Starting simple, let us assume that the Tcl code in question is
+something like</p>
+<pre class="doctools_example">
+    proc math {x y z} {
+        return [expr {(sin($x)*rand())/$y**log($z)}]
+    }
+</pre>
+<p>with the expression pretending to be something very complex and
+slow. Converting this to C we get:</p>
+<pre class="doctools_example">
+    critcl::cproc math {double x double y double z} double {
+        double up   = rand () * sin (x);
+        double down = pow(y, log (z));
+        return up/down;
+    }
+</pre>
+<p>Notable about this translation:</p>
+<ol class="doctools_enumerated">
+<li><p>All the arguments got type information added to them, here
+       &quot;double&quot;.  Like in C the type precedes the argument name. Other
+       than that it is pretty much a Tcl dictionary, with keys and
+       values swapped.</p></li>
+<li><p>We now also have to declare the type of the result, here
+       &quot;double&quot;, again.</p></li>
+<li><p>The reference manpage lists all the legal C types supported as
+       arguments and results.</p></li>
+</ol>
+</div>
+<div id="subsection4" class="doctools_subsection"><h3><a name="subsection4">Custom Types, Introduction</a></h3>
 <p>When writing bindings to external libraries <b class="cmd">critcl::cproc</b> is
 usually the most convenient way of writing the lower layers. This is
 however hampered by the fact that critcl on its own only supports a
@@ -368,7 +398,7 @@ as the underlying library functions themselves.</p>
     ...
 </pre>
 </div>
-<div id="subsection4" class="doctools_subsection"><h3><a name="subsection4">Custom Types, Semi-trivial</a></h3>
+<div id="subsection5" class="doctools_subsection"><h3><a name="subsection5">Custom Types, Semi-trivial</a></h3>
 <p>A more involved custom argument type would be to map from Tcl strings
 to some internal representation, like an integer code.</p>
 <p>The first example is taken from the <b class="package">tclyaml</b> package,
@@ -452,7 +482,7 @@ rules we may need different types).</p>
     ...
 </pre>
 </div>
-<div id="subsection5" class="doctools_subsection"><h3><a name="subsection5">Custom Types, Support structures</a></h3>
+<div id="subsection6" class="doctools_subsection"><h3><a name="subsection6">Custom Types, Support structures</a></h3>
 <p>The adjunct command <b class="cmd">critcl::argtypesupport</b> is for when the
 conversion needs additional definitions, for example a helper
 structure.</p>
@@ -512,7 +542,7 @@ conversion code has to release the allocated memory itself in the
 failure path, because it will never reach the code defined via
 <b class="cmd">critcl::argtyperelease</b> in that case.</p>
 </div>
-<div id="subsection6" class="doctools_subsection"><h3><a name="subsection6">Custom Types, Results</a></h3>
+<div id="subsection7" class="doctools_subsection"><h3><a name="subsection7">Custom Types, Results</a></h3>
 <p>All of the previous sections dealt with argument conversions,
 i.e. going from Tcl into C.
 Custom result types are for the reverse direction, from C to Tcl.
@@ -564,8 +594,8 @@ such results has to deal with that. This happens for example in
     }
 </pre>
 </div>
-<div id="subsection7" class="doctools_subsection"><h3><a name="subsection7">Handling A Variable Number Of Arguments</a></h3>
-<p>In <span class="sectref"><a href="#subsection1">A Simple Procedure</a></span> we demonstrated how easy a
+<div id="subsection8" class="doctools_subsection"><h3><a name="subsection8">Handling A Variable Number Of Arguments</a></h3>
+<p>In <span class="sectref"><a href="#subsection3">A Simple Procedure</a></span> we demonstrated how easy a
 translation to C can be. Is it still as easy when we introduce
 something moderately complex like handling a variable number of
 arguments ? A feature which is needed to handle commands with options
@@ -654,7 +684,7 @@ simpler translation:</p>
     }
 </pre>
 </div>
-<div id="subsection8" class="doctools_subsection"><h3><a name="subsection8">Data As A Tcl Command</a></h3>
+<div id="subsection9" class="doctools_subsection"><h3><a name="subsection9">Data As A Tcl Command</a></h3>
 <p>Here we assume that we have a Tcl procedure which returns a fixed
 string. In the final product we are going to C to hide this string
 from the casual user.</p>
@@ -670,11 +700,11 @@ from the casual user.</p>
 </pre>
 <p>There is nothing really notable here.</p>
 </div>
-<div id="subsection9" class="doctools_subsection"><h3><a name="subsection9">Blocks of arbitrary C</a></h3>
+<div id="subsection10" class="doctools_subsection"><h3><a name="subsection10">Blocks of arbitrary C</a></h3>
 <p>Often just defining Tcl commands in C, as demonstrated in the sections
-<span class="sectref"><a href="#subsection1">A Simple Procedure</a></span>,
-<span class="sectref"><a href="#subsection7">Handling A Variable Number Of Arguments</a></span>, and
-<span class="sectref"><a href="#subsection8">Data As A Tcl Command</a></span>
+<span class="sectref"><a href="#subsection3">A Simple Procedure</a></span>,
+<span class="sectref"><a href="#subsection8">Handling A Variable Number Of Arguments</a></span>, and
+<span class="sectref"><a href="#subsection9">Data As A Tcl Command</a></span>
 is not really enough.
 For example we may have several of our new C commands using the same
 code over and over, and we wish avoid this duplication. Or we wish to
@@ -706,7 +736,7 @@ As our example now an excerpt taken from real code, the top of the
 <i class="term">Tcl_ObjType</i> holding the data of a SHA1 context used during the
 incremental calculation of sha1 hashes.</p>
 </div>
-<div id="subsection10" class="doctools_subsection"><h3><a name="subsection10">Constant values</a></h3>
+<div id="subsection11" class="doctools_subsection"><h3><a name="subsection11">Constant values</a></h3>
 <p>While one might believe that there is no need for commands which
 returns constant values that is not true. Commands reporting on
 compile-time configuration, like version numbers, available features,
@@ -729,7 +759,7 @@ extended mode for hidden input is available from the bound
     critcl::cconst linenoise::hidden_extended boolean 1
 </pre>
 </div>
-<div id="subsection11" class="doctools_subsection"><h3><a name="subsection11">Lifting constants</a></h3>
+<div id="subsection12" class="doctools_subsection"><h3><a name="subsection12">Lifting constants</a></h3>
 <p>When writing a critcl-based package to make a third-party library
 available to scripts we do not only have to make the relevant
 functions available as commands, often we also have to know all
@@ -768,14 +798,14 @@ The command</p>
 These commands <em>do not create</em> the defines in the C level. They
 only lift pre-existing material.
 Which can come from the headers of the third-party library, the usual
-case, but also from <span class="sectref"><a href="#subsection9">Blocks of arbitrary C</a></span>.</p>
+case, but also from <span class="sectref"><a href="#subsection10">Blocks of arbitrary C</a></span>.</p>
 <p>A corrollary to the above: What is not where, cannot be
 lifted. All listed names and patterns which have no actual C code
 declaring them are ignored, i.e. not mapped.</p>
 </div>
-<div id="subsection12" class="doctools_subsection"><h3><a name="subsection12">Finding header files</a></h3>
+<div id="subsection13" class="doctools_subsection"><h3><a name="subsection13">Finding header files</a></h3>
 <p>A notable thing in the example shown in the section about
-<span class="sectref"><a href="#subsection9">Blocks of arbitrary C</a></span> is the</p>
+<span class="sectref"><a href="#subsection10">Blocks of arbitrary C</a></span> is the</p>
 <pre class="doctools_example">
     #include &quot;sha1.h&quot;
 </pre>
@@ -820,7 +850,7 @@ from multiple invokations is aggregated by the system.</p>
     critcl::cheaders sha1.h
 </pre>
 </div>
-<div id="subsection13" class="doctools_subsection"><h3><a name="subsection13">Separate C sources</a></h3>
+<div id="subsection14" class="doctools_subsection"><h3><a name="subsection14">Separate C sources</a></h3>
 <p>In all of the examples shown so far the C code was fully embedded in a
 &quot;<b class="file">.critcl</b>&quot; file. However, if the C part is large it can make sense
 to break it out of the &quot;<b class="file">.critcl</b>&quot; file into one or more separate
@@ -846,14 +876,14 @@ namespace eval ::struct {
 the relevant &quot;<b class="file">.critcl</b>&quot; file.</p>
 <p>This example also demonstrates again the use of
 <b class="cmd">critcl::cheaders</b>, which we also saw in section
-<span class="sectref"><a href="#subsection12">Finding header files</a></span>.</p>
+<span class="sectref"><a href="#subsection13">Finding header files</a></span>.</p>
 </div>
-<div id="subsection14" class="doctools_subsection"><h3><a name="subsection14">Finding external libraries</a></h3>
+<div id="subsection15" class="doctools_subsection"><h3><a name="subsection15">Finding external libraries</a></h3>
 <p>When creating a package exposing some third-party library to Tcl
-<span class="sectref"><a href="#subsection12">Finding header files</a></span> is only the first part, to enable
+<span class="sectref"><a href="#subsection13">Finding header files</a></span> is only the first part, to enable
 failure-free compilation. We also have to find the library/ies
 themselves so that they can be linked to our package. This is
-described here. The last issue, <span class="sectref"><a href="#subsection11">Lifting constants</a></span> from C
+described here. The last issue, <span class="sectref"><a href="#subsection12">Lifting constants</a></span> from C
 to Tcl for the use by scripts is handled in a separate section and
 example.</p>
 <p>The relevant command is <b class="cmd">critcl::clibraries</b>. Its basic
@@ -888,7 +918,7 @@ command which enables us to name the frameworks used by our package.
 Note that this command can be used unconditionally. If the build
 target is not OS X it is ignored.</p>
 </div>
-<div id="subsection15" class="doctools_subsection"><h3><a name="subsection15">Customizing the compile and link steps</a></h3>
+<div id="subsection16" class="doctools_subsection"><h3><a name="subsection16">Customizing the compile and link steps</a></h3>
 <p>The commands <b class="cmd">critcl::cflags</b> and <b class="cmd">critcl::ldflags</b> enable you
 to provide custom options to the compile and link phases for a
 &quot;<b class="file">.critcl</b>&quot; file.</p>
@@ -899,11 +929,11 @@ other things.
 Among the latter, especially platform-specific settings, for example
 byteorder.</p>
 <p>This makes <b class="cmd">critcl::check</b> an important adjunct command, as
-this is the API for <span class="sectref"><a href="#subsection21">Checking The Environment</a></span>, and then
+this is the API for <span class="sectref"><a href="#subsection22">Checking The Environment</a></span>, and then
 selecting the compile &amp; link flags to use.</p>
 <p><em>I currently have no specific example to demonstrate these commands.</em></p>
 </div>
-<div id="subsection16" class="doctools_subsection"><h3><a name="subsection16">Having both C and Tcl functionality</a></h3>
+<div id="subsection17" class="doctools_subsection"><h3><a name="subsection17">Having both C and Tcl functionality</a></h3>
 <p>Often enough only pieces of a package require recoding in C to boost
 the whole system. Or, alternatively, the package in question consists
 of a low-level layer C with a Tcl layer above encoding policies and
@@ -928,9 +958,9 @@ necessary companions of the C part.</p>
 automatically <b class="cmd">source</b>d when the C parts are made available, thus
 making the Tcl parts available as well.</p>
 </div>
-<div id="subsection17" class="doctools_subsection"><h3><a name="subsection17">Using C with Tcl functionality as fallback</a></h3>
+<div id="subsection18" class="doctools_subsection"><h3><a name="subsection18">Using C with Tcl functionality as fallback</a></h3>
 <p>There is one special case of
-<span class="sectref"><a href="#subsection16">Having both C and Tcl functionality</a></span>
+<span class="sectref"><a href="#subsection17">Having both C and Tcl functionality</a></span>
 which deserves its own section.</p>
 <p>The possibility of not having the fast C code on some platform,
 and using a slower Tcl implementation of the functionality. In other
@@ -1152,7 +1182,7 @@ command in Tcl.</p>
 ... platform-specific C/Tcl -- uuid.</p></li>
 </ol>
 </div>
-<div id="subsection18" class="doctools_subsection"><h3><a name="subsection18">Unlazy Packages</a></h3>
+<div id="subsection19" class="doctools_subsection"><h3><a name="subsection19">Unlazy Packages</a></h3>
 <p>By default critcl is a bit inconsistent between modes &quot;compile &amp; run&quot;
 and &quot;generate package&quot;. The result of the latter is a standard Tcl
 package which loads and sources all of its files immediately when it
@@ -1218,7 +1248,7 @@ success (<b class="const">false</b>).</p>
 </pre>
 <p>It is related and similar to <b class="cmd">critcl::load</b>, the command to
 overcome the lazy loading, as shown in section
-<span class="sectref"><a href="#subsection18">Unlazy Packages</a></span>.</p>
+<span class="sectref"><a href="#subsection19">Unlazy Packages</a></span>.</p>
 <p>Like it is not allowed, nor possible to use critcl commands
 declaring anything after <b class="cmd">critcl::failed</b> has been called, making
 it pretty much the last critcl command in a &quot;<b class="file">.critcl</b>&quot; file.
@@ -1239,7 +1269,7 @@ allowed are</p>
 </ol>
 <p>as these only query information, namely the build status, and are
 protected against multiple calls.</p>
-<div id="subsection19" class="doctools_subsection"><h3><a name="subsection19">Which Tcl ?</a></h3>
+<div id="subsection20" class="doctools_subsection"><h3><a name="subsection20">Which Tcl ?</a></h3>
 <p>When building the shared library from the embedded C sources one of
 the things critcl does for us is to provide the Tcl headers,
 especially the stubs declarations.</p>
@@ -1257,7 +1287,7 @@ supplies the proper headers and stubs.</p>
     ... Declare your code ...
 </pre>
 </div>
-<div id="subsection20" class="doctools_subsection"><h3><a name="subsection20">Making A Widget</a></h3>
+<div id="subsection21" class="doctools_subsection"><h3><a name="subsection21">Making A Widget</a></h3>
 <p>... requires compiling against the Tk headers, and linking with Tk's
 stubs. For our convenience we have a simple, single command to
 activate all the necessary machinery, with critcl supplying the header
@@ -1273,7 +1303,7 @@ via <b class="cmd">critcl::cflags</b>, <b class="cmd">critcl::ldflags</b>,
 <p>Please note that this doesn't release you from the necessity of
 learning Tk's C API and how to use it to make a widget work. Sorry.</p>
 </div>
-<div id="subsection21" class="doctools_subsection"><h3><a name="subsection21">Checking The Environment</a></h3>
+<div id="subsection22" class="doctools_subsection"><h3><a name="subsection22">Checking The Environment</a></h3>
 <p>... may be necessary when creating a binding to some third-party
 library. The headers for this library may be found in non-standard
 locations, ditto for the library/ies itself. We may not have the
@@ -1305,7 +1335,7 @@ declarations.</p>
 in non-standard locations we have the full power of Tcl available,
 i.e. loops, the <b class="cmd">file</b> and <b class="cmd">glob</b> commands, etc., which can
 then be followed by a <b class="cmd">critcl::cheader</b> command to declare the
-location we found (See also <span class="sectref"><a href="#subsection12">Finding header files</a></span>).</p>
+location we found (See also <span class="sectref"><a href="#subsection13">Finding header files</a></span>).</p>
 <p>A nice extension to critcl would be a package collecting
 pocedures for common tasks like that, sort of like an
 <b class="syscmd">autoconf</b> for Tcl. <b class="package">critcl::config</b> seems to be nice
@@ -1341,7 +1371,7 @@ name for such a package.</p>
 </dl>
 <p>and pretty much everything else you can imagine.</p>
 </div>
-<div id="subsection22" class="doctools_subsection"><h3><a name="subsection22">License Invoked</a></h3>
+<div id="subsection23" class="doctools_subsection"><h3><a name="subsection23">License Invoked</a></h3>
 <p>When writing packages it is always good manners to provide prospective
 users with the license the package is under, so that they can decide
 whether they truly want to use the package, or not.</p>
@@ -1357,14 +1387,14 @@ packages.</p>
 <div id="section4" class="doctools_section"><h2><a name="section4">Building Critcl Packages</a></h2>
 <p>This is the section for developers having to generate packages from
 &quot;<b class="file">.critcl</b>&quot; files, i.e binaries for deployment,</p>
-<div id="subsection23" class="doctools_subsection"><h3><a name="subsection23">Getting Help ...</a></h3>
+<div id="subsection24" class="doctools_subsection"><h3><a name="subsection24">Getting Help ...</a></h3>
 <p>... Is easy. Running</p>
 <pre class="doctools_example">
     critcl -help
 </pre>
 <p>prints the basics of using the application to <b class="const">stdout</b>.</p>
 </div>
-<div id="subsection24" class="doctools_subsection"><h3><a name="subsection24">Pre-Filling The Result Cache</a></h3>
+<div id="subsection25" class="doctools_subsection"><h3><a name="subsection25">Pre-Filling The Result Cache</a></h3>
 <p>The default mode of the <b class="cmd"><a href="critcl_pkg.html">critcl</a></b> application is to take a series
 of &quot;<b class="file">.critcl</b>&quot; files, build their binaries, and leave them behind
 in the result cache. When the files are later actually used the
@@ -1392,9 +1422,9 @@ be prevented by specifying the option <b class="option">-keep</b>.</p>
 </pre>
 <p>These can be combined, of course.</p>
 </div>
-<div id="subsection25" class="doctools_subsection"><h3><a name="subsection25">Building A Package</a></h3>
+<div id="subsection26" class="doctools_subsection"><h3><a name="subsection26">Building A Package</a></h3>
 <p>To build the binary package for a &quot;<b class="file">.critcl</b>&quot; file, instead of
-<span class="sectref"><a href="#subsection24">Pre-Filling The Result Cache</a></span>, simply specify the option
+<span class="sectref"><a href="#subsection25">Pre-Filling The Result Cache</a></span>, simply specify the option
 <b class="option">-pkg</b>.</p>
 <pre class="doctools_example">
     critcl -pkg foo.tcl
@@ -1420,9 +1450,9 @@ an absolute path to specify the file to process:</p>
 </pre>
 <p>The package name derived from that is still <b class="package">foo</b>.</p>
 </div>
-<div id="subsection26" class="doctools_subsection"><h3><a name="subsection26">Building And Installing A Package</a></h3>
+<div id="subsection27" class="doctools_subsection"><h3><a name="subsection27">Building And Installing A Package</a></h3>
 <p>Here we assume that you know the basics of how to build a package.
-If not, please read section <span class="sectref"><a href="#subsection25">Building A Package</a></span> first.</p>
+If not, please read section <span class="sectref"><a href="#subsection26">Building A Package</a></span> first.</p>
 <p>By default <b class="cmd"><a href="critcl_pkg.html">critcl</a></b> will place all newly-made packages in the
 subdirectory &quot;<b class="file">lib</b>&quot; of the current working directory.
 I.e. running</p>
@@ -1448,9 +1478,9 @@ at &quot;<b class="file">/path/to/bin/tclsh</b>&quot;, with the packages searche
 <p>will build the package and place it in the directory
 &quot;<b class="file">/path/to/lib/foo</b>&quot;.</p>
 </div>
-<div id="subsection27" class="doctools_subsection"><h3><a name="subsection27">Building For Debugging</a></h3>
+<div id="subsection28" class="doctools_subsection"><h3><a name="subsection28">Building For Debugging</a></h3>
 <p>Here we assume that you know the basics of how to build a package.
-If not, please read section <span class="sectref"><a href="#subsection25">Building A Package</a></span> first.</p>
+If not, please read section <span class="sectref"><a href="#subsection26">Building A Package</a></span> first.</p>
 <p>An important issue, when there is trouble with the package, debugging
 becomes necessary a evil.
 Critcl supports this through the <b class="option">-debug</b> option.
@@ -1480,7 +1510,7 @@ debugger,</p>
     critcl -pkg -debug symbols -debug memory foo
 </pre>
 </div>
-<div id="subsection28" class="doctools_subsection"><h3><a name="subsection28">Retargeting The Binaries</a></h3>
+<div id="subsection29" class="doctools_subsection"><h3><a name="subsection29">Retargeting The Binaries</a></h3>
 <p>The configuration settings <b class="cmd"><a href="critcl_pkg.html">critcl</a></b> uses to drive the compiler,
 linker, etc. are by default selected based on the platform it is run
 on, to generate binaries which properly work on this platform.</p>
@@ -1505,7 +1535,7 @@ is running in an Intel environment use</p>
 compiler, linke, etc. are found first in the <b class="variable">PATH</b>.</p></li>
 </ol>
 </div>
-<div id="subsection29" class="doctools_subsection"><h3><a name="subsection29">Custom Configurations</a></h3>
+<div id="subsection30" class="doctools_subsection"><h3><a name="subsection30">Custom Configurations</a></h3>
 <p>The compiler configurations coming with <b class="package"><a href="critcl_pkg.html">critcl</a></b> currently
 cover all hosts having <b class="syscmd">gcc</b> installed (the foremost among
 these are Linux and OS X), plus the native compilers of the more
@@ -1532,7 +1562,7 @@ refered to the section &quot;Configuration Internals&quot; of the
 This is an advanced topic pretty much out of scope for this tutorial
 beyond what was already said.</p>
 </div>
-<div id="subsection30" class="doctools_subsection"><h3><a name="subsection30">Custom Header Path</a></h3>
+<div id="subsection31" class="doctools_subsection"><h3><a name="subsection31">Custom Header Path</a></h3>
 <p>Sometimes the use of <b class="cmd">critcl::headers</b> might not be enough for a
 package to find its headers. Maybe they are outside of the paths
 checked by the setup code.
@@ -1545,7 +1575,7 @@ build phase of the package.</p>
 </pre>
 <p>and the specified header will be handed to the package to be built.</p>
 </div>
-<div id="subsection31" class="doctools_subsection"><h3><a name="subsection31">Introspection of Targets And Configurations</a></h3>
+<div id="subsection32" class="doctools_subsection"><h3><a name="subsection32">Introspection of Targets And Configurations</a></h3>
 <p>To see a list containing the names of all the available
 configurations, run</p>
 <pre class="doctools_example">

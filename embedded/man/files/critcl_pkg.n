@@ -664,36 +664,37 @@ Before going into the details first a quick overview:
 .CS
 
 
-Critcl type   | C type         | Tcl type  | Notes
-------------- | -------------- | --------- | ------------------------------
-void          | n/a            | n/a       | Always OK\&. Body sets result
-ok            | int            | n/a       | Result code\&. Body sets result
-------------- | -------------- | --------- | ------------------------------
-int           | int            | Int       |
-boolean       |                |           | Alias of \fBint\fR above
-bool          |                |           | Alias of \fBint\fR above
-long          | long           | Long      |
-wideint       | Tcl_WideInt    | WideInt   |
-double        | double         | Double    |
-float         | float          | Double    |
-------------- | -------------- | --------- | ------------------------------
-char*         | char*          | String    | \fIMakes a copy\fR
-vstring       |                |           | Alias of \fBchar*\fR above
-const char*   | const char*    |           | Behavior of \fBchar*\fR above
-------------- | -------------- | --------- | ------------------------------
-string        |                | String    | Freeable string set directly
-              |                |           | \fINo copy is made\fR
-dstring       |                |           | Alias of \fBstring\fR above
-------------- | -------------- | --------- | ------------------------------
-              |                |           | For all below: Null is ERROR
-              |                |           | Body has to set any message
-Tcl_Obj*      | Tcl_Obj*       | Any       | \fIrefcount --\fR
-object        |                |           | Alias of \fBTcl_Obj*\fR above
-Tcl_Obj*0     |                | Any       | \fIrefcount unchanged\fR
-object0       |                |           | Alias of \fBTcl_Obj*0\fR above
-------------- | -------------- | --------- | ------------------------------
-known-channel | Tcl_Channel    | String    | Assumes to already be registered
-new-channel   | Tcl_Channel    | String    | New channel, will be registered
+Critcl type    | C type         | Tcl type  | Notes
+-------------- | -------------- | --------- | ------------------------------
+void           | n/a            | n/a       | Always OK\&. Body sets result
+ok             | int            | n/a       | Result code\&. Body sets result
+-------------- | -------------- | --------- | ------------------------------
+int            | int            | Int       |
+boolean        |                |           | Alias of \fBint\fR above
+bool           |                |           | Alias of \fBint\fR above
+long           | long           | Long      |
+wideint        | Tcl_WideInt    | WideInt   |
+double         | double         | Double    |
+float          | float          | Double    |
+-------------- | -------------- | --------- | ------------------------------
+char*          | char*          | String    | \fIMakes a copy\fR
+vstring        |                |           | Alias of \fBchar*\fR above
+const char*    | const char*    |           | Behavior of \fBchar*\fR above
+-------------- | -------------- | --------- | ------------------------------
+string         |                | String    | Freeable string set directly
+               |                |           | \fINo copy is made\fR
+dstring        |                |           | Alias of \fBstring\fR above
+-------------- | -------------- | --------- | ------------------------------
+               |                |           | For all below: Null is ERROR
+               |                |           | Body has to set any message
+Tcl_Obj*       | Tcl_Obj*       | Any       | \fIrefcount --\fR
+object         |                |           | Alias of \fBTcl_Obj*\fR above
+Tcl_Obj*0      |                | Any       | \fIrefcount unchanged\fR
+object0        |                |           | Alias of \fBTcl_Obj*0\fR above
+-------------- | -------------- | --------- | ------------------------------
+known-channel  | Tcl_Channel    | String    | Assumes to already be registered
+new-channel    | Tcl_Channel    | String    | New channel, will be registered
+return-channel | Tcl_Channel    | String    | Inversion of take-channel
 
 .CE
 .IP
@@ -853,43 +854,47 @@ Before going into the details first a quick overview:
 .CS
 
 
-Critcl type | C type         | Tcl type  | Notes
------------ | -------------- | --------- | ------------------------------
-Tcl_Interp* | Tcl_Interp*    | n/a       | \fISpecial\fR, only first
------------ | -------------- | --------- | ------------------------------
-Tcl_Obj*    | Tcl_Obj*       | Any       | \fIRead-only\fR
-object      |                |           | Alias of \fBTcl_Obj*\fR above
-list        | critcl_list    | List      | \fIRead-only\fR
------------ | -------------- | --------- | ------------------------------
-char*       | const char*    | Any       | \fIRead-only\fR, \fIstring rep\fR
-pstring     | critcl_pstring | Any       | \fIRead-only\fR
-bytes       | critcl_bytes   | ByteArray | \fIRead-only\fR
------------ | -------------- | --------- | ------------------------------
-int         | int            | Int       |
-long        | long           | Long      |
-wideint     | Tcl_WideInt    | WideInt   |
-double      | double         | Double    |
-float       | float          | Double    |
------------ | -------------- | --------- | ------------------------------
-X > 0       |                |           | For X in \fBint\fR \&.\&.\&. \fBfloat\fR above\&.
-X >= 0      |                |           | C types as per the base type X\&.
-X < 0       |                |           | Allowed argument values are
-X <= 0      |                |           | restricted as per the shown
-X > 1       |                |           | relation
-X >= 1      |                |           |
-X < 1       |                |           | This is not a general mechanism
-X <= 1      |                |           | open to other values\&. Only 0/1\&.
------------ | -------------- | --------- | ------------------------------
-boolean     | int            | Boolean   |
-bool        |                |           | Alias of \fBboolean\fR above
------------ | -------------- | --------- | ------------------------------
-bytearray   |                |           | \fIDEPRECATED\fR
-rawchar     |                |           | \fIDEPRECATED\fR
-rawchar*    |                |           | \fIDEPRECATED\fR
-double*     |                |           | \fIDEPRECATED\fR
-float*      |                |           | \fIDEPRECATED\fR
-int*        |                |           | \fIDEPRECATED\fR
-void*       |                |           | \fIDEPRECATED\fR
+Critcl type      | C type         | Tcl type  | Notes
+---------------- | -------------- | --------- | ------------------------------
+Tcl_Interp*      | Tcl_Interp*    | n/a       | \fISpecial\fR, only first
+---------------- | -------------- | --------- | ------------------------------
+Tcl_Obj*         | Tcl_Obj*       | Any       | \fIRead-only\fR
+object           |                |           | Alias of \fBTcl_Obj*\fR above
+list             | critcl_list    | List      | \fIRead-only\fR
+---------------- | -------------- | --------- | ------------------------------
+char*            | const char*    | Any       | \fIRead-only\fR, \fIstring rep\fR
+pstring          | critcl_pstring | Any       | \fIRead-only\fR
+bytes            | critcl_bytes   | ByteArray | \fIRead-only\fR
+---------------- | -------------- | --------- | ------------------------------
+int              | int            | Int       |
+long             | long           | Long      |
+wideint          | Tcl_WideInt    | WideInt   |
+double           | double         | Double    |
+float            | float          | Double    |
+---------------- | -------------- | --------- | ------------------------------
+X > 0            |                |           | For X in \fBint\fR \&.\&.\&. \fBfloat\fR above\&.
+X >= 0           |                |           | C types as per the base type X\&.
+X < 0            |                |           | Allowed argument values are
+X <= 0           |                |           | restricted as per the shown
+X > 1            |                |           | relation
+X >= 1           |                |           |
+X < 1            |                |           | This is not a general mechanism
+X <= 1           |                |           | open to other values\&. Only 0/1\&.
+---------------- | -------------- | --------- | ------------------------------
+boolean          | int            | Boolean   |
+bool             |                |           | Alias of \fBboolean\fR above
+---------------- | -------------- | --------- | ------------------------------
+channel          | Tcl_Channel    | String    | Assumed to be registered
+unshared-channel | Tcl_Channel    | String    | As above, limited to current interpreter
+take-channel     | Tcl_Channel    | String    | As above, C code takes ownership
+---------------- | -------------- | --------- | ------------------------------
+bytearray        |                |           | \fIDEPRECATED\fR
+rawchar          |                |           | \fIDEPRECATED\fR
+rawchar*         |                |           | \fIDEPRECATED\fR
+double*          |                |           | \fIDEPRECATED\fR
+float*           |                |           | \fIDEPRECATED\fR
+int*             |                |           | \fIDEPRECATED\fR
+void*            |                |           | \fIDEPRECATED\fR
 
 .CE
 .IP

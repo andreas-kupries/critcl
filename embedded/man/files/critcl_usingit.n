@@ -492,6 +492,42 @@ the string pointer moves from the function to Tcl\&.
 \fITcl\fR will release the allocated memory when it does not need it any
 longer\&. The C code has no say in that\&.
 .PP
+.SS "A SIMPLE PROCEDURE"
+Starting simple, let us assume that the Tcl code in question is
+something like
+.CS
+
+
+    proc math {x y z} {
+        return [expr {(sin($x)*rand())/$y**log($z)}]
+    }
+
+.CE
+with the expression pretending to be something very complex and
+slow\&. Converting this to C we get:
+.CS
+
+
+    critcl::cproc math {double x double y double z} double {
+        double up   = rand () * sin (x);
+        double down = pow(y, log (z));
+        return up/down;
+    }
+
+.CE
+Notable about this translation:
+.IP [1]
+All the arguments got type information added to them, here
+"double"\&.  Like in C the type precedes the argument name\&. Other
+than that it is pretty much a Tcl dictionary, with keys and
+values swapped\&.
+.IP [2]
+We now also have to declare the type of the result, here
+"double", again\&.
+.IP [3]
+The reference manpage lists all the legal C types supported as
+arguments and results\&.
+.PP
 .SS "CUSTOM TYPES, INTRODUCTION"
 When writing bindings to external libraries \fBcritcl::cproc\fR is
 usually the most convenient way of writing the lower layers\&. This is
