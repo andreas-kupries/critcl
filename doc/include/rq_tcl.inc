@@ -31,11 +31,11 @@ ActiveState.
 
 to install all packages ActiveState provides, and the kitchensink, as
 the distribution itself usually contains only the ost important set of
-packages. This ensures that the dependencies for Critcl are all
+packages. This ensures that the dependencies for CriTcl are all
 present, and more.
 
 [para] If that is not to your liking you have to read the sections for
-Critcl to determine the exact set of packages required, and install
+CriTcl to determine the exact set of packages required, and install
 only these using
 
 [example {

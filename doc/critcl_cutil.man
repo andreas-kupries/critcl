@@ -2,7 +2,7 @@
 [comment {-*- tcl -*- doctools manpage}]
 [manpage_begin critcl::cutil n [vset VERSION]]
 [include include/module2.inc]
-[titledesc {CriTcl C-level Utilities}]
+[titledesc {CriTcl - C-level Utilities}]
 [require Tcl 8.4]
 [require critcl [opt 2.1]]
 [require critcl::cutil [opt [vset VERSION]]]

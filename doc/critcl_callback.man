@@ -2,7 +2,7 @@
 [comment {-*- tcl -*- doctools manpage}]
 [manpage_begin critcl::callback n [vset VERSION]]
 [include include/module2.inc]
-[titledesc {CriTcl C-level Callback Utilities}]
+[titledesc {CriTcl - C-level Callback Utilities}]
 [require Tcl 8.4]
 [require critcl [opt 3.1]]
 [require critcl::callback [opt [vset VERSION]]]

@@ -14,7 +14,7 @@
 	it now, as older GNU ld's do not understand it, nor the
 	various vendor-specific linkers.
 
-[enum]	Fixed github issue #12. Critcl now determines the version of
+[enum]	Fixed github issue #12. CriTcl now determines the version of
 	MSVC in use and uses it to switch between various link debug
 	options. Simplified the handling of bufferoverflowU.lib also,
 	making use of the same mechanism and collapsing the two

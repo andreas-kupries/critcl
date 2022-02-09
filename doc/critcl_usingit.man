@@ -2,13 +2,13 @@
 [include version.inc]
 [manpage_begin critcl_use n [vset VERSION]]
 [include include/module.inc]
-[titledesc {Using Critcl}]
+[titledesc {Using CriTcl}]
 [description]
 [para]
 [include include/welcome.inc]
 [para]
 
-This document is a (hopefully) gentle introduction to Critcl by way of a
+This document is a (hopefully) gentle introduction to CriTcl by way of a
 series of small examples.
 
 [para] Readers which came directly to this document through a search
@@ -30,7 +30,7 @@ not interested in.
 [comment {===================================================================}]
 
 [section {Embedding C}]			[include include/using_embed.inc]
-[section {Building Critcl Packages}]	[include include/using_build.inc]
+[section {Building CriTcl Packages}]	[include include/using_build.inc]
 
 [comment {===================================================================}]
 

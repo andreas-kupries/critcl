@@ -8,7 +8,7 @@ to receive strings as arguments, and return them as results is quite important.
 [para] For arguments we have:
 
 [example_begin]
-Critcl type | C type         | Tcl type  | Notes
+CriTcl type | C type         | Tcl type  | Notes
 ----------- | -------------- | --------- | ------------------------------
 char*       | const char*    | Any       | [strong Read-only], [strong {string rep}]
 pstring     | critcl_pstring | Any       | [strong Read-only]
@@ -51,7 +51,7 @@ string (field [const .len]), and a pointer to the [type Tcl_Obj*] these came fro
 [para] On the other side, string results, we have:
 
 [example_begin]
-Critcl type   | C type         | Tcl type  | Notes
+CriTcl type   | C type         | Tcl type  | Notes
 ------------- | -------------- | --------- | ------------------------------
 char*         | char*          | String    | [strong {Makes a copy}]
 vstring       |                |           | Alias of [type char*] above
@@ -80,7 +80,7 @@ Notable about the above:
 [enum] The type [type char*] is best used for static strings, or strings in some kind
 fixed buffer.
 
-[para] Critcl's translation layer makes a copy of it for the result of the command. While
+[para] CriTcl's translation layer makes a copy of it for the result of the command. While
 it is possible to return heap-allocated strings it is the C code who is responsible for
 freeing such at some point. If that is not done they will leak.
 

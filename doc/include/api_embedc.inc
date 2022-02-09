@@ -116,7 +116,7 @@ Produces no C code.  The desired C definitions must already exist.
 Appends a function having [arg body] as its body, another shim function to
 perform the needed conversions, and the code to create a corresponding Tcl
 command named [arg tclname].  Unlike [cmd critcl::ccommand] the arguments and
-result are typed, and Critcl generates the code to convert between Tcl_Obj
+result are typed, and CriTcl generates the code to convert between Tcl_Obj
 values and C data types.
 
 See also [sectref {Runtime Behaviour}].

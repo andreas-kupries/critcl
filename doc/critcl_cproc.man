@@ -2,7 +2,7 @@
 [include pkg_version.inc]
 [manpage_begin critcl-cproc-types n [vset VERSION]]
 [include include/module.inc]
-[titledesc {Critcl - cproc Type Reference}]
+[titledesc {CriTcl - cproc Type Reference}]
 [require Tcl 8.4]
 [require critcl [opt [vset VERSION]]]
 [description]
@@ -27,7 +27,7 @@ packages with embedded C code.
 [section Examples]
 
 The examples shown here have been drawn from section "Embedding C" in
-the document about [manpage {Using Critcl}]. Please see that document
+the document about [manpage {Using CriTcl}]. Please see that document
 for many more examples.
 
 [include include/using_eproc.inc]        [comment {%% cproc}]

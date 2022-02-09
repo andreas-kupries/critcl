@@ -25,7 +25,7 @@ and is now handled by the [manpage {CriTcl Application}], also named
 
 [para]
 
-Newly introduced with Critcl version 3 is
+Newly introduced with CriTcl version 3 is
 [term {Generate TEA Package}]. This mode constructs a directory
 hierarchy from the package which can later be built like a regular TEA
 package, i.e. using

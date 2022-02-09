@@ -51,7 +51,7 @@
        default path, instead of [cmd platform::generic].
 
 [enum] Bugfix: Fixed issue #58. Simplified the setup and use of
-       md5. Critcl now makes use of its own package for md5, using
+       md5. CriTcl now makes use of its own package for md5, using
        itself to built it. There is no chicken/egg problem with this
        as the [option -pkg] mode used for this does not use md5. That
        is limited to mode [term {compile & run}].

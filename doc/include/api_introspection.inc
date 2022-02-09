@@ -34,9 +34,9 @@ packages built on it print messages to [term stdout].
 [comment ---------------------------------------------------------------------]
 [call [cmd ::critcl::print] [opt [option -nonewline]] [opt [arg chan]] [arg msg]]
 
-Used by the Critcl internals to report activity.  By default, effectively the
-same thing as [cmd ::puts].  Tools directly using either the Critcl package or
-the Critcl application package may redefine this procedure to implement their
+Used by the CriTcl internals to report activity.  By default, effectively the
+same thing as [cmd ::puts].  Tools directly using either the CriTcl package or
+the CriTcl application package may redefine this procedure to implement their
 own output functionality.
 
 [para] For example, the newest revisions of

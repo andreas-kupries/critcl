@@ -2,7 +2,7 @@
 [include version.inc]
 [manpage_begin critcl_devguide n [vset VERSION]]
 [include include/module.inc]
-[titledesc {Critcl - The Developer's Guide}]
+[titledesc {CriTcl - The Developer's Guide}]
 [description]
 [include include/welcome.inc]
 
@@ -15,9 +15,9 @@ etc.
 Please read
 
 [list_begin enum]
-[enum] [term {Critcl - License}],
-[enum] [term {Critcl - How To Get The Sources}], and
-[enum] [term {Critcl - The Installer's Guide}]
+[enum] [term {CriTcl - License}],
+[enum] [term {CriTcl - How To Get The Sources}], and
+[enum] [term {CriTcl - The Installer's Guide}]
 [list_end]
 
 first, if that was not done already.
@@ -29,13 +29,12 @@ so. The guide to the sources in particular also explains which source
 code management system is used, where to find it, how to set it up,
 etc.
 
-
-[section {Playing with Critcl}]
+[section {Playing with CriTcl}]
 [include include/largeexampleref.inc]
 [include include/smallexampleref.inc]
 
 
-[section {Developing for Critcl}]
+[section {Developing for CriTcl}]
 
 [comment @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@]
 [subsection {Architecture & Concepts}]

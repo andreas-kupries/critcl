@@ -3,7 +3,7 @@
   of the names, associated C types, behaviour and limits.
 }]
 [example_begin]
-Critcl type    | C type         | Tcl type  | Notes
+CriTcl type    | C type         | Tcl type  | Notes
 -------------- | -------------- | --------- | ------------------------------
 void           | n/a            | n/a       | Always OK. Body sets result
 ok             | int            | n/a       | Result code. Body sets result

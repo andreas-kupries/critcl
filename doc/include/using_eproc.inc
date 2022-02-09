@@ -38,7 +38,7 @@ both arguments and result we have a number of additional types in the
 same category, i.e. simple types. These are:
 
 [example_begin]
-Critcl type | C type         | Tcl type  | Notes
+CriTcl type | C type         | Tcl type  | Notes
 ----------- | -------------- | --------- | ------------------------------
 bool        |                |           | Alias of [type boolean] below
 boolean     | int            | Boolean   |
@@ -59,7 +59,7 @@ alias do not support this.
     }
 }]
 
-[para] In the example above Critcl's argument handling will reject
+[para] In the example above CriTcl's argument handling will reject
 calling the command with a negative number, without ever invoking the
 C code.
 

@@ -1,5 +1,5 @@
 [comment {
-	Critcl concepts necessary to understand the various commands.
+	CriTcl concepts necessary to understand the various commands.
 }]
 [subsection {Modes Of Operation/Use}]	[include include/modes.inc]
 

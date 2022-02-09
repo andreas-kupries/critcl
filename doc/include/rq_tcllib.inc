@@ -1,7 +1,7 @@
 
 [subsection Tcllib]
 
-To use Critcl a few packages found in the Tcllib bundle are
+To use CriTcl a few packages found in the Tcllib bundle are
 required. These packages are:
 
 [list_begin enumerated]

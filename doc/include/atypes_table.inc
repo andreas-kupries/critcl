@@ -3,7 +3,7 @@
   of the names, associated C types, behaviour and limits.
 }]
 [example_begin]
-Critcl type      | C type         | Tcl type  | Notes
+CriTcl type      | C type         | Tcl type  | Notes
 ---------------- | -------------- | --------- | ------------------------------
 Tcl_Interp*      | Tcl_Interp*    | n/a       | [strong Special], only first
 ---------------- | -------------- | --------- | ------------------------------
