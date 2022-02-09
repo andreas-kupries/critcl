@@ -6,7 +6,7 @@
 [keywords {string pool} {literal pool}]
 [keywords {string to int mapping} conversion]
 [keywords {int to string mapping}]
-[titledesc {CriTcl Utilities: String/Integer mapping}]
+[titledesc {CriTcl - Wrap Support - String/Integer mapping}]
 [require Tcl 8.4]
 [require critcl [opt 3.1.11]]
 [require critcl::enum [opt [vset enum_version]]]

@@ -2,7 +2,7 @@
 [include pkg_version.inc]
 [manpage_begin critcl-cproc-types n [vset VERSION]]
 [include include/module.inc]
-[titledesc {Critcl - cproc Type Reference}]
+[titledesc {CriTcl - cproc Type Reference}]
 [require Tcl 8.4]
 [require critcl [opt [vset VERSION]]]
 [description]
@@ -31,6 +31,7 @@ the document about [manpage {Using CriTcl}]. Please see that document
 for many more examples.
 
 [include include/using_eproc.inc]        [comment {%% cproc}]
+[include include/using_eprocstr.inc]     [comment {%% cproc, strings}]
 [include include/using_eproctypes.inc]   [comment {%% cproc types, intro & trivial}]
 [include include/using_eproctypes2.inc]  [comment {%% cproc types, semi-trivial}]
 [include include/using_eproctypes3.inc]  [comment {%% cproc types, support (incl alloc'd)}]

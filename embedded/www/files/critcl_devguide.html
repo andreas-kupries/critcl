@@ -104,22 +104,23 @@
 <div class="doctools">
 <h1 class="doctools_title">critcl_devguide(n) 3.1.18.1 doc &quot;C Runtime In Tcl (CriTcl)&quot;</h1>
 <div id="name" class="doctools_section"><h2><a name="name">Name</a></h2>
-<p>critcl_devguide - Critcl - The Developer's Guide</p>
+<p>critcl_devguide - CriTcl - The Developer's Guide</p>
 </div>
 <div id="toc" class="doctools_section"><h2><a name="toc">Table Of Contents</a></h2>
 <ul class="doctools_toc">
 <li class="doctools_section"><a href="#toc">Table Of Contents</a></li>
 <li class="doctools_section"><a href="#section1">Description</a></li>
-<li class="doctools_section"><a href="#section2">Playing with Critcl</a></li>
-<li class="doctools_section"><a href="#section3">Developing for Critcl</a>
+<li class="doctools_section"><a href="#section2">Audience</a></li>
+<li class="doctools_section"><a href="#section3">Playing with CriTcl</a></li>
+<li class="doctools_section"><a href="#section4">Developing for CriTcl</a>
 <ul>
 <li class="doctools_subsection"><a href="#subsection1">Architecture &amp; Concepts</a></li>
 <li class="doctools_subsection"><a href="#subsection2">Requirements</a></li>
 <li class="doctools_subsection"><a href="#subsection3">Directory structure</a></li>
 </ul>
 </li>
-<li class="doctools_section"><a href="#section4">Authors</a></li>
-<li class="doctools_section"><a href="#section5">Bugs, Ideas, Feedback</a></li>
+<li class="doctools_section"><a href="#section5">Authors</a></li>
+<li class="doctools_section"><a href="#section6">Bugs, Ideas, Feedback</a></li>
 <li class="doctools_section"><a href="#keywords">Keywords</a></li>
 <li class="doctools_section"><a href="#category">Category</a></li>
 <li class="doctools_section"><a href="#copyright">Copyright</a></li>
@@ -130,35 +131,35 @@
 embedded in Tcl on the fly and either loading the resulting objects into Tcl for
 immediate use or packaging them for distribution.  Use <i class="term"><a href="critcl_pkg.html">CriTcl</a></i> to improve
 performance by rewriting in C those routines that are performance bottlenecks.</p>
-<p>This document is a guide for developers working on Critcl,
-i.e. maintainers fixing bugs, extending the package's functionality,
-etc.</p>
+</div>
+<div id="section2" class="doctools_section"><h2><a name="section2">Audience</a></h2>
+<p>This document is a guide for developers working on CriTcl, i.e. maintainers fixing
+bugs, extending the package's functionality, etc.</p>
 <p>Please read</p>
 <ol class="doctools_enumerated">
-<li><p><i class="term"><a href="license.html">Critcl - License</a></i>,</p></li>
-<li><p><i class="term"><a href="critcl_sources.html">Critcl - How To Get The Sources</a></i>, and</p></li>
-<li><p><i class="term"><a href="critcl_installer.html">Critcl - The Installer's Guide</a></i></p></li>
+<li><p><i class="term"><a href="license.html">CriTcl - License</a></i>,</p></li>
+<li><p><i class="term"><a href="critcl_sources.html">CriTcl - How To Get The Sources</a></i>, and</p></li>
+<li><p><i class="term"><a href="critcl_installer.html">CriTcl - The Installer's Guide</a></i></p></li>
 </ol>
 <p>first, if that was not done already.</p>
-<p>Here we assume that the sources are already available in a directory
-of your choice, and that you not only know how to build and install
-them, but also have all the necessary requisites to actually do
-so. The guide to the sources in particular also explains which source
-code management system is used, where to find it, how to set it up,
+<p>Here we assume that the sources are already available in a directory of the readers
+choice, and that the reader not only know how to build and install them, but also has all
+the necessary requisites to actually do so. The guide to the sources in particular also
+explains which source code management system is used, where to find it, how to set it up,
 etc.</p>
 </div>
-<div id="section2" class="doctools_section"><h2><a name="section2">Playing with Critcl</a></h2>
-<p>The sources of Critcl, should you have gotten them, contain
+<div id="section3" class="doctools_section"><h2><a name="section3">Playing with CriTcl</a></h2>
+<p>The sources of CriTcl, should you have gotten them, contain
 several larger examples show-casing various aspects of the
 system. These demonstration packages can all be found in the
 sub-directory &quot;<b class="file">examples/</b>&quot; of the sources.</p>
 <p>Lots of smaller examples can be found in the document
-<i class="term">Using CriTcl</i>, an introduction to Critcl by way of a of
+<i class="term"><a href="critcl_usingit.html">Using CriTcl</a></i>, an introduction to CriTcl by way of a of
 examples. These focus more on specific critcl commands than the
 overall picture shown by the large examples mentioned in the previous
 paragraph.</p>
 </div>
-<div id="section3" class="doctools_section"><h2><a name="section3">Developing for Critcl</a></h2>
+<div id="section4" class="doctools_section"><h2><a name="section4">Developing for CriTcl</a></h2>
 <div id="subsection1" class="doctools_subsection"><h3><a name="subsection1">Architecture &amp; Concepts</a></h3>
 <p>The system consists of two main layers, as seen in the figure below,
 plus a support layer containing general packages the system uses during
@@ -224,24 +225,22 @@ possible accelerator packages:</p>
 </ol>
 </div>
 <div id="subsection2" class="doctools_subsection"><h3><a name="subsection2">Requirements</a></h3>
-<p>To develop for critcl the following packages and applications must be
-available in the environment. These are all used by the <b class="cmd">build.tcl</b>
-helper application.</p>
+<p>To develop for critcl the following packages and applications must be available in the
+environment. These are all used by the <b class="cmd">build.tcl</b> helper application.</p>
 <dl class="doctools_definitions">
 <dt><b class="syscmd">dtplite</b></dt>
-<dd><p>A Tcl application provided by Tcllib, for the validation and
-conversion of <i class="term">doctools</i>-formatted text.</p></dd>
+<dd><p>A Tcl application provided by Tcllib, for the validation and conversion of
+<i class="term">doctools</i>-formatted text.</p></dd>
 <dt><b class="syscmd">dia</b></dt>
 <dd><p>A Tcl application provided by Tklib, for the validation and conversion
 of <b class="package">diagram</b>-formatted figures into raster images.</p>
-<p>Do not confuse this with the Gnome <b class="syscmd">dia</b> application,
-which is a graphical editor for figures and diagrams, and completely
-unrelated.</p></dd>
+<p>Do not confuse this with the Gnome <b class="syscmd">dia</b> application, which is a graphical
+editor for figures and diagrams, and completely unrelated.</p></dd>
 <dt><b class="package">fileutil</b></dt>
 <dd><p>A Tcl package provided by Tcllib, providing file system utilities.</p></dd>
 <dt><b class="package">vfs::mk4</b>, <b class="package">vfs</b></dt>
-<dd><p>Tcl packages written in C providing access to Tcl's VFS facilities,
-required for the generation of critcl starkits and starpacks.</p></dd>
+<dd><p>Tcl packages written in C providing access to Tcl's VFS facilities, required for the
+generation of critcl starkits and starpacks.</p></dd>
 </dl>
 </div>
 <div id="subsection3" class="doctools_subsection"><h3><a name="subsection3">Directory structure</a></h3>
@@ -249,15 +248,13 @@ required for the generation of critcl starkits and starpacks.</p></dd>
 <dt>Helpers</dt>
 <dd><dl class="doctools_definitions">
 <dt>&quot;<b class="file">build.tcl</b>&quot;</dt>
-<dd><p>This helper application provides various operations needed by a
-developer for critcl, like regenerating the documentation, the
-figures, building and installing critcl, etc.</p>
+<dd><p>This helper application provides various operations needed by a developer for critcl, like
+regenerating the documentation, the figures, building and installing critcl, etc.</p>
 <p>Running the command like</p>
 <pre class="doctools_example">
 	./build.tcl help
 </pre>
-<p>will provide more details about the available operations and their
-arguments.</p></dd>
+<p>will provide more details about the available operations and their arguments.</p></dd>
 </dl></dd>
 <dt>Documentation</dt>
 <dd><dl class="doctools_definitions">
@@ -266,11 +263,10 @@ arguments.</p></dd>
 The texts are written in <i class="term">doctools</i> format, whereas the figures are written for
 tklib's <b class="package">dia</b>(gram) package and application.</p></dd>
 <dt>&quot;<b class="file">embedded/</b>&quot;</dt>
-<dd><p>This directory contains the documentation converted to regular manpages
-(nroff) and HTML.
-It is called embedded because these files, while derived, are part of the
-git repository, i.e. embedded into it. This enables us to place these files
-where they are visible when serving the prject's web interface.</p></dd>
+<dd><p>This directory contains the documentation converted to regular manpages (nroff) and HTML.
+It is called embedded because these files, while derived, are part of the git repository,
+i.e. embedded into it. This enables us to place these files where they are visible when
+serving the prject's web interface.</p></dd>
 </dl></dd>
 <dt>Testsuite</dt>
 <dd><dl class="doctools_definitions">
@@ -279,12 +275,12 @@ where they are visible when serving the prject's web interface.</p></dd>
 <dt>&quot;<b class="file">test/testutilities.tcl</b>&quot;</dt>
 <dd></dd>
 <dt>&quot;<b class="file">test/*.test</b>&quot;</dt>
-<dd><p>These files are a standard testsuite based on Tcl's <b class="package">tcltest</b> package,
-with some utility code snarfed from <b class="package">Tcllib</b>.</p>
+<dd><p>These files are a standard testsuite based on Tcl's <b class="package">tcltest</b> package, with some
+utility code snarfed from <b class="package">Tcllib</b>.</p>
 <p>This currently tests only some of the <b class="package">stubs::*</b> packages.</p></dd>
 <dt>&quot;<b class="file">test/*.tcl</b>&quot;</dt>
-<dd><p>These files (but not &quot;<b class="file">all.tcl</b>&quot;, and &quot;<b class="file">testutilities.tcl</b>&quot;) are
-example files (Tcl with embedded C) which can be run through critcl for testing.</p>
+<dd><p>These files (but not &quot;<b class="file">all.tcl</b>&quot;, and &quot;<b class="file">testutilities.tcl</b>&quot;) are example files
+(Tcl with embedded C) which can be run through critcl for testing.</p>
 <p><em>TODO:</em> These should be converted into a proper test suite.</p></dd>
 </dl></dd>
 <dt>Package Code, General structure</dt>
@@ -300,9 +296,8 @@ example files (Tcl with embedded C) which can be run through critcl for testing.
 <dd><p>The configuration file for the standard targets and their settings.</p></dd>
 <dt>&quot;<b class="file">lib/critcl/critcl_c/</b>&quot;</dt>
 <dd><p>Various C code snippets used by the package.
-This directory also contains the copies of the Tcl header files used
-to compile the assembled C code, for the major brnaches of Tcl,
-i.e. 8.4, 8.5, and 8.6.</p></dd>
+This directory also contains the copies of the Tcl header files used to compile the
+assembled C code, for the major brnaches of Tcl, i.e. 8.4, 8.5, and 8.6.</p></dd>
 </dl></dd>
 <dt><b class="package"><a href="critcl_util.html">critcl::util</a></b></dt>
 <dd><dl class="doctools_definitions">
@@ -335,23 +330,22 @@ i.e. 8.4, 8.5, and 8.6.</p></dd>
 <dt>&quot;<b class="file">lib/util84/dict.tcl</b>&quot;</dt>
 <dd></dd>
 <dt>&quot;<b class="file">lib/util84/lassign.tcl</b>&quot;</dt>
-<dd><p>These are two packages implementing forward compatibility emulations
-of the <b class="cmd">dict</b> and <b class="cmd">lassign</b> commands introduced with Tcl 8.5.
-These are used automatically when critcl is run by Tcl 8.4.</p></dd>
+<dd><p>These are two packages implementing forward compatibility emulations of the <b class="cmd">dict</b> and
+<b class="cmd">lassign</b> commands introduced with Tcl 8.5.  These are used automatically when critcl
+is run by Tcl 8.4.</p></dd>
 </dl></dd>
 <dt><b class="package">stubs::*</b></dt>
 <dd><dl class="doctools_definitions">
 <dt>&quot;<b class="file">lib/stubs/*</b>&quot;</dt>
-<dd><p>A set of non-public (still) packages which provide read and write
-access to and represent Tcl stubs tables. These were created by taking
-the &quot;<b class="file">genStubs.tcl</b>&quot; helper application coming with the Tcl core
-sources apart along its internal logical lines.</p></dd>
+<dd><p>A set of non-public (still) packages which provide read and write access to and represent
+Tcl stubs tables. These were created by taking the &quot;<b class="file">genStubs.tcl</b>&quot; helper application
+coming with the Tcl core sources apart along its internal logical lines.</p></dd>
 </dl></dd>
 <dt><b class="package">critclf</b></dt>
 <dd><dl class="doctools_definitions">
 <dt>&quot;<b class="file">lib/critclf/</b>&quot;</dt>
-<dd><p>Arjen Markus' work on a critcl/Fortran. The code is outdated and has
-not been adapted to the changes in critcl version 3 yet.</p></dd>
+<dd><p>Arjen Markus' work on a critcl/Fortran. The code is outdated and has not been adapted to
+the changes in critcl version 3 yet.</p></dd>
 </dl></dd>
 <dt><b class="package">autoscroll</b></dt>
 <dd></dd>
@@ -368,28 +362,26 @@ not been adapted to the changes in critcl version 3 yet.</p></dd>
 <dt><b class="package">snitbutton</b></dt>
 <dd></dd>
 <dt><b class="package">wikit</b></dt>
-<dd><p>These are all external packages whose code has been inlined in the
-repository for easier development (less dependencies to pull), and
-quicker deployment from the repository (generation of starkit and
--pack).</p>
+<dd><p>These are all external packages whose code has been inlined in the repository for easier
+development (less dependencies to pull), and quicker deployment from the repository
+(generation of starkit and -pack).</p>
 <p>The packages
 <b class="package">autoscroll</b>,
 <b class="package">snit</b>,
 <b class="package">snitbutton</b>, and
 <b class="package">wikit</b>
-are for the support of the Wikit GUI accessible from starkit and -pack
-when the application functionality (<b class="package"><a href="critcl_apppkg.html">critcl::app</a></b>) is run with
-an empty command line.</p>
-<p><em>TODO:</em> These should all be checked against their origin
-for updates and changes since they were inlined.</p></dd>
+are for the support of the Wikit GUI accessible from starkit and -pack when the
+application functionality (<b class="package"><a href="critcl_apppkg.html">critcl::app</a></b>) is run with an empty command line.</p>
+<p><em>TODO:</em> These should all be checked against their origin for updates and
+changes since they were inlined.</p></dd>
 </dl></dd>
 </dl>
 </div>
 </div>
-<div id="section4" class="doctools_section"><h2><a name="section4">Authors</a></h2>
+<div id="section5" class="doctools_section"><h2><a name="section5">Authors</a></h2>
 <p>Jean Claude Wippler, Steve Landers, Andreas Kupries</p>
 </div>
-<div id="section5" class="doctools_section"><h2><a name="section5">Bugs, Ideas, Feedback</a></h2>
+<div id="section6" class="doctools_section"><h2><a name="section6">Bugs, Ideas, Feedback</a></h2>
 <p>This document, and the package it describes, will undoubtedly contain
 bugs and other problems.
 Please report them at <a href="https://github.com/andreas-kupries/critcl/issues">https://github.com/andreas-kupries/critcl/issues</a>.

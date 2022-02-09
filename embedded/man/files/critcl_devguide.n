@@ -274,42 +274,41 @@ Database Class:	\\fB\\$3\\fR
 ..
 .BS
 .SH NAME
-critcl_devguide \- Critcl - The Developer's Guide
+critcl_devguide \- CriTcl - The Developer's Guide
 .SH DESCRIPTION
 \fIC Runtime In Tcl\fR, or \fICriTcl\fR , is a system for compiling C code
 embedded in Tcl on the fly and either loading the resulting objects into Tcl for
 immediate use or packaging them for distribution\&.  Use \fICriTcl\fR to improve
 performance by rewriting in C those routines that are performance bottlenecks\&.
+.SH AUDIENCE
 .PP
-This document is a guide for developers working on Critcl,
-i\&.e\&. maintainers fixing bugs, extending the package's functionality,
-etc\&.
+This document is a guide for developers working on CriTcl, i\&.e\&. maintainers fixing
+bugs, extending the package's functionality, etc\&.
 .PP
 Please read
 .IP [1]
-\fICritcl - License\fR,
+\fICriTcl - License\fR,
 .IP [2]
-\fICritcl - How To Get The Sources\fR, and
+\fICriTcl - How To Get The Sources\fR, and
 .IP [3]
-\fICritcl - The Installer's Guide\fR
+\fICriTcl - The Installer's Guide\fR
 .PP
 first, if that was not done already\&.
 .PP
-Here we assume that the sources are already available in a directory
-of your choice, and that you not only know how to build and install
-them, but also have all the necessary requisites to actually do
-so\&. The guide to the sources in particular also explains which source
-code management system is used, where to find it, how to set it up,
+Here we assume that the sources are already available in a directory of the readers
+choice, and that the reader not only know how to build and install them, but also has all
+the necessary requisites to actually do so\&. The guide to the sources in particular also
+explains which source code management system is used, where to find it, how to set it up,
 etc\&.
 .SH "PLAYING WITH CRITCL"
 .PP
-The sources of Critcl, should you have gotten them, contain
+The sources of CriTcl, should you have gotten them, contain
 several larger examples show-casing various aspects of the
 system\&. These demonstration packages can all be found in the
 sub-directory "\fIexamples/\fR" of the sources\&.
 .PP
 Lots of smaller examples can be found in the document
-\fIUsing CriTcl\fR, an introduction to Critcl by way of a of
+\fIUsing CriTcl\fR, an introduction to CriTcl by way of a of
 examples\&. These focus more on specific critcl commands than the
 overall picture shown by the large examples mentioned in the previous
 paragraph\&.
@@ -405,28 +404,26 @@ possible accelerator packages:
 .RE
 .PP
 .SS REQUIREMENTS
-To develop for critcl the following packages and applications must be
-available in the environment\&. These are all used by the \fBbuild\&.tcl\fR
-helper application\&.
+To develop for critcl the following packages and applications must be available in the
+environment\&. These are all used by the \fBbuild\&.tcl\fR helper application\&.
 .TP
 \fBdtplite\fR
-A Tcl application provided by Tcllib, for the validation and
-conversion of \fIdoctools\fR-formatted text\&.
+A Tcl application provided by Tcllib, for the validation and conversion of
+\fIdoctools\fR-formatted text\&.
 .TP
 \fBdia\fR
 A Tcl application provided by Tklib, for the validation and conversion
 of \fBdiagram\fR-formatted figures into raster images\&.
 .sp
-Do not confuse this with the Gnome \fBdia\fR application,
-which is a graphical editor for figures and diagrams, and completely
-unrelated\&.
+Do not confuse this with the Gnome \fBdia\fR application, which is a graphical
+editor for figures and diagrams, and completely unrelated\&.
 .TP
 \fBfileutil\fR
 A Tcl package provided by Tcllib, providing file system utilities\&.
 .TP
 \fBvfs::mk4\fR, \fBvfs\fR
-Tcl packages written in C providing access to Tcl's VFS facilities,
-required for the generation of critcl starkits and starpacks\&.
+Tcl packages written in C providing access to Tcl's VFS facilities, required for the
+generation of critcl starkits and starpacks\&.
 .PP
 .SS "DIRECTORY STRUCTURE"
 .TP
@@ -434,9 +431,8 @@ Helpers
 .RS
 .TP
 "\fIbuild\&.tcl\fR"
-This helper application provides various operations needed by a
-developer for critcl, like regenerating the documentation, the
-figures, building and installing critcl, etc\&.
+This helper application provides various operations needed by a developer for critcl, like
+regenerating the documentation, the figures, building and installing critcl, etc\&.
 .sp
 Running the command like
 .CS
@@ -446,8 +442,7 @@ Running the command like
 
 .CE
 .IP
-will provide more details about the available operations and their
-arguments\&.
+will provide more details about the available operations and their arguments\&.
 .RE
 .TP
 Documentation
@@ -459,11 +454,10 @@ The texts are written in \fIdoctools\fR format, whereas the figures are written 
 tklib's \fBdia\fR(gram) package and application\&.
 .TP
 "\fIembedded/\fR"
-This directory contains the documentation converted to regular manpages
-(nroff) and HTML\&.
-It is called embedded because these files, while derived, are part of the
-git repository, i\&.e\&. embedded into it\&. This enables us to place these files
-where they are visible when serving the prject's web interface\&.
+This directory contains the documentation converted to regular manpages (nroff) and HTML\&.
+It is called embedded because these files, while derived, are part of the git repository,
+i\&.e\&. embedded into it\&. This enables us to place these files where they are visible when
+serving the prject's web interface\&.
 .RE
 .TP
 Testsuite
@@ -474,14 +468,14 @@ Testsuite
 "\fItest/testutilities\&.tcl\fR"
 .TP
 "\fItest/*\&.test\fR"
-These files are a standard testsuite based on Tcl's \fBtcltest\fR package,
-with some utility code snarfed from \fBTcllib\fR\&.
+These files are a standard testsuite based on Tcl's \fBtcltest\fR package, with some
+utility code snarfed from \fBTcllib\fR\&.
 .sp
 This currently tests only some of the \fBstubs::*\fR packages\&.
 .TP
 "\fItest/*\&.tcl\fR"
-These files (but not "\fIall\&.tcl\fR", and "\fItestutilities\&.tcl\fR") are
-example files (Tcl with embedded C) which can be run through critcl for testing\&.
+These files (but not "\fIall\&.tcl\fR", and "\fItestutilities\&.tcl\fR") are example files
+(Tcl with embedded C) which can be run through critcl for testing\&.
 .sp
 \fITODO:\fR These should be converted into a proper test suite\&.
 .RE
@@ -504,9 +498,8 @@ The configuration file for the standard targets and their settings\&.
 .TP
 "\fIlib/critcl/critcl_c/\fR"
 Various C code snippets used by the package\&.
-This directory also contains the copies of the Tcl header files used
-to compile the assembled C code, for the major brnaches of Tcl,
-i\&.e\&. 8\&.4, 8\&.5, and 8\&.6\&.
+This directory also contains the copies of the Tcl header files used to compile the
+assembled C code, for the major brnaches of Tcl, i\&.e\&. 8\&.4, 8\&.5, and 8\&.6\&.
 .RE
 .TP
 \fBcritcl::util\fR
@@ -551,27 +544,26 @@ C code template used by the package\&.
 "\fIlib/util84/dict\&.tcl\fR"
 .TP
 "\fIlib/util84/lassign\&.tcl\fR"
-These are two packages implementing forward compatibility emulations
-of the \fBdict\fR and \fBlassign\fR commands introduced with Tcl 8\&.5\&.
-These are used automatically when critcl is run by Tcl 8\&.4\&.
+These are two packages implementing forward compatibility emulations of the \fBdict\fR and
+\fBlassign\fR commands introduced with Tcl 8\&.5\&.  These are used automatically when critcl
+is run by Tcl 8\&.4\&.
 .RE
 .TP
 \fBstubs::*\fR
 .RS
 .TP
 "\fIlib/stubs/*\fR"
-A set of non-public (still) packages which provide read and write
-access to and represent Tcl stubs tables\&. These were created by taking
-the "\fIgenStubs\&.tcl\fR" helper application coming with the Tcl core
-sources apart along its internal logical lines\&.
+A set of non-public (still) packages which provide read and write access to and represent
+Tcl stubs tables\&. These were created by taking the "\fIgenStubs\&.tcl\fR" helper application
+coming with the Tcl core sources apart along its internal logical lines\&.
 .RE
 .TP
 \fBcritclf\fR
 .RS
 .TP
 "\fIlib/critclf/\fR"
-Arjen Markus' work on a critcl/Fortran\&. The code is outdated and has
-not been adapted to the changes in critcl version 3 yet\&.
+Arjen Markus' work on a critcl/Fortran\&. The code is outdated and has not been adapted to
+the changes in critcl version 3 yet\&.
 .RE
 .TP
 \fBautoscroll\fR
@@ -589,22 +581,20 @@ not been adapted to the changes in critcl version 3 yet\&.
 \fBsnitbutton\fR
 .TP
 \fBwikit\fR
-These are all external packages whose code has been inlined in the
-repository for easier development (less dependencies to pull), and
-quicker deployment from the repository (generation of starkit and
--pack)\&.
+These are all external packages whose code has been inlined in the repository for easier
+development (less dependencies to pull), and quicker deployment from the repository
+(generation of starkit and -pack)\&.
 .sp
 The packages
 \fBautoscroll\fR,
 \fBsnit\fR,
 \fBsnitbutton\fR, and
 \fBwikit\fR
-are for the support of the Wikit GUI accessible from starkit and -pack
-when the application functionality (\fBcritcl::app\fR) is run with
-an empty command line\&.
+are for the support of the Wikit GUI accessible from starkit and -pack when the
+application functionality (\fBcritcl::app\fR) is run with an empty command line\&.
 .sp
-\fITODO:\fR These should all be checked against their origin
-for updates and changes since they were inlined\&.
+\fITODO:\fR These should all be checked against their origin for updates and
+changes since they were inlined\&.
 .RE
 .PP
 .SH AUTHORS

@@ -338,7 +338,7 @@ underwent from version to version.</p>
        cache directory now also uses <b class="cmd">platform::identify</b> for the
        default path, instead of <b class="cmd">platform::generic</b>.</p></li>
 <li><p>Bugfix: Fixed issue #58. Simplified the setup and use of
-       md5. Critcl now makes use of its own package for md5, using
+       md5. CriTcl now makes use of its own package for md5, using
        itself to built it. There is no chicken/egg problem with this
        as the <b class="option">-pkg</b> mode used for this does not use md5. That
        is limited to mode <i class="term"><a href="../index.html#compile_run">compile &amp; run</a></i>.</p></li>
@@ -722,7 +722,7 @@ details of the provided commands.</p></li>
 	for shared libraries in preference over static. critcl handles
 	it now, as older GNU ld's do not understand it, nor the
 	various vendor-specific linkers.</p></li>
-<li><p>Fixed github issue #12. Critcl now determines the version of
+<li><p>Fixed github issue #12. CriTcl now determines the version of
 	MSVC in use and uses it to switch between various link debug
 	options. Simplified the handling of bufferoverflowU.lib also,
 	making use of the same mechanism and collapsing the two

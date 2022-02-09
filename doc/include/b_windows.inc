@@ -7,14 +7,14 @@ If you have to install CriTcl on a Unix machine (Linux, BSD, and
 related, including OS X) see section
 [sectref {Build & Installation (Unix)}] instead.
 
-To install Critcl simply run
+To install CriTcl simply run
 
 [example {
     /path/to/tclsh /path/to/critcl/build.tcl install
 }]
 
 where [file /path/to/tclsh] is the tclsh of your Tcl installation, and
-[file /path/to/critcl] the location of the Critcl sources on your system.
+[file /path/to/critcl] the location of the CriTcl sources on your system.
 
 [para]
 

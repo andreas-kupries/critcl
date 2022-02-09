@@ -49,3 +49,16 @@ plain "#include" in a [cmd critcl::ccode] block is good enough.
 
 In other words, the second form of invoking [cmd critcl::cheaders] is
 pretty much only for headers which accompany the [file .critcl] file.
+
+[para] Note that it is possible to mix all the possible forms both
+separately, and in a single command. Further note that the information
+from multiple invokations is aggregated by the system.
+
+[example {
+    critcl::cheaders -I/path/to/headers/ sha1.h
+}]
+
+[example {
+    critcl::cheaders -I/path/to/crc/headers/
+    critcl::cheaders sha1.h
+}]

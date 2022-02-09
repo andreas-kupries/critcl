@@ -104,28 +104,29 @@
 <div class="doctools">
 <h1 class="doctools_title">critcl_install_guide(n) 3.1.18.1 doc &quot;C Runtime In Tcl (CriTcl)&quot;</h1>
 <div id="name" class="doctools_section"><h2><a name="name">Name</a></h2>
-<p>critcl_install_guide - Critcl - The Installer's Guide</p>
+<p>critcl_install_guide - CriTcl - The Installer's Guide</p>
 </div>
 <div id="toc" class="doctools_section"><h2><a name="toc">Table Of Contents</a></h2>
 <ul class="doctools_toc">
 <li class="doctools_section"><a href="#toc">Table Of Contents</a></li>
 <li class="doctools_section"><a href="#section1">Description</a></li>
-<li class="doctools_section"><a href="#section2">Requisites</a>
+<li class="doctools_section"><a href="#section2">Audience</a></li>
+<li class="doctools_section"><a href="#section3">Requisites</a>
 <ul>
 <li class="doctools_subsection"><a href="#subsection1">Tcl</a></li>
 <li class="doctools_subsection"><a href="#subsection2">Tcllib</a></li>
 <li class="doctools_subsection"><a href="#subsection3">C compiler</a></li>
 </ul>
 </li>
-<li class="doctools_section"><a href="#section3">Build &amp; Installation Instructions</a>
+<li class="doctools_section"><a href="#section4">Build &amp; Installation Instructions</a>
 <ul>
 <li class="doctools_subsection"><a href="#subsection4">Build &amp; Installation (Unix)</a></li>
 <li class="doctools_subsection"><a href="#subsection5">Build &amp; Installation (Windows)</a></li>
 <li class="doctools_subsection"><a href="#subsection6">First Use, Testing the Installation</a></li>
 </ul>
 </li>
-<li class="doctools_section"><a href="#section4">Authors</a></li>
-<li class="doctools_section"><a href="#section5">Bugs, Ideas, Feedback</a></li>
+<li class="doctools_section"><a href="#section5">Authors</a></li>
+<li class="doctools_section"><a href="#section6">Bugs, Ideas, Feedback</a></li>
 <li class="doctools_section"><a href="#keywords">Keywords</a></li>
 <li class="doctools_section"><a href="#category">Category</a></li>
 <li class="doctools_section"><a href="#copyright">Copyright</a></li>
@@ -136,20 +137,21 @@
 embedded in Tcl on the fly and either loading the resulting objects into Tcl for
 immediate use or packaging them for distribution.  Use <i class="term"><a href="critcl_pkg.html">CriTcl</a></i> to improve
 performance by rewriting in C those routines that are performance bottlenecks.</p>
-<p>The audience of this document is anyone wishing to build the
-packages, for either themselves, or others.</p>
-<p>For a developer intending to extend or modify the packages we
-additionally provide</p>
-<ol class="doctools_enumerated">
-<li><p><i class="term"><a href="license.html">Critcl - License</a></i>.</p></li>
-<li><p><i class="term"><a href="critcl_devguide.html">Critcl - The Developer's Guide</a></i>.</p></li>
-</ol>
-<p>Please read <i class="term"><a href="critcl_sources.html">Critcl - How To Get The Sources</a></i> first, if that was
-not done already. Here we assume that the sources are already
-available in a directory of your choice.</p>
 </div>
-<div id="section2" class="doctools_section"><h2><a name="section2">Requisites</a></h2>
-<p>Before Critcl can be build and used a number of requisites must be installed. These are:</p>
+<div id="section2" class="doctools_section"><h2><a name="section2">Audience</a></h2>
+<p>The audience of this document is anyone wishing to build the packages, for either
+themselves, or others.</p>
+<p>For a developer intending to extend or modify the packages we additionally provide</p>
+<ol class="doctools_enumerated">
+<li><p><i class="term"><a href="license.html">CriTcl - License</a></i>.</p></li>
+<li><p><i class="term"><a href="critcl_devguide.html">CriTcl - The Developer's Guide</a></i>.</p></li>
+</ol>
+<p>Please read <i class="term"><a href="critcl_sources.html">CriTcl - How To Get The Sources</a></i> first, if that was not done
+already. Here we assume that the sources are already available in a directory of your
+choice.</p>
+</div>
+<div id="section3" class="doctools_section"><h2><a name="section3">Requisites</a></h2>
+<p>Before CriTcl can be build and used a number of requisites must be installed. These are:</p>
 <ol class="doctools_enumerated">
 <li><p>The scripting language Tcl.
        For details see <span class="sectref"><a href="#subsection1">Tcl</a></span>.</p></li>
@@ -157,11 +159,10 @@ available in a directory of your choice.</p>
        For details see <span class="sectref"><a href="#subsection2">Tcllib</a></span>.</p></li>
 <li><p>A working C compiler and development environment.</p></li>
 </ol>
-<p>This list assumes that the machine where Critcl is to be installed is
-essentially clean. Of course, if parts of the dependencies listed
-below are already installed the associated steps can be skipped. It is
-still recommended to read their sections though, to validate that the
-dependencies they talk about are indeed installed.</p>
+<p>This list assumes that the machine where CriTcl is to be installed is essentially
+clean. Of course, if parts of the dependencies listed below are already installed the
+associated steps can be skipped. It is still recommended to read their sections though, to
+validate that the dependencies they talk about are indeed installed.</p>
 <div id="subsection1" class="doctools_subsection"><h3><a name="subsection1">Tcl</a></h3>
 <p>As we are building a Tcl package that should be pretty much obvious
 that a working Tcl installation is needed, and I will not belabor the
@@ -185,10 +186,10 @@ ActiveState.</p>
 </pre>
 <p>to install all packages ActiveState provides, and the kitchensink, as
 the distribution itself usually contains only the ost important set of
-packages. This ensures that the dependencies for Critcl are all
+packages. This ensures that the dependencies for CriTcl are all
 present, and more.</p>
 <p>If that is not to your liking you have to read the sections for
-Critcl to determine the exact set of packages required, and install
+CriTcl to determine the exact set of packages required, and install
 only these using</p>
 <pre class="doctools_example">
     teacup install $packagename
@@ -211,7 +212,7 @@ can be found at</p>
 </dl>
 </div>
 <div id="subsection2" class="doctools_subsection"><h3><a name="subsection2">Tcllib</a></h3>
-<p>To use Critcl a few packages found in the Tcllib bundle are
+<p>To use CriTcl a few packages found in the Tcllib bundle are
 required. These packages are:</p>
 <ol class="doctools_enumerated">
 <li><p><b class="package">cmdline</b></p></li>
@@ -276,18 +277,18 @@ to tutorials, howtos and references for the various platforms.</p>
 </dl>
 </div>
 </div>
-<div id="section3" class="doctools_section"><h2><a name="section3">Build &amp; Installation Instructions</a></h2>
+<div id="section4" class="doctools_section"><h2><a name="section4">Build &amp; Installation Instructions</a></h2>
 <div id="subsection4" class="doctools_subsection"><h3><a name="subsection4">Build &amp; Installation (Unix)</a></h3>
 <p>This section describes the actions required to install CriTcl on Unix
 systems (Linux, BSD, and related, including OS X).
 If you have to install CriTcl on a Windows machine see section
 <span class="sectref"><a href="#subsection5">Build &amp; Installation (Windows)</a></span> instead.
-To install Critcl simply run</p>
+To install CriTcl simply run</p>
 <pre class="doctools_example">
     /path/to/tclsh /path/to/critcl/build.tcl install
 </pre>
 <p>where &quot;<b class="file">/path/to/tclsh</b>&quot; is the tclsh of your Tcl installation, and
-&quot;<b class="file">/path/to/critcl</b>&quot; the location of the Critcl sources on your system.</p>
+&quot;<b class="file">/path/to/critcl</b>&quot; the location of the CriTcl sources on your system.</p>
 <p>This builds all packages and then places them in a directory where the
 <b class="cmd">tclsh</b> will find them.</p>
 <p>It further creates a &quot;<b class="file">critcl</b>&quot; application script and places it
@@ -315,12 +316,12 @@ Windows(tm) systems.
 If you have to install CriTcl on a Unix machine (Linux, BSD, and
 related, including OS X) see section
 <span class="sectref"><a href="#subsection4">Build &amp; Installation (Unix)</a></span> instead.
-To install Critcl simply run</p>
+To install CriTcl simply run</p>
 <pre class="doctools_example">
     /path/to/tclsh /path/to/critcl/build.tcl install
 </pre>
 <p>where &quot;<b class="file">/path/to/tclsh</b>&quot; is the tclsh of your Tcl installation, and
-&quot;<b class="file">/path/to/critcl</b>&quot; the location of the Critcl sources on your system.</p>
+&quot;<b class="file">/path/to/critcl</b>&quot; the location of the CriTcl sources on your system.</p>
 <p>This builds all packages and then places them in a directory where the
 <b class="cmd">tclsh</b> will find them.</p>
 <p>It further creates a &quot;<b class="file">critcl</b>&quot; application script and places it
@@ -401,10 +402,10 @@ high-level stack example packages. I am intentionally bypassing the
 </pre>
 </div>
 </div>
-<div id="section4" class="doctools_section"><h2><a name="section4">Authors</a></h2>
+<div id="section5" class="doctools_section"><h2><a name="section5">Authors</a></h2>
 <p>Jean Claude Wippler, Steve Landers, Andreas Kupries</p>
 </div>
-<div id="section5" class="doctools_section"><h2><a name="section5">Bugs, Ideas, Feedback</a></h2>
+<div id="section6" class="doctools_section"><h2><a name="section6">Bugs, Ideas, Feedback</a></h2>
 <p>This document, and the package it describes, will undoubtedly contain
 bugs and other problems.
 Please report them at <a href="https://github.com/andreas-kupries/critcl/issues">https://github.com/andreas-kupries/critcl/issues</a>.

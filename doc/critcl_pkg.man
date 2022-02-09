@@ -2,7 +2,7 @@
 [include pkg_version.inc]
 [manpage_begin critcl n [vset VERSION]]
 [include include/module.inc]
-[titledesc {Critcl - Package Reference}]
+[titledesc {CriTcl - Package Reference}]
 [require Tcl 8.4]
 [require critcl [opt [vset VERSION]]]
 [require platform [opt 1.0.2]]

@@ -3,7 +3,7 @@
 [include pkg_version.inc]
 [manpage_begin critcl_app n [vset VERSION]]
 [include include/module.inc]
-[titledesc {CriTcl Application}]
+[titledesc {CriTcl - Application}]
 [description]
 [para]
 [include include/welcome.inc]
@@ -31,7 +31,7 @@ The application supports the following general command line:
 The exact set of options supported, their meaning, and interaction is
 detailed in section [sectref {Application Options}] below.
 
-For a larger set of examples please see section "Building Critcl Packages"
+For a larger set of examples please see section "Building CriTcl Packages"
 in the document about [manpage {Using CriTcl}].
 
 [list_end]

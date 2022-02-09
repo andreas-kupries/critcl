@@ -36,7 +36,7 @@ Examples of such packages come with critcl itself. See
 [opt_def trace bool]
 
 When [const false] (the default), no code tracing the entry and exit of
-Critcl-backed commands in the [vset critcl_script] is inserted.  Insertion of
+CriTcl-backed commands in the [vset critcl_script] is inserted.  Insertion of
 such code implicitly activates the tracing facility in general.  See
 [package critcl::cutil].
 

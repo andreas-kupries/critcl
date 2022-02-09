@@ -27,6 +27,10 @@ Now, with these introductory words out of the way, lets jump into the
 meat of things.
 
 [include using_eproc.inc]        [comment {%% cproc}]
+[include using_eprocstr.inc]     [comment {%% cproc, strings}]
+	[comment { TODO: arg - list }]
+	[comment { TODO: results - ok, void }]
+	[comment { TODO: channel types }]
 [include using_eproctypes.inc]   [comment {%% cproc types, intro & trivial}]
 [include using_eproctypes2.inc]  [comment {%% cproc types, semi-trivial}]
 [include using_eproctypes3.inc]  [comment {%% cproc types, support (incl alloc'd)}]

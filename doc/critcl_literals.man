@@ -4,7 +4,7 @@
 [include include/module2.inc]
 [keywords singleton {Tcl Interp Association}]
 [keywords {string pool} {literal pool}]
-[titledesc {CriTcl Utilities: Constant string pools}]
+[titledesc {CriTcl - Code Gen - Constant string pools}]
 [require Tcl 8.4]
 [require critcl [opt 3.1.11]]
 [require critcl::literals [opt [vset literal_version]]]

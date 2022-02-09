@@ -9,7 +9,7 @@ to Tcl for the use by scripts is handled in a separate section and
 example.
 
 [para] The relevant command is [cmd critcl::clibraries]. Its basic
-semantics are like that of [cmd critcl::cheaders], i.e. It enables us
+semantics are like that of [cmd critcl::cheaders], i.e. it enables us
 to tell the linker the path(s) where the required libraries can be
 found, using
 
@@ -31,6 +31,19 @@ or tell it directly which libraries we are using and where they live:
 
 This last way of using should be avoided however, as it intermingles
 searching and naming, plus the name is platform dependent.
+
+[para] [strong Note] that all the above things can be done at the same
+time, i.e. in a single command. Further note that the information from
+multiple invokations is aggregated by the system.
+
+[example {
+    critcl::clibraries -L/path/to/libraries/ -lfoo /path/to/library/snafu.so
+}]
+
+[example {
+    critcl::clibraries -L/path/to/libraries/ -lfoo
+    critcl::clibraries /path/to/library/snafu.so
+}]
 
 [para] For OS X we additionally have the [cmd critcl::framework]
 command which enables us to name the frameworks used by our package.

@@ -2,7 +2,7 @@
 A short note ahead of the documentation: Instead of repeatedly talking
 about
 "a Tcl script with embbedded C code", or
-"a Tcl script containing Critcl commands",
+"a Tcl script containing CriTcl commands",
 we call such a script a [vset critcl_script].  A file containing a
 [vset critcl_script] usually has the extension [const .tcl] or
 [const .critcl].

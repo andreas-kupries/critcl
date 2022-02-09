@@ -274,32 +274,32 @@ Database Class:	\\fB\\$3\\fR
 ..
 .BS
 .SH NAME
-critcl_sources \- Critcl - How To Get The Sources
+critcl_sources \- CriTcl - How To Get The Sources
 .SH DESCRIPTION
 \fIC Runtime In Tcl\fR, or \fICriTcl\fR , is a system for compiling C code
 embedded in Tcl on the fly and either loading the resulting objects into Tcl for
 immediate use or packaging them for distribution\&.  Use \fICriTcl\fR to improve
 performance by rewriting in C those routines that are performance bottlenecks\&.
+.SH AUDIENCE
 .PP
-The audience of this document is anyone wishing to either have
-just a look at Critcl's source code, or build the packages, or to
-extend and modify them\&.
+The audience of this document is anyone wishing to either have just a look at
+CriTcl's source code, build the packages, or to extend and modify them\&.
 .PP
 For builders and developers we additionally provide
 .IP [1]
-\fICritcl - License\fR\&.
+\fICriTcl - License\fR\&.
 .IP [2]
-\fICritcl - The Installer's Guide\fR\&.
+\fICriTcl - The Installer's Guide\fR\&.
 .IP [3]
-\fICritcl - The Developer's Guide\fR\&.
+\fICriTcl - The Developer's Guide\fR\&.
 .PP
 respectively\&.
 .SH "SOURCE LOCATION"
-The official repository for Critcl can be found at
+The official repository for CriTcl can be found at
 \fIhttp://andreas-kupries\&.github\&.io/critcl\fR
 .SH RETRIEVAL
-Assuming that you simply wish to look at the sources, or build a
-specific revision, the easiest way of retrieving it is to:
+Assuming that you simply wish to look at the sources, or build a specific revision, the
+easiest way of retrieving it is to:
 .IP [1]
 Go to this site\&.
 .IP [2]
@@ -315,7 +315,9 @@ On that page, choose either the "ZIP" link to get a copy of this revision as a Z
 For the curious (or a developer-to-be), the sources are managed by the
 \fIGit SCM\fR [http://www\&.git-scm\&.com]\&.
 Binaries for popular platforms can be found directly at its
-\fIdownload page\fR [http://www\&.fossil-scm\&.org/downloads]\&.
+\fIdownload page\fR [https://git-scm\&.com/downloads]\&.
+See also if your operating system's package manager provides it and associated tools for
+installation\&.
 .PP
 With that tool available the full history can be retrieved via:
 .CS

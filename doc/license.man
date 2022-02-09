@@ -1,7 +1,7 @@
 [comment {-*- tcl -*- doctools manpage}]
 [manpage_begin critcl_license n 1]
 [include include/module.inc]
-[titledesc {Critcl - License}]
+[titledesc {CriTcl - License}]
 [description]
 [include include/welcome.inc]
 

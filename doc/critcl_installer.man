@@ -2,32 +2,32 @@
 [include version.inc]
 [manpage_begin critcl_install_guide n [vset VERSION]]
 [include include/module.inc]
-[titledesc {Critcl - The Installer's Guide}]
+[titledesc {CriTcl - The Installer's Guide}]
 [description]
 [include include/welcome.inc]
 
-[para] The audience of this document is anyone wishing to build the
-packages, for either themselves, or others.
+[comment {===================================================================}]
+[section Audience]
 
-[para] For a developer intending to extend or modify the packages we
-additionally provide
+[para] The audience of this document is anyone wishing to build the packages, for either
+themselves, or others.
+
+[para] For a developer intending to extend or modify the packages we additionally provide
 
 [list_begin enum]
-[enum] [term {Critcl - License}].
-[enum] [term {Critcl - The Developer's Guide}].
+[enum] [term {CriTcl - License}].
+[enum] [term {CriTcl - The Developer's Guide}].
 [list_end]
 
-[para]
-
-Please read [term {Critcl - How To Get The Sources}] first, if that was
-not done already. Here we assume that the sources are already
-available in a directory of your choice.
+[para] Please read [term {CriTcl - How To Get The Sources}] first, if that was not done
+already. Here we assume that the sources are already available in a directory of your
+choice.
 
 [para]
 
 [section Requisites]
 
-Before Critcl can be build and used a number of requisites must be installed. These are:
+Before CriTcl can be build and used a number of requisites must be installed. These are:
 
 [list_begin enumerated]
 [enum] The scripting language Tcl.
@@ -37,11 +37,10 @@ Before Critcl can be build and used a number of requisites must be installed. Th
 [enum] A working C compiler and development environment.
 [list_end]
 
-This list assumes that the machine where Critcl is to be installed is
-essentially clean. Of course, if parts of the dependencies listed
-below are already installed the associated steps can be skipped. It is
-still recommended to read their sections though, to validate that the
-dependencies they talk about are indeed installed.
+This list assumes that the machine where CriTcl is to be installed is essentially
+clean. Of course, if parts of the dependencies listed below are already installed the
+associated steps can be skipped. It is still recommended to read their sections though, to
+validate that the dependencies they talk about are indeed installed.
 
 [include include/rq_tcl.inc]
 [include include/rq_tcllib.inc]

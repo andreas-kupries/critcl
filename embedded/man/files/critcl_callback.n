@@ -272,7 +272,7 @@ Database Class:	\\fB\\$3\\fR
 ..
 .BS
 .SH NAME
-critcl::callback \- CriTcl C-level Callback Utilities
+critcl::callback \- CriTcl - C-level Callback Utilities
 .SH SYNOPSIS
 package require \fBTcl  8\&.4\fR
 .sp

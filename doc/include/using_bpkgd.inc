@@ -8,7 +8,7 @@ If not, please read section [sectref {Building A Package}] first.
 An important issue, when there is trouble with the package, debugging
 becomes necessary a evil.
 
-Critcl supports this through the [option -debug] option.
+CriTcl supports this through the [option -debug] option.
 Using it enables various build modes which help with that.
 
 [para]

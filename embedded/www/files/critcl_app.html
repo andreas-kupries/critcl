@@ -104,7 +104,7 @@
 <div class="doctools">
 <h1 class="doctools_title">critcl_app(n) 3.1.18 doc &quot;C Runtime In Tcl (CriTcl)&quot;</h1>
 <div id="name" class="doctools_section"><h2><a name="name">Name</a></h2>
-<p>critcl_app - CriTcl Application</p>
+<p>critcl_app - CriTcl - Application</p>
 </div>
 <div id="toc" class="doctools_section"><h2><a name="toc">Table Of Contents</a></h2>
 <ul class="doctools_toc">
@@ -175,8 +175,8 @@ The application supports the following general command line:</p>
 <dt><a name="1"><b class="cmd"><a href="critcl_pkg.html">critcl</a></b> <span class="opt">?<i class="arg">option</i>...?</span> <span class="opt">?<i class="arg">file</i>...?</span></a></dt>
 <dd><p>The exact set of options supported, their meaning, and interaction is
 detailed in section <span class="sectref"><a href="#section2">Application Options</a></span> below.
-For a larger set of examples please see section &quot;Building Critcl Packages&quot;
-in the document about <i class="term">Using CriTcl</i>.</p></dd>
+For a larger set of examples please see section &quot;Building CriTcl Packages&quot;
+in the document about <i class="term"><a href="critcl_usingit.html">Using CriTcl</a></i>.</p></dd>
 </dl>
 </div>
 <div id="section2" class="doctools_section"><h2><a name="section2">Application Options</a></h2>
@@ -231,7 +231,7 @@ Uses of this option are cumulative.</p></dd>
 <dt><b class="option">-disable</b> name</dt>
 <dd><p>Sets the value of the custom build configuration option
 <i class="arg">name</i> to <b class="const">false</b>. It is equivalent to &quot;-with-<i class="arg">name</i> 0&quot;.</p>
-<p>Validated only if one of the input files for the <i class="term">Critcl script</i>
+<p>Validated only if one of the input files for the <i class="term">CriTcl script</i>
 actually defines and uses a custom build configuration option with that
 <i class="arg">name</i>.</p>
 <p>Ignored when generating a TEA package
@@ -239,7 +239,7 @@ actually defines and uses a custom build configuration option with that
 <dt><b class="option">-enable</b> name</dt>
 <dd><p>Sets the value of the custom build configuration option
 <i class="arg">name</i> to <b class="const">true</b>. It is equivalent to &quot;-with-<i class="arg">name</i> 1&quot;.</p>
-<p>Validated only if one of the input files for the <i class="term">Critcl script</i>
+<p>Validated only if one of the input files for the <i class="term">CriTcl script</i>
 actually defines and uses a custom build configuration option with that
 <i class="arg">name</i>.</p>
 <p>Ignored when generating a TEA package
@@ -280,7 +280,7 @@ current working directory.</p>
 <p>Ignored when generating a TEA package
 (see option <b class="option">-tea</b> below).</p></dd>
 <dt><b class="option">-pkg</b></dt>
-<dd><p>Generates a package from the <i class="term">Critcl script</i> files.  Input files are
+<dd><p>Generates a package from the <i class="term">CriTcl script</i> files.  Input files are
 processed first as usual, but are then bundled into a single library, with
 additional generated files to form the library into a standard Tcl package.</p>
 <p>generation. If both options, i.e. <b class="option">-pkg</b> and <b class="option">-tea</b> are
@@ -290,8 +290,8 @@ relevant in both this and <b class="option">-tea</b> mode.</p>
 <p>The basename of the first file is the name of the package to generate. If
 its file extension indicates a shared library (&quot;<b class="file">.so</b>&quot;, &quot;<b class="file">.sl</b>&quot;,
 &quot;<b class="file">.dylib</b>&quot;, and &quot;<b class="file">.dll</b>&quot;) it is also removed from the set of input
-files. Each <i class="term">Critcl script</i> file is kept as part of the input. A single
-file without a suffix is assumed to be a <i class="term">Critcl script</i>. A file without
+files. Each <i class="term">CriTcl script</i> file is kept as part of the input. A single
+file without a suffix is assumed to be a <i class="term">CriTcl script</i>. A file without
 a suffix, but other input files following is treated like the name of a
 shared library proper, and removed from the set of input files.</p>
 <p>Examples:</p>
@@ -337,7 +337,7 @@ Use <b class="option">-config</b> to select the configuration file.</p>
 Use <b class="option">-config</b> to select the configuration file.</p></dd>
 <dt><b class="option">-tea</b></dt>
 <dd><p>Like <b class="option">-pkg</b>, except no binaries are generated. Creates a directory
-hierarchy containing the <i class="term">Critcl script</i>, its companion files, and a
+hierarchy containing the <i class="term">CriTcl script</i>, its companion files, and a
 TEA-conformant build system with most of the needed support code, including
 copies of the critcl packages.</p>
 <p>If both <b class="option">-pkg</b> and <b class="option">-tea</b> are specified the last occurrence wins.</p>
@@ -349,8 +349,8 @@ this and <b class="option">-pkg</b> mode.</p>
 <p>The basename of the first file is the name of the package to generate. If
 its file extension indicates a shared library (&quot;<b class="file">.so</b>&quot;, &quot;<b class="file">.sl</b>&quot;,
 &quot;<b class="file">.dylib</b>&quot;, and &quot;<b class="file">.dll</b>&quot;) it is also removed from the set of input
-files. Each <i class="term">Critcl script</i> file is kept as part of the input. A single
-file without a suffix is assumed to be a <i class="term">Critcl script</i>. A file without
+files. Each <i class="term">CriTcl script</i> file is kept as part of the input. A single
+file without a suffix is assumed to be a <i class="term">CriTcl script</i>. A file without
 a suffix, but other input files following is treated like the name of a
 shared library proper, and removed from the set of input files.</p>
 <p>Examples:</p>
@@ -624,7 +624,7 @@ targets. The result of such a merge would look like:</p>
        cache directory now also uses <b class="cmd">platform::identify</b> for the
        default path, instead of <b class="cmd">platform::generic</b>.</p></li>
 <li><p>Bugfix: Fixed issue #58. Simplified the setup and use of
-       md5. Critcl now makes use of its own package for md5, using
+       md5. CriTcl now makes use of its own package for md5, using
        itself to built it. There is no chicken/egg problem with this
        as the <b class="option">-pkg</b> mode used for this does not use md5. That
        is limited to mode <i class="term"><a href="../index.html#compile_run">compile &amp; run</a></i>.</p></li>
@@ -1008,7 +1008,7 @@ details of the provided commands.</p></li>
 	for shared libraries in preference over static. critcl handles
 	it now, as older GNU ld's do not understand it, nor the
 	various vendor-specific linkers.</p></li>
-<li><p>Fixed github issue #12. Critcl now determines the version of
+<li><p>Fixed github issue #12. CriTcl now determines the version of
 	MSVC in use and uses it to switch between various link debug
 	options. Simplified the handling of bufferoverflowU.lib also,
 	making use of the same mechanism and collapsing the two

@@ -3,7 +3,7 @@
 [include pkg_version.inc]
 [manpage_begin critcl::app n [vset VERSION]]
 [include include/module.inc]
-[titledesc {Critcl - Application Package Reference}]
+[titledesc {CriTcl - Application Package Reference}]
 [require Tcl 8.4]
 [require critcl::app [opt [vset VERSION]]]
 [require critcl [opt 2]]
@@ -46,7 +46,7 @@ are build and the results cached.   This cuts down on the time needed to
 load the package.  The last occurrence of [option -pkg] and [option -tea], if
 provided, selects the corresponding alternative mode of operations.
 
-For a larger set of examples please see section "Building Critcl Packages"
+For a larger set of examples please see section "Building CriTcl Packages"
 in the document about [manpage {Using CriTcl}].
 
 

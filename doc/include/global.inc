@@ -1,4 +1,4 @@
-[vset critcl_script [term {Critcl script}]]
+[vset critcl_script [term {CriTcl script}]]
 
 [vset cumulative {
 Calls to this command are cumulative.
@@ -9,7 +9,7 @@ Uses of this option are cumulative.
 }]
 
 [vset not_needed_for_critcl_script "
-These commands are not needed to simply write a [term {Critcl script}].
+These commands are not needed to simply write a [term {CriTcl script}].
 "]
 
 [vset pkg_namerules "
@@ -24,12 +24,12 @@ shared library proper, and removed from the set of input files.
 
 [vset relative_pattern "
 A pattern for a relative path is resolved relative to the directory
-containing the [term {Critcl script}].
+containing the [term {CriTcl script}].
 "]
 
 [vset relative_path "
 A relative path is resolved relative to the directory
-containing the [term {Critcl script}].
+containing the [term {CriTcl script}].
 "]
 
 

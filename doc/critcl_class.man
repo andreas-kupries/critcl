@@ -3,7 +3,7 @@
 [manpage_begin critcl::class n [vset VERSION]]
 [include include/module2.inc]
 [keywords {C class} {C object} {C instance}]
-[titledesc {CriTcl Utilities: C Classes}]
+[titledesc {CriTcl - Code Gen - C Classes}]
 [require Tcl 8.4]
 [require critcl [opt 3.1.6]]
 [require critcl::class [opt [vset VERSION]]]

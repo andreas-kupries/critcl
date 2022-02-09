@@ -8,15 +8,23 @@
 [include include/welcome.inc]
 [para]
 
-CriTcl started life as an experiment by Jean-Claude Wippler and was a
-self-contained Tcl package to build C code into a Tcl/Tk extension on
-the fly. It was somewhat inspired by Brian Ingerson's [term Inline]
-for [term Perl], but is considerably more lightweight.
+[comment {===================================================================}]
+[section Audience]
+
+The audience of this document is anyone with an interest in CriTcl, be they prospective
+user, builder, maintainer, etc.
+
+[comment {===================================================================}]
+[section {History & Motivation}]
+
+CriTcl started life as an experiment by Jean-Claude Wippler and was a self-contained Tcl
+package to build C code into a Tcl/Tk extension on the fly. It was somewhat inspired by
+Brian Ingerson's [term Inline] for [term Perl], but is considerably more lightweight.
 
 [para]
 
-It is for the last 5% to 10% when pure Tcl, which does go a long way,
-is not sufficient anymore. I.e. for
+It is for the last 5% to 10% when pure Tcl, which does go a long way, is not sufficient
+anymore. I.e. for
 
 [list_begin enumerated]
 [enum] when the last bits of performance are needed,
@@ -29,26 +37,43 @@ is not sufficient anymore. I.e. for
 	Should I discuss the alternatives? And why they are not good?
 }]
 
-[para] The following sections first reference a few related documents
-which may or may not be of interest to you, depending on if you are
-just a plain user of the system, trying to get and build/install it,
-or are going deep into the internals for either edification or
-modification.
+[comment {===================================================================}]
+[section Overview]
 
-[para] This is followed by an introduction to the modes of operation
-supported by the system, and its general architecture as seen by a
-user.
+The following sections first reference a few related documents which may or may not be of
+interest to the audience, depending on the exact role of the reader, i.e. just a plain
+user of the system, trying to get and build/install it, or going deep into the internals
+for either edification or modification.
+
+[para] This is followed by an introduction to the modes of operation supported by the
+system, and its general architecture as seen by a user.
 
 [comment {===================================================================}]
-[section {Related Documents}]
+[section {Administrative Documents}]
 [list_begin enum]
-[enum] [term {Critcl - License}].
-[enum] [term {Using Critcl}]
-[enum] [term {Critcl - How To Get The Sources}].
-[enum] [term {Critcl - The Installer's Guide}].
-[enum] [term {Critcl - Application Package Reference}]
-[enum] [term {Critcl - Package Reference}]
-[enum] [term {Critcl - The Developer's Guide}].
+[enum] [term {CriTcl - License}].
+[enum] [term {CriTcl - How To Get The Sources}].
+[enum] [term {CriTcl - The Installer's Guide}].
+[enum] [term {CriTcl - The Developer's Guide}].
+[list_end]
+
+[comment {===================================================================}]
+[section {User Documents}]
+[list_begin enum]
+[enum] [term {Using CriTcl}] - A light introduction through examples.
+[enum] [term {CriTcl - Application}]
+[enum] [term {CriTcl - Package Reference}]
+[enum] [term {CriTcl - cproc Type Reference}]
+[enum] [term {CriTcl - Utilities}]
+[enum] [term {CriTcl - C-level Utilities}]
+[enum] [term {CriTcl - C-level Callback Utilities}]
+[enum] [term {CriTcl - Wrap Support - String/Integer mapping}]
+[enum] [term {CriTcl - Wrap Support - Bitset en- and decoding}]
+[enum] [term {CriTcl - Wrap Support - Enum en- and decoding}]
+[enum] [term {CriTcl - Code Gen - Constant string pools}]
+[enum] [term {CriTcl - Code Gen - Tcl Interp Associations}]
+[enum] [term {CriTcl - Code Gen - C Classes}]
+[enum] [term {CriTcl - Application Package Reference}]
 [list_end]
 
 [comment {===================================================================}]

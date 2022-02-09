@@ -274,7 +274,7 @@ Database Class:	\\fB\\$3\\fR
 ..
 .BS
 .SH NAME
-critcl_use \- Using Critcl
+critcl_use \- Using CriTcl
 .SH DESCRIPTION
 .PP
 \fIC Runtime In Tcl\fR, or \fICriTcl\fR , is a system for compiling C code
@@ -282,7 +282,7 @@ embedded in Tcl on the fly and either loading the resulting objects into Tcl for
 immediate use or packaging them for distribution\&.  Use \fICriTcl\fR to improve
 performance by rewriting in C those routines that are performance bottlenecks\&.
 .PP
-This document is a (hopefully) gentle introduction to Critcl by way of a
+This document is a (hopefully) gentle introduction to CriTcl by way of a
 series of small examples\&.
 .PP
 Readers which came directly to this document through a search
@@ -297,7 +297,7 @@ To make things easier the two themes each have their own section in
 this document, enabling all readers to quickly skip the part they are
 not interested in\&.
 .PP
-The sources of Critcl, should you have gotten them, contain
+The sources of CriTcl, should you have gotten them, contain
 several larger examples show-casing various aspects of the
 system\&. These demonstration packages can all be found in the
 sub-directory "\fIexamples/\fR" of the sources\&.
@@ -321,6 +321,177 @@ well\&.
 .PP
 Now, with these introductory words out of the way, lets jump into the
 meat of things\&.
+.SS "A SIMPLE PROCEDURE"
+Starting simple, let us assume that the Tcl code in question is
+something like
+.CS
+
+
+    proc math {x y z} {
+        return [expr {(sin($x)*rand())/$y**log($z)}]
+    }
+
+.CE
+with the expression pretending to be something very complex and
+slow\&. Converting this to C we get:
+.CS
+
+
+    critcl::cproc math {double x double y double z} double {
+        double up   = rand () * sin (x);
+        double down = pow(y, log (z));
+        return up/down;
+    }
+
+.CE
+Notable about this translation:
+.IP [1]
+All the arguments got type information added to them, here
+"double"\&.  Like in C the type precedes the argument name\&. Other
+than that it is pretty much a Tcl dictionary, with keys and
+values swapped\&.
+.IP [2]
+We now also have to declare the type of the result, here
+"double", again\&.
+.IP [3]
+The reference manpage lists all the legal C types supported as
+arguments and results\&.
+.PP
+.PP
+While the above example was based on type \fBdouble\fR for
+both arguments and result we have a number of additional types in the
+same category, i\&.e\&. simple types\&. These are:
+.CS
+
+
+CriTcl type | C type         | Tcl type  | Notes
+----------- | -------------- | --------- | ------------------------------
+bool        |                |           | Alias of \fBboolean\fR below
+boolean     | int            | Boolean   |
+double      | double         | Double    |
+float       | float          | Double    |
+int         | int            | Int       |
+long        | long           | Long      |
+wideint     | Tcl_WideInt    | WideInt   |
+
+.CE
+.PP
+A slightly advanced form of these simple types are a limited
+set of constraints on the argument value\&. Note that \fBbool\fR and
+alias do not support this\&.
+.CS
+
+
+    critcl::cproc sqrt {{double >= 0} x} double {
+        return sqrt(x);
+    }
+
+.CE
+.PP
+In the example above CriTcl's argument handling will reject
+calling the command with a negative number, without ever invoking the
+C code\&.
+.PP
+These constraints are called \fIlimited\fR because only
+\fB0\fR and \fB1\fR can be used as the borders, although all the
+operators \fB<\fR, \fB<=\fR, \fB>\fR, and \fB>=\fR are
+possible\&. It is also not possible to combine restrictions\&.
+.SS "MORE BUILTIN TYPES: STRINGS"
+.PP
+Given that "Everything is a String" is a slogan of Tcl the ability of \fBcproc\fRs
+to receive strings as arguments, and return them as results is quite important\&.
+.PP
+We actually have a variety of builtin string types, all alike, yet different\&.
+.PP
+For arguments we have:
+.CS
+
+
+CriTcl type | C type         | Tcl type  | Notes
+----------- | -------------- | --------- | ------------------------------
+char*       | const char*    | Any       | \fIRead-only\fR, \fIstring rep\fR
+pstring     | critcl_pstring | Any       | \fIRead-only\fR
+bytes       | critcl_bytes   | ByteArray | \fIRead-only\fR
+
+.CE
+In C
+.CS
+
+
+    critcl::cproc takeStrings {
+        char*   cstring
+	pstring pstring
+	bytes   barray
+    } void {
+        printf ("len %d = %s\\n", strlen(cstring), cstring);
+	printf ("len %d = %s\\n", pstring\&.len, pstring\&.s);
+	printf ("len %d = %s\\n", barray\&.len, barray\&.s);
+        return; // void result, no result
+    }
+
+.CE
+Notable about the above:
+.IP [1]
+The \fBcstring\fR is a plain \fBconst char*\fR\&. It \fIpoints directly\fR
+into the \fBTcl_Obj*\fR holding the argument in the script\&.
+.IP [2]
+The \fBpstring\fR is a slight extension to that\&. The value is actually a structure
+containing the string pointer like \fBcstring\fR (field \fB\&.s\fR), the length of the
+string (field \fB\&.len\fR), and a pointer to the \fBTcl_Obj*\fR these came from\&.
+.IP [3]
+The last, \fBbarray\fR is like \fBpstring\fR, however it has ensured that the
+\fBTcl_Obj*\fR is a Tcl ByteArray, i\&.e\&. binary data\&.
+.PP
+.PP
+Treat all of them as \fIRead Only\fR\&. Do not modify ever\&.
+.PP
+On the other side, string results, we have:
+.CS
+
+
+CriTcl type   | C type         | Tcl type  | Notes
+------------- | -------------- | --------- | ------------------------------
+char*         | char*          | String    | \fIMakes a copy\fR
+vstring       |                |           | Alias of \fBchar*\fR above
+const char*   | const char*    |           | Behavior of \fBchar*\fR above
+------------- | -------------- | --------- | ------------------------------
+string        | char*          | String    | Freeable string set directly
+              |                |           | \fINo copy is made\fR
+dstring       |                |           | Alias of \fBstring\fR above
+
+.CE
+.CS
+
+
+    critcl::cproc returnCString {} char* {
+        return "a string";
+    }
+    critcl::cproc returnString {} string {
+        char* str = Tcl_Alloc (200);
+	sprintf (str, "hello world");
+        return str;
+    }
+
+.CE
+Notable about the above:
+.IP [1]
+The type \fBchar*\fR is best used for static strings, or strings in some kind
+fixed buffer\&.
+.sp
+CriTcl's translation layer makes a copy of it for the result of the command\&. While
+it is possible to return heap-allocated strings it is the C code who is responsible for
+freeing such at some point\&. If that is not done they will leak\&.
+.IP [2]
+The type \fBstring\fR on the other hand is exactly for returning strings allocated
+with \fBTcl_Alloc\fR and associates\&.
+.sp
+For these the translation layer makes no copy at all, and sets them directly as the
+result of the command\&. A \fIvery important effect\fR of this is that the ownership of
+the string pointer moves from the function to Tcl\&.
+.sp
+\fITcl\fR will release the allocated memory when it does not need it any
+longer\&. The C code has no say in that\&.
+.PP
 .SS "A SIMPLE PROCEDURE"
 Starting simple, let us assume that the Tcl code in question is
 something like
@@ -946,6 +1117,23 @@ configured to find all the system headers, obviating the need for a
 plain "#include" in a \fBcritcl::ccode\fR block is good enough\&.
 In other words, the second form of invoking \fBcritcl::cheaders\fR is
 pretty much only for headers which accompany the "\fI\&.critcl\fR" file\&.
+.PP
+Note that it is possible to mix all the possible forms both
+separately, and in a single command\&. Further note that the information
+from multiple invokations is aggregated by the system\&.
+.CS
+
+
+    critcl::cheaders -I/path/to/headers/ sha1\&.h
+
+.CE
+.CS
+
+
+    critcl::cheaders -I/path/to/crc/headers/
+    critcl::cheaders sha1\&.h
+
+.CE
 .SS "SEPARATE C SOURCES"
 In all of the examples shown so far the C code was fully embedded in a
 "\fI\&.critcl\fR" file\&. However, if the C part is large it can make sense
@@ -989,7 +1177,7 @@ to Tcl for the use by scripts is handled in a separate section and
 example\&.
 .PP
 The relevant command is \fBcritcl::clibraries\fR\&. Its basic
-semantics are like that of \fBcritcl::cheaders\fR, i\&.e\&. It enables us
+semantics are like that of \fBcritcl::cheaders\fR, i\&.e\&. it enables us
 to tell the linker the path(s) where the required libraries can be
 found, using
 .CS
@@ -1014,6 +1202,23 @@ or tell it directly which libraries we are using and where they live:
 .CE
 This last way of using should be avoided however, as it intermingles
 searching and naming, plus the name is platform dependent\&.
+.PP
+\fINote\fR that all the above things can be done at the same
+time, i\&.e\&. in a single command\&. Further note that the information from
+multiple invokations is aggregated by the system\&.
+.CS
+
+
+    critcl::clibraries -L/path/to/libraries/ -lfoo /path/to/library/snafu\&.so
+
+.CE
+.CS
+
+
+    critcl::clibraries -L/path/to/libraries/ -lfoo
+    critcl::clibraries /path/to/library/snafu\&.so
+
+.CE
 .PP
 For OS X we additionally have the \fBcritcl::framework\fR
 command which enables us to name the frameworks used by our package\&.
@@ -1161,7 +1366,7 @@ implementations of Tcllib's \fBstruct::queue\fR package:
         set r 0
         switch -exact -- $key {
             critcl {
-                # Critcl implementation of queue requires Tcl 8\&.4\&.
+                # CriTcl implementation of queue requires Tcl 8\&.4\&.
                 if {![package vsatisfies [package provide Tcl] 8\&.4]} {return 0}
                 if {[catch {package require tcllibc}]} {return 0}
                 set r [llength [info commands ::struct::queue_critcl]]
@@ -1728,7 +1933,7 @@ If not, please read section \fBBuilding A Package\fR first\&.
 .PP
 An important issue, when there is trouble with the package, debugging
 becomes necessary a evil\&.
-Critcl supports this through the \fB-debug\fR option\&.
+CriTcl supports this through the \fB-debug\fR option\&.
 Using it enables various build modes which help with that\&.
 .PP
 For example, to activate the Tcl core's built-in memory debugging

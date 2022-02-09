@@ -1,5 +1,5 @@
 
-Critcl versions 3 and later can create TEApot meta-data to be placed into
+CriTcl versions 3 and later can create TEApot meta-data to be placed into
 [file teapot.txt] in a format suitable for use by the
 [uri {http://docs.activestate.com/activetcl/8.5/tpm/toc.html} {TEApot tools}].
 

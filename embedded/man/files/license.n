@@ -274,7 +274,7 @@ Database Class:	\\fB\\$3\\fR
 ..
 .BS
 .SH NAME
-critcl_license \- Critcl - License
+critcl_license \- CriTcl - License
 .SH DESCRIPTION
 \fIC Runtime In Tcl\fR, or \fICriTcl\fR , is a system for compiling C code
 embedded in Tcl on the fly and either loading the resulting objects into Tcl for

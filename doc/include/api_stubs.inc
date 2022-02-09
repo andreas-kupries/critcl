@@ -1,12 +1,12 @@
 [include include/global.inc]
 
-Critcl versions 3 and later provide [cmd critcl::api] to create and manipulate
+CriTcl versions 3 and later provide [cmd critcl::api] to create and manipulate
 stubs tables, Tcl's dynamic linking mechanism handling the resolution of
 symbols between C extensions.
 
 See [uri http://wiki.tcl-lang.org/285]
 for an introduction, and section [sectref {Stubs Tables}]
-for the details of Critcl's particular variant.
+for the details of CriTcl's particular variant.
 
 [para]
 Importing stubs tables, i.e. APIs, from another extension:
@@ -106,7 +106,7 @@ Returns an error if a [arg {glob pattern}] matches nothing.
 Like [cmd {::critcl::api header}], but each [arg file] should exist in the
 external development environment.  An [term {#include}] directive is added to
 [file [var foo]Decls.h], but [arg file] is not copied to the package header
-directory. [arg file] is not a glob pattern as Critcl has no context,
+directory. [arg file] is not a glob pattern as CriTcl has no context,
 i.e directory, in which to expand such patterns.
 
 [list_end]

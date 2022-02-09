@@ -282,13 +282,16 @@ embedded in Tcl on the fly and either loading the resulting objects into Tcl for
 immediate use or packaging them for distribution\&.  Use \fICriTcl\fR to improve
 performance by rewriting in C those routines that are performance bottlenecks\&.
 .PP
-CriTcl started life as an experiment by Jean-Claude Wippler and was a
-self-contained Tcl package to build C code into a Tcl/Tk extension on
-the fly\&. It was somewhat inspired by Brian Ingerson's \fIInline\fR
-for \fIPerl\fR, but is considerably more lightweight\&.
+.SH AUDIENCE
+The audience of this document is anyone with an interest in CriTcl, be they prospective
+user, builder, maintainer, etc\&.
+.SH "HISTORY & MOTIVATION"
+CriTcl started life as an experiment by Jean-Claude Wippler and was a self-contained Tcl
+package to build C code into a Tcl/Tk extension on the fly\&. It was somewhat inspired by
+Brian Ingerson's \fIInline\fR for \fIPerl\fR, but is considerably more lightweight\&.
 .PP
-It is for the last 5% to 10% when pure Tcl, which does go a long way,
-is not sufficient anymore\&. I\&.e\&. for
+It is for the last 5% to 10% when pure Tcl, which does go a long way, is not sufficient
+anymore\&. I\&.e\&. for
 .IP [1]
 when the last bits of performance are needed,
 .IP [2]
@@ -298,31 +301,53 @@ hiding critical pieces of your library or application, and
 .IP [4]
 simply needing features provided only by C\&.
 .PP
+.SH OVERVIEW
+The following sections first reference a few related documents which may or may not be of
+interest to the audience, depending on the exact role of the reader, i\&.e\&. just a plain
+user of the system, trying to get and build/install it, or going deep into the internals
+for either edification or modification\&.
 .PP
-The following sections first reference a few related documents
-which may or may not be of interest to you, depending on if you are
-just a plain user of the system, trying to get and build/install it,
-or are going deep into the internals for either edification or
-modification\&.
-.PP
-This is followed by an introduction to the modes of operation
-supported by the system, and its general architecture as seen by a
-user\&.
-.SH "RELATED DOCUMENTS"
+This is followed by an introduction to the modes of operation supported by the
+system, and its general architecture as seen by a user\&.
+.SH "ADMINISTRATIVE DOCUMENTS"
 .IP [1]
-\fICritcl - License\fR\&.
+\fICriTcl - License\fR\&.
 .IP [2]
-\fIUsing Critcl\fR
+\fICriTcl - How To Get The Sources\fR\&.
 .IP [3]
-\fICritcl - How To Get The Sources\fR\&.
+\fICriTcl - The Installer's Guide\fR\&.
 .IP [4]
-\fICritcl - The Installer's Guide\fR\&.
+\fICriTcl - The Developer's Guide\fR\&.
+.PP
+.SH "USER DOCUMENTS"
+.IP [1]
+\fIUsing CriTcl\fR - A light introduction through examples\&.
+.IP [2]
+\fICriTcl - Application\fR
+.IP [3]
+\fICriTcl - Package Reference\fR
+.IP [4]
+\fICriTcl - cproc Type Reference\fR
 .IP [5]
-\fICritcl - Application Package Reference\fR
+\fICriTcl - Utilities\fR
 .IP [6]
-\fICritcl - Package Reference\fR
+\fICriTcl - C-level Utilities\fR
 .IP [7]
-\fICritcl - The Developer's Guide\fR\&.
+\fICriTcl - C-level Callback Utilities\fR
+.IP [8]
+\fICriTcl - Wrap Support - String/Integer mapping\fR
+.IP [9]
+\fICriTcl - Wrap Support - Bitset en- and decoding\fR
+.IP [10]
+\fICriTcl - Wrap Support - Enum en- and decoding\fR
+.IP [11]
+\fICriTcl - Code Gen - Constant string pools\fR
+.IP [12]
+\fICriTcl - Code Gen - Tcl Interp Associations\fR
+.IP [13]
+\fICriTcl - Code Gen - C Classes\fR
+.IP [14]
+\fICriTcl - Application Package Reference\fR
 .PP
 .SH "MODES OF OPERATION/USE"
 CriTcl can be used in three different modes of operation, called
@@ -335,7 +360,7 @@ CriTcl can be used in three different modes of operation, called
 .PP
 \fICompile & Run\fR was the original mode and is the default for
 \fIcritcl_pkg\fR\&.  Collects the C fragments from the
-\fICritcl script\fR, builds them as needed, and caches the results to
+\fICriTcl script\fR, builds them as needed, and caches the results to
 improve load times later\&.
 .PP
 The second mode, \fIGenerate Package\fR, was introduced to enable
@@ -346,7 +371,7 @@ This was originally done through the experimental \fBCritbind\fR tool,
 and is now handled by the \fICriTcl Application\fR, also named
 \fBcritcl\fR\&.
 .PP
-Newly introduced with Critcl version 3 is
+Newly introduced with CriTcl version 3 is
 \fIGenerate TEA Package\fR\&. This mode constructs a directory
 hierarchy from the package which can later be built like a regular TEA
 package, i\&.e\&. using
@@ -449,13 +474,13 @@ possible accelerator packages:
 .PP
 .SH EXAMPLES
 .PP
-The sources of Critcl, should you have gotten them, contain
+The sources of CriTcl, should you have gotten them, contain
 several larger examples show-casing various aspects of the
 system\&. These demonstration packages can all be found in the
 sub-directory "\fIexamples/\fR" of the sources\&.
 .PP
 Lots of smaller examples can be found in the document
-\fIUsing CriTcl\fR, an introduction to Critcl by way of a of
+\fIUsing CriTcl\fR, an introduction to CriTcl by way of a of
 examples\&. These focus more on specific critcl commands than the
 overall picture shown by the large examples mentioned in the previous
 paragraph\&.
@@ -691,7 +716,7 @@ cache directory now also uses \fBplatform::identify\fR for the
 default path, instead of \fBplatform::generic\fR\&.
 .IP [13]
 Bugfix: Fixed issue #58\&. Simplified the setup and use of
-md5\&. Critcl now makes use of its own package for md5, using
+md5\&. CriTcl now makes use of its own package for md5, using
 itself to built it\&. There is no chicken/egg problem with this
 as the \fB-pkg\fR mode used for this does not use md5\&. That
 is limited to mode \fIcompile & run\fR\&.
@@ -1139,7 +1164,7 @@ for shared libraries in preference over static\&. critcl handles
 it now, as older GNU ld's do not understand it, nor the
 various vendor-specific linkers\&.
 .IP [4]
-Fixed github issue #12\&. Critcl now determines the version of
+Fixed github issue #12\&. CriTcl now determines the version of
 MSVC in use and uses it to switch between various link debug
 options\&. Simplified the handling of bufferoverflowU\&.lib also,
 making use of the same mechanism and collapsing the two
