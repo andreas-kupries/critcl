@@ -1,6 +1,6 @@
 
-This is the section for developers having to generate packages from
-[file .critcl] files, i.e binaries for deployment,
+The audience of this section are package builders having to build and/or install
+CriTcl-based packages.
 
 [include using_bhelp.inc]
 [include using_bfill.inc]

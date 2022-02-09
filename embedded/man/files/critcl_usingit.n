@@ -293,17 +293,46 @@ The examples here cover both how to embed C into Tcl with it,
 and how to build the distributable packages\&.
 As such the intended audience are both writers of packages with
 embedded C, and people building such packages\&.
-To make things easier the two themes each have their own section in
-this document, enabling all readers to quickly skip the part they are
-not interested in\&.
+To make things easier each theme has their own section in this document\&.
+Readers can quickly skip/ignore the parts they are not interested in\&.
 .PP
-The sources of CriTcl, should you have gotten them, contain
-several larger examples show-casing various aspects of the
-system\&. These demonstration packages can all be found in the
-sub-directory "\fIexamples/\fR" of the sources\&.
-.SH "EMBEDDING C"
-This is the section for developers writing, or wishing to write, a
-package embedding C into Tcl via critcl\&.
+\fINote\fR that the sources of CriTcl, should the reader have gotten them, also
+contain several examples show-casing various aspects of the system\&. These demonstration
+packages can all be found in the sub-directory "\fIexamples/\fR" of the sources\&.
+.PP
+\fINote further\fR that these examples will not cover all the available
+commands, nor all the details of the covered commands\&. This information is available in
+the reference manpages of the system, i\&.e\&.
+.IP [1]
+\fICriTcl - Application\fR
+.IP [2]
+\fICriTcl - Package Reference\fR
+.IP [3]
+\fICriTcl - cproc Type Reference\fR
+.IP [4]
+\fICriTcl - Utilities\fR
+.IP [5]
+\fICriTcl - C-level Utilities\fR
+.IP [6]
+\fICriTcl - C-level Callback Utilities\fR
+.IP [7]
+\fICriTcl - Wrap Support - String/Integer mapping\fR
+.IP [8]
+\fICriTcl - Wrap Support - Bitset en- and decoding\fR
+.IP [9]
+\fICriTcl - Wrap Support - Enum en- and decoding\fR
+.IP [10]
+\fICriTcl - Code Gen - Constant string pools\fR
+.IP [11]
+\fICriTcl - Code Gen - Tcl Interp Associations\fR
+.IP [12]
+\fICriTcl - Code Gen - C Classes\fR
+.IP [13]
+\fICriTcl - Application Package Reference\fR
+.PP
+.SH "EMBED C"
+The audience of this section are package writers wishing to write C-based based packages
+for Tcl with CriTcl\&.
 .PP
 I guess that we are allowed to asssume that you, gentle reader, are
 here because you have written some Tcl code which is not fast enough
@@ -491,42 +520,6 @@ the string pointer moves from the function to Tcl\&.
 .sp
 \fITcl\fR will release the allocated memory when it does not need it any
 longer\&. The C code has no say in that\&.
-.PP
-.SS "A SIMPLE PROCEDURE"
-Starting simple, let us assume that the Tcl code in question is
-something like
-.CS
-
-
-    proc math {x y z} {
-        return [expr {(sin($x)*rand())/$y**log($z)}]
-    }
-
-.CE
-with the expression pretending to be something very complex and
-slow\&. Converting this to C we get:
-.CS
-
-
-    critcl::cproc math {double x double y double z} double {
-        double up   = rand () * sin (x);
-        double down = pow(y, log (z));
-        return up/down;
-    }
-
-.CE
-Notable about this translation:
-.IP [1]
-All the arguments got type information added to them, here
-"double"\&.  Like in C the type precedes the argument name\&. Other
-than that it is pretty much a Tcl dictionary, with keys and
-values swapped\&.
-.IP [2]
-We now also have to declare the type of the result, here
-"double", again\&.
-.IP [3]
-The reference manpage lists all the legal C types supported as
-arguments and results\&.
 .PP
 .SS "CUSTOM TYPES, INTRODUCTION"
 When writing bindings to external libraries \fBcritcl::cproc\fR is
@@ -1797,8 +1790,8 @@ packages\&.
 .PP
 \fII currently have no specific example to demonstrate the command\&.\fR
 .SH "BUILDING CRITCL PACKAGES"
-This is the section for developers having to generate packages from
-"\fI\&.critcl\fR" files, i\&.e binaries for deployment,
+The audience of this section are package builders having to build and/or install
+CriTcl-based packages\&.
 .SS "GETTING HELP \&.\&.\&."
 \&.\&.\&. Is easy\&. Running
 .CS
