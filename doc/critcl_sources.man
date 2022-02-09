@@ -6,9 +6,11 @@
 [description]
 [include include/welcome.inc]
 
-[para] The audience of this document is anyone wishing to either have
-just a look at Critcl's source code, or build the packages, or to
-extend and modify them.
+[comment {===================================================================}]
+[section Audience]
+
+[para] The audience of this document is anyone wishing to either have just a look at
+CriTcl's source code, build the packages, or to extend and modify them.
 
 [para] For builders and developers we additionally provide
 
@@ -27,8 +29,8 @@ The official repository for CriTcl can be found at
 
 [section Retrieval]
 
-Assuming that you simply wish to look at the sources, or build a
-specific revision, the easiest way of retrieving it is to:
+Assuming that you simply wish to look at the sources, or build a specific revision, the
+easiest way of retrieving it is to:
 
 [list_begin enum]
 [enum] Go to this site.
@@ -46,12 +48,10 @@ For the curious (or a developer-to-be), the sources are managed by the
 Binaries for popular platforms can be found directly at its
 [uri https://git-scm.com/downloads {download page}].
 
-See also if your operating system's package manager provides it and
-associated tools for installation.
+See also if your operating system's package manager provides it and associated tools for
+installation.
 
-[para]
-
-With that tool available the full history can be retrieved via:
+[para] With that tool available the full history can be retrieved via:
 
 [example {
     git clone http://github.com/andreas-kupries/critcl

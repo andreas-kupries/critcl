@@ -6,18 +6,19 @@
 [description]
 [include include/welcome.inc]
 
-[para] The audience of this document is anyone wishing to build the
-packages, for either themselves, or others.
+[comment {===================================================================}]
+[section Audience]
 
-[para] For a developer intending to extend or modify the packages we
-additionally provide
+[para] The audience of this document is anyone wishing to build the packages, for either
+themselves, or others.
+
+[para] For a developer intending to extend or modify the packages we additionally provide
 
 [list_begin enum]
 [enum] [term {CriTcl - License}].
 [enum] [term {CriTcl - The Developer's Guide}].
 [list_end]
 
-[para]
 [para] Please read [term {CriTcl - How To Get The Sources}] first, if that was not done
 already. Here we assume that the sources are already available in a directory of your
 choice.
