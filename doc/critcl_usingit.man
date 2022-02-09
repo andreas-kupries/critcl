@@ -21,15 +21,22 @@ and how to build the distributable packages.
 As such the intended audience are both writers of packages with
 embedded C, and people building such packages.
 
-To make things easier the two themes each have their own section in
-this document, enabling all readers to quickly skip the part they are
-not interested in.
+To make things easier each theme has their own section in this document.
+Readers can quickly skip/ignore the parts they are not interested in.
 
 [include include/largeexampleref.inc]
 
+[para] [strong {Note further}] that these examples will not cover all the available
+commands, nor all the details of the covered commands. This information is available in
+the reference manpages of the system, i.e.
+
+[list_begin enum]
+[include include/doc_users.inc]
+[list_end]
+
 [comment {===================================================================}]
 
-[section {Embedding C}]			[include include/using_embed.inc]
+[section {Embed C}]			[include include/using_embed.inc]
 [section {Building CriTcl Packages}]	[include include/using_build.inc]
 
 [comment {===================================================================}]

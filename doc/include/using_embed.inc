@@ -1,6 +1,6 @@
 
-This is the section for developers writing, or wishing to write, a
-package embedding C into Tcl via critcl.
+The audience of this section are package writers wishing to write C-based based packages
+for Tcl with CriTcl. 
 
 [para]
 
