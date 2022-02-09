@@ -272,7 +272,7 @@ Database Class:	\\fB\\$3\\fR
 ..
 .BS
 .SH NAME
-critcl::emap \- CriTcl Utilities: Enum en- and decoding
+critcl::emap \- CriTcl - Wrap Support - Enum en- and decoding
 .SH SYNOPSIS
 package require \fBTcl  8\&.4\fR
 .sp

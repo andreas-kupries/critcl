@@ -274,30 +274,30 @@ Database Class:	\\fB\\$3\\fR
 ..
 .BS
 .SH NAME
-critcl_install_guide \- Critcl - The Installer's Guide
+critcl_install_guide \- CriTcl - The Installer's Guide
 .SH DESCRIPTION
 \fIC Runtime In Tcl\fR, or \fICriTcl\fR , is a system for compiling C code
 embedded in Tcl on the fly and either loading the resulting objects into Tcl for
 immediate use or packaging them for distribution\&.  Use \fICriTcl\fR to improve
 performance by rewriting in C those routines that are performance bottlenecks\&.
+.SH AUDIENCE
 .PP
-The audience of this document is anyone wishing to build the
-packages, for either themselves, or others\&.
+The audience of this document is anyone wishing to build the packages, for either
+themselves, or others\&.
 .PP
-For a developer intending to extend or modify the packages we
-additionally provide
+For a developer intending to extend or modify the packages we additionally provide
 .IP [1]
-\fICritcl - License\fR\&.
+\fICriTcl - License\fR\&.
 .IP [2]
-\fICritcl - The Developer's Guide\fR\&.
+\fICriTcl - The Developer's Guide\fR\&.
 .PP
 .PP
-Please read \fICritcl - How To Get The Sources\fR first, if that was
-not done already\&. Here we assume that the sources are already
-available in a directory of your choice\&.
+Please read \fICriTcl - How To Get The Sources\fR first, if that was not done
+already\&. Here we assume that the sources are already available in a directory of your
+choice\&.
 .PP
 .SH REQUISITES
-Before Critcl can be build and used a number of requisites must be installed\&. These are:
+Before CriTcl can be build and used a number of requisites must be installed\&. These are:
 .IP [1]
 The scripting language Tcl\&.
 For details see \fBTcl\fR\&.
@@ -307,11 +307,10 @@ For details see \fBTcllib\fR\&.
 .IP [3]
 A working C compiler and development environment\&.
 .PP
-This list assumes that the machine where Critcl is to be installed is
-essentially clean\&. Of course, if parts of the dependencies listed
-below are already installed the associated steps can be skipped\&. It is
-still recommended to read their sections though, to validate that the
-dependencies they talk about are indeed installed\&.
+This list assumes that the machine where CriTcl is to be installed is essentially
+clean\&. Of course, if parts of the dependencies listed below are already installed the
+associated steps can be skipped\&. It is still recommended to read their sections though, to
+validate that the dependencies they talk about are indeed installed\&.
 .SS TCL
 As we are building a Tcl package that should be pretty much obvious
 that a working Tcl installation is needed, and I will not belabor the
@@ -344,11 +343,11 @@ Assuming that ActiveTcl got installed I usually run the command
 .CE
 to install all packages ActiveState provides, and the kitchensink, as
 the distribution itself usually contains only the ost important set of
-packages\&. This ensures that the dependencies for Critcl are all
+packages\&. This ensures that the dependencies for CriTcl are all
 present, and more\&.
 .PP
 If that is not to your liking you have to read the sections for
-Critcl to determine the exact set of packages required, and install
+CriTcl to determine the exact set of packages required, and install
 only these using
 .CS
 
@@ -379,7 +378,7 @@ Tk
 \fIhttp://core\&.tcl\&.tk/tk/\fR
 .PP
 .SS TCLLIB
-To use Critcl a few packages found in the Tcllib bundle are
+To use CriTcl a few packages found in the Tcllib bundle are
 required\&. These packages are:
 .IP [1]
 \fBcmdline\fR
@@ -468,7 +467,7 @@ This section describes the actions required to install CriTcl on Unix
 systems (Linux, BSD, and related, including OS X)\&.
 If you have to install CriTcl on a Windows machine see section
 \fBBuild & Installation (Windows)\fR instead\&.
-To install Critcl simply run
+To install CriTcl simply run
 .CS
 
 
@@ -476,7 +475,7 @@ To install Critcl simply run
 
 .CE
 where "\fI/path/to/tclsh\fR" is the tclsh of your Tcl installation, and
-"\fI/path/to/critcl\fR" the location of the Critcl sources on your system\&.
+"\fI/path/to/critcl\fR" the location of the CriTcl sources on your system\&.
 .PP
 This builds all packages and then places them in a directory where the
 \fBtclsh\fR will find them\&.
@@ -511,7 +510,7 @@ Windows(tm) systems\&.
 If you have to install CriTcl on a Unix machine (Linux, BSD, and
 related, including OS X) see section
 \fBBuild & Installation (Unix)\fR instead\&.
-To install Critcl simply run
+To install CriTcl simply run
 .CS
 
 
@@ -519,7 +518,7 @@ To install Critcl simply run
 
 .CE
 where "\fI/path/to/tclsh\fR" is the tclsh of your Tcl installation, and
-"\fI/path/to/critcl\fR" the location of the Critcl sources on your system\&.
+"\fI/path/to/critcl\fR" the location of the CriTcl sources on your system\&.
 .PP
 This builds all packages and then places them in a directory where the
 \fBtclsh\fR will find them\&.

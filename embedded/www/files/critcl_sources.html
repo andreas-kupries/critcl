@@ -104,17 +104,18 @@
 <div class="doctools">
 <h1 class="doctools_title">critcl_sources(n) 3.1.18.1 doc &quot;C Runtime In Tcl (CriTcl)&quot;</h1>
 <div id="name" class="doctools_section"><h2><a name="name">Name</a></h2>
-<p>critcl_sources - Critcl - How To Get The Sources</p>
+<p>critcl_sources - CriTcl - How To Get The Sources</p>
 </div>
 <div id="toc" class="doctools_section"><h2><a name="toc">Table Of Contents</a></h2>
 <ul class="doctools_toc">
 <li class="doctools_section"><a href="#toc">Table Of Contents</a></li>
 <li class="doctools_section"><a href="#section1">Description</a></li>
-<li class="doctools_section"><a href="#section2">Source Location</a></li>
-<li class="doctools_section"><a href="#section3">Retrieval</a></li>
-<li class="doctools_section"><a href="#section4">Source Code Management</a></li>
-<li class="doctools_section"><a href="#section5">Authors</a></li>
-<li class="doctools_section"><a href="#section6">Bugs, Ideas, Feedback</a></li>
+<li class="doctools_section"><a href="#section2">Audience</a></li>
+<li class="doctools_section"><a href="#section3">Source Location</a></li>
+<li class="doctools_section"><a href="#section4">Retrieval</a></li>
+<li class="doctools_section"><a href="#section5">Source Code Management</a></li>
+<li class="doctools_section"><a href="#section6">Authors</a></li>
+<li class="doctools_section"><a href="#section7">Bugs, Ideas, Feedback</a></li>
 <li class="doctools_section"><a href="#keywords">Keywords</a></li>
 <li class="doctools_section"><a href="#category">Category</a></li>
 <li class="doctools_section"><a href="#copyright">Copyright</a></li>
@@ -125,24 +126,25 @@
 embedded in Tcl on the fly and either loading the resulting objects into Tcl for
 immediate use or packaging them for distribution.  Use <i class="term"><a href="critcl_pkg.html">CriTcl</a></i> to improve
 performance by rewriting in C those routines that are performance bottlenecks.</p>
-<p>The audience of this document is anyone wishing to either have
-just a look at Critcl's source code, or build the packages, or to
-extend and modify them.</p>
+</div>
+<div id="section2" class="doctools_section"><h2><a name="section2">Audience</a></h2>
+<p>The audience of this document is anyone wishing to either have just a look at
+CriTcl's source code, build the packages, or to extend and modify them.</p>
 <p>For builders and developers we additionally provide</p>
 <ol class="doctools_enumerated">
-<li><p><i class="term"><a href="license.html">Critcl - License</a></i>.</p></li>
-<li><p><i class="term"><a href="critcl_installer.html">Critcl - The Installer's Guide</a></i>.</p></li>
-<li><p><i class="term"><a href="critcl_devguide.html">Critcl - The Developer's Guide</a></i>.</p></li>
+<li><p><i class="term"><a href="license.html">CriTcl - License</a></i>.</p></li>
+<li><p><i class="term"><a href="critcl_installer.html">CriTcl - The Installer's Guide</a></i>.</p></li>
+<li><p><i class="term"><a href="critcl_devguide.html">CriTcl - The Developer's Guide</a></i>.</p></li>
 </ol>
 <p>respectively.</p>
 </div>
-<div id="section2" class="doctools_section"><h2><a name="section2">Source Location</a></h2>
-<p>The official repository for Critcl can be found at
+<div id="section3" class="doctools_section"><h2><a name="section3">Source Location</a></h2>
+<p>The official repository for CriTcl can be found at
 <a href="http://andreas-kupries.github.io/critcl">http://andreas-kupries.github.io/critcl</a></p>
 </div>
-<div id="section3" class="doctools_section"><h2><a name="section3">Retrieval</a></h2>
-<p>Assuming that you simply wish to look at the sources, or build a
-specific revision, the easiest way of retrieving it is to:</p>
+<div id="section4" class="doctools_section"><h2><a name="section4">Retrieval</a></h2>
+<p>Assuming that you simply wish to look at the sources, or build a specific revision, the
+easiest way of retrieving it is to:</p>
 <ol class="doctools_enumerated">
 <li><p>Go to this site.</p></li>
 <li><p>Follow the 'Fork me on Github' link (top-right corner) to the project sources.</p></li>
@@ -151,13 +153,13 @@ specific revision, the easiest way of retrieving it is to:</p>
 <li><p>On that page, choose either the &quot;ZIP&quot; link to get a copy of this revision as a Zip archive.</p></li>
 </ol>
 </div>
-<div id="section4" class="doctools_section"><h2><a name="section4">Source Code Management</a></h2>
+<div id="section5" class="doctools_section"><h2><a name="section5">Source Code Management</a></h2>
 <p>For the curious (or a developer-to-be), the sources are managed by the
 <a href="http://www.git-scm.com">Git SCM</a>.
 Binaries for popular platforms can be found directly at its
 <a href="https://git-scm.com/downloads">download page</a>.
-See also if your operating system's package manager provides it and
-associated tools for installation.</p>
+See also if your operating system's package manager provides it and associated tools for
+installation.</p>
 <p>With that tool available the full history can be retrieved via:</p>
 <pre class="doctools_example">
     git clone http://github.com/andreas-kupries/critcl
@@ -165,10 +167,10 @@ associated tools for installation.</p>
 </pre>
 <p>to get a checkout of the head of the trunk and move into it for browsing, editing, etc.</p>
 </div>
-<div id="section5" class="doctools_section"><h2><a name="section5">Authors</a></h2>
+<div id="section6" class="doctools_section"><h2><a name="section6">Authors</a></h2>
 <p>Jean Claude Wippler, Steve Landers, Andreas Kupries</p>
 </div>
-<div id="section6" class="doctools_section"><h2><a name="section6">Bugs, Ideas, Feedback</a></h2>
+<div id="section7" class="doctools_section"><h2><a name="section7">Bugs, Ideas, Feedback</a></h2>
 <p>This document, and the package it describes, will undoubtedly contain
 bugs and other problems.
 Please report them at <a href="https://github.com/andreas-kupries/critcl/issues">https://github.com/andreas-kupries/critcl/issues</a>.

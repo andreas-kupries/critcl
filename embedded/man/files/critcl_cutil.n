@@ -272,7 +272,7 @@ Database Class:	\\fB\\$3\\fR
 ..
 .BS
 .SH NAME
-critcl::cutil \- CriTcl C-level Utilities
+critcl::cutil \- CriTcl - C-level Utilities
 .SH SYNOPSIS
 package require \fBTcl  8\&.4\fR
 .sp

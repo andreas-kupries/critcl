@@ -272,7 +272,7 @@ Database Class:	\\fB\\$3\\fR
 ..
 .BS
 .SH NAME
-critcl::class \- CriTcl Utilities: C Classes
+critcl::class \- CriTcl - Code Gen - C Classes
 .SH SYNOPSIS
 package require \fBTcl  8\&.4\fR
 .sp

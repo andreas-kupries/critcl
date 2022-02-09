@@ -272,7 +272,7 @@ Database Class:	\\fB\\$3\\fR
 ..
 .BS
 .SH NAME
-critcl::bitmap \- CriTcl Utilities: Bitset en- and decoding
+critcl::bitmap \- CriTcl - Wrap Support - Bitset en- and decoding
 .SH SYNOPSIS
 package require \fBTcl  8\&.4\fR
 .sp

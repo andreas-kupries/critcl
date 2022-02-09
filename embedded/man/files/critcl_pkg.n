@@ -274,7 +274,7 @@ Database Class:	\\fB\\$3\\fR
 ..
 .BS
 .SH NAME
-critcl \- Critcl - Package Reference
+critcl \- CriTcl - Package Reference
 .SH SYNOPSIS
 package require \fBTcl  8\&.4\fR
 .sp
@@ -536,9 +536,9 @@ This package resides in the Core Package Layer of CriTcl\&.
 A short note ahead of the documentation: Instead of repeatedly talking
 about
 "a Tcl script with embbedded C code", or
-"a Tcl script containing Critcl commands",
-we call such a script a \fICritcl script\fR\&.  A file containing a
-\fICritcl script\fR usually has the extension \fB\&.tcl\fR or \fB\&.critcl\fR\&.
+"a Tcl script containing CriTcl commands",
+we call such a script a \fICriTcl script\fR\&.  A file containing a
+\fICriTcl script\fR usually has the extension \fB\&.tcl\fR or \fB\&.critcl\fR\&.
 .SS "EMBEDDED C CODE"
 The following commands append C code fragments to the current module\&.  Fragments
 appear in the module in the order they are appended, so the earlier fragments
@@ -626,7 +626,7 @@ Produces no C code\&.  The desired C definitions must already exist\&.
 Appends a function having \fIbody\fR as its body, another shim function to
 perform the needed conversions, and the code to create a corresponding Tcl
 command named \fItclname\fR\&.  Unlike \fBcritcl::ccommand\fR the arguments and
-result are typed, and Critcl generates the code to convert between Tcl_Obj
+result are typed, and CriTcl generates the code to convert between Tcl_Obj
 values and C data types\&.
 See also \fBRuntime Behaviour\fR\&.
 .sp
@@ -664,7 +664,7 @@ Before going into the details first a quick overview:
 .CS
 
 
-Critcl type    | C type         | Tcl type  | Notes
+CriTcl type    | C type         | Tcl type  | Notes
 -------------- | -------------- | --------- | ------------------------------
 void           | n/a            | n/a       | Always OK\&. Body sets result
 ok             | int            | n/a       | Result code\&. Body sets result
@@ -854,7 +854,7 @@ Before going into the details first a quick overview:
 .CS
 
 
-Critcl type      | C type         | Tcl type  | Notes
+CriTcl type      | C type         | Tcl type  | Notes
 ---------------- | -------------- | --------- | ------------------------------
 Tcl_Interp*      | Tcl_Interp*    | n/a       | \fISpecial\fR, only first
 ---------------- | -------------- | --------- | ------------------------------
@@ -1231,11 +1231,11 @@ exists\&.
 \fB::critcl::cinit\fR \fItext\fR \fIexternals\fR
 Appends the C code in \fItext\fR and \fIexternals\fR, but only after all the
 other fragments appended by the previously-listed commands regardless of their
-placement in the \fICritcl script\fR relative to this command\&.  Thus, all
+placement in the \fICriTcl script\fR relative to this command\&.  Thus, all
 their content is visible\&.  See also \fBRuntime Behaviour\fR\&.
 .sp
 The C code in \fItext\fR is placed into the body of the initialization
-function of the shared library backing the \fICritcl script\fR, and is
+function of the shared library backing the \fICriTcl script\fR, and is
 executed when this library is loaded into the interpreter\&.  It has access to
 the variable \fBTcl_Interp* interp\fR referencing the Tcl interpreter currently
 being initialized\&.
@@ -1261,17 +1261,17 @@ critcl::code {
 .CE
 .PP
 .SS "STUBS TABLE MANAGEMENT"
-Critcl versions 3 and later provide \fBcritcl::api\fR to create and manipulate
+CriTcl versions 3 and later provide \fBcritcl::api\fR to create and manipulate
 stubs tables, Tcl's dynamic linking mechanism handling the resolution of
 symbols between C extensions\&.
 See \fIhttp://wiki\&.tcl-lang\&.org/285\fR
 for an introduction, and section \fBStubs Tables\fR
-for the details of Critcl's particular variant\&.
+for the details of CriTcl's particular variant\&.
 .PP
 Importing stubs tables, i\&.e\&. APIs, from another extension:
 .TP
 \fB::critcl::api\fR \fBimport\fR \fIname\fR \fIversion\fR
-Adds the following include directives into the \fICritcl script\fR
+Adds the following include directives into the \fICriTcl script\fR
 \fIand\fR each of its companion "\fI\&.c\fR" files:
 .RS
 .IP [1]
@@ -1292,12 +1292,12 @@ non-global namespace, e\&.g\&.
 \fBname\fR/\fBname\fRDecls\&.h contains the stubs table type declarations,
 mapping macros, etc\&., and may include package-specific headers\&.  See
 \fBcritcl::api header\fR, below\&.  An \fI#include\fR directive is added at
-the beginning of the generated code for \fICritcl script\fR and at the
+the beginning of the generated code for \fICriTcl script\fR and at the
 beginning of each of its companion "\fI\&.c\fR" files\&.
 .sp
 \fBname\fR/\fBname\fRStubLib\&.h contains the stubs table variable
 definition and the function to initialize it\&.  An \fI#include\fR directive
-for it is added to the initialization code for the \fICritcl script\fR ,
+for it is added to the initialization code for the \fICriTcl script\fR ,
 along with a call to the initializer function\&.
 .sp
 If "\fI\fBname\fR/\fBname\fR\&.decls\fR" accompanies
@@ -1317,10 +1317,10 @@ declare a non-standard directory for the headers of the API\&. Any API
 .PP
 .PP
 Declaration and export of a stubs table, i\&.e\&. API, for
-the \fICritcl script\fR:
+the \fICriTcl script\fR:
 .TP
 \fB::critcl::api\fR \fBfunction\fR \fIresulttype\fR \fIname\fR \fIarguments\fR
-Adds to the public API of the \fICritcl script\fR the signature
+Adds to the public API of the \fICriTcl script\fR the signature
 for the function named \fIname\fR and having the signature specified by
 \fIarguments\fR and \fIresulttype\fR\&.  Code is generated for a "\fI\&.decls\fR"
 file, the corresponding public headers, and a stubs table usable by
@@ -1332,26 +1332,26 @@ value is the argument name, and \fIresulttype\fR is a C type\&.
 \fB::critcl::api\fR \fBheader\fR ?\fIglob pattern\fR\&.\&.\&.?
 Each file matching a \fIglob pattern\fR is copied into the directory
 containing the generated headers, and an \fI#include\fR directive for it is
-added to "\fIDecls\&.h\fR" for the \fICritcl script\fR\&.
+added to "\fIDecls\&.h\fR" for the \fICriTcl script\fR\&.
 Returns an error if a \fIglob pattern\fR matches nothing\&.
 .sp
 A pattern for a relative path is resolved relative to the directory
-containing the \fICritcl script\fR\&.
+containing the \fICriTcl script\fR\&.
 .TP
 \fB::critcl::api\fR \fBextheader\fR ?\fIfile\fR\&.\&.\&.?
 Like \fB::critcl::api header\fR, but each \fIfile\fR should exist in the
 external development environment\&.  An \fI#include\fR directive is added to
 "\fI\fBfoo\fRDecls\&.h\fR", but \fIfile\fR is not copied to the package header
-directory\&. \fIfile\fR is not a glob pattern as Critcl has no context,
+directory\&. \fIfile\fR is not a glob pattern as CriTcl has no context,
 i\&.e directory, in which to expand such patterns\&.
 .PP
 As with the headers for an imported API, an \fI#include\fR directive is
-added to the generated code for the \fICritcl script\fR and to
+added to the generated code for the \fICriTcl script\fR and to
 each companion "\fI\&.c\fR" file\&.
 .PP
 In "compile & run" mode the generated header files and any companion
 headers are placed in the \fBResult Cache\fR subdirectory for the
-\fICritcl script\fR\&. This directory is added to the include search path of
+\fICriTcl script\fR\&. This directory is added to the include search path of
 any other package importing this API and and building in mode "compile & run"\&.
 .PP
 In "generate package" mode \fB-includedir\fR specifies the
@@ -1367,7 +1367,7 @@ add support for \fB--with-\fBfoo\fR-include\fR options into the
 generated "\fIconfigure(\&.in)\fR" so that a user may specify custom
 locations for the headers of any imported API\&.
 .SS "PACKAGE META DATA"
-Critcl versions 3 and later can create TEApot meta-data to be placed into
+CriTcl versions 3 and later can create TEApot meta-data to be placed into
 "\fIteapot\&.txt\fR" in a format suitable for use by the
 \fITEApot tools\fR [http://docs\&.activestate\&.com/activetcl/8\&.5/tpm/toc\&.html]\&.
 .PP
@@ -1383,7 +1383,7 @@ package and the license for the package\&.
 \fItext\fR arguments are concatenated to form the text of the license, which is
 written to "\fIlicense\&.terms\fR" in the same directory as "\fIpkgIndex\&.tcl\fR"\&.
 If no \fItext\fR is provided the license is read from "\fIlicense\&.terms\fR"
-in the same directory as the \fICritcl script\fR\&.
+in the same directory as the \fICriTcl script\fR\&.
 .sp
 This information takes precedence over any information specified through
 the generic API \fB::critcl::meta\fR\&.  It is additionally placed
@@ -1465,8 +1465,8 @@ declared within are ignored, i\&.e\&. not recorded in the meta data\&.
 .PP
 .SS "CONTROL & INTERFACE"
 These commands control the details of compilation and linking a
-\fICritcl script\fR\&.  The information is used only to compile/link the
-object for the \fICritcl script\fR\&.  For example, information for
+\fICriTcl script\fR\&.  The information is used only to compile/link the
+object for the \fICriTcl script\fR\&.  For example, information for
 "\fIFOO\&.tcl\fR" is kept separate from information for "\fIBAR\&.tcl\fR"\&.
 .TP
 \fB::critcl::cheaders\fR ?\fIarg\fR\&.\&.\&.?
@@ -1477,7 +1477,7 @@ it is an argument to the compiler\&.  Otherwise the parent directory of each
 matching path is a directory to be searched for header files\&.  Returns an
 error if a pattern matches no files\&.
 A pattern for a relative path is resolved relative to the directory
-containing the \fICritcl script\fR\&.
+containing the \fICriTcl script\fR\&.
 .sp
 \fB#include\fR lines are not automatically generated for matching
 header files\&.  Use \fBcritcl::include\fR or \fBcritcl::ccode\fR as necessary to
@@ -1487,10 +1487,10 @@ Calls to this command are cumulative\&.
 .TP
 \fB::critcl::csources\fR ?\fIglob pattern\fR\&.\&.\&.?
 Matching paths become inputs to the compilation of the current object
-along with the sources for the current \fICritcl script\fR\&.  Returns an
+along with the sources for the current \fICriTcl script\fR\&.  Returns an
 error if no paths match a pattern\&.
 A pattern for a relative path is resolved relative to the directory
-containing the \fICritcl script\fR\&.
+containing the \fICriTcl script\fR\&.
 .sp
 Calls to this command are cumulative\&.
 .TP
@@ -1500,7 +1500,7 @@ A \fIglob pattern\fR that begins with \fB-\fR is added as an argument to
 the linker\&.  Otherwise matching files are linked into the shared library\&.
 Returns an error if no paths match a pattern\&.
 A pattern for a relative path is resolved relative to the directory
-containing the \fICritcl script\fR\&.
+containing the \fICriTcl script\fR\&.
 .sp
 Calls to this command are cumulative\&.
 .TP
@@ -1508,17 +1508,17 @@ Calls to this command are cumulative\&.
 Evaluates as scripts the files matching each \fIglob pattern\fR\&.  Returns an
 error if there are no matching files\&.
 A pattern for a relative path is resolved relative to the directory
-containing the \fICritcl script\fR\&.
+containing the \fICriTcl script\fR\&.
 .TP
 \fB::critcl::tsources\fR \fIglob pattern\fR\&.\&.\&.
 Provides the information about additional Tcl script files to source when the
 shared library is loaded\&.
 .sp
 Matching paths are made available to the generated shared library when
-it is loaded for the current \fICritcl script\fR\&.  Returns an error if a
+it is loaded for the current \fICriTcl script\fR\&.  Returns an error if a
 pattern matches no files\&.
 A pattern for a relative path is resolved relative to the directory
-containing the \fICritcl script\fR\&.
+containing the \fICriTcl script\fR\&.
 .sp
 Calls to this command are cumulative\&.
 .sp
@@ -1561,7 +1561,7 @@ Arranges to include the Tk headers and link to the Tk stubs\&.
 .TP
 \fB::critcl::preload\fR \fIlib\fR\&.\&.\&.
 Arranges for the external shared library \fIlib\fR to be loaded
-before the shared library for the \fICritcl script\fR is loaded\&.
+before the shared library for the \fICriTcl script\fR is loaded\&.
 .sp
 Calls to this command are cumulative\&.
 .sp
@@ -1672,9 +1672,9 @@ their own message reporting\&. For example, \fBcritcl::app\fR and any
 packages built on it print messages to \fIstdout\fR\&.
 .TP
 \fB::critcl::print\fR ?\fB-nonewline\fR? ?\fIchan\fR? \fImsg\fR
-Used by the Critcl internals to report activity\&.  By default, effectively the
-same thing as \fB::puts\fR\&.  Tools directly using either the Critcl package or
-the Critcl application package may redefine this procedure to implement their
+Used by the CriTcl internals to report activity\&.  By default, effectively the
+same thing as \fB::puts\fR\&.  Tools directly using either the CriTcl package or
+the CriTcl application package may redefine this procedure to implement their
 own output functionality\&.
 .sp
 For example, the newest revisions of
@@ -1682,10 +1682,10 @@ For example, the newest revisions of
 use this to highlight build warnings\&.
 .TP
 \fB::critcl::compiled\fR
-Returns \fBtrue\fR if the current \fICritcl script\fR is already compiled
+Returns \fBtrue\fR if the current \fICriTcl script\fR is already compiled
 and \fBfalse\fR otherwise\&.
 .sp
-Enables a \fICritcl script\fR used as its own Tcl companion file (see
+Enables a \fICriTcl script\fR used as its own Tcl companion file (see
 \fBcritcl::tsources\fR) to distinguish between being sourced for compilation in
 \fIcompile & run\fR mode and being sourced from either the result of
 \fIgenerate package\fR mode or during the load phase of
@@ -1698,32 +1698,32 @@ Returns \fBtrue\fR if a working C compiler is available and \fBfalse\fR
 otherwise\&.
 .TP
 \fB::critcl::done\fR
-Returns \fBtrue\fR when \fICritcl script\fR has been built and
-\fBfalse\fR otherwise\&.  Only useful from within a \fICritcl script\fR\&.
-Enables the Tcl parts of a \fICritcl script\fR to distinguish between
+Returns \fBtrue\fR when \fICriTcl script\fR has been built and
+\fBfalse\fR otherwise\&.  Only useful from within a \fICriTcl script\fR\&.
+Enables the Tcl parts of a \fICriTcl script\fR to distinguish between
 \fIprebuilt package\fR mode and \fIcompile & run\fR mode\&.
 .sp
 See also \fBModes Of Operation/Use\fR\&.
 .TP
 \fB::critcl::failed\fR
-Returns \fBtrue\fR if the \fICritcl script\fR could not be built, and
+Returns \fBtrue\fR if the \fICriTcl script\fR could not be built, and
 \fBfalse\fR otherwise\&.  Forces the building of the package if it hasn't
-already been done, but not its loading\&.  Thus, a \fICritcl script\fR can
+already been done, but not its loading\&.  Thus, a \fICriTcl script\fR can
 check itself for availability of the compiled components\&.  Only useful from
-within a \fICritcl script\fR\&.
+within a \fICriTcl script\fR\&.
 .TP
 \fB::critcl::load\fR
 Like \fBcritcl::failed\fR except that it also forces the loading of the
 generated shared library, and that it returns \fBtrue\fR on success and
-\fBfalse\fR on failure\&.  Thus, a \fICritcl script\fR can check itself for
+\fBfalse\fR on failure\&.  Thus, a \fICriTcl script\fR can check itself for
 availability of the compiled components\&.  Only useful from within a
-\fICritcl script\fR\&.
+\fICriTcl script\fR\&.
 .PP
 .SS "BUILD MANAGEMENT"
 The following command manages global settings, i\&.e\&. configuration options which
-are independent of any \fICritcl script\fR\&.
+are independent of any \fICriTcl script\fR\&.
 .PP
-This command should not be needed to write a \fICritcl script\fR\&. It is
+This command should not be needed to write a \fICriTcl script\fR\&. It is
 a management command which is only useful to the \fICriTcl Application\fR
 or similar tools\&.
 .TP
@@ -1754,7 +1754,7 @@ Examples of such packages come with critcl itself\&. See
 .TP
 \fBtrace\fR bool
 When \fBfalse\fR (the default), no code tracing the entry and exit of
-Critcl-backed commands in the \fICritcl script\fR is inserted\&.  Insertion of
+CriTcl-backed commands in the \fICriTcl script\fR is inserted\&.  Insertion of
 such code implicitly activates the tracing facility in general\&.  See
 \fBcritcl::cutil\fR\&.
 .TP
@@ -1789,7 +1789,7 @@ placed into the \fBResult Cache\fR\&.
 .PP
 .SS "RESULT CACHE MANAGEMENT"
 The following commands control the \fBResult Cache\fR\&.
-These commands are not needed to simply write a \fICritcl script\fR\&.
+These commands are not needed to simply write a \fICriTcl script\fR\&.
 .TP
 \fB::critcl::cache\fR ?path?
 Sets and returns the path to the directory for the package's result cache\&.
@@ -1806,7 +1806,7 @@ the files and directories matching them are removed\&.
 .SS "BUILD CONFIGURATION"
 The following commands manage the build configuration, i\&.e\&. the per-platform
 information about compilers, linkers, and their commandline options\&.
-These commands are not needed to simply write a \fICritcl script\fR\&.
+These commands are not needed to simply write a \fICriTcl script\fR\&.
 .TP
 \fB::critcl::readconfig\fR \fIpath\fR
 Reads the build configuration file at \fIpath\fR and configures the package
@@ -1835,7 +1835,7 @@ Configures the package to use the settings of \fItarget\fR\&.
 The following commands provide tools like
 \fICriTcl Application\fR or similar with
 deeper access to the package's internals\&.
-These commands are not needed to simply write a \fICritcl script\fR\&.
+These commands are not needed to simply write a \fICriTcl script\fR\&.
 .TP
 \fB::critcl::actualtarget\fR
 Returns the platform identifier for the target platform, i\&.e\&. the platform to
@@ -1884,7 +1884,7 @@ A list of libraries to be preloaded in order to sucessfully load and use
 .TP
 \fBtsources\fR
 A list of companion "\fI\&.tcl\fR" files to source in order to load and use the
-\fICritcl script\fR \fIfile\fR\&.
+\fICriTcl script\fR \fIfile\fR\&.
 .TP
 \fBlog\fR
 The full build log generated by the compiler/linker, including command
@@ -1936,12 +1936,12 @@ Not listed in \fBControl & Interface\fR because it is of no use to
 package writers\&. Only tools like the \fICriTcl Application\fR need it\&.
 .sp
 A pattern for a relative path is resolved relative to the directory
-containing the \fICritcl script\fR\&.
+containing the \fICriTcl script\fR\&.
 .sp
 Calls to this command are cumulative\&.
 .TP
 \fB::critcl::scan\fR \fIpath\fR
-The main entry point to Critcl's static code scanner\&.  Used by tools to
+The main entry point to CriTcl's static code scanner\&.  Used by tools to
 implement processing modes like the assembly of a directory hierarchy
 containing a TEA-lookalike buildystem, etc\&.
 .sp
@@ -2416,7 +2416,7 @@ CriTcl can be used in three different modes of operation, called
 .PP
 \fICompile & Run\fR was the original mode and is the default for
 \fIcritcl_pkg\fR\&.  Collects the C fragments from the
-\fICritcl script\fR, builds them as needed, and caches the results to
+\fICriTcl script\fR, builds them as needed, and caches the results to
 improve load times later\&.
 .PP
 The second mode, \fIGenerate Package\fR, was introduced to enable
@@ -2427,7 +2427,7 @@ This was originally done through the experimental \fBCritbind\fR tool,
 and is now handled by the \fICriTcl Application\fR, also named
 \fBcritcl\fR\&.
 .PP
-Newly introduced with Critcl version 3 is
+Newly introduced with CriTcl version 3 is
 \fIGenerate TEA Package\fR\&. This mode constructs a directory
 hierarchy from the package which can later be built like a regular TEA
 package, i\&.e\&. using
@@ -3106,7 +3106,7 @@ Rng_InitStubs(Tcl_Interp *interp, CONST char *version, int exact)
 .CE
 .PP
 .SH EXAMPLES
-See section "Embedding C" in \fIUsing Critcl\fR\&.
+See section "Embedding C" in \fIUsing CriTcl\fR\&.
 .PP
 The latest changes are found at the top\&.
 .SH "CHANGES FOR VERSION 3\&.1\&.18\&.1"
@@ -3339,7 +3339,7 @@ cache directory now also uses \fBplatform::identify\fR for the
 default path, instead of \fBplatform::generic\fR\&.
 .IP [13]
 Bugfix: Fixed issue #58\&. Simplified the setup and use of
-md5\&. Critcl now makes use of its own package for md5, using
+md5\&. CriTcl now makes use of its own package for md5, using
 itself to built it\&. There is no chicken/egg problem with this
 as the \fB-pkg\fR mode used for this does not use md5\&. That
 is limited to mode \fIcompile & run\fR\&.
@@ -3787,7 +3787,7 @@ for shared libraries in preference over static\&. critcl handles
 it now, as older GNU ld's do not understand it, nor the
 various vendor-specific linkers\&.
 .IP [4]
-Fixed github issue #12\&. Critcl now determines the version of
+Fixed github issue #12\&. CriTcl now determines the version of
 MSVC in use and uses it to switch between various link debug
 options\&. Simplified the handling of bufferoverflowU\&.lib also,
 making use of the same mechanism and collapsing the two

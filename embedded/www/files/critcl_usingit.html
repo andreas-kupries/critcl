@@ -104,7 +104,7 @@
 <div class="doctools">
 <h1 class="doctools_title">critcl_use(n) 3.1.18.1 doc &quot;C Runtime In Tcl (CriTcl)&quot;</h1>
 <div id="name" class="doctools_section"><h2><a name="name">Name</a></h2>
-<p>critcl_use - Using Critcl</p>
+<p>critcl_use - Using CriTcl</p>
 </div>
 <div id="toc" class="doctools_section"><h2><a name="toc">Table Of Contents</a></h2>
 <ul class="doctools_toc">
@@ -141,7 +141,7 @@
 <li class="doctools_subsection"><a href="#subsection23">License Invoked</a></li>
 </ul>
 </li>
-<li class="doctools_section"><a href="#section4">Building Critcl Packages</a>
+<li class="doctools_section"><a href="#section4">Building CriTcl Packages</a>
 <ul>
 <li class="doctools_subsection"><a href="#subsection24">Getting Help ...</a></li>
 <li class="doctools_subsection"><a href="#subsection25">Pre-Filling The Result Cache</a></li>
@@ -166,7 +166,7 @@
 embedded in Tcl on the fly and either loading the resulting objects into Tcl for
 immediate use or packaging them for distribution.  Use <i class="term"><a href="critcl_pkg.html">CriTcl</a></i> to improve
 performance by rewriting in C those routines that are performance bottlenecks.</p>
-<p>This document is a (hopefully) gentle introduction to Critcl by way of a
+<p>This document is a (hopefully) gentle introduction to CriTcl by way of a
 series of small examples.</p>
 <p>Readers which came directly to this document through a search
 or similar, and are thus in need of an overview of the whole system,
@@ -178,7 +178,7 @@ embedded C, and people building such packages.
 To make things easier the two themes each have their own section in
 this document, enabling all readers to quickly skip the part they are
 not interested in.</p>
-<p>The sources of Critcl, should you have gotten them, contain
+<p>The sources of CriTcl, should you have gotten them, contain
 several larger examples show-casing various aspects of the
 system. These demonstration packages can all be found in the
 sub-directory &quot;<b class="file">examples/</b>&quot; of the sources.</p>
@@ -232,7 +232,7 @@ slow. Converting this to C we get:</p>
 both arguments and result we have a number of additional types in the
 same category, i.e. simple types. These are:</p>
 <pre class="doctools_example">
-Critcl type | C type         | Tcl type  | Notes
+CriTcl type | C type         | Tcl type  | Notes
 ----------- | -------------- | --------- | ------------------------------
 bool        |                |           | Alias of <b class="type">boolean</b> below
 boolean     | int            | Boolean   |
@@ -250,7 +250,7 @@ alias do not support this.</p>
         return sqrt(x);
     }
 </pre>
-<p>In the example above Critcl's argument handling will reject
+<p>In the example above CriTcl's argument handling will reject
 calling the command with a negative number, without ever invoking the
 C code.</p>
 <p>These constraints are called <em>limited</em> because only
@@ -264,7 +264,7 @@ to receive strings as arguments, and return them as results is quite important.<
 <p>We actually have a variety of builtin string types, all alike, yet different.</p>
 <p>For arguments we have:</p>
 <pre class="doctools_example">
-Critcl type | C type         | Tcl type  | Notes
+CriTcl type | C type         | Tcl type  | Notes
 ----------- | -------------- | --------- | ------------------------------
 char*       | const char*    | Any       | <em>Read-only</em>, <em>string rep</em>
 pstring     | critcl_pstring | Any       | <em>Read-only</em>
@@ -296,7 +296,7 @@ string (field <b class="const">.len</b>), and a pointer to the <b class="type">T
 <p>Treat all of them as <em>Read Only</em>. Do not modify ever.</p>
 <p>On the other side, string results, we have:</p>
 <pre class="doctools_example">
-Critcl type   | C type         | Tcl type  | Notes
+CriTcl type   | C type         | Tcl type  | Notes
 ------------- | -------------- | --------- | ------------------------------
 char*         | char*          | String    | <em>Makes a copy</em>
 vstring       |                |           | Alias of <b class="type">char*</b> above
@@ -320,7 +320,7 @@ dstring       |                |           | Alias of <b class="type">string</b>
 <ol class="doctools_enumerated">
 <li><p>The type <b class="type">char*</b> is best used for static strings, or strings in some kind
 fixed buffer.</p>
-<p>Critcl's translation layer makes a copy of it for the result of the command. While
+<p>CriTcl's translation layer makes a copy of it for the result of the command. While
 it is possible to return heap-allocated strings it is the C code who is responsible for
 freeing such at some point. If that is not done they will leak.</p></li>
 <li><p>The type <b class="type">string</b> on the other hand is exactly for returning strings allocated
@@ -1034,7 +1034,7 @@ implementations of Tcllib's <b class="package">struct::queue</b> package:</p>
         set r 0
         switch -exact -- $key {
             critcl {
-                # Critcl implementation of queue requires Tcl 8.4.
+                # CriTcl implementation of queue requires Tcl 8.4.
                 if {![package vsatisfies [package provide Tcl] 8.4]} {return 0}
                 if {[catch {package require tcllibc}]} {return 0}
                 set r [llength [info commands ::struct::queue_critcl]]
@@ -1384,7 +1384,7 @@ packages.</p>
 <p><em>I currently have no specific example to demonstrate the command.</em></p>
 </div>
 </div>
-<div id="section4" class="doctools_section"><h2><a name="section4">Building Critcl Packages</a></h2>
+<div id="section4" class="doctools_section"><h2><a name="section4">Building CriTcl Packages</a></h2>
 <p>This is the section for developers having to generate packages from
 &quot;<b class="file">.critcl</b>&quot; files, i.e binaries for deployment,</p>
 <div id="subsection24" class="doctools_subsection"><h3><a name="subsection24">Getting Help ...</a></h3>
@@ -1483,7 +1483,7 @@ at &quot;<b class="file">/path/to/bin/tclsh</b>&quot;, with the packages searche
 If not, please read section <span class="sectref"><a href="#subsection26">Building A Package</a></span> first.</p>
 <p>An important issue, when there is trouble with the package, debugging
 becomes necessary a evil.
-Critcl supports this through the <b class="option">-debug</b> option.
+CriTcl supports this through the <b class="option">-debug</b> option.
 Using it enables various build modes which help with that.</p>
 <p>For example, to activate the Tcl core's built-in memory debugging
 subsystem build your package with</p>

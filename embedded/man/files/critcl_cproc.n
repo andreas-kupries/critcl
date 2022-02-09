@@ -274,7 +274,7 @@ Database Class:	\\fB\\$3\\fR
 ..
 .BS
 .SH NAME
-critcl-cproc-types \- Critcl - cproc Type Reference
+critcl-cproc-types \- CriTcl - cproc Type Reference
 .SH SYNOPSIS
 package require \fBTcl  8\&.4\fR
 .sp
@@ -318,7 +318,7 @@ Before going into the details first a quick overview:
 .CS
 
 
-Critcl type      | C type         | Tcl type  | Notes
+CriTcl type      | C type         | Tcl type  | Notes
 ---------------- | -------------- | --------- | ------------------------------
 Tcl_Interp*      | Tcl_Interp*    | n/a       | \fISpecial\fR, only first
 ---------------- | -------------- | --------- | ------------------------------
@@ -689,7 +689,7 @@ Before going into the details first a quick overview:
 .CS
 
 
-Critcl type    | C type         | Tcl type  | Notes
+CriTcl type    | C type         | Tcl type  | Notes
 -------------- | -------------- | --------- | ------------------------------
 void           | n/a            | n/a       | Always OK\&. Body sets result
 ok             | int            | n/a       | Result code\&. Body sets result
@@ -991,7 +991,7 @@ for doing that\&.
 .PP
 .SH EXAMPLES
 The examples shown here have been drawn from section "Embedding C" in
-the document about \fIUsing Critcl\fR\&. Please see that document
+the document about \fIUsing CriTcl\fR\&. Please see that document
 for many more examples\&.
 .SS "A SIMPLE PROCEDURE"
 Starting simple, let us assume that the Tcl code in question is
@@ -1036,7 +1036,7 @@ same category, i\&.e\&. simple types\&. These are:
 .CS
 
 
-Critcl type | C type         | Tcl type  | Notes
+CriTcl type | C type         | Tcl type  | Notes
 ----------- | -------------- | --------- | ------------------------------
 bool        |                |           | Alias of \fBboolean\fR below
 boolean     | int            | Boolean   |
@@ -1060,7 +1060,7 @@ alias do not support this\&.
 
 .CE
 .PP
-In the example above Critcl's argument handling will reject
+In the example above CriTcl's argument handling will reject
 calling the command with a negative number, without ever invoking the
 C code\&.
 .PP
@@ -1079,7 +1079,7 @@ For arguments we have:
 .CS
 
 
-Critcl type | C type         | Tcl type  | Notes
+CriTcl type | C type         | Tcl type  | Notes
 ----------- | -------------- | --------- | ------------------------------
 char*       | const char*    | Any       | \fIRead-only\fR, \fIstring rep\fR
 pstring     | critcl_pstring | Any       | \fIRead-only\fR
@@ -1121,7 +1121,7 @@ On the other side, string results, we have:
 .CS
 
 
-Critcl type   | C type         | Tcl type  | Notes
+CriTcl type   | C type         | Tcl type  | Notes
 ------------- | -------------- | --------- | ------------------------------
 char*         | char*          | String    | \fIMakes a copy\fR
 vstring       |                |           | Alias of \fBchar*\fR above
@@ -1150,7 +1150,7 @@ Notable about the above:
 The type \fBchar*\fR is best used for static strings, or strings in some kind
 fixed buffer\&.
 .sp
-Critcl's translation layer makes a copy of it for the result of the command\&. While
+CriTcl's translation layer makes a copy of it for the result of the command\&. While
 it is possible to return heap-allocated strings it is the C code who is responsible for
 freeing such at some point\&. If that is not done they will leak\&.
 .IP [2]

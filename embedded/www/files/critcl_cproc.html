@@ -104,7 +104,7 @@
 <div class="doctools">
 <h1 class="doctools_title">critcl-cproc-types(n) 3.1.18 doc &quot;C Runtime In Tcl (CriTcl)&quot;</h1>
 <div id="name" class="doctools_section"><h2><a name="name">Name</a></h2>
-<p>critcl-cproc-types - Critcl - cproc Type Reference</p>
+<p>critcl-cproc-types - CriTcl - cproc Type Reference</p>
 </div>
 <div id="toc" class="doctools_section"><h2><a name="toc">Table Of Contents</a></h2>
 <ul class="doctools_toc">
@@ -166,7 +166,7 @@ packages with embedded C code.</p>
 <div id="section2" class="doctools_section"><h2><a name="section2">Standard argument types</a></h2>
 <p>Before going into the details first a quick overview:</p>
 <pre class="doctools_example">
-Critcl type      | C type         | Tcl type  | Notes
+CriTcl type      | C type         | Tcl type  | Notes
 ---------------- | -------------- | --------- | ------------------------------
 Tcl_Interp*      | Tcl_Interp*    | n/a       | <em>Special</em>, only first
 ---------------- | -------------- | --------- | ------------------------------
@@ -488,7 +488,7 @@ good use cases are shown.</p></dd>
 <div id="section3" class="doctools_section"><h2><a name="section3">Standard result types</a></h2>
 <p>Before going into the details first a quick overview:</p>
 <pre class="doctools_example">
-Critcl type    | C type         | Tcl type  | Notes
+CriTcl type    | C type         | Tcl type  | Notes
 -------------- | -------------- | --------- | ------------------------------
 void           | n/a            | n/a       | Always OK. Body sets result
 ok             | int            | n/a       | Result code. Body sets result
@@ -747,7 +747,7 @@ for doing that.</p></dd>
 </div>
 <div id="section5" class="doctools_section"><h2><a name="section5">Examples</a></h2>
 <p>The examples shown here have been drawn from section &quot;Embedding C&quot; in
-the document about <i class="term"><a href="critcl_usingit.html">Using Critcl</a></i>. Please see that document
+the document about <i class="term"><a href="critcl_usingit.html">Using CriTcl</a></i>. Please see that document
 for many more examples.</p>
 <div id="subsection1" class="doctools_subsection"><h3><a name="subsection1">A Simple Procedure</a></h3>
 <p>Starting simple, let us assume that the Tcl code in question is
@@ -781,7 +781,7 @@ slow. Converting this to C we get:</p>
 both arguments and result we have a number of additional types in the
 same category, i.e. simple types. These are:</p>
 <pre class="doctools_example">
-Critcl type | C type         | Tcl type  | Notes
+CriTcl type | C type         | Tcl type  | Notes
 ----------- | -------------- | --------- | ------------------------------
 bool        |                |           | Alias of <b class="type">boolean</b> below
 boolean     | int            | Boolean   |
@@ -799,7 +799,7 @@ alias do not support this.</p>
         return sqrt(x);
     }
 </pre>
-<p>In the example above Critcl's argument handling will reject
+<p>In the example above CriTcl's argument handling will reject
 calling the command with a negative number, without ever invoking the
 C code.</p>
 <p>These constraints are called <em>limited</em> because only
@@ -813,7 +813,7 @@ to receive strings as arguments, and return them as results is quite important.<
 <p>We actually have a variety of builtin string types, all alike, yet different.</p>
 <p>For arguments we have:</p>
 <pre class="doctools_example">
-Critcl type | C type         | Tcl type  | Notes
+CriTcl type | C type         | Tcl type  | Notes
 ----------- | -------------- | --------- | ------------------------------
 char*       | const char*    | Any       | <em>Read-only</em>, <em>string rep</em>
 pstring     | critcl_pstring | Any       | <em>Read-only</em>
@@ -845,7 +845,7 @@ string (field <b class="const">.len</b>), and a pointer to the <b class="type">T
 <p>Treat all of them as <em>Read Only</em>. Do not modify ever.</p>
 <p>On the other side, string results, we have:</p>
 <pre class="doctools_example">
-Critcl type   | C type         | Tcl type  | Notes
+CriTcl type   | C type         | Tcl type  | Notes
 ------------- | -------------- | --------- | ------------------------------
 char*         | char*          | String    | <em>Makes a copy</em>
 vstring       |                |           | Alias of <b class="type">char*</b> above
@@ -869,7 +869,7 @@ dstring       |                |           | Alias of <b class="type">string</b>
 <ol class="doctools_enumerated">
 <li><p>The type <b class="type">char*</b> is best used for static strings, or strings in some kind
 fixed buffer.</p>
-<p>Critcl's translation layer makes a copy of it for the result of the command. While
+<p>CriTcl's translation layer makes a copy of it for the result of the command. While
 it is possible to return heap-allocated strings it is the C code who is responsible for
 freeing such at some point. If that is not done they will leak.</p></li>
 <li><p>The type <b class="type">string</b> on the other hand is exactly for returning strings allocated

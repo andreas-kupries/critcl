@@ -274,7 +274,7 @@ Database Class:	\\fB\\$3\\fR
 ..
 .BS
 .SH NAME
-critcl::app \- Critcl - Application Package Reference
+critcl::app \- CriTcl - Application Package Reference
 .SH SYNOPSIS
 package require \fBTcl  8\&.4\fR
 .sp
@@ -299,7 +299,7 @@ performance by rewriting in C those routines that are performance bottlenecks\&.
 This document is the reference manpage for the \fBcritcl::app\fR
 package\&. Its intended audience are developers working on critcl's
 internals\&.
-These commands are not needed to simply write a \fICritcl script\fR\&.
+These commands are not needed to simply write a \fICriTcl script\fR\&.
 If you are in need of an overview of the whole system instead, please
 go and read the \fIIntroduction To CriTcl\fR\&.
 .PP
@@ -340,12 +340,12 @@ The package exports a single command
 .TP
 \fB::critcl::app::main\fR \fIcommandline\fR
 The \fIcommandline\fR is a list of zero or more options followed by zero or
-more \fICritcl script\fR files\&.  By default, the \fICritcl script\fR files
+more \fICriTcl script\fR files\&.  By default, the \fICriTcl script\fR files
 are build and the results cached\&.   This cuts down on the time needed to
 load the package\&.  The last occurrence of \fB-pkg\fR and \fB-tea\fR, if
 provided, selects the corresponding alternative mode of operations\&.
-For a larger set of examples please see section "Building Critcl Packages"
-in the document about \fIUsing Critcl\fR\&.
+For a larger set of examples please see section "Building CriTcl Packages"
+in the document about \fIUsing CriTcl\fR\&.
 .PP
 The options are:
 .SH OPTIONS
@@ -418,7 +418,7 @@ Uses of this option are cumulative\&.
 Sets the value of the custom build configuration option
 \fIname\fR to \fBfalse\fR\&. It is equivalent to "-with-\fIname\fR 0"\&.
 .PP
-Validated only if one of the input files for the \fICritcl script\fR
+Validated only if one of the input files for the \fICriTcl script\fR
 actually defines and uses a custom build configuration option with that
 \fIname\fR\&.
 .PP
@@ -429,7 +429,7 @@ Ignored when generating a TEA package
 Sets the value of the custom build configuration option
 \fIname\fR to \fBtrue\fR\&. It is equivalent to "-with-\fIname\fR 1"\&.
 .PP
-Validated only if one of the input files for the \fICritcl script\fR
+Validated only if one of the input files for the \fICriTcl script\fR
 actually defines and uses a custom build configuration option with that
 \fIname\fR\&.
 .PP
@@ -481,7 +481,7 @@ Ignored when generating a TEA package
 (see option \fB-tea\fR below)\&.
 .TP
 \fB-pkg\fR
-Generates a package from the \fICritcl script\fR files\&.  Input files are
+Generates a package from the \fICriTcl script\fR files\&.  Input files are
 processed first as usual, but are then bundled into a single library, with
 additional generated files to form the library into a standard Tcl package\&.
 .sp
@@ -494,8 +494,8 @@ relevant in both this and \fB-tea\fR mode\&.
 The basename of the first file is the name of the package to generate\&. If
 its file extension indicates a shared library ("\fI\&.so\fR", "\fI\&.sl\fR",
 "\fI\&.dylib\fR", and "\fI\&.dll\fR") it is also removed from the set of input
-files\&. Each \fICritcl script\fR file is kept as part of the input\&. A single
-file without a suffix is assumed to be a \fICritcl script\fR\&. A file without
+files\&. Each \fICriTcl script\fR file is kept as part of the input\&. A single
+file without a suffix is assumed to be a \fICriTcl script\fR\&. A file without
 a suffix, but other input files following is treated like the name of a
 shared library proper, and removed from the set of input files\&.
 .sp
@@ -563,7 +563,7 @@ Use \fB-config\fR to select the configuration file\&.
 .TP
 \fB-tea\fR
 Like \fB-pkg\fR, except no binaries are generated\&. Creates a directory
-hierarchy containing the \fICritcl script\fR, its companion files, and a
+hierarchy containing the \fICriTcl script\fR, its companion files, and a
 TEA-conformant build system with most of the needed support code, including
 copies of the critcl packages\&.
 .sp
@@ -578,8 +578,8 @@ this and \fB-pkg\fR mode\&.
 The basename of the first file is the name of the package to generate\&. If
 its file extension indicates a shared library ("\fI\&.so\fR", "\fI\&.sl\fR",
 "\fI\&.dylib\fR", and "\fI\&.dll\fR") it is also removed from the set of input
-files\&. Each \fICritcl script\fR file is kept as part of the input\&. A single
-file without a suffix is assumed to be a \fICritcl script\fR\&. A file without
+files\&. Each \fICriTcl script\fR file is kept as part of the input\&. A single
+file without a suffix is assumed to be a \fICriTcl script\fR\&. A file without
 a suffix, but other input files following is treated like the name of a
 shared library proper, and removed from the set of input files\&.
 .sp
@@ -643,7 +643,7 @@ CriTcl can be used in three different modes of operation, called
 .PP
 \fICompile & Run\fR was the original mode and is the default for
 \fIcritcl_pkg\fR\&.  Collects the C fragments from the
-\fICritcl script\fR, builds them as needed, and caches the results to
+\fICriTcl script\fR, builds them as needed, and caches the results to
 improve load times later\&.
 .PP
 The second mode, \fIGenerate Package\fR, was introduced to enable
@@ -654,7 +654,7 @@ This was originally done through the experimental \fBCritbind\fR tool,
 and is now handled by the \fICriTcl Application\fR, also named
 \fBcritcl\fR\&.
 .PP
-Newly introduced with Critcl version 3 is
+Newly introduced with CriTcl version 3 is
 \fIGenerate TEA Package\fR\&. This mode constructs a directory
 hierarchy from the package which can later be built like a regular TEA
 package, i\&.e\&. using
@@ -963,7 +963,7 @@ cache directory now also uses \fBplatform::identify\fR for the
 default path, instead of \fBplatform::generic\fR\&.
 .IP [13]
 Bugfix: Fixed issue #58\&. Simplified the setup and use of
-md5\&. Critcl now makes use of its own package for md5, using
+md5\&. CriTcl now makes use of its own package for md5, using
 itself to built it\&. There is no chicken/egg problem with this
 as the \fB-pkg\fR mode used for this does not use md5\&. That
 is limited to mode \fIcompile & run\fR\&.
@@ -1411,7 +1411,7 @@ for shared libraries in preference over static\&. critcl handles
 it now, as older GNU ld's do not understand it, nor the
 various vendor-specific linkers\&.
 .IP [4]
-Fixed github issue #12\&. Critcl now determines the version of
+Fixed github issue #12\&. CriTcl now determines the version of
 MSVC in use and uses it to switch between various link debug
 options\&. Simplified the handling of bufferoverflowU\&.lib also,
 making use of the same mechanism and collapsing the two
