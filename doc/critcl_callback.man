@@ -27,7 +27,7 @@ This package resides in the Support Package Layer of CriTcl.
 
 [para][image arch_support][para]
 
-[comment {===================================================================}]
+[comment {= = == === ===== ======== ============= =====================}]
 [section API]
 
 The package API consist of one opaque data structure
@@ -122,7 +122,7 @@ temporarily incrementing their reference counts.
 
 [list_end]
 
-[comment {===================================================================}]
+[comment {= = == === ===== ======== ============= =====================}]
 [section Examples]
 
 [subsection {Simple callback}]
@@ -191,6 +191,6 @@ and automatically shared by all the calls. No memory churn to
 repeatedly allocate the same string objects over and over again.
 
 
-[comment {===================================================================}]
+[comment {= = == === ===== ======== ============= =====================}]
 [include include/feedback2.inc]
 [manpage_end]

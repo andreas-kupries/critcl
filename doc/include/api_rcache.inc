@@ -1,4 +1,3 @@
-[include include/global.inc]
 
 The following commands control the [sectref {Result Cache}].
 

@@ -1,12 +1,11 @@
+[vset ctlong [term {C Runtime In Tcl}]]
+[vset critcl [term CriTcl]]
 [vset critcl_script [term {CriTcl script}]]
 
-[vset cumulative {
-Calls to this command are cumulative.
-}]
+[vset slogan "Adding C code to [vset tcl_home]/[vset tk_home] has never been easier."]
 
-[vset cumulative_opt {
-Uses of this option are cumulative.
-}]
+[vset cumulative     {Calls to this command are cumulative.}]
+[vset cumulative_opt {Uses of this option are cumulative.}]
 
 [vset not_needed_for_critcl_script "
 These commands are not needed to simply write a [term {CriTcl script}].

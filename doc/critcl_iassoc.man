@@ -27,7 +27,7 @@ Tcl packages with embedded C code.
 [para] This package resides in the Core Package Layer of CriTcl.
 [para][image arch_core][para]
 
-[comment {===================================================================}]
+[comment {= = == === ===== ======== ============= =====================}]
 
 [section API]
 
@@ -87,7 +87,7 @@ belonged to.
 [list_end]
 [list_end]
 
-[comment {===================================================================}]
+[comment {= = == === ===== ======== ============= =====================}]
 [section Example]
 
 The example shown below is the specification of a simple interpreter-associated
@@ -124,6 +124,6 @@ critcl::ccode {
 package provide icounter 1
 }]
 
-[comment {===================================================================}]
+[comment {= = == === ===== ======== ============= =====================}]
 [include include/feedback2.inc]
 [manpage_end]

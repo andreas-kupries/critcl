@@ -1,4 +1,3 @@
-[include include/global.inc]
 
 CriTcl versions 3 and later provide [cmd critcl::api] to create and manipulate
 stubs tables, Tcl's dynamic linking mechanism handling the resolution of

@@ -1,4 +1,3 @@
-[include include/global.inc]
 
 The following commands provide tools like
 [manpage {CriTcl Application}] or similar with

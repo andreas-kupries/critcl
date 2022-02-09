@@ -1,8 +1,9 @@
-[comment {-*- tcl -*- doctools manpage}]
+[comment {-*- mode: tcl ; fill-column: 90 -*- doctools manpage}]
+[comment {quadrant: reference}]
 [include pkg_version.inc]
-[manpage_begin critcl-cproc-types n [vset VERSION]]
+[manpage_begin critcl_cproc_types n [vset VERSION]]
 [include include/module.inc]
-[titledesc {CriTcl - cproc Type Reference}]
+[titledesc {CriTcl cproc Type Reference}]
 [require Tcl 8.4]
 [require critcl [opt [vset VERSION]]]
 [description]
@@ -18,22 +19,22 @@ main reference).
 
 [para] Its intended audience are developers wishing to write Tcl packages with embedded C code.
 
-[section {Standard argument types}]	[include include/api_stdat_cproc.inc]
-[section {Standard result types}]	[include include/api_stdrt_cproc.inc]
-[section {Advanced: Adding types}]	[include include/api_extcproc2.inc]
+[section {Standard argument types}]	[include include/cproc/api_stdat_cproc.inc]
+[section {Standard result types}]	[include include/cproc/api_stdrt_cproc.inc]
+[section {Advanced: Adding types}]	[include include/cproc/api_extcproc2.inc]
 
 [section Examples]
 
 The examples shown here have been drawn from the section "Embedding C" in the document about
 [manpage {Using CriTcl}]. Please see that document for many more examples.
 
-[include include/using_eproc.inc]        [comment {%% cproc}]
-[include include/using_eprocstr.inc]     [comment {%% cproc, strings}]
-[include include/using_eproctypes.inc]   [comment {%% cproc types, intro & trivial}]
-[include include/using_eproctypes2.inc]  [comment {%% cproc types, semi-trivial}]
-[include include/using_eproctypes3.inc]  [comment {%% cproc types, support (incl alloc'd)}]
-[include include/using_eproctypes4.inc]  [comment {%% cproc types, results}]
+[include include/cproc/using_eproc.inc]        [comment {%% cproc}]
+[include include/cproc/using_eprocstr.inc]     [comment {%% cproc, strings}]
+[include include/cproc/using_eproctypes.inc]   [comment {%% cproc types, intro & trivial}]
+[include include/cproc/using_eproctypes2.inc]  [comment {%% cproc types, semi-trivial}]
+[include include/cproc/using_eproctypes3.inc]  [comment {%% cproc types, support (incl alloc'd)}]
+[include include/cproc/using_eproctypes4.inc]  [comment {%% cproc types, results}]
 
-[comment {===================================================================}]
+[comment {= = == === ===== ======== ============= =====================}]
 [include include/feedback.inc]
 [manpage_end]

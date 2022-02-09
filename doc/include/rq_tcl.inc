@@ -1,62 +1,21 @@
+[comment {-*- mode: tcl ; fill-column: 90 -*-}]
 
-[subsection Tcl]
+[para] That a working installation of [vset critcl] will require a working installation of
+[vset tcl_home] should be obvious.
 
-As we are building a Tcl package that should be pretty much obvious
-that a working Tcl installation is needed, and I will not belabor the
-point.
+[para] Installing Tcl however is out of scope here, same as for installing a working C
+compiler.
 
-[para] Out of the many use whatever you are comfortable with, as long
-as it provides Tcl 8.5, or higher, and Tk 8.5 or higher.
+[para] There are too many options, starting from
+[uri http://core.tcl-lang.org/tcl {building it from scratch}], installing what is provided
+by the platform's package manager ([vset zypper], [vset yum], [vset apt-get], and more),
+to using some vendor's [uri https://core.tcl-lang.org/dist.html distribution].
 
-[para] This may a Tcl installation provided by your operating system
-distribution, from a distribution-independent vendor, or built by
-yurself.
+[para] A single piece of advice however.
 
-[para] Myself, I used [uri http://www.activestate.com ActiveState's]
-ActiveTcl 8.5 distribution during development of the binding, as I am
-most familiar with it.
+[para] While [vset critcl] currently supports running on Tcl 8.4 and higher, and the
+creation of packages for the same, the last release for this version was in 2013 (9 years
+ago at the time of writing). Similarly, the last release for Tcl 8.5 was in 2016 (6 years
+ago). Both are official end of life.
 
-[para] [emph {(Disclosure: I, Andreas Kupries, work for ActiveState, maintaining ActiveTcl and TclDevKit for them).}]
-
-[para] This distribution can be found at
-[uri http://www.activestate.com/activetcl]. Retrieve the archive of
-ActiveTcl 8.5 for your platform and install it as directed by
-ActiveState.
-
-[para] Assuming that ActiveTcl got installed I usually run the command
-
-[example {
-    teacup update
-}]
-
-to install all packages ActiveState provides, and the kitchensink, as
-the distribution itself usually contains only the ost important set of
-packages. This ensures that the dependencies for CriTcl are all
-present, and more.
-
-[para] If that is not to your liking you have to read the sections for
-CriTcl to determine the exact set of packages required, and install
-only these using
-
-[example {
-    teacup install $packagename
-}]
-
-[para] Both [syscmd teacup] commands above assume that ActiveState's
-TEApot repository at [uri http://teapot.activestate.com] is in the
-list of repositories accessible to [syscmd teacup]. This is automatically
-ensured for the ActiveTcl distribution. Others may have to run
-
-[example {
-    teacup archive add http://teapot.activestate.com
-}]
-
-to make this happen.
-
-[para] For those wishing to build Tcl/Tk on their own, their sources
-can be found at
-
-[list_begin definitions]
-[def Tcl]   [uri http://core.tcl.tk/tcl/]
-[def Tk]    [uri http://core.tcl.tk/tk/]
-[list_end]
+[para] Given this I recommend to install and use Tcl 8.6.

@@ -1,4 +1,3 @@
-[include include/global.inc]
 
 These commands control the details of compilation and linking a
 [vset critcl_script].  The information is used only to compile/link the

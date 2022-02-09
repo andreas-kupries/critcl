@@ -1,5 +1,4 @@
+[comment {-*- mode: tcl ; fill-column: 90 -*-}]
 
-[term {C Runtime In Tcl}], or [term CriTcl] , is a system for compiling C code
-embedded in Tcl on the fly and either loading the resulting objects into Tcl for
-immediate use or packaging them for distribution.  Use [term CriTcl] to improve
-performance by rewriting in C those routines that are performance bottlenecks.
+Be welcome to the [vset ctlong] (short: [vset critcl]), a system for embedding and using C
+code from within [vset tcl_home] scripts.

@@ -1,12 +1,13 @@
-[comment {-*- tcl -*- doctools manpage}]
+[comment {-*- mode: tcl ; fill-column: 90 -*- doctools manpage}]
+[comment {quadrant: reference}]
 [include version.inc]
 [manpage_begin critcl_devguide n [vset VERSION]]
 [include include/module.inc]
-[titledesc {CriTcl - The Developer's Guide}]
+[titledesc {Guide To The CriTcl Internals}]
 [description]
 [include include/welcome.inc]
 
-[comment {===================================================================}]
+[comment {= = == === ===== ======== ============= =====================}]
 [section Audience]
 
 [para] This document is a guide for developers working on CriTcl, i.e. maintainers fixing
@@ -73,7 +74,7 @@ generation of critcl starkits and starpacks.
 
 [list_begin definitions][comment {___1___}]
 
-[comment =====================================================================]
+[comment {= = == === ===== ======== ============= =======================}]
 [def Helpers]
 [list_begin definitions]
 [def [file build.tcl]]
@@ -90,7 +91,7 @@ regenerating the documentation, the figures, building and installing critcl, etc
 will provide more details about the available operations and their arguments.
 [list_end]
 
-[comment =====================================================================]
+[comment {= = == === ===== ======== ============= =======================}]
 [def Documentation]
 [list_begin definitions]
 [def [file doc/]]
@@ -109,7 +110,7 @@ serving the prject's web interface.
 
 [list_end]
 
-[comment =====================================================================]
+[comment {= = == === ===== ======== ============= =======================}]
 [def Testsuite]
 [list_begin definitions]
 [def [file test/all.tcl]]
@@ -123,20 +124,20 @@ utility code snarfed from [package Tcllib].
 
 [def [file test/*.tcl]]
 
-These files (but not [file all.tcl], and [file testutilities.tcl]) are example files
+These files (except for [file all.tcl] and [file testutilities.tcl]) are example files
 (Tcl with embedded C) which can be run through critcl for testing.
 
-[para] [emph TODO:] These should be converted into a proper test suite.
+[para] [strong TODO] for a maintainers: These should be converted into a proper test suite.
 
 [list_end]
 
-[comment =====================================================================]
+[comment {= = == === ===== ======== ============= =======================}]
 [def {Package Code, General structure}]
 
 [list_begin definitions]
 [list_end]
 
-[comment =====================================================================]
+[comment {= = == === ===== ======== ============= =======================}]
 [def {Package Code, Per Package}]
 [list_begin definitions][comment ----------------------PCPP]
 
@@ -237,8 +238,8 @@ development (less dependencies to pull), and quicker deployment from the reposit
 are for the support of the Wikit GUI accessible from starkit and -pack when the
 application functionality ([package critcl::app]) is run with an empty command line.
 
-[para] [emph TODO:] These should all be checked against their origin for updates and
-changes since they were inlined.
+[para] [strong TODO] for maintainers: These should all be checked against their origin for
+updates and changes since they were inlined.
 
 [list_end][comment ------------------------------------PCPP]
 

@@ -274,13 +274,7 @@ doc
 .RS
 .TP
 \fBcritcl\fR
-\fIfiles/critcl_pkg\&.n\fR: CriTcl - Package Reference
-.TP
-\fBcritcl-cproc-types\fR
-\fIfiles/critcl_cproc\&.n\fR: CriTcl - cproc Type Reference
-.TP
-\fBcritcl::app\fR
-\fIfiles/critcl_apppkg\&.n\fR: CriTcl - Application Package Reference
+\fIfiles/critcl\&.n\fR: Introduction To CriTcl
 .TP
 \fBcritcl::bitmap\fR
 \fIfiles/critcl_bitmap\&.n\fR: CriTcl - Wrap Support - Bitset en- and decoding
@@ -309,26 +303,35 @@ doc
 \fBcritcl::util\fR
 \fIfiles/critcl_util\&.n\fR: CriTcl - Utilities
 .TP
-\fBcritcl_app\fR
-\fIfiles/critcl_app\&.n\fR: CriTcl - Application
+\fBcritcl_application\fR
+\fIfiles/critcl_application\&.n\fR: CriTcl Application Reference
+.TP
+\fBcritcl_application_package\fR
+\fIfiles/critcl_application_package\&.n\fR: CriTcl Application Package Reference
+.TP
+\fBcritcl_build_tool\fR
+\fIfiles/critcl_build\&.n\fR: CriTcl build\&.tcl Tool Reference
 .TP
 \fBcritcl_changes\fR
-\fIfiles/changes\&.n\fR: CriTcl Changes
+\fIfiles/critcl_changes\&.n\fR: CriTcl Releases & Changes
+.TP
+\fBcritcl_cproc_types\fR
+\fIfiles/critcl_cproc\&.n\fR: CriTcl cproc Type Reference
 .TP
 \fBcritcl_devguide\fR
-\fIfiles/critcl_devguide\&.n\fR: CriTcl - The Developer's Guide
+\fIfiles/critcl_devguide\&.n\fR: Guide To The CriTcl Internals
 .TP
-\fBcritcl_install_guide\fR
-\fIfiles/critcl_installer\&.n\fR: CriTcl - The Installer's Guide
+\fBcritcl_howto_install\fR
+\fIfiles/critcl_howto_install\&.n\fR: How To Install CriTcl
 .TP
-\fBcritcl_introduction\fR
-\fIfiles/critcl_introduction\&.n\fR: Introduction To CriTcl
+\fBcritcl_howto_sources\fR
+\fIfiles/critcl_howto_sources\&.n\fR: How To Get The CriTcl Sources
+.TP
+\fBcritcl_howto_use\fR
+\fIfiles/critcl_howto_use\&.n\fR: How To Use CriTcl
 .TP
 \fBcritcl_license\fR
-\fIfiles/license\&.n\fR: CriTcl - License
+\fIfiles/critcl_license\&.n\fR: The CriTcl License
 .TP
-\fBcritcl_sources\fR
-\fIfiles/critcl_sources\&.n\fR: CriTcl - How To Get The Sources
-.TP
-\fBcritcl_use\fR
-\fIfiles/critcl_usingit\&.n\fR: Using CriTcl
+\fBcritcl_package\fR
+\fIfiles/critcl_package\&.n\fR: CriTcl Package Reference

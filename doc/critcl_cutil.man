@@ -29,7 +29,7 @@ use of the facilities for narrative tracing when
 [cmd {critcl::config trace}] is set, to instrument commands and
 procedures.
 
-[comment {===================================================================}]
+[comment {= = == === ===== ======== ============= =====================}]
 [section API]
 
 [list_begin definitions]
@@ -193,7 +193,7 @@ in general.
 
 [list_end]
 
-[comment {===================================================================}]
+[comment {= = == === ===== ======== ============= =====================}]
 [section Allocation]
 
 [list_begin definitions]
@@ -256,7 +256,7 @@ the result into the named [type char*] variable [arg var].
 
 [list_end]
 
-[comment {===================================================================}]
+[comment {= = == === ===== ======== ============= =====================}]
 [section Assertions]
 
 [list_begin definitions]
@@ -281,7 +281,7 @@ Note, each separate instance of the macro has its own counter.
 
 [list_end]
 
-[comment {===================================================================}]
+[comment {= = == === ===== ======== ============= =====================}]
 [section Tracing]
 
 All output is printed to [const stdout].
@@ -408,6 +408,6 @@ file or the user-specified tag is active.
 
 [list_end]
 
-[comment {===================================================================}]
+[comment {= = == === ===== ======== ============= =====================}]
 [include include/feedback2.inc]
 [manpage_end]

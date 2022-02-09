@@ -41,7 +41,7 @@ Tcl packages with embedded C code.
 [para] This package resides in the Core Package Layer of CriTcl.
 [para][image arch_core][para]
 
-[comment {===================================================================}]
+[comment {= = == === ===== ======== ============= =====================}]
 
 [section API]
 
@@ -136,7 +136,7 @@ equivalent integer for delivery to the function.
 [list_end]
 [list_end]
 
-[comment {===================================================================}]
+[comment {= = == === ===== ======== ============= =====================}]
 [section Example]
 
 The example shown below is the specification for a set of actions, methods,
@@ -167,6 +167,6 @@ critcl::enum::def action {
 # ArgType:      action
 }]
 
-[comment {===================================================================}]
+[comment {= = == === ===== ======== ============= =====================}]
 [include include/feedback2.inc]
 [manpage_end]
