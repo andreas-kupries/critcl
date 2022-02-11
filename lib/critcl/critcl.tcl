@@ -11,7 +11,7 @@
 # # ## ### ##### ######## ############# #####################
 # CriTcl Core.
 
-package provide critcl 3.1.18
+package provide critcl 3.1.18.2
 
 namespace eval ::critcl {}
 
@@ -43,9 +43,23 @@ package require dict84
 package require lmap84
 
 # # ## ### ##### ######## ############# #####################
-## Ensure that we have maximal 'info frame' data, if supported
-
-catch { interp debug {} -frame 1 }
+## https://github.com/andreas-kupries/critcl/issues/112
+#
+## Removed the code ensuring that we have maximal 'info frame' data,
+## if supported. This code was moved into the app-critcl package
+## instead.
+#
+## The issue with having it here is that this changes a global setting
+## of the core, i.e. this will not only affect critcl itself when
+## building binaries, but also the larger environment, i.e. the
+## application using critcl.  Given that this feature being active
+## slows the Tcl core down by about 10%, sometimes more this is not a
+## good decision to make on behalf of the user.
+#
+## In the critcl application itself I am willing to pay the price for
+## the more precise location information in case of compilation
+## failures, and the isolation to that application. For the
+## dynamically `compile & run` in arbitrary environments OTOH not.
 
 # # ## ### ##### ######## ############# #####################
 # This is the md5 package bundled with critcl.
@@ -1313,6 +1327,8 @@ proc ::critcl::at::incr {args} {
 proc ::critcl::at::incrt {args} {
     variable where
     if {$where eq {}} {
+	# Ignore problem when we have no precise locations.
+	if {![interp debug {} -frame]} return
 	return -code error "No location to change"
     }
     lassign $where file line

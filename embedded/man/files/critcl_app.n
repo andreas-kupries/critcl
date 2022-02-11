@@ -4,7 +4,7 @@
 '\" Copyright (c) Steve Landers
 '\" Copyright (c) 2011-2018 Andreas Kupries
 '\"
-.TH "critcl_app" n 3\&.1\&.18 doc "C Runtime In Tcl (CriTcl)"
+.TH "critcl_app" n 3\&.1\&.18\&.2 doc "C Runtime In Tcl (CriTcl)"
 .\" The -*- nroff -*- definitions below are for supplemental macros used
 .\" in Tcl/Tk manual entries.
 .\"
@@ -680,6 +680,23 @@ targets\&. The result of such a merge would look like:
 .CE
 .PP
 The latest changes are found at the top\&.
+.SH "CHANGES FOR VERSION 3\&.1\&.18\&.2"
+\fINot Released Yet\fR
+.IP [1]
+\fIPerformance Fix\fR for \fIcompile & run\fR mode\&.
+Issue #112\&.
+.sp
+Moved the command activating more precise code location
+tracking out of package \fBcritcl\fR into package
+\fBcritcl::app\fR\&.
+.sp
+Because generating packages ahead of time can bear the
+performance penalty invoked by this \fIglobal\fR setting\&.
+.sp
+Arbitrary libraries and applications using critcl dynamically
+(\fIcompile & run\fR) on the other hand likely cannot, and
+should not\&.
+.PP
 .SH "CHANGES FOR VERSION 3\&.1\&.18\&.1"
 .IP [1]
 \fIAttention\fR: While the overall version (of the bundle)
