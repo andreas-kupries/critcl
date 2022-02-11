@@ -497,11 +497,11 @@ targets. The result of such a merge would look like:</p>
 <p>Moved the command activating more precise code location
        tracking out of package <b class="package"><a href="critcl_pkg.html">critcl</a></b> into package
        <b class="package">critcl::app</b>.</p>
-<p>The ahead of time compilation of the <i class="term">package</i> mode done
-       by the application (package) can bear the performance penalty
-       invoked by this <em>global</em> setting.</p>
-<p>Arbitrary libraries and applications using critcl dynamically,
-       i.e. in <i class="term"><a href="../index.html#compile_run">compile &amp; run</a></i> likely cannot, and should not.</p></li>
+<p>Because generating packages ahead of time can bear the
+       performance penalty invoked by this <em>global</em> setting.</p>
+<p>Arbitrary libraries and applications using critcl dynamically
+       (<i class="term"><a href="../index.html#compile_run">compile &amp; run</a></i>) on the other hand likely cannot, and
+       should not.</p></li>
 </ol>
 </div>
 <div id="section7" class="doctools_section"><h2><a name="section7">Changes for version 3.1.18.1</a></h2>

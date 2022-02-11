@@ -11,11 +11,11 @@
        tracking out of package [package critcl] into package
        [package critcl::app].
 
-[para] The ahead of time compilation of the [term package] mode done
-       by the application (package) can bear the performance penalty
-       invoked by this [strong global] setting.
+[para] Because generating packages ahead of time can bear the
+       performance penalty invoked by this [strong global] setting.
 
-[para] Arbitrary libraries and applications using critcl dynamically,
-       i.e. in [term {compile & run}] likely cannot, and should not.
+[para] Arbitrary libraries and applications using critcl dynamically
+       ([term {compile & run}]) on the other hand likely cannot, and
+       should not.
 
 [list_end]
