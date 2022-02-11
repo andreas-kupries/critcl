@@ -54,14 +54,18 @@ proc usage {{status 1}} {
 	if {[catch {
 	    H${c}
 	} res]} {
-	    puts stderr "$prefix$argv0 $c args...\n"
+	    puts stderr "$prefix[underlined]$argv0 $c[reset] args...\n"
 	} else {
-	    puts stderr "$prefix$argv0 $c $res\n"
+	    puts stderr "$prefix[underlined]$argv0 $c[reset] $res\n"
 	}
 	set prefix "       "
     }
     exit $status
 }
+
+proc underlined {} { return "\033\[4m" }
+proc reset      {} { return "\033\[0m" }
+
 proc +x {path} {
     catch { file attributes $path -permissions ugo+x }
     return
@@ -100,32 +104,38 @@ proc tmpdir {} {
     puts "Assembly in: $tmpdir"
     return $tmpdir
 }
-proc findlib {path} {
-    while {1} {
-	if {[file tail $path] eq "lib"} {
-	    return $path
+proc relativedir {dest here} {
+    # Convert dest into a relative path which is relative to `here`.
+    set save $dest
+
+    #puts stderr [list relativedir $dest $label]
+
+    set here [file split $here]
+    set dest [file split $dest]
+
+    #puts stderr [list relativedir < $here]
+    #puts stderr [list relativedir > $dest]
+
+    while {[string equal [lindex $dest 0] [lindex $here 0]]} {
+	set dest [lrange $dest 1 end]
+	set here [lrange $here 1 end]
+	if {[llength $dest] == 0} {break}
+    }
+    set ul [llength $dest]
+    set hl [llength $here]
+
+    if {$ul == 0} {
+	set dest [lindex [file split $save] end]
+    } else {
+	while {$hl > 1} {
+	    set dest [linsert $dest 0 ..]
+	    incr hl -1
 	}
-	set new [file dirname $path]
-	if {$new eq $path} break
-	set path $new
+	set dest [eval file join $dest]
     }
-    return $path
-}
-proc dstlfromlib {path} {
-    # kinda the inverse of findlib above, it returns the path to
-    # dstl relative the */lib path returned by findlib. The path
-    # is returned as a list of segments
-    set relpath {}
-    while {1} {
-        if {[file tail $path] eq "lib"} {
-            break
-        }
-        set new [file dirname $path]
-        set relpath [linsert $relpath[set relpath {}] 0 [file tail $path]]
-        if {$new eq $path} break
-        set path $new
-    }
-    return $relpath
+
+    #puts stderr [list relativedir --> $dest]
+    return $dest
 }
 proc id {cv vv} {
     upvar 1 $cv commit $vv version
@@ -164,20 +174,91 @@ proc reminder {commit} {
 proc shquote value {
     return "\"[string map [list \\ \\\\ $ \\$ ` \\`] $value]\""
 }
-proc targets libdir {
-    if {$libdir eq {} } {
-	set exe  [file dirname [file normalize [file join [info nameofexecutable] ...]]]
-	set dstl [info library]
-	set dsta [file dirname $exe]
-	set dsti [file join [file dirname $dsta] include]
-    } else {
-	set dstl $libdir
-	set libdir [findlib $dstl]
-	set top [file dirname $libdir]
-	set dsta [file join $top bin]
-	set dsti [file join $top include]
+proc dest-dir {} {
+    global paths
+    if {![info exists paths(dest-dir)]} {
+	global env
+	if {[info exists env(DESTDIR)]} {
+	    set paths(dest-dir) [string trimright $env(DESTDIR) /]
+	} else {
+	    set paths(dest-dir) ""
+	}
+    } elseif {$paths(dest-dir) ne ""} {
+	set paths(dest-dir) [string trimright $paths(dest-dir) /]
     }
-    list $dsta $dsti $dstl
+    return $paths(dest-dir)
+}
+proc prefix {} {
+    global paths
+    if {![info exists paths(prefix)]} {
+	set paths(prefix) [file dirname [file dirname [norm [info nameofexecutable]]]]
+    }
+    return $paths(prefix)
+}
+proc exec-prefix {} {
+    global paths
+    if {![info exists paths(exec-prefix)]} {
+	set paths(exec-prefix) [prefix]
+    }
+    return $paths(exec-prefix)
+}
+proc bin-dir {} {
+    global paths
+    if {![info exists paths(bin-dir)]} {
+	set paths(bin-dir) [exec-prefix]/bin
+    }
+    return $paths(bin-dir)
+}
+proc lib-dir {} {
+    global paths
+    if {![info exists paths(lib-dir)]} {
+	set paths(lib-dir) [exec-prefix]/lib
+    }
+    return $paths(lib-dir)
+}
+proc include-dir {} {
+    global paths
+    if {![info exists paths(include-dir)]} {
+	set paths(include-dir) [prefix]/include
+    }
+    return $paths(include-dir)
+}
+proc process-install-options {} {
+    upvar 1 args argv target target
+    while {[llength $argv]} {
+	set o [lindex $argv 0]
+	if {![string match -* $o]} break
+	switch -exact -- $o {
+	    -target {
+		#                 ignore 0
+		set target [lindex $argv 1]
+		set argv   [lrange $argv 2 end]
+	    }
+	    --dest-dir    -
+	    --prefix      -
+	    --exec-prefix -
+	    --bin-dir     -
+	    --lib-dir     -
+	    --include-dir {
+		#               ignore 0
+		set path [lindex $argv 1]
+		set argv [lrange $argv 2 end]
+		set key  [string range $o 2 end]
+		global paths
+		set paths($key) [norm $path]
+	    }
+	    -- break
+	    default {
+		puts [Hinstall]
+		exit 1
+	    }
+	}
+    }
+    return
+}
+proc norm {path} {
+    # normalize smybolic links in the path, including the last element.
+    return [file dirname [file normalize [file join $path ...]]]
 }
 proc query {q c} {
     puts -nonewline "$q ? "
@@ -187,6 +268,9 @@ proc query {q c} {
 	puts "$c"
 	exit 1
     }
+}
+proc thisexe {} {
+    return [info nameofexecutable]
 }
 proc Hsynopsis {} { return "\n\tGenerate a synopsis of procs and builtin types" }
 proc _synopsis {} {
@@ -207,6 +291,7 @@ proc _synopsis {} {
 
     puts "Builtin argument types:"
     puts [exec grep -n {    argtype} lib/critcl/critcl.tcl \
+	      | grep -v "\\\$ntype" \
 	      | sed -e "s| \{$||" -e {s/:[ 	]*argtype/ /} \
 	      | sort -k 2 \
 	      | sed -e {s/^/    /}]
@@ -225,7 +310,7 @@ proc _help {} {
     usage 0
     return
 }
-proc Hrecipes {} { return "\n\tList all build commands, without details." }
+proc Hrecipes {} { return "\n\tList all build commands, without details" }
 proc _recipes {} {
     set r {}
     foreach c [info commands _*] {
@@ -234,7 +319,7 @@ proc _recipes {} {
     puts [lsort -dict $r]
     return
 }
-proc Htest {} { return "\n\tRun the testsuite." }
+proc Htest {} { return "\n\tRun the testsuite" }
 proc _test {} {
     global argv
     set    argv {} ;# clear -- tcltest shall see nothing
@@ -244,7 +329,7 @@ proc _test {} {
 	puts ""
 	puts "_ _ __ ___ _____ ________ _____________ _____________________ *** [file tail $testsuite] ***"
 	if {[catch {
-	    exec >@ stdout 2>@ stderr [info nameofexecutable] $testsuite
+	    exec >@ stdout 2>@ stderr [thisexe] $testsuite
 	}]} {
 	    puts $::errorInfo
 	}
@@ -255,7 +340,7 @@ proc _test {} {
     puts ""
     return
 }
-proc Hdoc {} { return "\n\t(Re)Generate the embedded documentation." }
+proc Hdoc {} { return "\n\t(Re)Generate the embedded documentation" }
 proc _doc {} {
     cd [file join [file dirname $::me] doc]
 
@@ -278,7 +363,7 @@ proc _doc {} {
 
     return
 }
-proc Htextdoc {} { return "destination\n\tGenerate plain text documentation in specified directory." }
+proc Htextdoc {} { return "destination\n\tWrite plain text documentation to the specified directory" }
 proc _textdoc {dst} {
     set destination [file normalize $dst]
 
@@ -297,7 +382,7 @@ proc _textdoc {dst} {
 
     return
 }
-proc Hfigures {} { return "\n\t(Re)Generate the figures and diagrams for the documentation." }
+proc Hfigures {} { return "\n\t(Re)Generate the figures and diagrams for the documentation" }
 proc _figures {} {
     cd [file join [file dirname $::me] doc figures]
 
@@ -375,42 +460,41 @@ proc _release-doc {} {
     return
 }
 
-proc Htargets {} { return "?destination?\n\tShow available targets.\n\tExpects critcl app to be installed in destination." }
+proc Hdirs {} { return "[Ioptions]\n\tShow directory setup" }
+proc _dirs args {
+    process-install-options
+
+    puts "destdir     = [dest-dir]"
+    puts "prefix      = [dest-dir][prefix]"
+    puts "exec-prefix = [dest-dir][exec-prefix]"
+    puts "bin-dir     = [dest-dir][bin-dir]"
+    puts "lib-dir     = [dest-dir][lib-dir]"
+    puts "include-dir = [dest-dir][include-dir]"
+    puts ""
+    return
+}
+
+proc Ioptions {} { return "?--dest-dir path? ?--prefix path? ?--exec-prefix path? ?--bin-dir path? ?--lib-dir path? ?--include-dir path?" }
+
+proc Htargets {} { return "[Ioptions]\n\tShow available targets.\n\tExpects critcl app to be installed in the \"--bin-dir\" derived from the options and defaults" }
 proc _targets args {
-    switch [llength $args] {
-	0 - 1 {
-	}
-	default {
-	    error -list wrong # args
-	}
-    }
-    if {[llength [info level 0]] < 2} {
-	lassign [targets {}] dsta dsti dstl
-    } else {
-	lassign [targets [file join [file dirname [lindex [info level 0] 1]] lib]] dsta dsti dstl
-    }
+    process-install-options
+    set dsta [dest-dir][bin-dir]
     puts [join [split [exec [file join $dsta critcl] -targets]] \n]
     return
 }
 
-proc Hinstall {} { return "?-target T? ?destination?\n\tInstall all packages, and application.\n\tdestination = path of package directory, default \[info library\]." }
+proc Hinstall {} { return "?-target T? [Ioptions]\n\tInstall all packages, and application.\n\tDefault --prefix is \"\$(dirname \$(dirname /path/to/tclsh))\"" }
 proc _install {args} {
     global packages me
 
     set target {}
-    if {[lindex $args 0] eq "-target"} {
-	set target [lindex $args 1]
-	set args [lrange $args 2 end]
-    }
 
-    if {[llength $args] == 0} {
-	set libdir {}
+    process-install-options
 
-    } else {
-	set libdir [lindex $args 0]
-    }
-    lassign [targets $libdir] dsta dsti dstl
-    file mkdir $dsta $dsti
+    set dsta [dest-dir][bin-dir]
+    set dstl [dest-dir][lib-dir]
+    set dsti [dest-dir][include-dir]
 
     set selfdir [file dirname $me]
 
@@ -418,6 +502,8 @@ proc _install {args} {
     puts \tPackages:\t$dstl
     puts \tApplication:\t$dsta
     puts \tHeaders:\t$dsti
+
+    file mkdir $dsta $dsti
 
     if {[catch {
 	# Create directories, might not exist.
@@ -456,27 +542,29 @@ proc _install {args} {
 	# Application: critcl
 
 	set theapp  [critapp     $dsta]
-	set reldstl [dstlfromlib $dstl]
+	set reldstl [relativedir $dstl $theapp]
 
 	set c [open $theapp w]
-	lappend map @bs@   "\\"
-	lappend map @exe@ [shquote [file dirname [file normalize [
-	    file join [info nameofexecutable] ...]]]]
-	lappend map @path@ [list $reldstl]  ;# insert the dst path
-	puts [list geedonk $reldstl]
-	lappend map "\t    " {} ;# de-dent
+	lappend map @bs@      "\\"
+	lappend map @exe@     [shquote [norm [thisexe]]]
+	lappend map @relpath@ [file split $reldstl]  ;# insert the dst path
+	lappend map "\t    " {}     ;# de-dent
+	lappend map "\t\t"   {    } ;# de-dent
 	puts $c [string trimleft [string map $map {
 	    #!/bin/sh
 	    # -*-tcl -*-
 	    # hide next line from tcl @bs@
 	    exec @exe@ "$0" ${1+"$@"}
 
-	    set libpath [file join [file dirname [file dirname [
-		file normalize [file join [info script] ...]]]] .. lib]
-	    set libpath [file join $libpath @path@]
+	    # Add location of critcl packages to the package load path, if not
+	    # yet present. Computed relative to the location of the application,
+	    # as per the installation paths.
+	    set libpath [file join [file dirname [info script]] @relpath@]
+	    set libpath [file dirname [file normalize [file join $libpath ...]]]
 	    if {[lsearch -exact $auto_path $libpath] < 0} {
 		set auto_path [linsert $auto_path[set auto_path {}] 0 $libpath]
 	    }
+	    unset libpath
 
 	    package require critcl::app
 	    critcl::app::main $argv}]]
@@ -504,7 +592,7 @@ proc _install {args} {
 	set cmd     {}
 
 	lappend cmd exec >@ stdout 2>@ stderr
-	lappend cmd [info nameofexecutable]
+	lappend cmd [thisexe]
 	lappend cmd $theapp
 	if {$target ne {}} {
 	    lappend cmd -target $target
@@ -538,7 +626,7 @@ proc _install {args} {
 	set cmd     {}
 
 	lappend cmd exec >@ stdout 2>@ stderr
-	lappend cmd [info nameofexecutable]
+	lappend cmd [thisexe]
 	lappend cmd $theapp
 	if {$target ne {}} {
 	    lappend cmd -target $target
@@ -570,22 +658,20 @@ proc _install {args} {
 proc Huninstall {} { Hdrop }
 proc _uninstall {args} { eval [linsert $args 0 _drop] }
 
-proc Hdrop {} { return "?destination?\n\tRemove packages.\n\tdestination = path of package directory, default \[info library\]." }
-proc _drop {{dst {}}} {
+proc Hdrop {} { return "[Ioptions]\n\tRemove packages" }
+proc _drop {args} {
     global packages me
 
-    if {[llength [info level 0]] < 2} {
-	set dstl [info library]
-	set dsta [file dirname [file dirname [file normalize [file join [
-	    info nameofexecutable] ...]]]]
-    } else {
-	set dstl $dst
-	set dsta [file join [file dirname $dst] bin]
-    }
+    process-install-options
 
-    # Add the special package (see install). Not special with regard
+    set dsta [dest-dir][bin-dir]
+    set dstl [dest-dir][lib-dir]
+    set dsti [dest-dir][include-dir]
+
+    # Add the special packages (see install). Not special with regard
     # to removal. Except for the name
-    lappend packages [list critcl-md5c md5c.tcl critcl_md5c]
+    lappend packages [list critcl-md5c     md5c.tcl     critcl_md5c]
+    lappend packages [list critcl-callback callback.tcl critcl_callback]
 
     set selfdir [file dirname $me]
 
@@ -619,6 +705,12 @@ proc _drop {{dst {}}} {
     set theapp [critapp $dsta]
     file delete $theapp
     puts "Removed application: $theapp"
+
+    # Includes/Headers (critcl::callback)
+    set dsth    [file join $dsti critcl_callback]
+    file delete -force $dsth
+    puts "Removed headers:     $dsth"
+
     return
 }
 proc Hstarkit {} { return "?destination? ?interpreter?\n\tGenerate a starkit\n\tdestination = path of result file, default 'critcl.kit'\n\tinterpreter = (path) name of tcl shell to use for execution, default 'tclkit'" }
@@ -660,7 +752,7 @@ proc _starpack {prefix {dst critcl}} {
     puts "Created starpack: $dst"
     return
 }
-proc Hexamples {} { return "?args...?\n\tWithout arguments, list the examples.\n\tOtherwise run the recipe with its arguments on the examples." }
+proc Hexamples {} { return "?args...?\n\tWithout arguments, list the examples.\n\tOtherwise run the recipe with its arguments on the examples" }
 proc _examples {args} {
     global me
     set selfdir [file dirname $me]
@@ -678,7 +770,7 @@ proc _examples {args} {
     } else {
 	foreach b $examples {
 	    puts "$b _______________________________________________"
-	    eval [linsert $args 0 exec 2>@ stderr >@ stdout [info nameofexecutable] $b]
+	    eval [linsert $args 0 exec 2>@ stderr >@ stdout [thisexe] $b]
 	    puts ""
 	    puts ""
 	}
