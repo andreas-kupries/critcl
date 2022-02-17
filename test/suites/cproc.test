@@ -284,6 +284,21 @@ test critcl-cproc${suffix}-4.${n}-vint "cproc, variadic int argument" -body {
 unset n
 
 # -------------------------------------------------------------------------
+## Mistakenly entered C syntax - Normalize to working syntax
+
+test critcl-cproc${suffix}-5.0 {cproc, mistaken C argument syntax, lone comma} -body {
+    get critcl::cproc aproc { int x , int y } void {}
+} -result [viewFile [localPath test/assets/cproc${suffix}/5.x]]
+
+test critcl-cproc${suffix}-5.1 {cproc, mistaken C argument syntax, trailing comma} -body {
+    get critcl::cproc aproc { int x, int y } void {}
+} -result [viewFile [localPath test/assets/cproc${suffix}/5.x]]
+
+test critcl-cproc${suffix}-5.2 {cproc, mistaken C argument syntax, leading comma} -body {
+    get critcl::cproc aproc { int x ,int y } void {}
+} -result [viewFile [localPath test/assets/cproc${suffix}/5.x]]
+
+# -------------------------------------------------------------------------
 ## XXX TODO one to multiple arguments
 ## XXX TODO ...
 

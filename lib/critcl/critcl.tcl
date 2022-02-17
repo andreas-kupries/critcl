@@ -424,6 +424,29 @@ proc ::critcl::ArgsInprocess {adefs skip} {
     set achdr    {} ; # list of arg conversion annotations.
     set arel     {} ; # List of arg release code fragments, for those which have them.
 
+    # Normalization, and typo fixing:
+    # - Remove singular commas from the list.
+    # - Strip argument names of trailing commas.
+    # - Strip type names of leading commas.
+    # Reason: Handle mistakenly entered C syntax for a function/command.
+    #
+    # Newly accepted syntax:
+    # = int x , int y ...
+    # = int x, int y ...
+    # = int x ,int y ...
+
+    # TODO: lmap.
+    set adefnew {}
+    set mode type
+    foreach word $adefs {
+	if {$word eq ","} continue
+	switch -exact -- $mode {
+	    type { lappend adefnew [string trimleft  $word ,] ; set mode args }
+	    args { lappend adefnew [string trimright $word ,] ; set mode type }
+	}
+    }
+    set adefs $adefnew ; unset adefnew mode
+
     # A 1st argument matching "Tcl_Interp*" does not count as a user
     # visible command argument. But appears in both signature and
     # actual list of arguments.
