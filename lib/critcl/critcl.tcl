@@ -1510,7 +1510,7 @@ proc ::critcl::owns {args} {}
 proc ::critcl::cheaders {args} {
     SkipIgnored [This]
     HandleDeclAfterBuild
-    return [SetParam cheaders $args]
+    return [SetParam cheaders [ResolveRelative -I $args]]
 }
 
 proc ::critcl::csources {args} {
@@ -1522,7 +1522,7 @@ proc ::critcl::csources {args} {
 proc ::critcl::clibraries {args} {
     SkipIgnored [This]
     HandleDeclAfterBuild
-    return [SetParam clibraries $args]
+    return [SetParam clibraries [ResolveRelative -L $args]]
 }
 
 proc ::critcl::cobjects {args} {
@@ -3039,7 +3039,8 @@ proc ::critcl::cbuild {file {load 1}} {
 
 	lappendlist objects [GetParam $file cobjects]
 
-	dict set v::code($file) result clibraries [GetParam $file clibraries]
+	dict set v::code($file) result clibraries [set clib [GetParam $file clibraries]]
+	dict set v::code($file) result libpaths   [LibPaths $clib]
 	dict set v::code($file) result ldflags    [GetParam $file ldflags]
 	dict set v::code($file) result objects    $objects
 	dict set v::code($file) result tk         [UsingTk  $file]
@@ -4592,6 +4593,16 @@ proc ::critcl::Link {file} {
     lappendlist cmdline [dict get $v::code($file) result ldflags]
     # lappend cmdline bufferoverflowU.lib ;# msvc >=1400 && <1500 for amd64
 
+    # Extend library search paths with user-specified locations.
+    # (-L, clibraries)
+    set libpaths [dict get $v::code($file) result libpaths]
+    if {[llength $libpaths]} {
+	set opt [getconfigvalue link_rpath]
+	foreach path $libpaths {
+	    lappend cmdline [string map [list @ $path] $opt]
+	}
+    }
+
     # Run the linker
     ExecWithLogging $cmdline \
 	{$shlib: [file size $shlib] bytes} \
@@ -4894,6 +4905,38 @@ proc ::critcl::Load {f} {
 	::source $t
     }
     return
+}
+
+proc ::critcl::ResolveRelative {prefix flags} {
+    set new {}
+    foreach flag $flags {
+	if {[string match ${prefix}* $flag]} {
+	    set path [string range $flag 2 end]
+	    set flag ${prefix}[file normalize [file join [file dirname [This]] $path]]
+	}
+	lappend new $flag
+    }
+    return $new
+}
+
+proc ::critcl::LibPaths {clibraries} {
+    set lpath {}
+    foreach word $clibraries {
+	# Get paths from -L... and full library paths.
+	# Ignore -l... and anything else.
+	if {[string match -L* $word]} {
+	    # Chop leading -L
+	    lappend lpath [string range $word 2 end]
+	    continue
+	}
+	if {[string match -l* $word]} {
+	    continue
+	}
+	if {[file isfile $word]} {
+	    lappend lpath [file dirname $word]
+	}
+    }
+    return $lpath
 }
 
 proc ::critcl::HandleDeclAfterBuild {} {
@@ -5996,6 +6039,7 @@ namespace eval ::critcl {
 	    link_debug
 	    link_preload
 	    link_release
+	    link_rpath
 	    noassert
 	    object
 	    optimize

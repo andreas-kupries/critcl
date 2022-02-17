@@ -70,6 +70,7 @@ ldoutput
 link_debug
 link_release
 link_preload    --unresolved-symbols=ignore-in-shared-libs
+link_rpath      -Wl,-rpath,@
 strip           -Wl,-s
 optimize        -O2
 noassert        -DNDEBUG
