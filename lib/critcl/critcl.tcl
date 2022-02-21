@@ -3943,6 +3943,8 @@ proc ::critcl::SetParam {type values {expand 1} {uuid 0} {unique 0}} {
 
     UUID.extend $file .$type $values
 
+    msg "\t$type += $values"
+
     # Process the list of flags, treat non-option arguments as glob
     # patterns and expand them to a set of files, stored as absolute
     # paths.
@@ -4598,6 +4600,7 @@ proc ::critcl::Link {file} {
 	set opt [getconfigvalue link_rpath]
 	if {$opt ne {}} {
 	    foreach path $libpaths {
+		msg "\trpath += $path"
 		lappend cmdline [string map [list @ $path] $opt]
 	    }
 	}
