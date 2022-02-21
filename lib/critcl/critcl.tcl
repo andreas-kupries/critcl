@@ -3943,47 +3943,45 @@ proc ::critcl::SetParam {type values {expand 1} {uuid 0} {unique 0}} {
 
     UUID.extend $file .$type $values
 
-    if {[llength $values]} {
-	# Process the list of flags, treat non-option arguments as
-	# glob patterns and expand them to a set of files, stored as
-	# absolute paths.
+    # Process the list of flags, treat non-option arguments as glob
+    # patterns and expand them to a set of files, stored as absolute
+    # paths.
 
-	set have {}
-	if {$unique && [dict exists $v::code($file) config $type]} {
-	    foreach v [dict get $v::code($file) config $type] {
-		dict set have $v .
-	    }
+    set have {}
+    if {$unique && [dict exists $v::code($file) config $type]} {
+	foreach v [dict get $v::code($file) config $type] {
+	    dict set have $v .
 	}
-
-	set tmp {}
-	foreach v $values {
-	    if {[string match "-*" $v]} {
-		lappend tmp $v
-	    } else {
-		if {$expand} {
-		    foreach f [Expand $file $v] {
-			if {$unique && [dict exists $have $f]} continue
-			lappend tmp $f
-			if {$unique} { dict set have $f . }
-			if {$uuid} { UUID.extend $file .$type.$f [Cat $f] }
-		    }
-		} else {
-		    if {$unique && [dict exists $have $v]} continue
-		    lappend tmp $v
-		    if {$unique} { dict set have $v . }
-		}
-	    }
-	}
-
-	# And save into the system state.
-	dict update v::code($file) config c {
-	    foreach v $tmp {
-		dict lappend c $type $v
-	    }
-	}
-    } elseif {[dict exists $v::code($file) config $type]} {
-	return [dict get $v::code($file) config $type]
     }
+
+    set tmp {}
+    foreach v $values {
+	if {[string match "-*" $v]} {
+	    lappend tmp $v
+	} else {
+	    if {$expand} {
+		foreach f [Expand $file $v] {
+		    if {$unique && [dict exists $have $f]} continue
+		    lappend tmp $f
+		    if {$unique} { dict set have $f . }
+		    if {$uuid} { UUID.extend $file .$type.$f [Cat $f] }
+		}
+	    } else {
+		if {$unique && [dict exists $have $v]} continue
+		lappend tmp $v
+		if {$unique} { dict set have $v . }
+	    }
+	}
+    }
+
+    # And save into the system state.
+    dict update v::code($file) config c {
+	foreach v $tmp {
+	    dict lappend c $type $v
+	}
+    }
+
+    return
 }
 
 proc ::critcl::Expand {file pattern} {
