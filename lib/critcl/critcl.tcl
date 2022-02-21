@@ -1522,7 +1522,9 @@ proc ::critcl::csources {args} {
 proc ::critcl::clibraries {args} {
     SkipIgnored [This]
     HandleDeclAfterBuild
-    return [SetParam clibraries [ResolveRelative -L $args]]
+    return [SetParam clibraries [ResolveRelative {
+	-L --library-directory
+    } $args]]
 }
 
 proc ::critcl::cobjects {args} {
@@ -4910,12 +4912,34 @@ proc ::critcl::Load {f} {
     return
 }
 
-proc ::critcl::ResolveRelative {prefix flags} {
+proc ::critcl::ResolveRelative {prefixes flags} {
     set new {}
+    set take no
     foreach flag $flags {
-	if {[string match ${prefix}* $flag]} {
-	    set path [string range $flag 2 end]
-	    set flag ${prefix}[file normalize [file join [file dirname [This]] $path]]
+	if {$take} {
+	    set take no
+	    set flag [file normalize [file join [file dirname [This]] $flag]]
+	    lappend new $flag
+	    continue
+	}
+	foreach prefix $prefixes {
+	    if {$flag eq $prefix} {
+		set take yes
+		lappend new $flag
+		break
+	    }
+	    set n [string length $prefix]
+	    if {[string match ${prefix}* $flag]} {
+		set path [string range $flag $n end]
+		set flag ${prefix}[file normalize [file join [file dirname [This]] $path]]
+		break
+	    }
+	    if {[string match ${prefix}=* $flag]} {
+		incr n
+		set path [string range $flag $n end]
+		set flag ${prefix}[file normalize [file join [file dirname [This]] $path]]
+		break
+	    }
 	}
 	lappend new $flag
     }
@@ -4924,20 +4948,46 @@ proc ::critcl::ResolveRelative {prefix flags} {
 
 proc ::critcl::LibPaths {clibraries} {
     set lpath {}
+    set take no
+
+    set sa [string length -L]
+    set sb [string length --library-directory=]
+
     foreach word $clibraries {
-	# Get paths from -L... and full library paths.
-	# Ignore -l... and anything else.
+	# Get paths from -L..., --library-directory ...,
+	# --library-directory=...  and full library paths.  Ignore
+	# anything else.
+
+	if {$take} {
+	    # path argument separate from preceding option.
+	    set take no
+	    lappend lpath $word
+	    continue
+	}
 	if {[string match -L* $word]} {
-	    # Chop leading -L
-	    lappend lpath [string range $word 2 end]
+	    # path at tail of argument
+	    lappend lpath [string range $word $sa end]
 	    continue
 	}
 	if {[string match -l* $word]} {
+	    # ignore
+	    continue
+	}
+	if {[string match --library-directory=* $word]} {
+	    # path at tail of argument
+	    lappend lpath [string range $word $sb end]
+	    continue
+	}
+	if {[string equal --library-directory $word]} {
+	    # Next argument is the desired path
+	    set take yes
 	    continue
 	}
 	if {[file isfile $word]} {
+	    # directory of the file
 	    lappend lpath [file dirname $word]
 	}
+	# else ignore
     }
     return $lpath
 }
