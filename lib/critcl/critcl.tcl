@@ -4596,8 +4596,10 @@ proc ::critcl::Link {file} {
     set libpaths [dict get $v::code($file) result libpaths]
     if {[llength $libpaths]} {
 	set opt [getconfigvalue link_rpath]
-	foreach path $libpaths {
-	    lappend cmdline [string map [list @ $path] $opt]
+	if {$opt ne {}} {
+	    foreach path $libpaths {
+		lappend cmdline [string map [list @ $path] $opt]
+	    }
 	}
     }
 
