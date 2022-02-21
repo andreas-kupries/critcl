@@ -6,7 +6,7 @@
 #
 # Copyright (c) 2001-20?? Jean-Claude Wippler
 # Copyright (c) 2002-20?? Steve Landers
-# Copyright (c) 20??-2017 Andreas Kupries <andreas_kupries@users.sourceforge.net>
+# Copyright (c) 20??-2022 Andreas Kupries <andreas_kupries@users.sourceforge.net>
 
 # # ## ### ##### ######## ############# #####################
 # CriTcl Core.
