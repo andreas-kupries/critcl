@@ -5304,6 +5304,7 @@ proc ::critcl::Exec {cmdline} {
 proc ::critcl::ExecWithLogging {cmdline okmsg errmsg} {
     variable run
 
+    msg        "EXEC: $cmdline"
     LogCmdline $cmdline
 
     # Extend the command, redirect all of its output (stdout and
