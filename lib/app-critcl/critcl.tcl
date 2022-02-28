@@ -932,12 +932,16 @@ proc ::critcl::app::ExportHeaders {} {
 }
 
 proc ::critcl::app::AssemblePackage {} {
-
     # Validate and/or create the main destination directory L. The
     # package will become a subdirectory of L. See (x). And a platform
     # specific directory inside of that will hold the shared
     # library. This allows us to later merge the packages for
     # different platforms into a single multi-platform package.
+
+    if {![llength $v::pkgs]} {
+	::critcl::print stderr "ERROR: `package provide` missing in package sources"
+	exit 1
+    }
 
     set libdir [CreateLibDirectory]
 
