@@ -70,6 +70,7 @@ ldoutput
 link_debug
 link_release
 link_preload    --unresolved-symbols=ignore-in-shared-libs
+link_rpath      -Wl,-rpath,@
 strip           -Wl,-s
 optimize        -O2
 noassert        -DNDEBUG
@@ -367,6 +368,7 @@ win32-ix86-cl  ldoutput        -dll [list -out:$outfile]
 win32-ix86-cl  link_debug      $msvclinkdebug -debugtype:cv -verbose:lib -nodefaultlib:libc
 win32-ix86-cl  link_release    -release -opt:ref -opt:icf,3 $msvclinkworkingset  -verbose:lib $msvclinkglobaloptimize
 win32-ix86-cl  link_preload
+win32-ix86-cl  link_rpath
 win32-ix86-cl  strip
 win32-ix86-cl  version         cl
 win32-ix86-cl  platform        win32-ix86

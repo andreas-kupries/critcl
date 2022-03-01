@@ -6,7 +6,7 @@
 #
 # Copyright (c) 2001-20?? Jean-Claude Wippler
 # Copyright (c) 2002-20?? Steve Landers
-# Copyright (c) 20??-2017 Andreas Kupries <andreas_kupries@users.sourceforge.net>
+# Copyright (c) 20??-2022 Andreas Kupries <andreas_kupries@users.sourceforge.net>
 
 # # ## ### ##### ######## ############# #####################
 # CriTcl Core.
@@ -1510,7 +1510,7 @@ proc ::critcl::owns {args} {}
 proc ::critcl::cheaders {args} {
     SkipIgnored [This]
     HandleDeclAfterBuild
-    return [SetParam cheaders $args]
+    return [SetParam cheaders [ResolveRelative -I $args]]
 }
 
 proc ::critcl::csources {args} {
@@ -1522,7 +1522,9 @@ proc ::critcl::csources {args} {
 proc ::critcl::clibraries {args} {
     SkipIgnored [This]
     HandleDeclAfterBuild
-    return [SetParam clibraries $args]
+    return [SetParam clibraries [ResolveRelative {
+	-L --library-directory
+    } $args]]
 }
 
 proc ::critcl::cobjects {args} {
@@ -3039,7 +3041,8 @@ proc ::critcl::cbuild {file {load 1}} {
 
 	lappendlist objects [GetParam $file cobjects]
 
-	dict set v::code($file) result clibraries [GetParam $file clibraries]
+	dict set v::code($file) result clibraries [set clib [GetParam $file clibraries]]
+	dict set v::code($file) result libpaths   [LibPaths $clib]
 	dict set v::code($file) result ldflags    [GetParam $file ldflags]
 	dict set v::code($file) result objects    $objects
 	dict set v::code($file) result tk         [UsingTk  $file]
@@ -3942,47 +3945,47 @@ proc ::critcl::SetParam {type values {expand 1} {uuid 0} {unique 0}} {
 
     UUID.extend $file .$type $values
 
-    if {[llength $values]} {
-	# Process the list of flags, treat non-option arguments as
-	# glob patterns and expand them to a set of files, stored as
-	# absolute paths.
+    #todo (debug flag): msg "\t$type += $values"
 
-	set have {}
-	if {$unique && [dict exists $v::code($file) config $type]} {
-	    foreach v [dict get $v::code($file) config $type] {
-		dict set have $v .
-	    }
-	}
+    # Process the list of flags, treat non-option arguments as glob
+    # patterns and expand them to a set of files, stored as absolute
+    # paths.
 
-	set tmp {}
-	foreach v $values {
-	    if {[string match "-*" $v]} {
-		lappend tmp $v
-	    } else {
-		if {$expand} {
-		    foreach f [Expand $file $v] {
-			if {$unique && [dict exists $have $f]} continue
-			lappend tmp $f
-			if {$unique} { dict set have $f . }
-			if {$uuid} { UUID.extend $file .$type.$f [Cat $f] }
-		    }
-		} else {
-		    if {$unique && [dict exists $have $v]} continue
-		    lappend tmp $v
-		    if {$unique} { dict set have $v . }
-		}
-	    }
+    set have {}
+    if {$unique && [dict exists $v::code($file) config $type]} {
+	foreach v [dict get $v::code($file) config $type] {
+	    dict set have $v .
 	}
-
-	# And save into the system state.
-	dict update v::code($file) config c {
-	    foreach v $tmp {
-		dict lappend c $type $v
-	    }
-	}
-    } elseif {[dict exists $v::code($file) config $type]} {
-	return [dict get $v::code($file) config $type]
     }
+
+    set tmp {}
+    foreach v $values {
+	if {[string match "-*" $v]} {
+	    lappend tmp $v
+	} else {
+	    if {$expand} {
+		foreach f [Expand $file $v] {
+		    if {$unique && [dict exists $have $f]} continue
+		    lappend tmp $f
+		    if {$unique} { dict set have $f . }
+		    if {$uuid} { UUID.extend $file .$type.$f [Cat $f] }
+		}
+	    } else {
+		if {$unique && [dict exists $have $v]} continue
+		lappend tmp $v
+		if {$unique} { dict set have $v . }
+	    }
+	}
+    }
+
+    # And save into the system state.
+    dict update v::code($file) config c {
+	foreach v $tmp {
+	    dict lappend c $type $v
+	}
+    }
+
+    return
 }
 
 proc ::critcl::Expand {file pattern} {
@@ -4592,6 +4595,19 @@ proc ::critcl::Link {file} {
     lappendlist cmdline [dict get $v::code($file) result ldflags]
     # lappend cmdline bufferoverflowU.lib ;# msvc >=1400 && <1500 for amd64
 
+    # Extend library search paths with user-specified locations.
+    # (-L, clibraries)
+    set libpaths [dict get $v::code($file) result libpaths]
+    if {[llength $libpaths]} {
+	set opt [getconfigvalue link_rpath]
+	if {$opt ne {}} {
+	    foreach path $libpaths {
+		# todo (debug flag) msg "\trpath += $path"
+		lappend cmdline [string map [list @ $path] $opt]
+	    }
+	}
+    }
+
     # Run the linker
     ExecWithLogging $cmdline \
 	{$shlib: [file size $shlib] bytes} \
@@ -4894,6 +4910,86 @@ proc ::critcl::Load {f} {
 	::source $t
     }
     return
+}
+
+proc ::critcl::ResolveRelative {prefixes flags} {
+    set new {}
+    set take no
+    foreach flag $flags {
+	if {$take} {
+	    set take no
+	    set flag [file normalize [file join [file dirname [This]] $flag]]
+	    lappend new $flag
+	    continue
+	}
+	foreach prefix $prefixes {
+	    if {$flag eq $prefix} {
+		set take yes
+		lappend new $flag
+		break
+	    }
+	    set n [string length $prefix]
+	    if {[string match ${prefix}* $flag]} {
+		set path [string range $flag $n end]
+		set flag ${prefix}[file normalize [file join [file dirname [This]] $path]]
+		break
+	    }
+	    if {[string match ${prefix}=* $flag]} {
+		incr n
+		set path [string range $flag $n end]
+		set flag ${prefix}[file normalize [file join [file dirname [This]] $path]]
+		break
+	    }
+	}
+	lappend new $flag
+    }
+    return $new
+}
+
+proc ::critcl::LibPaths {clibraries} {
+    set lpath {}
+    set take no
+
+    set sa [string length -L]
+    set sb [string length --library-directory=]
+
+    foreach word $clibraries {
+	# Get paths from -L..., --library-directory ...,
+	# --library-directory=...  and full library paths.  Ignore
+	# anything else.
+
+	if {$take} {
+	    # path argument separate from preceding option.
+	    set take no
+	    lappend lpath $word
+	    continue
+	}
+	if {[string match -L* $word]} {
+	    # path at tail of argument
+	    lappend lpath [string range $word $sa end]
+	    continue
+	}
+	if {[string match -l* $word]} {
+	    # ignore
+	    continue
+	}
+	if {[string match --library-directory=* $word]} {
+	    # path at tail of argument
+	    lappend lpath [string range $word $sb end]
+	    continue
+	}
+	if {[string equal --library-directory $word]} {
+	    # Next argument is the desired path
+	    set take yes
+	    continue
+	}
+	if {[file isfile $word]} {
+	    # directory of the file
+	    lappend lpath [file dirname $word]
+	}
+	# else ignore
+    }
+    return $lpath
 }
 
 proc ::critcl::HandleDeclAfterBuild {} {
@@ -5208,6 +5304,7 @@ proc ::critcl::Exec {cmdline} {
 proc ::critcl::ExecWithLogging {cmdline okmsg errmsg} {
     variable run
 
+    # todo (debug flag) msg "EXEC: $cmdline"
     LogCmdline $cmdline
 
     # Extend the command, redirect all of its output (stdout and
@@ -5996,6 +6093,7 @@ namespace eval ::critcl {
 	    link_debug
 	    link_preload
 	    link_release
+	    link_rpath
 	    noassert
 	    object
 	    optimize
