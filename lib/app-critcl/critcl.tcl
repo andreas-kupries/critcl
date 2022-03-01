@@ -6,12 +6,14 @@
 
 # # ## ### ##### ######## ############# #####################
 
-#   Prebuild shared libraries using the Critcl package.
+# Prebuild shared libraries using the Critcl package.
 #
 #   Based originally on critbind by Jean-Claude Wippler
 #   Transmogrified into critcl   by Steve Landers
 #
-#   $Id: critcl.tcl 4717 2009-11-02 01:24:42Z stevel $
+# Copyright (c) 2001-20?? Jean-Claude Wippler
+# Copyright (c) 2002-20?? Steve Landers
+# Copyright (c) 20??-2022 Andreas Kupries <andreas_kupries@users.sourceforge.net>
 #
 # \
     exec tclkit $0 ${1+"$@"}
@@ -183,6 +185,8 @@ proc ::critcl::app::main {argv} {
     if {$v::keep} {
 	::critcl::print stderr "Files left in [critcl::cache]"
     }
+
+    ::critcl::print "Done\n"
     return
 }
 
@@ -921,7 +925,7 @@ proc ::critcl::app::ExportHeaders {} {
 	set stem [file tail $dir]
 	set dst  [file join $incdir $stem]
 
-	::critcl::print "Headers:  $v::incdir/$stem"
+	::critcl::print "Headers Placed Into: $v::incdir/$stem"
 
 	file mkdir $dst
 	foreach f [glob -nocomplain -directory $dir *] {
@@ -956,7 +960,7 @@ proc ::critcl::app::AssemblePackage {} {
     } else {
 	set dir $pkgdir
     }
-    ::critcl::print "Package:  $dir"
+    ::critcl::print "\nPackage Placed Into: $dir"
 
     file mkdir             $pkgdir
     file mkdir             $shlibdir
