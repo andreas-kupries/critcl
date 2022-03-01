@@ -668,7 +668,7 @@ proc ::critcl::app::ProcessInput {} {
 	}
 
 	set first 0
-	Log "[file tail $fn] "
+	LogLn "[file tail $fn]"
 	set dir [file dirname $fn]
 
 	if {$v::mode eq "tea"} {

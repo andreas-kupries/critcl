@@ -1433,7 +1433,7 @@ proc ::critcl::Dpop {} {
 proc ::critcl::include {path args} {
     # Include headers or other C files into the current code.
     set args [linsert $args 0 $path]
-    msg -nonewline " (include <[join $args ">) (include <"]>)"
+    msg "  (include <[join $args ">)\n  (include <"]>)"
     ccode "#include <[join $args ">\n#include <"]>"
 }
 
@@ -1458,7 +1458,7 @@ proc ::critcl::source {path} {
     SkipIgnored [set file [This]]
     HandleDeclAfterBuild
 
-    msg -nonewline " (importing $path)"
+    msg "  (importing $path)"
 
     set undivert 0
     variable v::this
@@ -1536,7 +1536,7 @@ proc ::critcl::cobjects {args} {
 proc ::critcl::tsources {args} {
     set file [SkipIgnored [This]]
     HandleDeclAfterBuild
-    # This, 'license', 'meta?' and 'meta' are the only places where we
+    # Here, 'license', 'meta?' and 'meta' are the only places where we
     # are not extending the UUID. Because the companion Tcl sources
     # (count, order, and content) have no bearing on the binary at
     # all.
@@ -1620,6 +1620,8 @@ proc ::critcl::tcl {version} {
     set file [SkipIgnored [This]]
     HandleDeclAfterBuild
 
+    msg "  (tcl $version)"
+
     UUID.extend $file .mintcl $version
     dict set v::code($file) config mintcl $version
 
@@ -1634,6 +1636,8 @@ proc ::critcl::tcl {version} {
 proc ::critcl::tk {} {
     set file [SkipIgnored [This]]
     HandleDeclAfterBuild
+
+    msg "  (+tk)"
 
     UUID.extend $file .tk 1
     dict set v::code($file) config tk 1
@@ -1997,7 +2001,7 @@ proc ::critcl::APIimport {file name version} {
     if {$at eq {}} {
 	error "Headers for API $name not found in \n-\t[join $searched \n-\t]"
     } else {
-	msg -nonewline " (stubs import $name $version @ $at/$cname)"
+	msg "  (stubs import $name $version @ $at/$cname)"
     }
 
     set def [list $name $version]
@@ -2020,7 +2024,7 @@ proc ::critcl::APIimport {file name version} {
 }
 
 proc ::critcl::APIexport {file name} {
-    msg -nonewline " (stubs export $name)"
+    msg "  (stubs export $name)"
 
     UUID.extend $file .api-self $name
     return [dict set v::code($file) config api_self $name]
@@ -3421,7 +3425,7 @@ proc ::critcl::ScanDependencies {dfile file {mode plain}} {
 
     dict with scan::capture {
 	if {$mode eq "provide"} {
-	    msg -nonewline " (provide $name $version)"
+	    msg "  (provide $name $version)"
 
 	    ImetaSet $dfile name     $name
 	    ImetaSet $dfile version  $version
@@ -3436,7 +3440,7 @@ proc ::critcl::ScanDependencies {dfile file {mode plain}} {
 	    if {$k ne "require"} continue
 	    # vlist = package list, each element a package name,
 	    # and optional version.
-	    msg -nonewline " ([file tail $file]: require [join [lsort -dict -unique $vlist] {, }])"
+	    msg "  ([file tail $file]: require [join [lsort -dict -unique $vlist] {, }])"
 	}
 
 	# The above information also goes into the teapot meta data of
@@ -3945,7 +3949,18 @@ proc ::critcl::SetParam {type values {expand 1} {uuid 0} {unique 0}} {
 
     UUID.extend $file .$type $values
 
-    #todo (debug flag): msg "\t$type += $values"
+    if {$type ne "cobjects"} {
+	#todo (debug flag): msg "\t$type += $values"
+	set dtype [string map {
+	    cheaders   {headers:    }
+	    csources   {companions: }
+	    api_hdrs    api-headers:
+	    api_ehdrs  {api-exthdr: }
+	    clibraries {libraries:  }
+	} $type]
+	set prefix "  ($dtype "
+	msg "$prefix[join $values ")\n$prefix"])"
+    }
 
     # Process the list of flags, treat non-option arguments as glob
     # patterns and expand them to a set of files, stored as absolute
@@ -4300,6 +4315,7 @@ proc ::critcl::CollectEmbeddedSources {file destination libfile ininame placestu
 	# Put full stubs definitions into the code, which can be
 	# either the bracket generated for a -pkg, or the package
 	# itself, build in mode "compile & run".
+	msg "  Stubs:"
 	set stubs     [TclDecls     $file]
 	set platstubs [TclPlatDecls $file]
 	puts -nonewline $fd [Deline [subst [Cat [Template stubs.c]]]]
@@ -5439,7 +5455,8 @@ proc ::critcl::TclDef {file hdr var varlabel} {
     }
 
     set def [string map {extern {}} [lindex $vardecl 0]]
-    msg " ($varlabel => $def)"
+    msg "    [join [lrange [file split $hdr] end-3 end] /]:"
+    msg "      ($varlabel => $def)"
     return $def
 }
 
