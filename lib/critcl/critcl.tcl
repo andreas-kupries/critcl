@@ -335,6 +335,325 @@ proc ::critcl::cdefines {defines {namespace "::"}} {
     return
 }
 
+proc ::critcl::MakeDerivedType {type ev} {
+    upvar 1 $ev errmsg
+    foreach synth {
+	MakeScalarLimited
+	MakeList
+    } {
+	set ltype [$synth $type errmsg]
+	if {$ltype eq {}} continue
+	return $ltype
+    }
+    return
+}
+
+# Dynamically create an arg-type for "(length-limited) list (of T)".
+proc ::critcl::MakeList {type ev} {
+    # Check for basic syntax.
+    # Accept the list indicator syntax as either prefix or suffix of the base type.
+
+    if {![regexp {^\[(\d*|\*)\](.*)$} $type -> limit base]} {
+	if {![regexp {^(.*)\[(\d*|\*)\]$} $type -> base limit]} {
+	    return
+	}
+    }
+
+    # This looks like a list type, start recording errors
+
+    if {($base ne {}) && ![has-argtype $base]} {
+	# XXX TODO: Recurse into the base for possible further synthesis.
+	set err "list: Unknown base type '$base'"
+	return
+    }
+    if {($limit ne {}) && ($limit == 0)} {
+	set err "list: Bad size 0, i.e. would be empty"
+	return
+    }
+
+    # (LIST) Note: The '[]' and '[*]', i.e. unlimited lists of any type cannot appear here, because
+    # they exist as standard builtins. This means that at least one of base or limit is __not__ empty.
+
+    set ntype list
+
+    if {$base eq {}} {
+	append ntype _obj
+    } else {
+	append ntype _$base
+    }
+    if {$limit in {{} *}} {
+        set limit {}
+	append ntype _any
+    } else {
+	append ntype _$limit
+    }
+
+    # Check if this list type was seen before
+    if {[has-argtype $ntype]} { return $ntype }
+
+    # Generate the validator for this kind of list.
+
+    if {$base eq {}} {
+	# Without a base type simply start from `list`.
+
+	set ctype [ArgumentCType      list]
+	set code  [ArgumentConversion list]
+	set new $code
+    } else {
+	# With a base type the start is not quite `list`. Because the C type is different, and we
+	# need a proper place for the list of Tcl_Obj* to get the element from.
+
+	set new {
+	    int k;
+	    Tcl_Obj** el;
+	    if (Tcl_ListObjGetElements (interp, @@, &(@A.c), &el) != TCL_OK) return TCL_ERROR;
+	    @A.o = @@;
+	}
+    }
+
+    if {$limit ne {}} {
+	# Check that the list conforms to the expected size
+	append new \
+	    "\n\t/* Size check, assert (length (list) == $limit) */" \
+	    "\n\tif (@A.c != $limit) \{" \
+	    "\n\t    Tcl_AppendResult (interp, \"Expected a list of $limit\", NULL);" \
+	    "\n\t    return TCL_ERROR;" \
+	    "\n\t\}"
+    }
+
+    if {$base eq {}} {
+	# Without a base type we have a length-limited plain list, and there nothing more to do.
+
+	argtype $ntype $new $ctype $ctype
+	argtypesupport $ntype [ArgumentSupport list]
+
+	return $ntype
+    }
+
+    # With a base type it is now time to synthesize something more complex to validate the list
+    # elements against the base type. `el` is the array of Tcl_Obj* holding the unconverted raw
+    # values. See `MakeVariadicTypeFor` too. It uses the same general schema, applied to the list of
+    # remaining cproc 'args'.
+
+    lappend map @type@  [ArgumentCType $base]
+    lappend map @ntype@ $ntype
+
+    append new [string map $map {
+	@A.v = (@type@*) ((!@A.c) ? 0 : ckalloc (@A.c * sizeof (@type@)));
+	for (k = 0; k < @A.c; k++) {
+	    if (_critcl_variadic_@type@_item (interp, el[k], &(@A.v[k])) != TCL_OK) {
+		ckfree ((char*) @A.v); /* Cleanup partial work */
+		return TCL_ERROR;
+	    }
+	}
+    }]
+
+    argtype $ntype $new critcl_$ntype critcl_$ntype
+
+    argtypesupport $ntype [string map $map {
+	/* NOTE: Array 'v' is allocated on the heap. The argument
+	// release code is used to free it after the worker
+	// function returned. Depending on type and what is done
+	// by the worker it may have to make copies of the data.
+	*/
+
+	typedef struct critcl_@ntype@ {
+	    Tcl_Obj* o; /* Original list object, for pass-through cases */
+	    int      c; /* Element count */
+	    @type@*  v; /* Allocated array of the elements */
+	} critcl_@ntype@;
+
+	static int
+	_critcl_variadic_@type@_item (Tcl_Interp* interp, Tcl_Obj* src, @type@* dst) {
+	    @1conv@
+	    return TCL_OK;
+	}
+    }]
+
+    argtyperelease $ntype [string map $map {
+	if (@A.c) { ckfree ((char*) @A.v); }
+    }]
+
+    return $ntype
+}
+
+proc ::critcl::MakeScalarLimited {type ev} {
+    upvar 1 $ev errmsg
+    if {[catch {llength $type}]} return
+
+    if {[lindex $type 0] ni {
+	int long wideint double float
+    }} return
+
+    # At this point we assume that it can be a restricted scalar type and we record errors.
+
+    set limits [lassign $type base]
+    set n [llength $type]
+    if {($n < 3) || (($n % 2) == 0)} { set err "$type: Incomplete restriction" ; return }
+
+    foreach {op _} $limits {
+	if {$op in {> < >= <=}} continue
+	set err "$type: Bad relation '$op'"
+	return
+    }
+
+    if {$base in {int long wideint}} {
+	foreach {_ v} $limits {
+	    if {[string is integer -strict $v]} continue
+	    set err "$base: Expected integer, have '$v'"
+	    return
+	}
+    } else {
+	# double or float
+	foreach {_ v} $limits {
+	    if {[string is double -strict $v]} continue
+	    set err "$base: Expected float, have '$v'"
+	    return
+	}
+    }
+
+    # This looks mostly good. Condense the set of restrictions into a simple min/max range
+    lassign {} mingt minge maxlt maxle
+
+    # Phase 1. Fuse identical kind of restrictions into a single of their type
+    foreach {op v} $limits {
+	switch -exact -- $op {
+	    >  { if {($mingt eq {}) || ($v > $mingt)} { set mingt $v } }
+	    >= { if {($minge eq {}) || ($v > $minge)} { set minge $v } }
+	    <  { if {($maxlt eq {}) || ($v < $maxlt)} { set maxlt $v } }
+	    <= { if {($maxle eq {}) || ($v < $maxle)} { set maxle $v } }
+	}
+    }
+
+    # Phase 2. Fuse similar (lt/le, gt/ge) into a single
+
+    if {($mingt ne {}) && ($minge ne {})} {
+	# We have both x >  a &&
+	#              x >= b
+	# ... Determine the stricter form.
+
+	# a  > b => ">  a"
+	# a  < b => ">= b"
+	# a == b => ">  a"
+
+	if {$mingt >= $minge} {
+	    set min   $mingt
+	    set minop >
+	} else {
+	    set min   $minge
+	    set minop >=
+	}
+    } elseif {$mingt ne {}} {
+	# x > a only
+	set min   $mingt
+	set minop >
+    } elseif {$minge ne {}} {
+	# x >= a only
+	set min   $minge
+	set minop >=
+    } else {
+	# No limit
+	lassign {} min minop
+    }
+
+    if {($maxlt ne {}) && ($maxle ne {})} {
+	# We have both x <  a &&
+	#              x <= b
+	# ... Determine the stricter form.
+
+	# a  > b => "<= b"
+	# a  < b => "<  a"
+	# a == b => "<  a"
+
+	if {$maxlt <= $maxle} {
+	    set max   $maxlt
+	    set maxop <
+	} else {
+	    set max   $maxle
+	    set maxop <=
+	}
+    } elseif {$maxlt ne {}} {
+	# x > a only
+	set max   $maxlt
+	set maxop <
+    } elseif {$maxle ne {}} {
+	# x >= a only
+	set max   $maxle
+	set maxop <=
+    } else {
+	# No limit
+	lassign {} max maxop
+    }
+
+    if {($min ne {}) && ($max ne {})} {
+	# With both limits they may specify an empty range, or a range allowing only single value.
+	# That is not sensible.
+
+	# a <  x <  b -- a >= b is empty
+	# a <= x <  b -- a >= b is empty
+	# a <  x <= b -- a >= b is empty
+	# a <= x <= b -- a >  b is empty, a == b is singular,
+
+	# Reduced checks:
+	# - a >  b is empty
+	# - a == b is singular if both <=, else empty
+
+	if {($min > $max)} {
+	    set err "$base: Limits do not allow any value as valid"
+	    return
+	}
+	if {$min == $max} {
+	    if {$minop$maxop eq ">=<=")} {
+		set err "$base: Limits only allow a single value as valid: $min"
+	    } else {
+		set err "$base: Limits do not allow any value as valid"
+	    }
+	    return
+	}
+    }
+
+    # Compute canonical type from the fused ranges.
+
+    set ntype $base
+    if {$min ne {}} { lappend ntype $minop $min }
+    if {$max ne {}} { lappend ntype $maxop $max }
+
+    # Check if we saw this canonical type before.
+
+    if {[has-argtype $ntype]} { return $ntype }
+
+    # Generate the new type
+
+    set ctype [ArgumentCType      $base]
+    set code  [ArgumentConversion $base]
+
+    set head  "expected $ntype, but got \\\""
+    set tail  "\\\""
+    set msg   "\"$head\", Tcl_GetString (@@), \"$tail\""
+    set new $code
+
+    if {$min ne {}} {
+	append new \
+	    "\n\t/* Range check, assert (x $minop $min) */" \
+	    "\n\tif (!(@A $minop $min)) \{" \
+	    "\n\t    Tcl_AppendResult (interp, $msg, NULL);" \
+	    "\n\t    return TCL_ERROR;" \
+	    "\n\t\}"
+    }
+    if {$max ne {}} {
+	append new \
+	    "\n\t/* Range check, assert (x $maxop $max) */" \
+	    "\n\tif (!(@A $maxop $max)) \{" \
+	    "\n\t    Tcl_AppendResult (interp, $msg, NULL);" \
+	    "\n\t    return TCL_ERROR;" \
+	    "\n\t\}"
+    }
+
+    argtype $ntype $new $ctype $ctype
+
+    return $ntype
+}
+
 proc ::critcl::MakeVariadicTypeFor {type} {
     # Note: The type "Tcl_Obj*" required special treatment and is
     # directly defined as a builtin, see 'Initialize'. The has-argtype
@@ -347,8 +666,6 @@ proc ::critcl::MakeVariadicTypeFor {type} {
 	# elements, plus conversion code. Similar to the 'list' type,
 	# except for custom C types, and conversion assumes variadic,
 	# not single argument.
-
-	# XXXA auto-create derived type from known base types.
 
 	lappend one @@  src
 	lappend one &@A dst
@@ -363,6 +680,7 @@ proc ::critcl::MakeVariadicTypeFor {type} {
 	    int src, dst, leftovers = @C;
 	    @A.c = leftovers;
 	    @A.v = (@type@*) ((!leftovers) ? 0 : ckalloc (leftovers * sizeof (@type@)));
+	    @A.o = &ov[@I];
 	    for (src = @I, dst = 0; leftovers > 0; dst++, src++, leftovers--) {
 	       if (_critcl_variadic_@type@_item (interp, ov[src], &(@A.v[dst])) != TCL_OK) {
 		   ckfree ((char*) @A.v); /* Cleanup partial work */
@@ -379,8 +697,9 @@ proc ::critcl::MakeVariadicTypeFor {type} {
 	    */
 
 	    typedef struct critcl_@ltype@ {
-		int     c; /* Element count */
-		@type@* v; /* Allocated array of the elements */
+		Tcl_Obj** o; /* Original object array */
+		int       c; /* Element count */
+		@type@*   v; /* Allocated array of the elements */
 	    } critcl_@ltype@;
 
 	    static int
@@ -463,14 +782,39 @@ proc ::critcl::ArgsInprocess {adefs skip} {
 	# t = type
 	# a = name | {name default}
 
+	# Check for a special case of list syntax, where the list indicator is written as suffix of
+	# the argument name, instead of attached to the base type. When found normalize to the
+	# expected form. I.e. transform a spec of the form `type a[...]` into `[...]type a`.
+	#
+	# Note that the argument name may be packaged with a default value. Ensure that we deail
+	# with only the name itself.
+
+	set hasdefault [expr {[llength $a] == 2}]
+	lassign $a name defaultvalue
+
+	if {[regexp {^(.+)(\[(\d*|\*)\])$} $name -> abase limit _]} {
+	    set name $abase
+	    set t $limit$t
+	}
+
+	# Check type validity
+
+	if {![has-argtype $t]} {
+	    # XXXA Attempt to compute a derived type on the fly.
+	    set err "Argument type '$t' is not known"
+	    set ltype [MakeDerivedType $t err]
+	    if {$ltype eq {}} {
+		return -code error $err
+	    }
+
+	    set t $ltype
+	}
+
 	# Base type support
 	if {![dict exists $has $t]} {
 	    dict set has $t .
 	    lappend support "[ArgumentSupport $t]"
 	}
-
-	lassign $a name defaultvalue
-	set hasdefault [expr {[llength $a] == 2}]
 
 	lappend islast [expr {$current == $last}]
 
@@ -1167,8 +1511,6 @@ proc ::critcl::cproc {name adefs rtype {body "#"} args} {
         }
         set args [lrange $args 2 end]
     }
-
-    # XXXA auto-create derived type from known base types.
 
     incr aoffset ; # always include the command name.
     set adb [ArgsInprocess $adefs $aoffset]
@@ -5566,6 +5908,9 @@ proc ::critcl::Initialize {} {
     # Premade scalar type derivations for common range restrictions.
     # Look to marker XXXA for the places where auto-creation would
     # need fitting in (future).
+    #
+    # See also `MakeScalarLimited`, which is able to generate validators for extended forms of this
+    # kind (multiple relations, arbitrary limit values, ...)
     foreach type {
 	int long wideint double float
     } {
@@ -5580,11 +5925,12 @@ proc ::critcl::Initialize {} {
 	    set tail  "\\\""
 	    set msg   "\"$head\", Tcl_GetString (@@), \"$tail\""
 	    set    new $code
-	    append new "\n/* Range check, assert (x $restriction) */"
-	    append new "\nif (!(@A $restriction)) \{" \
-		"\n    Tcl_AppendResult (interp, $msg, NULL);" \
-		"\n    return TCL_ERROR;" \
-		"\n\}"
+	    append new \
+		"\n\t/* Range check, assert (x $restriction) */" \
+		"\n\tif (!(@A $restriction)) \{" \
+		"\n\t    Tcl_AppendResult (interp, $msg, NULL);" \
+		"\n\t    return TCL_ERROR;" \
+		"\n\t\}"
 
 	    argtype $ntype $new $ctype $ctype
 	}
@@ -5619,6 +5965,13 @@ proc ::critcl::Initialize {} {
 	    int             c;
 	} critcl_list;
     }
+
+    # See also `MakeList` which is able to generate arbitrary length-limited lists, lists over a
+    # base type, or a combination of both. This here defines the base case of the recognized syntax
+    # for "unlimited-length list with no base type". This shortcuts the operation of `MakeList`, no
+    # special types and code needed.
+    argtype {[]} = list
+    argtype {[*]} = list
 
     argtype Tcl_Obj* {
 	@A = @@;

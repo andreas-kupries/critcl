@@ -284,6 +284,59 @@ test critcl-cproc${suffix}-4.${n}-vint "cproc, variadic int argument" -body {
 unset n
 
 # -------------------------------------------------------------------------
+# Test the various derived types:
+# - Extended limited scalars
+# - List types (length-limited, with base type, both)
+
+## TODO: Bad types to demonstrate error checking and messages
+
+set n 0
+foreach type {
+    {int > 4}
+    {int > 4 <= 8}
+    {int < 8}
+    {int < 8 >= 4}
+    {int > 2 >= 4}
+    {int < 2 < 4 < 6}
+    {int < 2 <= 4}
+    {[2]}
+    {[]int}
+    {[2]int}
+    {int[]}
+    {int[2]}
+} {
+    set td [string map {
+        \[ = \] =
+        { } _
+        >= ge > gt
+        <= le < lt
+    } $type]
+    set rpath  [localPath test/assets/cproc${suffix}/6.${n}-$td]
+    set result ">> missing: $rpath"
+    if {[file exists $rpath]} { set result [viewFile $rpath] }
+    
+    test critcl-cproc${suffix}-6.${n}-$td "cproc, $type argument" -body {
+        get critcl::cproc aproc [list $type x] void { }
+    } -result $result
+
+    incr n ; unset td rpath result
+}
+unset n
+
+# -------------------------------------------------------------------------
+# Special list syntax, with indicator tailing the argument name, instead of attached to the type.
+
+set rpath  [localPath test/assets/cproc${suffix}/7.0]
+set result ">> missing: $rpath"
+if {[file exists $rpath]} { set result [viewFile $rpath] }
+
+test critcl-cproc${suffix}-7.0 "cproc, `int x[]` argument" -body {
+    get critcl::cproc aproc {int a[]} void { }
+} -result $result
+
+unset rpath result
+
+# -------------------------------------------------------------------------
 ## Mistakenly entered C syntax - Normalize to working syntax
 
 test critcl-cproc${suffix}-5.0 {cproc, mistaken C argument syntax, lone comma} -body {

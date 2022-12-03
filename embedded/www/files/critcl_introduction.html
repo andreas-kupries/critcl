@@ -102,7 +102,7 @@
 &#124; <a href="../index.html">Keyword Index</a>
  ] <hr>
 <div class="doctools">
-<h1 class="doctools_title">critcl_introduction(n) 3.1.18.1 doc &quot;C Runtime In Tcl (CriTcl)&quot;</h1>
+<h1 class="doctools_title">critcl_introduction(n) 3.1.18.2 doc &quot;C Runtime In Tcl (CriTcl)&quot;</h1>
 <div id="name" class="doctools_section"><h2><a name="name">Name</a></h2>
 <p>critcl_introduction - Introduction To CriTcl</p>
 </div>
@@ -327,6 +327,12 @@ paragraph.</p>
 <p>Arbitrary libraries and applications using critcl dynamically
        (<i class="term"><a href="../index.html#compile_run">compile &amp; run</a></i>) on the other hand likely cannot, and
        should not.</p></li>
+<li><p>Extended <b class="cmd">cproc</b> argument type processing. Now able to
+       auto-create restricted scalar types. I.e. types derived from
+       <i class="term">int</i>, etc. and limited in the range of allowed values.</p>
+<p>Further able to auto-create restricted list types, i.e. types
+       derived from <i class="term">list</i> and either limited in length, or in
+       the type of the elements, or both.</p></li>
 </ol>
 </div>
 <div id="section11" class="doctools_section"><h2><a name="section11">Changes for version 3.1.18.1</a></h2>

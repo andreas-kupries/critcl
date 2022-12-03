@@ -304,15 +304,13 @@ embedded in Tcl on the fly and either loading the resulting objects into Tcl for
 immediate use or packaging them for distribution\&.  Use \fICriTcl\fR to improve
 performance by rewriting in C those routines that are performance bottlenecks\&.
 .PP
-This document is a breakout of the descriptions for the predefined
-argument- and result-types usable with the \fBcritcl::cproc\fR
-command, as detailed in the reference manpage for the \fBcritcl\fR
-package, plus the information on how to extend the predefined set with
-custom types\&. The breakout was made to make this information easier to
-find (toplevel document vs\&. having to search the large main reference)\&.
+This document is a breakout of the descriptions for the predefined argument- and result-types usable
+with the \fBcritcl::cproc\fR command, as detailed in the reference manpage for the \fBcritcl\fR
+package, plus the information on how to extend the predefined set with custom types\&. The breakout
+was made to make this information easier to find (toplevel document vs\&. having to search the large
+main reference)\&.
 .PP
-Its intended audience are developers wishing to write Tcl
-packages with embedded C code\&.
+Its intended audience are developers wishing to write Tcl packages with embedded C code\&.
 .SH "STANDARD ARGUMENT TYPES"
 Before going into the details first a quick overview:
 .CS
@@ -325,6 +323,16 @@ Tcl_Interp*      | Tcl_Interp*    | n/a       | \fISpecial\fR, only first
 Tcl_Obj*         | Tcl_Obj*       | Any       | \fIRead-only\fR
 object           |                |           | Alias of \fBTcl_Obj*\fR above
 list             | critcl_list    | List      | \fIRead-only\fR
+[], [*]          |                |           | Alias of \fBlist\fR above
+---------------- | -------------- | --------- | ------------------------------
+[N]              |                |           | Restricted \fBlist\fR-types\&.
+type[], type[N]  |                |           | Length-limited ([\&.\&.]), expected
+[]type, [N]type  |                |           | element type, or both\&.
+                 |                |           |
+                 |                |           | Element types can be all known argument
+                 |                |           | types, except for any kind of list\&.
+                 |                |           | IOW multi-dimensional lists are not
+                 |                |           | supported\&.
 ---------------- | -------------- | --------- | ------------------------------
 char*            | const char*    | Any       | \fIRead-only\fR, \fIstring rep\fR
 pstring          | critcl_pstring | Any       | \fIRead-only\fR
@@ -336,14 +344,15 @@ wideint          | Tcl_WideInt    | WideInt   |
 double           | double         | Double    |
 float            | float          | Double    |
 ---------------- | -------------- | --------- | ------------------------------
-X > 0            |                |           | For X in \fBint\fR \&.\&.\&. \fBfloat\fR above\&.
-X >= 0           |                |           | C types as per the base type X\&.
-X < 0            |                |           | Allowed argument values are
-X <= 0           |                |           | restricted as per the shown
-X > 1            |                |           | relation
-X >= 1           |                |           |
-X < 1            |                |           | This is not a general mechanism
-X <= 1           |                |           | open to other values\&. Only 0/1\&.
+X > N            |                |           | For X in \fBint\fR \&.\&.\&. \fBfloat\fR above\&.
+X >= N           |                |           | The C types are as per the base type X\&.
+X < N            |                |           | N, A, B are expected to be constant integer
+X <= N           |                |           | numbers for types \fBint\fR, \fBlong\fR,
+X > A < B        |                |           | and \fBwideint\fR\&. For types \fBdouble\fR
+etc\&.             |                |           | and \fBfloat\fR the N, A, and B can be floating
+                 |                |           | point numbers\&. Multiple restrictions are
+                 |                |           | fused as much as possible to yield at most
+                 |                |           | both upper and lower limits\&.
 ---------------- | -------------- | --------- | ------------------------------
 boolean          | int            | Boolean   |
 bool             |                |           | Alias of \fBboolean\fR above
@@ -406,10 +415,13 @@ under the script because of string value and internal representation
 not matching anymore, up to crashes anytime later\&.
 .TP
 list
-The function takes an argument of type \fBcritcl_list\fR containing
-the original \fBTcl_Obj*\fR reference of the Tcl argument, plus the
-length of the Tcl list and a pointer to the array of the list
-elements\&.
+.TP
+[]
+.TP
+[*]
+The function takes an argument of type \fBcritcl_list\fR containing the original \fBTcl_Obj*\fR
+reference of the Tcl argument, plus the length of the Tcl list and a pointer to the array of the
+list elements\&.
 .CS
 
 
@@ -421,13 +433,49 @@ typedef struct critcl_list {
 
 .CE
 .IP
-The Tcl argument must be convertible to \fBList\fR, an error is
-thrown otherwise\&.
+The Tcl argument must be convertible to \fBList\fR, an error is thrown otherwise\&.
 .sp
-Note the \fIconst\fR\&. The list is \fIread-only\fR\&.  Any
-modification can have arbitrary effects, from pulling out the rug
-under the script because of string value and internal representation
-not matching anymore, up to crashes anytime later\&.
+Note the \fIconst\fR\&. The list is \fIread-only\fR\&.  Any modification can have arbitrary
+effects, from pulling out the rug under the script because of string value and internal
+representation not matching anymore, up to crashes anytime later\&.
+.sp
+Further note that the system understands a number of more complex syntactical forms which all
+translate into forms of lists under the hood, as described by the following points\&.
+.TP
+[N]
+A \fIlist\fR type with additional checks limiting the length to \fBN\fR, an integer numbre
+greater than zero\&.
+.TP
+[]type
+.TP
+type[]
+A \fIlist\fR type whose elements all have to be convertible for \fItype\fR\&.
+All known types are allowed, except for \fBlist\fR and derivates\&.
+In other words, multi-dimensional lists are not supported\&.
+.sp
+The function will take a structure argument of the general form
+.CS
+
+
+typedef struct critcl_list_\&.\&.\&. {
+    Tcl_Obj* o;
+    (Ctype)* v;
+    int      c;
+} critcl_list_\&.\&.\&.;
+
+.CE
+.IP
+where \fB(Ctype)\fR represents the C type for values of type \fBtype\fR\&.
+.TP
+[N]type
+.TP
+type[N]
+These are \fBlist\fR types combining the elements of \fI[N]\fR and \fI[]type\fR\&.
+.sp
+As an example, the specification of \fIint[3] a\fR describes argument \fIa\fR as a list of
+exactly 3 elements, all of which have to be of type \fBint\fR\&.
+.sp
+Note that this example can also be written in the more C-like form of \fIint a[3]\fR\&.
 .TP
 bytearray
 .TP
@@ -481,55 +529,49 @@ not matching anymore, up to crashes anytime later\&.
 .TP
 double
 The function takes an argument of type \fBdouble\fR\&.
-The Tcl argument must be convertible to \fBDouble\fR, an error is
-thrown otherwise\&.
+The Tcl argument must be convertible to \fBDouble\fR, an error is thrown otherwise\&.
 .TP
-double > 0
+double > N
 .TP
-double >= 0
+double >= N
 .TP
-double < 0
+double < N
 .TP
-double <= 0
-.TP
-double > 1
-.TP
-double >= 1
-.TP
-double < 1
-.TP
-double <= 1
-These are variants of \fIdouble\fR above, restricting the argument
-value to the shown relation\&. An error is thrown for Tcl arguments
-outside of the specified range\&.
-\fINote:\fR This is not a general range specification syntax\&. Only
-the listed types exist\&.
+double <= N
+These are variants of \fIdouble\fR above, restricting the argument value to the shown relation\&.
+An error is thrown for Tcl arguments outside of the specified range\&.
+.sp
+The limiter \fIN\fR has to be a constant floating point value\&.
+.sp
+It is possible to use multiple limiters\&.
+For example \fIdouble > A > B <= C\fR\&.
+The system will fuse them to a single upper/lower limit (or both)\&.
+.sp
+The system will reject limits describing an empty range of values, or a range containing only
+a single value\&.
 .TP
 float
 The function takes an argument of type \fBfloat\fR\&.
-The Tcl argument must be convertible to \fBDouble\fR, an error is
-thrown otherwise\&.
+The Tcl argument must be convertible to \fBDouble\fR, an error is thrown otherwise\&.
 .TP
-float > 0
+float > N
 .TP
-float >= 0
+float >= N
 .TP
-float < 0
+float < N
 .TP
-float <= 0
-.TP
-float > 1
-.TP
-float >= 1
-.TP
-float < 1
-.TP
-float <= 1
-These are variants of \fIfloat\fR above, restricting the argument
-value to the shown relation\&. An error is thrown for Tcl arguments
-outside of the specified range\&.
-\fINote:\fR This is not a general range specification syntax\&. Only
-the listed types exist\&.
+float <= N
+These are variants of \fIfloat\fR above, restricting the argument value to the shown relation\&.
+An error is thrown for Tcl arguments outside of the specified range\&.
+.sp
+The limiter \fIN\fR has to be a constant floating point value\&.
+.sp
+It is possible to use multiple limiters\&.
+For example \fIfloat > A > B <= C\fR\&.
+The system will fuse them to a single upper/lower limit (or both)\&.
+.sp
+The system will reject limits describing an empty range of values, or a range containing only
+a single value\&.
 .TP
 boolean
 .TP
@@ -587,81 +629,72 @@ reference when they are done with it\&.
 .TP
 int
 The function takes an argument of type \fBint\fR\&.
-The Tcl argument must be convertible to \fBInt\fR, an error is thrown
-otherwise\&.
+The Tcl argument must be convertible to \fBInt\fR, an error is thrown otherwise\&.
 .TP
-int > 0
+int > N
 .TP
-int >= 0
+int >= N
 .TP
-int < 0
+int < N
 .TP
-int <= 0
-.TP
-int > 1
-.TP
-int >= 1
-.TP
-int < 1
-.TP
-int <= 1
-These are variants of \fIint\fR above, restricting the argument value
-to the shown relation\&. An error is thrown for Tcl arguments outside of
-the specified range\&.
-\fINote:\fR This is not a general range specification syntax\&. Only
-the listed types exist\&.
+int <= N
+These are variants of \fIint\fR above, restricting the argument value to the shown relation\&.
+An error is thrown for Tcl arguments outside of the specified range\&.
+.sp
+The limiter \fIN\fR has to be a constant integer value\&.
+.sp
+It is possible to use multiple limiters\&.
+For example \fIint > A > B <= C\fR\&.
+The system will fuse them to a single upper/lower limit (or both)\&.
+.sp
+The system will reject limits describing an empty range of values, or a range containing only
+a single value\&.
 .TP
 long
 The function takes an argument of type \fBlong int\fR\&.
-The Tcl argument must be convertible to \fBLong\fR, an error is
-thrown otherwise\&.
+The Tcl argument must be convertible to \fBLong\fR, an error is thrown otherwise\&.
 .TP
-long > 0
+long > N
 .TP
-long >= 0
+long >= N
 .TP
-long < 0
+long < N
 .TP
-long <= 0
-.TP
-long > 1
-.TP
-long >= 1
-.TP
-long < 1
-.TP
-long <= 1
-These are variants of \fIlong\fR above, restricting the argument
-value to the shown relation\&. An error is thrown for Tcl arguments
-outside of the specified range\&.
-\fINote:\fR This is not a general range specification syntax\&. Only
-the listed types exist\&.
+long <= N
+These are variants of \fIlong\fR above, restricting the argument value to the shown relation\&.
+An error is thrown for Tcl arguments outside of the specified range\&.
+.sp
+The limiter \fIN\fR has to be a constant integer value\&.
+.sp
+It is possible to use multiple limiters\&.
+For example \fIlong > A > B <= C\fR\&.
+The system will fuse them to a single upper/lower limit (or both)\&.
+.sp
+The system will reject limits describing an empty range of values, or a range containing only
+a single value\&.
 .TP
 wideint
 The function takes an argument of type \fBTcl_WideInt\fR\&.
-The Tcl argument must be convertible to \fBWideInt\fR, an error is
-thrown otherwise\&.
+The Tcl argument must be convertible to \fBWideInt\fR, an error is thrown otherwise\&.
 .TP
-wideint > 0
+wideint > N
 .TP
-wideint >= 0
+wideint >= N
 .TP
-wideint < 0
+wideint < N
 .TP
-wideint <= 0
-.TP
-wideint > 1
-.TP
-wideint >= 1
-.TP
-wideint < 1
-.TP
-wideint <= 1
-These are variants of \fIwideint\fR above, restricting the argument
-value to the shown relation\&. An error is thrown for Tcl arguments
-outside of the specified range\&.
-\fINote:\fR This is not a general range specification syntax\&. Only
-the listed types exist\&.
+wideint <= N
+These are variants of \fIwideint\fR above, restricting the argument value to the shown relation\&.
+An error is thrown for Tcl arguments outside of the specified range\&.
+.sp
+The limiter \fIN\fR has to be a constant integer value\&.
+.sp
+It is possible to use multiple limiters\&.
+For example \fIwideint > A > B <= C\fR\&.
+The system will fuse them to a single upper/lower limit (or both)\&.
+.sp
+The system will reject limits describing an empty range of values, or a range containing only
+a single value\&.
 .TP
 void*
 .TP
@@ -990,9 +1023,8 @@ released when the worker returns\&. This command defines the C code
 for doing that\&.
 .PP
 .SH EXAMPLES
-The examples shown here have been drawn from section "Embedding C" in
-the document about \fIUsing CriTcl\fR\&. Please see that document
-for many more examples\&.
+The examples shown here have been drawn from the section "Embedding C" in the document about
+\fIUsing CriTcl\fR\&. Please see that document for many more examples\&.
 .SS "A SIMPLE PROCEDURE"
 Starting simple, let us assume that the Tcl code in question is
 something like

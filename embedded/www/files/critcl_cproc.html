@@ -154,14 +154,12 @@
 embedded in Tcl on the fly and either loading the resulting objects into Tcl for
 immediate use or packaging them for distribution.  Use <i class="term"><a href="critcl_pkg.html">CriTcl</a></i> to improve
 performance by rewriting in C those routines that are performance bottlenecks.</p>
-<p>This document is a breakout of the descriptions for the predefined
-argument- and result-types usable with the <b class="cmd">critcl::cproc</b>
-command, as detailed in the reference manpage for the <b class="package"><a href="critcl_pkg.html">critcl</a></b>
-package, plus the information on how to extend the predefined set with
-custom types. The breakout was made to make this information easier to
-find (toplevel document vs. having to search the large main reference).</p>
-<p>Its intended audience are developers wishing to write Tcl
-packages with embedded C code.</p>
+<p>This document is a breakout of the descriptions for the predefined argument- and result-types usable
+with the <b class="cmd">critcl::cproc</b> command, as detailed in the reference manpage for the <b class="package"><a href="critcl_pkg.html">critcl</a></b>
+package, plus the information on how to extend the predefined set with custom types. The breakout
+was made to make this information easier to find (toplevel document vs. having to search the large
+main reference).</p>
+<p>Its intended audience are developers wishing to write Tcl packages with embedded C code.</p>
 </div>
 <div id="section2" class="doctools_section"><h2><a name="section2">Standard argument types</a></h2>
 <p>Before going into the details first a quick overview:</p>
@@ -173,6 +171,16 @@ Tcl_Interp*      | Tcl_Interp*    | n/a       | <em>Special</em>, only first
 Tcl_Obj*         | Tcl_Obj*       | Any       | <em>Read-only</em>
 object           |                |           | Alias of <b class="type">Tcl_Obj*</b> above
 list             | critcl_list    | List      | <em>Read-only</em>
+[], [*]          |                |           | Alias of <b class="type">list</b> above
+---------------- | -------------- | --------- | ------------------------------
+[N]              |                |           | Restricted <b class="type">list</b>-types.
+type[], type[N]  |                |           | Length-limited ([..]), expected
+[]type, [N]type  |                |           | element type, or both.
+                 |                |           |
+                 |                |           | Element types can be all known argument
+                 |                |           | types, except for any kind of list.
+                 |                |           | IOW multi-dimensional lists are not
+                 |                |           | supported.
 ---------------- | -------------- | --------- | ------------------------------
 char*            | const char*    | Any       | <em>Read-only</em>, <em>string rep</em>
 pstring          | critcl_pstring | Any       | <em>Read-only</em>
@@ -184,14 +192,15 @@ wideint          | Tcl_WideInt    | WideInt   |
 double           | double         | Double    |
 float            | float          | Double    |
 ---------------- | -------------- | --------- | ------------------------------
-X &gt; 0            |                |           | For X in <b class="type">int</b> ... <b class="type">float</b> above.
-X &gt;= 0           |                |           | C types as per the base type X.
-X &lt; 0            |                |           | Allowed argument values are
-X &lt;= 0           |                |           | restricted as per the shown
-X &gt; 1            |                |           | relation
-X &gt;= 1           |                |           |
-X &lt; 1            |                |           | This is not a general mechanism
-X &lt;= 1           |                |           | open to other values. Only 0/1.
+X &gt; N            |                |           | For X in <b class="type">int</b> ... <b class="type">float</b> above.
+X &gt;= N           |                |           | The C types are as per the base type X.
+X &lt; N            |                |           | N, A, B are expected to be constant integer
+X &lt;= N           |                |           | numbers for types <b class="type">int</b>, <b class="type">long</b>,
+X &gt; A &lt; B        |                |           | and <b class="type">wideint</b>. For types <b class="type">double</b>
+etc.             |                |           | and <b class="type">float</b> the N, A, and B can be floating
+                 |                |           | point numbers. Multiple restrictions are
+                 |                |           | fused as much as possible to yield at most
+                 |                |           | both upper and lower limits.
 ---------------- | -------------- | --------- | ------------------------------
 boolean          | int            | Boolean   |
 bool             |                |           | Alias of <b class="type">boolean</b> above
@@ -244,10 +253,13 @@ modification can have arbitrary effects, from pulling out the rug
 under the script because of string value and internal representation
 not matching anymore, up to crashes anytime later.</p></dd>
 <dt>list</dt>
-<dd><p>The function takes an argument of type <b class="type">critcl_list</b> containing
-the original <b class="type">Tcl_Obj*</b> reference of the Tcl argument, plus the
-length of the Tcl list and a pointer to the array of the list
-elements.</p>
+<dd></dd>
+<dt>[]</dt>
+<dd></dd>
+<dt>[*]</dt>
+<dd><p>The function takes an argument of type <b class="type">critcl_list</b> containing the original <b class="type">Tcl_Obj*</b>
+reference of the Tcl argument, plus the length of the Tcl list and a pointer to the array of the
+list elements.</p>
 <pre class="doctools_example">
 typedef struct critcl_list {
     Tcl_Obj*        o;
@@ -255,12 +267,37 @@ typedef struct critcl_list {
     int             c;
 } critcl_list;
 </pre>
-<p>The Tcl argument must be convertible to <b class="type">List</b>, an error is
-thrown otherwise.</p>
-<p>Note the <em>const</em>. The list is <em>read-only</em>.  Any
-modification can have arbitrary effects, from pulling out the rug
-under the script because of string value and internal representation
-not matching anymore, up to crashes anytime later.</p></dd>
+<p>The Tcl argument must be convertible to <b class="type">List</b>, an error is thrown otherwise.</p>
+<p>Note the <em>const</em>. The list is <em>read-only</em>.  Any modification can have arbitrary
+effects, from pulling out the rug under the script because of string value and internal
+representation not matching anymore, up to crashes anytime later.</p>
+<p>Further note that the system understands a number of more complex syntactical forms which all
+translate into forms of lists under the hood, as described by the following points.</p></dd>
+<dt>[N]</dt>
+<dd><p>A <i class="term">list</i> type with additional checks limiting the length to <b class="const">N</b>, an integer numbre
+greater than zero.</p></dd>
+<dt>[]type</dt>
+<dd></dd>
+<dt>type[]</dt>
+<dd><p>A <i class="term">list</i> type whose elements all have to be convertible for <i class="term">type</i>.
+All known types are allowed, except for <b class="type">list</b> and derivates.
+In other words, multi-dimensional lists are not supported.</p>
+<p>The function will take a structure argument of the general form</p>
+<pre class="doctools_example">
+typedef struct critcl_list_... {
+    Tcl_Obj* o;
+    (Ctype)* v;
+    int      c;
+} critcl_list_...;
+</pre>
+<p>where <b class="const">(Ctype)</b> represents the C type for values of type <b class="type">type</b>.</p></dd>
+<dt>[N]type</dt>
+<dd></dd>
+<dt>type[N]</dt>
+<dd><p>These are <b class="type">list</b> types combining the elements of <i class="term">[N]</i> and <i class="term">[]type</i>.</p>
+<p>As an example, the specification of <i class="term">int[3] a</i> describes argument <i class="arg">a</i> as a list of
+exactly 3 elements, all of which have to be of type <b class="type">int</b>.</p>
+<p>Note that this example can also be written in the more C-like form of <i class="term">int a[3]</i>.</p></dd>
 <dt>bytearray</dt>
 <dd></dd>
 <dt>rawchar*</dt>
@@ -302,52 +339,40 @@ under the script because of string value and internal representation
 not matching anymore, up to crashes anytime later.</p></dd>
 <dt>double</dt>
 <dd><p>The function takes an argument of type <b class="type">double</b>.
-The Tcl argument must be convertible to <b class="type">Double</b>, an error is
-thrown otherwise.</p></dd>
-<dt>double &gt; 0</dt>
+The Tcl argument must be convertible to <b class="type">Double</b>, an error is thrown otherwise.</p></dd>
+<dt>double &gt; N</dt>
 <dd></dd>
-<dt>double &gt;= 0</dt>
+<dt>double &gt;= N</dt>
 <dd></dd>
-<dt>double &lt; 0</dt>
+<dt>double &lt; N</dt>
 <dd></dd>
-<dt>double &lt;= 0</dt>
-<dd></dd>
-<dt>double &gt; 1</dt>
-<dd></dd>
-<dt>double &gt;= 1</dt>
-<dd></dd>
-<dt>double &lt; 1</dt>
-<dd></dd>
-<dt>double &lt;= 1</dt>
-<dd><p>These are variants of <i class="term">double</i> above, restricting the argument
-value to the shown relation. An error is thrown for Tcl arguments
-outside of the specified range.
-<em>Note:</em> This is not a general range specification syntax. Only
-the listed types exist.</p></dd>
+<dt>double &lt;= N</dt>
+<dd><p>These are variants of <i class="term">double</i> above, restricting the argument value to the shown relation.
+An error is thrown for Tcl arguments outside of the specified range.</p>
+<p>The limiter <i class="arg">N</i> has to be a constant floating point value.</p>
+<p>It is possible to use multiple limiters.
+For example <i class="term">double &gt; A &gt; B &lt;= C</i>.
+The system will fuse them to a single upper/lower limit (or both).</p>
+<p>The system will reject limits describing an empty range of values, or a range containing only
+a single value.</p></dd>
 <dt>float</dt>
 <dd><p>The function takes an argument of type <b class="type">float</b>.
-The Tcl argument must be convertible to <b class="type">Double</b>, an error is
-thrown otherwise.</p></dd>
-<dt>float &gt; 0</dt>
+The Tcl argument must be convertible to <b class="type">Double</b>, an error is thrown otherwise.</p></dd>
+<dt>float &gt; N</dt>
 <dd></dd>
-<dt>float &gt;= 0</dt>
+<dt>float &gt;= N</dt>
 <dd></dd>
-<dt>float &lt; 0</dt>
+<dt>float &lt; N</dt>
 <dd></dd>
-<dt>float &lt;= 0</dt>
-<dd></dd>
-<dt>float &gt; 1</dt>
-<dd></dd>
-<dt>float &gt;= 1</dt>
-<dd></dd>
-<dt>float &lt; 1</dt>
-<dd></dd>
-<dt>float &lt;= 1</dt>
-<dd><p>These are variants of <i class="term">float</i> above, restricting the argument
-value to the shown relation. An error is thrown for Tcl arguments
-outside of the specified range.
-<em>Note:</em> This is not a general range specification syntax. Only
-the listed types exist.</p></dd>
+<dt>float &lt;= N</dt>
+<dd><p>These are variants of <i class="term">float</i> above, restricting the argument value to the shown relation.
+An error is thrown for Tcl arguments outside of the specified range.</p>
+<p>The limiter <i class="arg">N</i> has to be a constant floating point value.</p>
+<p>It is possible to use multiple limiters.
+For example <i class="term">float &gt; A &gt; B &lt;= C</i>.
+The system will fuse them to a single upper/lower limit (or both).</p>
+<p>The system will reject limits describing an empty range of values, or a range containing only
+a single value.</p></dd>
 <dt>boolean</dt>
 <dd></dd>
 <dt>bool</dt>
@@ -394,76 +419,58 @@ function or the system it is a part of have to unregister the global
 reference when they are done with it.</p></dd>
 <dt>int</dt>
 <dd><p>The function takes an argument of type <b class="type">int</b>.
-The Tcl argument must be convertible to <b class="type">Int</b>, an error is thrown
-otherwise.</p></dd>
-<dt>int &gt; 0</dt>
+The Tcl argument must be convertible to <b class="type">Int</b>, an error is thrown otherwise.</p></dd>
+<dt>int &gt; N</dt>
 <dd></dd>
-<dt>int &gt;= 0</dt>
+<dt>int &gt;= N</dt>
 <dd></dd>
-<dt>int &lt; 0</dt>
+<dt>int &lt; N</dt>
 <dd></dd>
-<dt>int &lt;= 0</dt>
-<dd></dd>
-<dt>int &gt; 1</dt>
-<dd></dd>
-<dt>int &gt;= 1</dt>
-<dd></dd>
-<dt>int &lt; 1</dt>
-<dd></dd>
-<dt>int &lt;= 1</dt>
-<dd><p>These are variants of <i class="term">int</i> above, restricting the argument value
-to the shown relation. An error is thrown for Tcl arguments outside of
-the specified range.
-<em>Note:</em> This is not a general range specification syntax. Only
-the listed types exist.</p></dd>
+<dt>int &lt;= N</dt>
+<dd><p>These are variants of <i class="term">int</i> above, restricting the argument value to the shown relation.
+An error is thrown for Tcl arguments outside of the specified range.</p>
+<p>The limiter <i class="arg">N</i> has to be a constant integer value.</p>
+<p>It is possible to use multiple limiters.
+For example <i class="term">int &gt; A &gt; B &lt;= C</i>.
+The system will fuse them to a single upper/lower limit (or both).</p>
+<p>The system will reject limits describing an empty range of values, or a range containing only
+a single value.</p></dd>
 <dt>long</dt>
 <dd><p>The function takes an argument of type <b class="type">long int</b>.
-The Tcl argument must be convertible to <b class="type">Long</b>, an error is
-thrown otherwise.</p></dd>
-<dt>long &gt; 0</dt>
+The Tcl argument must be convertible to <b class="type">Long</b>, an error is thrown otherwise.</p></dd>
+<dt>long &gt; N</dt>
 <dd></dd>
-<dt>long &gt;= 0</dt>
+<dt>long &gt;= N</dt>
 <dd></dd>
-<dt>long &lt; 0</dt>
+<dt>long &lt; N</dt>
 <dd></dd>
-<dt>long &lt;= 0</dt>
-<dd></dd>
-<dt>long &gt; 1</dt>
-<dd></dd>
-<dt>long &gt;= 1</dt>
-<dd></dd>
-<dt>long &lt; 1</dt>
-<dd></dd>
-<dt>long &lt;= 1</dt>
-<dd><p>These are variants of <i class="term">long</i> above, restricting the argument
-value to the shown relation. An error is thrown for Tcl arguments
-outside of the specified range.
-<em>Note:</em> This is not a general range specification syntax. Only
-the listed types exist.</p></dd>
+<dt>long &lt;= N</dt>
+<dd><p>These are variants of <i class="term">long</i> above, restricting the argument value to the shown relation.
+An error is thrown for Tcl arguments outside of the specified range.</p>
+<p>The limiter <i class="arg">N</i> has to be a constant integer value.</p>
+<p>It is possible to use multiple limiters.
+For example <i class="term">long &gt; A &gt; B &lt;= C</i>.
+The system will fuse them to a single upper/lower limit (or both).</p>
+<p>The system will reject limits describing an empty range of values, or a range containing only
+a single value.</p></dd>
 <dt>wideint</dt>
 <dd><p>The function takes an argument of type <b class="type">Tcl_WideInt</b>.
-The Tcl argument must be convertible to <b class="type">WideInt</b>, an error is
-thrown otherwise.</p></dd>
-<dt>wideint &gt; 0</dt>
+The Tcl argument must be convertible to <b class="type">WideInt</b>, an error is thrown otherwise.</p></dd>
+<dt>wideint &gt; N</dt>
 <dd></dd>
-<dt>wideint &gt;= 0</dt>
+<dt>wideint &gt;= N</dt>
 <dd></dd>
-<dt>wideint &lt; 0</dt>
+<dt>wideint &lt; N</dt>
 <dd></dd>
-<dt>wideint &lt;= 0</dt>
-<dd></dd>
-<dt>wideint &gt; 1</dt>
-<dd></dd>
-<dt>wideint &gt;= 1</dt>
-<dd></dd>
-<dt>wideint &lt; 1</dt>
-<dd></dd>
-<dt>wideint &lt;= 1</dt>
-<dd><p>These are variants of <i class="term">wideint</i> above, restricting the argument
-value to the shown relation. An error is thrown for Tcl arguments
-outside of the specified range.
-<em>Note:</em> This is not a general range specification syntax. Only
-the listed types exist.</p></dd>
+<dt>wideint &lt;= N</dt>
+<dd><p>These are variants of <i class="term">wideint</i> above, restricting the argument value to the shown relation.
+An error is thrown for Tcl arguments outside of the specified range.</p>
+<p>The limiter <i class="arg">N</i> has to be a constant integer value.</p>
+<p>It is possible to use multiple limiters.
+For example <i class="term">wideint &gt; A &gt; B &lt;= C</i>.
+The system will fuse them to a single upper/lower limit (or both).</p>
+<p>The system will reject limits describing an empty range of values, or a range containing only
+a single value.</p></dd>
 <dt>void*</dt>
 <dd></dd>
 <dt>double*</dt>
@@ -746,9 +753,8 @@ for doing that.</p></dd>
 </dl>
 </div>
 <div id="section5" class="doctools_section"><h2><a name="section5">Examples</a></h2>
-<p>The examples shown here have been drawn from section &quot;Embedding C&quot; in
-the document about <i class="term"><a href="critcl_usingit.html">Using CriTcl</a></i>. Please see that document
-for many more examples.</p>
+<p>The examples shown here have been drawn from the section &quot;Embedding C&quot; in the document about
+<i class="term"><a href="critcl_usingit.html">Using CriTcl</a></i>. Please see that document for many more examples.</p>
 <div id="subsection1" class="doctools_subsection"><h3><a name="subsection1">A Simple Procedure</a></h3>
 <p>Starting simple, let us assume that the Tcl code in question is
 something like</p>

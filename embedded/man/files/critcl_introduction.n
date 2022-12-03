@@ -4,7 +4,7 @@
 '\" Copyright (c) Steve Landers
 '\" Copyright (c) 2011-2018 Andreas Kupries
 '\"
-.TH "critcl_introduction" n 3\&.1\&.18\&.1 doc "C Runtime In Tcl (CriTcl)"
+.TH "critcl_introduction" n 3\&.1\&.18\&.2 doc "C Runtime In Tcl (CriTcl)"
 .\" The -*- nroff -*- definitions below are for supplemental macros used
 .\" in Tcl/Tk manual entries.
 .\"
@@ -501,6 +501,14 @@ performance penalty invoked by this \fIglobal\fR setting\&.
 Arbitrary libraries and applications using critcl dynamically
 (\fIcompile & run\fR) on the other hand likely cannot, and
 should not\&.
+.IP [2]
+Extended \fBcproc\fR argument type processing\&. Now able to
+auto-create restricted scalar types\&. I\&.e\&. types derived from
+\fIint\fR, etc\&. and limited in the range of allowed values\&.
+.sp
+Further able to auto-create restricted list types, i\&.e\&. types
+derived from \fIlist\fR and either limited in length, or in
+the type of the elements, or both\&.
 .PP
 .SH "CHANGES FOR VERSION 3\&.1\&.18\&.1"
 .IP [1]

@@ -10,15 +10,13 @@
 [include include/welcome.inc]
 [para]
 
-This document is a breakout of the descriptions for the predefined
-argument- and result-types usable with the [cmd critcl::cproc]
-command, as detailed in the reference manpage for the [package critcl]
-package, plus the information on how to extend the predefined set with
-custom types. The breakout was made to make this information easier to
-find (toplevel document vs. having to search the large main reference).
+This document is a breakout of the descriptions for the predefined argument- and result-types usable
+with the [cmd critcl::cproc] command, as detailed in the reference manpage for the [package critcl]
+package, plus the information on how to extend the predefined set with custom types. The breakout
+was made to make this information easier to find (toplevel document vs. having to search the large
+main reference).
 
-[para] Its intended audience are developers wishing to write Tcl
-packages with embedded C code.
+[para] Its intended audience are developers wishing to write Tcl packages with embedded C code.
 
 [section {Standard argument types}]	[include include/api_stdat_cproc.inc]
 [section {Standard result types}]	[include include/api_stdrt_cproc.inc]
@@ -26,9 +24,8 @@ packages with embedded C code.
 
 [section Examples]
 
-The examples shown here have been drawn from section "Embedding C" in
-the document about [manpage {Using CriTcl}]. Please see that document
-for many more examples.
+The examples shown here have been drawn from the section "Embedding C" in the document about
+[manpage {Using CriTcl}]. Please see that document for many more examples.
 
 [include include/using_eproc.inc]        [comment {%% cproc}]
 [include include/using_eprocstr.inc]     [comment {%% cproc, strings}]

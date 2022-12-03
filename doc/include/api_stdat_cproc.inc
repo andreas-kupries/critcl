@@ -1,6 +1,5 @@
 [comment {
-	 Standard argument types for use with
-	 cproc and cclass methods.
+	Standard argument types for use with cproc and cclass methods.
 }]
 
 
@@ -59,11 +58,12 @@ not matching anymore, up to crashes anytime later.
 
 [comment {% % %% %%% %%%%% %%%%%%%% %%%%%%%%%%%%%}]
 [def list]
+[def {[]}]
+[def {[*]}]
 
-The function takes an argument of type [type critcl_list] containing
-the original [type Tcl_Obj*] reference of the Tcl argument, plus the
-length of the Tcl list and a pointer to the array of the list
-elements.
+The function takes an argument of type [type critcl_list] containing the original [type Tcl_Obj*]
+reference of the Tcl argument, plus the length of the Tcl list and a pointer to the array of the
+list elements.
 
 [example {
 typedef struct critcl_list {
@@ -73,13 +73,51 @@ typedef struct critcl_list {
 } critcl_list;
 }]
 
-The Tcl argument must be convertible to [type List], an error is
-thrown otherwise.
+The Tcl argument must be convertible to [type List], an error is thrown otherwise.
 
-[para] Note the [strong const]. The list is [strong read-only].  Any
-modification can have arbitrary effects, from pulling out the rug
-under the script because of string value and internal representation
-not matching anymore, up to crashes anytime later.
+[para] Note the [strong const]. The list is [strong read-only].  Any modification can have arbitrary
+effects, from pulling out the rug under the script because of string value and internal
+representation not matching anymore, up to crashes anytime later.
+
+[para] Further note that the system understands a number of more complex syntactical forms which all
+translate into forms of lists under the hood, as described by the following points.
+
+[comment {% % %% %%% %%%%% %%%%%%%% %%%%%%%%%%%%%}]
+[def {[N]}]
+
+A [term list] type with additional checks limiting the length to [const N], an integer numbre
+greater than zero.
+
+[comment {% % %% %%% %%%%% %%%%%%%% %%%%%%%%%%%%%}]
+[def {[]type}]
+[def {type[]}]
+
+A [term list] type whose elements all have to be convertible for [term type].
+All known types are allowed, except for [type list] and derivates.
+In other words, multi-dimensional lists are not supported.
+
+[para] The function will take a structure argument of the general form
+
+[example {
+typedef struct critcl_list_... {
+    Tcl_Obj* o;
+    (Ctype)* v;
+    int      c;
+} critcl_list_...;
+}]
+
+where [const (Ctype)] represents the C type for values of type [type type].
+
+[comment {% % %% %%% %%%%% %%%%%%%% %%%%%%%%%%%%%}]
+[def {[N]type}]
+[def {type[N]}]
+
+These are [type list] types combining the elements of [term {[N]}] and [term {[]type}].
+
+[para] As an example, the specification of [term {int[3] a}] describes argument [arg a] as a list of
+exactly 3 elements, all of which have to be of type [type int].
+
+[para] Note that this example can also be written in the more C-like form of [term {int a[3]}].
 
 [comment {% % %% %%% %%%%% %%%%%%%% %%%%%%%%%%%%%}]
 [def bytearray]
@@ -137,48 +175,54 @@ not matching anymore, up to crashes anytime later.
 
 The function takes an argument of type [type double].
 
-The Tcl argument must be convertible to [type Double], an error is
-thrown otherwise.
+The Tcl argument must be convertible to [type Double], an error is thrown otherwise.
 
-[def {double > 0}]
-[def {double >= 0}]
-[def {double < 0}]
-[def {double <= 0}]
-[def {double > 1}]
-[def {double >= 1}]
-[def {double < 1}]
-[def {double <= 1}]
+[def {double > N}]
+[def {double >= N}]
+[def {double < N}]
+[def {double <= N}]
 
-These are variants of [term double] above, restricting the argument
-value to the shown relation. An error is thrown for Tcl arguments
-outside of the specified range.
+These are variants of [term double] above, restricting the argument value to the shown relation.
 
-[emph Note:] This is not a general range specification syntax. Only
-the listed types exist.
+An error is thrown for Tcl arguments outside of the specified range.
+
+[para] The limiter [arg N] has to be a constant floating point value.
+
+[para] It is possible to use multiple limiters.
+
+For example [term {double > A > B <= C}].
+
+The system will fuse them to a single upper/lower limit (or both).
+
+[para] The system will reject limits describing an empty range of values, or a range containing only
+a single value.
 
 [comment {% % %% %%% %%%%% %%%%%%%% %%%%%%%%%%%%%}]
 [def float]
 
 The function takes an argument of type [type float].
 
-The Tcl argument must be convertible to [type Double], an error is
-thrown otherwise.
+The Tcl argument must be convertible to [type Double], an error is thrown otherwise.
 
-[def {float > 0}]
-[def {float >= 0}]
-[def {float < 0}]
-[def {float <= 0}]
-[def {float > 1}]
-[def {float >= 1}]
-[def {float < 1}]
-[def {float <= 1}]
+[def {float > N}]
+[def {float >= N}]
+[def {float < N}]
+[def {float <= N}]
 
-These are variants of [term float] above, restricting the argument
-value to the shown relation. An error is thrown for Tcl arguments
-outside of the specified range.
+These are variants of [term float] above, restricting the argument value to the shown relation.
 
-[emph Note:] This is not a general range specification syntax. Only
-the listed types exist.
+An error is thrown for Tcl arguments outside of the specified range.
+
+[para] The limiter [arg N] has to be a constant floating point value.
+
+[para] It is possible to use multiple limiters.
+
+For example [term {float > A > B <= C}].
+
+The system will fuse them to a single upper/lower limit (or both).
+
+[para] The system will reject limits describing an empty range of values, or a range containing only
+a single value.
 
 [comment {% % %% %%% %%%%% %%%%%%%% %%%%%%%%%%%%%}]
 [def boolean]
@@ -252,72 +296,81 @@ reference when they are done with it.
 
 The function takes an argument of type [type int].
 
-The Tcl argument must be convertible to [type Int], an error is thrown
-otherwise.
+The Tcl argument must be convertible to [type Int], an error is thrown otherwise.
 
-[def {int > 0}]
-[def {int >= 0}]
-[def {int < 0}]
-[def {int <= 0}]
-[def {int > 1}]
-[def {int >= 1}]
-[def {int < 1}]
-[def {int <= 1}]
+[def {int > N}]
+[def {int >= N}]
+[def {int < N}]
+[def {int <= N}]
 
-These are variants of [term int] above, restricting the argument value
-to the shown relation. An error is thrown for Tcl arguments outside of
-the specified range.
+These are variants of [term int] above, restricting the argument value to the shown relation.
 
-[emph Note:] This is not a general range specification syntax. Only
-the listed types exist.
+An error is thrown for Tcl arguments outside of the specified range.
+
+[para] The limiter [arg N] has to be a constant integer value.
+
+[para] It is possible to use multiple limiters.
+
+For example [term {int > A > B <= C}].
+
+The system will fuse them to a single upper/lower limit (or both).
+
+[para] The system will reject limits describing an empty range of values, or a range containing only
+a single value.
 
 [comment {% % %% %%% %%%%% %%%%%%%% %%%%%%%%%%%%%}]
 [def long]
 
 The function takes an argument of type [type {long int}].
 
-The Tcl argument must be convertible to [type Long], an error is
-thrown otherwise.
+The Tcl argument must be convertible to [type Long], an error is thrown otherwise.
 
-[def {long > 0}]
-[def {long >= 0}]
-[def {long < 0}]
-[def {long <= 0}]
-[def {long > 1}]
-[def {long >= 1}]
-[def {long < 1}]
-[def {long <= 1}]
+[def {long > N}]
+[def {long >= N}]
+[def {long < N}]
+[def {long <= N}]
 
-These are variants of [term long] above, restricting the argument
-value to the shown relation. An error is thrown for Tcl arguments
-outside of the specified range.
+These are variants of [term long] above, restricting the argument value to the shown relation.
 
-[emph Note:] This is not a general range specification syntax. Only
-the listed types exist.
+An error is thrown for Tcl arguments outside of the specified range.
+
+[para] The limiter [arg N] has to be a constant integer value.
+
+[para] It is possible to use multiple limiters.
+
+For example [term {long > A > B <= C}].
+
+The system will fuse them to a single upper/lower limit (or both).
+
+[para] The system will reject limits describing an empty range of values, or a range containing only
+a single value.
 
 [comment {% % %% %%% %%%%% %%%%%%%% %%%%%%%%%%%%%}]
 [def wideint]
 
 The function takes an argument of type [type Tcl_WideInt].
 
-The Tcl argument must be convertible to [type WideInt], an error is
-thrown otherwise.
+The Tcl argument must be convertible to [type WideInt], an error is thrown otherwise.
 
-[def {wideint > 0}]
-[def {wideint >= 0}]
-[def {wideint < 0}]
-[def {wideint <= 0}]
-[def {wideint > 1}]
-[def {wideint >= 1}]
-[def {wideint < 1}]
-[def {wideint <= 1}]
+[def {wideint > N}]
+[def {wideint >= N}]
+[def {wideint < N}]
+[def {wideint <= N}]
 
-These are variants of [term wideint] above, restricting the argument
-value to the shown relation. An error is thrown for Tcl arguments
-outside of the specified range.
+These are variants of [term wideint] above, restricting the argument value to the shown relation.
 
-[emph Note:] This is not a general range specification syntax. Only
-the listed types exist.
+An error is thrown for Tcl arguments outside of the specified range.
+
+[para] The limiter [arg N] has to be a constant integer value.
+
+[para] It is possible to use multiple limiters.
+
+For example [term {wideint > A > B <= C}].
+
+The system will fuse them to a single upper/lower limit (or both).
+
+[para] The system will reject limits describing an empty range of values, or a range containing only
+a single value.
 
 [comment {% % %% %%% %%%%% %%%%%%%% %%%%%%%%%%%%%}]
 [def void*]
