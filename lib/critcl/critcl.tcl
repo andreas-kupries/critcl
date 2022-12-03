@@ -435,13 +435,18 @@ proc ::critcl::MakeList {type ev} {
     # values. See `MakeVariadicTypeFor` too. It uses the same general schema, applied to the list of
     # remaining cproc 'args'.
 
+    lappend one @@  src
+    lappend one &@A dst
+    lappend one @A  *dst
+    lappend one @A. dst->
+    lappend map @1conv@ [Deline [string map $one [ArgumentConversion $base]]]
     lappend map @type@  [ArgumentCType $base]
     lappend map @ntype@ $ntype
 
     append new [string map $map {
 	@A.v = (@type@*) ((!@A.c) ? 0 : ckalloc (@A.c * sizeof (@type@)));
 	for (k = 0; k < @A.c; k++) {
-	    if (_critcl_variadic_@type@_item (interp, el[k], &(@A.v[k])) != TCL_OK) {
+	    if (_critcl_@ntype@_item (interp, el[k], &(@A.v[k])) != TCL_OK) {
 		ckfree ((char*) @A.v); /* Cleanup partial work */
 		return TCL_ERROR;
 	    }
@@ -464,7 +469,7 @@ proc ::critcl::MakeList {type ev} {
 	} critcl_@ntype@;
 
 	static int
-	_critcl_variadic_@type@_item (Tcl_Interp* interp, Tcl_Obj* src, @type@* dst) {
+	_critcl_@ntype@_item (Tcl_Interp* interp, Tcl_Obj* src, @type@* dst) {
 	    @1conv@
 	    return TCL_OK;
 	}
@@ -680,7 +685,7 @@ proc ::critcl::MakeVariadicTypeFor {type} {
 	    int src, dst, leftovers = @C;
 	    @A.c = leftovers;
 	    @A.v = (@type@*) ((!leftovers) ? 0 : ckalloc (leftovers * sizeof (@type@)));
-	    @A.o = &ov[@I];
+	    @A.o = (Tcl_Obj**) &ov[@I];
 	    for (src = @I, dst = 0; leftovers > 0; dst++, src++, leftovers--) {
 	       if (_critcl_variadic_@type@_item (interp, ov[src], &(@A.v[dst])) != TCL_OK) {
 		   ckfree ((char*) @A.v); /* Cleanup partial work */
