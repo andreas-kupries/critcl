@@ -59,7 +59,7 @@ high-level stack example packages. I am intentionally bypassing the
     % lappend auto_path [pwd]/lib
     % package require stackc
     % join [info loaded] \n
-    % stackc S
+    % stackc create S
     % S push FOO
     % S size
     % S destroy

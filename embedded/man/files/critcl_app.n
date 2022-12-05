@@ -683,6 +683,10 @@ The latest changes are found at the top\&.
 .SH "CHANGES FOR VERSION 3\&.1\&.18\&.2"
 \fINot Released Yet\fR
 .IP [1]
+\fIDocumentation Example Fix\fR\&.
+Added missing method \fBcreate\fR to object creation\&.
+Issue #125\&.
+.IP [2]
 \fIPerformance Fix\fR for \fIcompile & run\fR mode\&.
 Issue #112\&.
 .sp
@@ -696,7 +700,7 @@ performance penalty invoked by this \fIglobal\fR setting\&.
 Arbitrary libraries and applications using critcl dynamically
 (\fIcompile & run\fR) on the other hand likely cannot, and
 should not\&.
-.IP [2]
+.IP [3]
 Extended \fBcproc\fR argument type processing\&. Now able to
 auto-create restricted scalar types\&. I\&.e\&. types derived from
 \fIint\fR, etc\&. and limited in the range of allowed values\&.

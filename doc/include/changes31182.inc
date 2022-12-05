@@ -4,6 +4,10 @@
 
 [list_begin enumerated]
 
+[enum] [strong {Documentation Example Fix}].
+       Added missing method [method create] to object creation.
+       Issue #125.
+
 [enum] [strong {Performance Fix}] for [term {compile & run}] mode.
        Issue #112.
 

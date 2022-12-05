@@ -617,7 +617,7 @@ find the stub table headers exported by \fBcstack\fR\&.
     % lappend auto_path [pwd]/lib
     % package require stackc
     % join [info loaded] \\n
-    % stackc S
+    % stackc create S
     % S push FOO
     % S size
     % S destroy
