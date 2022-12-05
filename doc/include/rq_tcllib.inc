@@ -1,51 +1,30 @@
+[comment {-*- mode: tcl ; fill-column: 90 -*-}]
 
-[subsection Tcllib]
-
-To use CriTcl a few packages found in the Tcllib bundle are
-required. These packages are:
+The implementation of [vset critcl] uses and depends on 
 
 [list_begin enumerated]
 [enum] [package cmdline]
-[enum] [package md5].
-[para] And to accelerate this package, it is recommend to get and
-install one of
-[list_begin enumerated]
-[enum] [package tcllibc]
-[enum] [package md5c]
-[enum] [package Trf]
-[list_end]
-The system will work without them, but can become quite slow,
-especially when handling large code blocks.
-[enum] [package snit]
 [list_end]
 
-[para] Assuming that ActiveTcl is installed, or some other Tcl
-installation with [syscmd teacup] available, most (not md5c) of these
-packages can be installed via
+[para] Depending on how Tcl was installed this package may be available already without
+action, or not.
+
+Invoke the command
 
 [example {
-    teacup install $packagename
+    echo 'puts [package require cmdline]' | tclsh
 }]
 
-[para] The [syscmd teacup] command above assumes that ActiveState's
-TEApot repository at [uri http://teapot.activestate.com] is in the
-list of repositories accessible to [syscmd teacup]. This is automatically
-ensured for the ActiveTcl distribution. Others may have to run
+to check if the package is present or not. If it is present then its version number will
+be printed, else the error message [const {can't find package cmdline}] or similar.
 
-[example {
-    teacup archive add http://teapot.activestate.com
-}]
+[para] If it is not present install the package as per the instructions for the chosen Tcl
+installation.
 
-to make this happen.
+[para] [strong Note], the package [package cmdline] may not exist as its own installable
+package. In such a case check if the chosen Tcl installation provides a [package tcllib]
+package and install that. This should install all the packages in the Tcllib bundle,
+including [package cmdline].
 
-[para] Now, for those wishing to install the packages from source,
-the fossil repository for the two bundles can be found at
-[uri https://core.tcl.tk/tcllib] and [uri https://core.tcl.tk/tklib].
-
-[para] Releases of Tcllib and Tklib can be found there as well, or
-[syscmd fossil] can be used to check out specific revisions.
-
-[para] Tcl- and Tklib come with their own installation instructions.
-These will not be repeated here. If there are problems with their
-directions please file a bug against the Tcllib project at the above
-url, and not CriTcl.
+[para] As a last fallback, go to [vset tcllib_home] and follow the instructions to install
+the bundle from scratch.

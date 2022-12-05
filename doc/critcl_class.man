@@ -28,7 +28,7 @@ Tcl packages with embedded C code.
 [para] This package resides in the Core Package Layer of CriTcl.
 [para][image arch_core][para]
 
-[comment {===================================================================}]
+[comment {= = == === ===== ======== ============= =====================}]
 
 [section API]
 
@@ -46,12 +46,12 @@ detailed list of the available commands and their semantics.
 
 [list_end]
 
-[comment {===================================================================}]
+[comment {= = == === ===== ======== ============= =====================}]
 [section {Class Specification API}][include include/class_spec.inc]
 
-[comment {===================================================================}]
+[comment {= = == === ===== ======== ============= =====================}]
 [section Example][include include/class_example.inc]
 
-[comment {===================================================================}]
+[comment {= = == === ===== ======== ============= =====================}]
 [include include/feedback2.inc]
 [manpage_end]

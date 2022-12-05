@@ -1,4 +1,3 @@
-[include include/global.inc]
 
 [vset teaignored "
 [para]

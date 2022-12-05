@@ -1,4 +1,4 @@
-[include include/global.inc]
+
 The following commands manage the build configuration, i.e. the per-platform
 information about compilers, linkers, and their commandline options.
 

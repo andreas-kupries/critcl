@@ -38,7 +38,7 @@ Tcl packages with embedded C code.
 [para] This package resides in the Core Package Layer of CriTcl.
 [para][image arch_core][para]
 
-[comment {===================================================================}]
+[comment {= = == === ===== ======== ============= =====================}]
 
 [section API]
 
@@ -110,7 +110,7 @@ for use by [cmd critcl::cproc].
 [list_end]
 [list_end]
 
-[comment {===================================================================}]
+[comment {= = == === ===== ======== ============= =====================}]
 [section Example]
 
 The example shown below is the specification of the event flags pulled
@@ -156,6 +156,6 @@ critcl::bitmap::def tcl_inotify_events {
 # crit res-type          tcl_inotify_events
 }]
 
-[comment {===================================================================}]
+[comment {= = == === ===== ======== ============= =====================}]
 [include include/feedback2.inc]
 [manpage_end]

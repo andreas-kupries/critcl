@@ -1,4 +1,3 @@
-[include include/global.inc]
 [comment {-*- tcl -*- doctools manpage}]
 [manpage_begin critcl::util n 1]
 [include include/module2.inc]
@@ -22,7 +21,7 @@ packages with embedded C code.
 This package resides in the Core Package Layer of CriTcl.
 [para][image arch_core][para]
 
-[comment {===================================================================}]
+[comment {= = == === ===== ======== ============= =====================}]
 [section API]
 
 [list_begin definitions]
@@ -82,6 +81,6 @@ terminate execution.
 
 [list_end]
 
-[comment {===================================================================}]
+[comment {= = == === ===== ======== ============= =====================}]
 [include include/feedback2.inc]
 [manpage_end]

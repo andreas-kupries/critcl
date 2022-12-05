@@ -1,3 +1,4 @@
+[comment {-*- mode: tcl ; fill-column: 90 -*-}]
 
 The following commands append C code fragments to the current module.  Fragments
 appear in the module in the order they are appended, so the earlier fragments
@@ -148,16 +149,12 @@ function but which influence argument counting and extraction.
 
 [list_end]
 
-[arg_def string resulttype] May be one of the following predefined
-types or a custom type.
+[arg_def string resulttype] May be a predefined or a custom type.
 
-For the latter see section [sectref {Advanced: Extending cproc}].
+See [term {CriTcl cproc Type Reference}] for the full list of predefined types and how to
+extend them.
 
 Unless otherwise noted, the Tcl return code is always [const TCL_OK].
-
-[comment {% % %% %%% %%%%% %%%%%%%% %%%%%%%%%%%%% %%%%%%%%%%%%%%%%%%%%%}]
-[include api_stdrt_cproc.inc]
-[comment {% % %% %%% %%%%% %%%%%%%% %%%%%%%%%%%%% %%%%%%%%%%%%%%%%%%%%%}]
 
 [arg_def list arguments] Is a multi-dictionary where each key is an
 argument type and its value is the argument name.
@@ -184,12 +181,10 @@ provided, so a custom converter doing validation does not get the chance to
 validate the default value.  In this case, the value should be checked in the
 body of the function.
 
-[para] Each argument type may be one of the following predefined types or a
-custom type. For the latter see [sectref {Advanced: Extending cproc}].
+[para] Each argument type may be a predefined or custom type.
 
-[comment {% % %% %%% %%%%% %%%%%%%% %%%%%%%%%%%%% %%%%%%%%%%%%%%%%%%%%%}]
-[include api_stdat_cproc.inc]
-[comment {% % %% %%% %%%%% %%%%%%%% %%%%%%%%%%%%% %%%%%%%%%%%%%%%%%%%%%}]
+See [term {CriTcl cproc Type Reference}] for the full list of predefined types and how to
+extend them.
 
 [list_end][comment {-- arguments --}]
 

@@ -2,9 +2,9 @@
 '\" Generated from file 'critcl_cproc\&.man' by tcllib/doctools with format 'nroff'
 '\" Copyright (c) Jean-Claude Wippler
 '\" Copyright (c) Steve Landers
-'\" Copyright (c) 2011-2018 Andreas Kupries
+'\" Copyright (c) 2011-2022 Andreas Kupries
 '\"
-.TH "critcl-cproc-types" n 3\&.1\&.18\&.2 doc "C Runtime In Tcl (CriTcl)"
+.TH "critcl_cproc_types" n 3\&.1\&.18\&.2 doc "C Runtime In Tcl (CriTcl)"
 .\" The -*- nroff -*- definitions below are for supplemental macros used
 .\" in Tcl/Tk manual entries.
 .\"
@@ -274,7 +274,7 @@ Database Class:	\\fB\\$3\\fR
 ..
 .BS
 .SH NAME
-critcl-cproc-types \- CriTcl - cproc Type Reference
+critcl_cproc_types \- CriTcl cproc Type Reference
 .SH SYNOPSIS
 package require \fBTcl  8\&.4\fR
 .sp
@@ -299,10 +299,8 @@ package require \fBcritcl  ?3\&.1\&.18\&.2?\fR
 .BE
 .SH DESCRIPTION
 .PP
-\fIC Runtime In Tcl\fR, or \fICriTcl\fR , is a system for compiling C code
-embedded in Tcl on the fly and either loading the resulting objects into Tcl for
-immediate use or packaging them for distribution\&.  Use \fICriTcl\fR to improve
-performance by rewriting in C those routines that are performance bottlenecks\&.
+Be welcome to the \fIC Runtime In Tcl\fR (short: \fICriTcl\fR), a system for embedding and using C
+code from within \fITcl\fR [http://core\&.tcl-lang\&.org/tcl] scripts\&.
 .PP
 This document is a breakout of the descriptions for the predefined argument- and result-types usable
 with the \fBcritcl::cproc\fR command, as detailed in the reference manpage for the \fBcritcl\fR
@@ -360,14 +358,6 @@ bool             |                |           | Alias of \fBboolean\fR above
 channel          | Tcl_Channel    | String    | Assumed to be registered
 unshared-channel | Tcl_Channel    | String    | As above, limited to current interpreter
 take-channel     | Tcl_Channel    | String    | As above, C code takes ownership
----------------- | -------------- | --------- | ------------------------------
-bytearray        |                |           | \fIDEPRECATED\fR
-rawchar          |                |           | \fIDEPRECATED\fR
-rawchar*         |                |           | \fIDEPRECATED\fR
-double*          |                |           | \fIDEPRECATED\fR
-float*           |                |           | \fIDEPRECATED\fR
-int*             |                |           | \fIDEPRECATED\fR
-void*            |                |           | \fIDEPRECATED\fR
 
 .CE
 And now the details:
@@ -443,15 +433,15 @@ Further note that the system understands a number of more complex syntactical fo
 translate into forms of lists under the hood, as described by the following points\&.
 .TP
 [N]
-A \fIlist\fR type with additional checks limiting the length to \fBN\fR, an integer numbre
-greater than zero\&.
+A \fIlist\fR type with additional checks limiting the length to \fBN\fR, an integer
+number greater than zero\&.
 .TP
 []type
 .TP
 type[]
-A \fIlist\fR type whose elements all have to be convertible for \fItype\fR\&.
-All known types are allowed, except for \fBlist\fR and derivates\&.
-In other words, multi-dimensional lists are not supported\&.
+A \fIlist\fR type whose elements all have to be convertible for \fItype\fR\&. All known
+types, including user-defined, are allowed, except for \fBlist\fR and derivates\&. In other
+words, multi-dimensional lists are not supported\&.
 .sp
 The function will take a structure argument of the general form
 .CS
@@ -459,8 +449,8 @@ The function will take a structure argument of the general form
 
 typedef struct critcl_list_\&.\&.\&. {
     Tcl_Obj* o;
-    (Ctype)* v;
     int      c;
+    (Ctype)* v;
 } critcl_list_\&.\&.\&.;
 
 .CE
@@ -470,28 +460,32 @@ where \fB(Ctype)\fR represents the C type for values of type \fBtype\fR\&.
 [N]type
 .TP
 type[N]
-These are \fBlist\fR types combining the elements of \fI[N]\fR and \fI[]type\fR\&.
+These are \fBlist\fR types combining the elements of
+.CS
+
+[N]
+.CE
+.IP and
+.CS
+
+[]type
+.CE
+.IP\&.
 .sp
-As an example, the specification of \fIint[3] a\fR describes argument \fIa\fR as a list of
-exactly 3 elements, all of which have to be of type \fBint\fR\&.
+As an example, the specification of
+.CS
+
+int[3] a
+.CE
+.IP describes argument \fIa\fR
+as a list of exactly 3 elements, all of which have to be of type \fBint\fR\&.
 .sp
-Note that this example can also be written in the more C-like form of \fIint a[3]\fR\&.
-.TP
-bytearray
-.TP
-rawchar*
-.TP
-rawchar
-The function takes an argument of type \fBchar*\fR\&.
-The Tcl argument must be convertible to \fBByteArray\fR, an error is
-thrown otherwise\&.
-\fINote\fR that the length of the \fBByteArray\fR is \fInot\fR
-passed to the function, making this type not very usable\&.
-.sp
-\fIAttention\fR: These types are considered \fIDEPRECATED\fR\&.
-It is planned to remove their documentation in release 3\&.2, and their
-implementation in release 3\&.3\&.  Their deprecation can be undone if
-good use cases are shown\&.
+Note that this example can also be written in the more C-like form of
+.CS
+
+int a[3]
+.CE
+.IP\&. The system will translate this internally to the first shown form\&.
 .TP
 bytes
 This is the \fInew\fR and usable \fBByteArray\fR type\&.
@@ -638,7 +632,8 @@ int >= N
 int < N
 .TP
 int <= N
-These are variants of \fIint\fR above, restricting the argument value to the shown relation\&.
+These are variants of \fIint\fR above, restricting the argument value to the shown
+relation\&.
 An error is thrown for Tcl arguments outside of the specified range\&.
 .sp
 The limiter \fIN\fR has to be a constant integer value\&.
@@ -647,8 +642,8 @@ It is possible to use multiple limiters\&.
 For example \fIint > A > B <= C\fR\&.
 The system will fuse them to a single upper/lower limit (or both)\&.
 .sp
-The system will reject limits describing an empty range of values, or a range containing only
-a single value\&.
+The system will reject limits describing an empty range of values, or a range
+containing only a single value\&.
 .TP
 long
 The function takes an argument of type \fBlong int\fR\&.
@@ -661,7 +656,8 @@ long >= N
 long < N
 .TP
 long <= N
-These are variants of \fIlong\fR above, restricting the argument value to the shown relation\&.
+These are variants of \fIlong\fR above, restricting the argument value to the shown
+relation\&.
 An error is thrown for Tcl arguments outside of the specified range\&.
 .sp
 The limiter \fIN\fR has to be a constant integer value\&.
@@ -670,8 +666,8 @@ It is possible to use multiple limiters\&.
 For example \fIlong > A > B <= C\fR\&.
 The system will fuse them to a single upper/lower limit (or both)\&.
 .sp
-The system will reject limits describing an empty range of values, or a range containing only
-a single value\&.
+The system will reject limits describing an empty range of values, or a range
+containing only a single value\&.
 .TP
 wideint
 The function takes an argument of type \fBTcl_WideInt\fR\&.
@@ -684,7 +680,8 @@ wideint >= N
 wideint < N
 .TP
 wideint <= N
-These are variants of \fIwideint\fR above, restricting the argument value to the shown relation\&.
+These are variants of \fIwideint\fR above, restricting the argument value to the shown
+relation\&.
 An error is thrown for Tcl arguments outside of the specified range\&.
 .sp
 The limiter \fIN\fR has to be a constant integer value\&.
@@ -693,29 +690,10 @@ It is possible to use multiple limiters\&.
 For example \fIwideint > A > B <= C\fR\&.
 The system will fuse them to a single upper/lower limit (or both)\&.
 .sp
-The system will reject limits describing an empty range of values, or a range containing only
-a single value\&.
+The system will reject limits describing an empty range of values, or a range
+containing only a single value\&.
 .TP
 void*
-.TP
-double*
-.TP
-float*
-.TP
-int*
-The function takes an argument of the same-named C type\&.
-The Tcl argument must be convertible to ByteArray, an error is thrown
-otherwise\&.
-The bytes in the ByteArray are then re-interpreted as the raw
-representation of a single C pointer of the given type which is then
-passed as argument to the function\&.
-In other words, this is for Tcl values somehow holding raw C pointers,
-i\&.e\&. memory addresses\&.
-.sp
-\fIAttention\fR: These types are considered \fIDEPRECATED\fR\&.
-It is planned to remove their documentation in release 3\&.2, and their
-implementation in release 3\&.3\&.  Their deprecation can be undone if
-good use cases are shown\&.
 .PP
 .SH "STANDARD RESULT TYPES"
 Before going into the details first a quick overview:
@@ -1485,13 +1463,13 @@ Ideas for enhancements you may have for either package, application,
 and/or the documentation are also very welcome and should be reported
 at \fIhttps://github\&.com/andreas-kupries/critcl/issues\fR as well\&.
 .SH KEYWORDS
-C code, Embedded C Code, code generator, compile & run, compiler, dynamic code generation, dynamic compilation, generate package, linker, on demand compilation, on-the-fly compilation
+C code, Embedded C Code, calling C code from Tcl, code generator, compile & run, compiler, dynamic code generation, dynamic compilation, generate package, linker, on demand compilation, on-the-fly compilation
 .SH CATEGORY
 Glueing/Embedded C code
 .SH COPYRIGHT
 .nf
 Copyright (c) Jean-Claude Wippler
 Copyright (c) Steve Landers
-Copyright (c) 2011-2018 Andreas Kupries
+Copyright (c) 2011-2022 Andreas Kupries
 
 .fi

@@ -1,28 +1,22 @@
+[comment {-*- mode: tcl ; fill-column: 90 -*-}]
 
-[subsection {C compiler}]
+While [vset critcl] requires a working C compiler to both install itself, and to process
+[vset critcl]-based packages installing such is very much out of scope for this document.
 
-To actually build packages based on critcl we need a working C
-compiler.
-
-[para] How to install such and all the associated header files,
-libraries, etc. is heavily platform- and system-dependent, and thus
-outside of the scope of this document.
-
-Note that I am willing to extend this section with links of interest
-to tutorials, howtos and references for the various platforms.
+[para] Please follow the instructions for the platform and system [vset critcl] is to be
+installed on.
 
 [para] The important pieces of information are this:
 
 [list_begin enumerated]
 
-[enum]	The path to the C compiler binary must be found in the
-	environment variable [var PATH], for critcl to find it.
+[enum] The path to the directory containing the C compiler binary has to be listed in the
+       environment variable [var PATH], for [vset critcl] to find it.
 
-[enum]	On Windows(tm) the environment variable [var LIB] must be
-	present and contain the paths of the directories holding
-	Microsoft's libraries. The standard critcl configuration
-	for this platform searches these paths to fine-tune its
-	settings based on available libraries and compiler version.
+[enum] On Windows(tm) the environment variable [var LIB] has to be present and contain the
+       paths of the directories holding Microsoft's libraries. The standard [vset critcl]
+       configuration for this platform searches these paths to fine-tune its settings
+       based on available libraries and compiler version.
 
 [list_end]
 

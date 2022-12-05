@@ -1,54 +1,42 @@
-[subsection {Build & Installation (Unix)}]
+[comment {-*- mode: tcl ; fill-column: 90 -*-}]
 
-This section describes the actions required to install CriTcl on Unix
-systems (Linux, BSD, and related, including OS X).
+This section offers instructions for installing [vset critcl] on various kinds of Unix and
+Unix-related systems, i.e. [term Linux], the various [term BSD]s, etc. It especially
+covers [term {Mac OS X}] as well.
 
-If you have to install CriTcl on a Windows machine see section
-[sectref {Build & Installation (Windows)}] instead.
+[para] Use the instructions in section [sectref {Install On Windows}] when installing on a
+Windows platform and not using a unix-like environment as provided by tools like
+[vset mingw], [vset cygwin], [vset git4win], [vset wsl], etc.
 
-To install CriTcl simply run
+[list_begin enumerated]
 
-[example {
-    /path/to/tclsh /path/to/critcl/build.tcl install
-}]
+[enum] Change the working directory to the top level directory of the [vset critcl]
+checkout obtained by following the instructions of [term {How To Get The CriTcl Sources}].
 
-where [file /path/to/tclsh] is the tclsh of your Tcl installation, and
-[file /path/to/critcl] the location of the CriTcl sources on your system.
+[enum] Verify that the file [file build.tcl] is marked executable. Make it executable if
+it is not.
 
-[para]
+[enum] Invoke [example { ./build.tcl install }] to perform the installation.
 
-This builds all packages and then places them in a directory where the
-[cmd tclsh] will find them.
+[para] [strong Attention] This command uses default locations for the placement of the
+[cmd critcl] application, the various packages, and header files.
 
-[para]
+[enum] Invoke [example { ./build.tcl dirs }] to see the chosens paths before actually
+performing the installation.
 
-It further creates a [file critcl] application script and places it
-into the directory [cmd tclsh] resides in, making it a sibling of that
-executable.
+[enum] [include include/build_install_options.inc]
 
-Note that the installed critcl application is modified to use the
-chosen tclsh instead of searching for one on the [var PATH].
+These options are especially necessary in all environments not using the semi-standard
+[file bin], [file lib], [file include] locations from [syscmd configure].
 
-[para]
+[para] As an example of such environments, Ubuntu (and possibly Debian) expect Tcl
+packages to be installed into the [file /usr/share/tcltk] directory, therefore requiring
+the use of [example {--lib-dir /usr/share/tcltk}] for proper installation.
 
-On Windows you can invoke the file [file build.tcl] with a
-double-click.  This will pop up a small graphical interface for
-entering the destination and performing the installation. This
-handling of a double-click is restricted to Windows only however.
+[list_end]
 
-[para]
+[para] [strong Note] that this guide neither covers the details of the [method install]
+method, nor does it cover any of the other methods available through the [cmd build.tcl]
+tool of [vset critcl].
 
-The build system provides a small GUI for those not comfortable with
-the command line.
-
-This GUI is accessible by invoking [file build.tcl] without any
-arguments.
-
-[para]
-
-To get help about the methods of [file build.tcl], and their complete
-syntax, invoke  [file build.tcl] with argument [method help], i.e., like
-
-[example {
-    /path/to/tclsh /path/to/critcl/build.tcl help
-}]
+These can be found in the [term {CriTcl build.tcl Tool Reference}].

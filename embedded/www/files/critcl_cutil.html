@@ -175,10 +175,8 @@
 </div>
 </div>
 <div id="section1" class="doctools_section"><h2><a name="section1">Description</a></h2>
-<p><i class="term">C Runtime In Tcl</i>, or <i class="term"><a href="critcl_pkg.html">CriTcl</a></i> , is a system for compiling C code
-embedded in Tcl on the fly and either loading the resulting objects into Tcl for
-immediate use or packaging them for distribution.  Use <i class="term"><a href="critcl_pkg.html">CriTcl</a></i> to improve
-performance by rewriting in C those routines that are performance bottlenecks.</p>
+<p>Be welcome to the <i class="term">C Runtime In Tcl</i> (short: <i class="term"><a href="critcl.html">CriTcl</a></i>), a system for embedding and using C
+code from within <a href="http://core.tcl-lang.org/tcl">Tcl</a> scripts.</p>
 <p>This document is the reference manpage for the <b class="package">critcl::cutil</b>
 package. This package encapsulates a number of C-level utilites for
 easier writing of memory allocations, assertions, and narrative tracing
@@ -188,7 +186,7 @@ Its intended audience are mainly developers wishing to write Tcl
 packages with embedded C code.</p>
 <p>This package resides in the Core Package Layer of CriTcl.</p>
 <p><img alt="arch_core" src="../image/arch_core.png"></p>
-<p>The reason for this is that the main <b class="package"><a href="critcl_pkg.html">critcl</a></b> package makes
+<p>The reason for this is that the main <b class="package"><a href="critcl.html">critcl</a></b> package makes
 use of the facilities for narrative tracing when
 <b class="cmd">critcl::config trace</b> is set, to instrument commands and
 procedures.</p>
