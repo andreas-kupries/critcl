@@ -291,23 +291,29 @@ The latest changes are found at the top\&.
 .SH "CHANGES FOR VERSION 3\&.1\&.18\&.2"
 \fINot Released Yet\fR
 .IP [1]
+\fIDocumentation Redo\fR Issue
+\fI#116\fR [https://github\&.com/andreas-kupries/critcl/issues/116]\&.
+Reworked the documentation to use the system of 4 quadrants\&.
+Reworked the introduction (How To Use Critcl) to be strongly
+based on a series of examples\&.
+.IP [2]
 \fIBug Fix\fR Issue
 \fI#125\fR [https://github\&.com/andreas-kupries/critcl/issues/125]\&.
 Added missing method \fBcreate\fR in object creation example
 of installer documentation\&.
-.IP [2]
+.IP [3]
 \fIFeature\fR\&. Extended \fBcproc\fR argument type processing\&. Now able to
 auto-create restricted scalar types\&. I\&.e\&. types derived from \fIint\fR, etc\&. and
 limited in the range of allowed values\&.
 .sp
 Further able to auto-create restricted list types, i\&.e\&. types derived from
 \fIlist\fR and either limited in length, or in the type of the elements, or both\&.
-.IP [3]
+.IP [4]
 \fIBug Fix / Enhancement\fR Issue
 \fI#118\fR [https://github\&.com/andreas-kupries/critcl/issues/118]\&.  Modified
 \fBcritcl::cproc\fR to accept C syntax for arguments, i\&.e\&.  Trailing comma on
 argument names, leading comma on type names, and lone comma characters\&.
-.IP [4]
+.IP [5]
 \fIBug Fix\fR
 Issue \fI#115\fR [https://github\&.com/andreas-kupries/critcl/issues/115]\&.
 .sp
@@ -344,7 +350,7 @@ The \fB--prefix\fR defaults to the topdir from the bin directory holding the
 .CE
 .sp
 Added a command \fBdirs\fR doing the same argument handling, for debugging\&.
-.IP [5]
+.IP [6]
 \fIPerformance Fix\fR for \fIcompile & run\fR mode\&.
 Issue \fI#112\fR [https://github\&.com/andreas-kupries/critcl/issues/112]\&.
 .sp
@@ -356,12 +362,12 @@ by this \fIglobal\fR setting\&.
 .sp
 Arbitrary libraries and applications using critcl dynamically
 (\fIcompile & run\fR) on the other hand likely cannot, and should not\&.
-.IP [6]
+.IP [7]
 \fIFix\fR
 Issue \fI#109\fR [https://github\&.com/andreas-kupries/critcl/issues/109]\&.
 Ignore \fBclang\fR suffices when computing the target identifier from a
 configuration identifier\&.
-.IP [7]
+.IP [8]
 \fIFeature\fR\&. Bumped package \fBcritcl::cutil\fR to version 0\&.2\&.1\&.
 Simplified the implementation of macro \fBASSERT\fR by taking the underlying
 \fBTcl_Panic\fR's printf ability into account and added a new macro \fBASSERT_VA\fR

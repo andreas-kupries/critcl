@@ -5,6 +5,12 @@
 
 [list_begin enumerated]
 
+[enum] [strong {Documentation Redo}] Issue
+       [uri https://github.com/andreas-kupries/critcl/issues/116 #116].
+       Reworked the documentation to use the system of 4 quadrants.
+       Reworked the introduction (How To Use Critcl) to be strongly
+       based on a series of examples.
+
 [enum] [strong {Bug Fix}] Issue
        [uri https://github.com/andreas-kupries/critcl/issues/125 #125].
        Added missing method [method create] in object creation example
