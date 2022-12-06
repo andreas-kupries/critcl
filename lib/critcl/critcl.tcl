@@ -381,6 +381,13 @@ proc ::critcl::MakeList {type ev} {
     } else {
 	append ntype _$base
     }
+
+    # Save the type-specific list type, without length restrictions factored in.
+    # This is what we need for the data structures and conversion, nothing more.
+    # IOW we do not wish to create multiple different types and functions for the
+    # same list type, just different length restrictions.
+    set nctype $ntype
+
     if {$limit in {{} *}} {
         set limit {}
 	append ntype _any
@@ -439,21 +446,23 @@ proc ::critcl::MakeList {type ev} {
     lappend one &@A dst
     lappend one @A  *dst
     lappend one @A. dst->
-    lappend map @1conv@ [Deline [string map $one [ArgumentConversion $base]]]
-    lappend map @type@  [ArgumentCType $base]
-    lappend map @ntype@ $ntype
+
+    lappend map @1conv@  [Deline [string map $one [ArgumentConversion $base]]]
+    lappend map @type@   [ArgumentCType $base]
+    lappend map @ntype@  $ntype
+    lappend map @nctype@ $nctype
 
     append new [string map $map {
 	@A.v = (@type@*) ((!@A.c) ? 0 : ckalloc (@A.c * sizeof (@type@)));
 	for (k = 0; k < @A.c; k++) {
-	    if (_critcl_@ntype@_item (interp, el[k], &(@A.v[k])) != TCL_OK) {
+	    if (_critcl_@nctype@_item (interp, el[k], &(@A.v[k])) != TCL_OK) {
 		ckfree ((char*) @A.v); /* Cleanup partial work */
 		return TCL_ERROR;
 	    }
 	}
     }]
 
-    argtype $ntype $new critcl_$ntype critcl_$ntype
+    argtype $ntype $new critcl_$nctype critcl_$nctype
 
     argtypesupport $ntype [string map $map {
 	/* NOTE: Array 'v' is allocated on the heap. The argument
@@ -462,18 +471,18 @@ proc ::critcl::MakeList {type ev} {
 	// by the worker it may have to make copies of the data.
 	*/
 
-	typedef struct critcl_@ntype@ {
+	typedef struct critcl_@nctype@ {
 	    Tcl_Obj* o; /* Original list object, for pass-through cases */
 	    int      c; /* Element count */
 	    @type@*  v; /* Allocated array of the elements */
-	} critcl_@ntype@;
+	} critcl_@nctype@;
 
 	static int
-	_critcl_@ntype@_item (Tcl_Interp* interp, Tcl_Obj* src, @type@* dst) {
+	_critcl_@nctype@_item (Tcl_Interp* interp, Tcl_Obj* src, @type@* dst) {
 	    @1conv@
 	    return TCL_OK;
 	}
-    }]
+    }] $nctype
 
     argtyperelease $ntype [string map $map {
 	if (@A.c) { ckfree ((char*) @A.v); }
