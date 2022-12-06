@@ -2,13 +2,13 @@
 #
 #	A template demonstrating the handling of emap conversions.
 #
-# Copyright (c) 2014 Andreas Kupries <andreas_kupries@users.sourceforge.net>
+# Copyright (c) 2014,2022 Andreas Kupries <andreas_kupries@users.sourceforge.net>
 
 # # ## ### ##### ######## ############# #####################
 ## Requirements
 
-package require Tcl          8.4
-package require critcl       3.1.11
+package require Tcl          8.6
+package require critcl       3.2
 package require critcl::emap 1
 
 # # ## ### ##### ######## ############# #####################

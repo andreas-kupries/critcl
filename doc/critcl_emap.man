@@ -1,12 +1,12 @@
 [comment {-*- tcl -*- doctools manpage}]
-[vset emap_version 1.2]
+[vset emap_version 1.3]
 [manpage_begin critcl::emap n [vset emap_version]]
 [include include/module2.inc]
 [keywords singleton {Tcl Interp Association}]
 [keywords bitmask bitset flags]
 [titledesc {CriTcl - Wrap Support - Enum en- and decoding}]
-[require Tcl 8.4]
-[require critcl [opt 3.1.11]]
+[require Tcl 8.6]
+[require critcl [opt 3.2]]
 [require critcl::emap [opt [vset emap_version]]]
 [description]
 [para]
@@ -160,8 +160,8 @@ entry (normal, no feedback, stars) used by the Tcl binding to the
 linenoise library.
 
 [example {
-package require Tcl 8.5
-package require critcl 3.1.11
+package require Tcl 8.6
+package require critcl 3.2
 
 critcl::buildrequirement {
     package require critcl::emap

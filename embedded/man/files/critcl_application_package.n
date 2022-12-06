@@ -4,7 +4,7 @@
 '\" Copyright (c) Steve Landers
 '\" Copyright (c) 2011-2022 Andreas Kupries
 '\"
-.TH "critcl_application_package" n 3\&.1\&.18\&.2 doc "C Runtime In Tcl (CriTcl)"
+.TH "critcl_application_package" n 3\&.2 doc "C Runtime In Tcl (CriTcl)"
 .\" The -*- nroff -*- definitions below are for supplemental macros used
 .\" in Tcl/Tk manual entries.
 .\"
@@ -276,11 +276,11 @@ Database Class:	\\fB\\$3\\fR
 .SH NAME
 critcl_application_package \- CriTcl Application Package Reference
 .SH SYNOPSIS
-package require \fBTcl  8\&.4\fR
+package require \fBTcl  8\&.6\fR
 .sp
-package require \fBcritcl::app  ?3\&.1\&.18\&.2?\fR
+package require \fBcritcl::app  ?3\&.2?\fR
 .sp
-package require \fBcritcl  ?3\&.1\&.18\&.2?\fR
+package require \fBcritcl  ?3\&.2?\fR
 .sp
 package require \fBplatform  ?1\&.0\&.2?\fR
 .sp

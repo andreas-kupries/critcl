@@ -1,5 +1,5 @@
 
-package require Tcl 8.5
+package require Tcl 8.6
 package require lambda
 
 # Force compile and load.

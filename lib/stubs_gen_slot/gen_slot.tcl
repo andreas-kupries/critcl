@@ -1,16 +1,13 @@
 # -*- tcl -*-
 # STUBS handling -- Code generation: Writing SLOT code.
 #
-# (c) 2011 Andreas Kupries http://wiki.tcl.tk/andreas%20kupries
+# (c) 2011,2022 Andreas Kupries http://wiki.tcl.tk/andreas%20kupries
 
 # # ## ### ##### ######## #############
 ## Requisites
 
-package require Tcl 8.4
+package require Tcl 8.6
 package require stubs::gen
-package require lassign84
-
-# lassign84, ditto
 
 namespace eval ::stubs::gen::slot::g {
     namespace import ::stubs::gen::*
@@ -94,5 +91,5 @@ namespace eval ::stubs::gen::slot {
 }
 
 # # ## ### #####
-package provide stubs::gen::slot 1
+package provide stubs::gen::slot 1.1
 return

@@ -2,7 +2,7 @@
 #
 #	Low-level wrapper around libz, making it a Tcl package.
 #
-# Copyright (c) 2011 Andreas Kupries <andreas_kupries@users.sourceforge.net>
+# Copyright (c) 2011,2022 Andreas Kupries <andreas_kupries@users.sourceforge.net>
 
 # Example of exporting a C-level stubs API through critcl v3, linking
 # against an external library and/or baking in the library using its sources.
@@ -10,8 +10,8 @@
 # # ## ### ##### ######## ############# #####################
 ## Requirements
 
-package require Tcl 8.4
-package require critcl 3 ;# stubs management
+package require Tcl 8.6
+package require critcl 3.2
 
 # # ## ### ##### ######## ############# #####################
 ## Administrivia

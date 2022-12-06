@@ -102,7 +102,7 @@
 &#124; <a href="../index.html">Keyword Index</a>
  ] <hr>
 <div class="doctools">
-<h1 class="doctools_title">critcl_devguide(n) 3.1.18.2 doc &quot;C Runtime In Tcl (CriTcl)&quot;</h1>
+<h1 class="doctools_title">critcl_devguide(n) 3.2 doc &quot;C Runtime In Tcl (CriTcl)&quot;</h1>
 <div id="name" class="doctools_section"><h2><a name="name">Name</a></h2>
 <p>critcl_devguide - Guide To The CriTcl Internals</p>
 </div>
@@ -320,17 +320,6 @@ assembled C code, for the major brnaches of Tcl, i.e. 8.4, 8.5, and 8.6.</p></dd
 <dt>&quot;<b class="file">lib/critcl-class/class.h</b>&quot;</dt>
 <dd><p>C code template used by the package.</p></dd>
 </dl></dd>
-<dt><b class="package">dict84</b></dt>
-<dd></dd>
-<dt><b class="package">lassign84</b></dt>
-<dd><dl class="doctools_definitions">
-<dt>&quot;<b class="file">lib/util84/dict.tcl</b>&quot;</dt>
-<dd></dd>
-<dt>&quot;<b class="file">lib/util84/lassign.tcl</b>&quot;</dt>
-<dd><p>These are two packages implementing forward compatibility emulations of the <b class="cmd">dict</b> and
-<b class="cmd">lassign</b> commands introduced with Tcl 8.5.  These are used automatically when critcl
-is run by Tcl 8.4.</p></dd>
-</dl></dd>
 <dt><b class="package">stubs::*</b></dt>
 <dd><dl class="doctools_definitions">
 <dt>&quot;<b class="file">lib/stubs/*</b>&quot;</dt>
@@ -344,31 +333,14 @@ coming with the Tcl core sources apart along its internal logical lines.</p></dd
 <dd><p>Arjen Markus' work on a critcl/Fortran. The code is outdated and has not been adapted to
 the changes in critcl version 3 yet.</p></dd>
 </dl></dd>
-<dt><b class="package">autoscroll</b></dt>
-<dd></dd>
-<dt><b class="package">cmdline</b></dt>
-<dd></dd>
 <dt><b class="package">md5</b></dt>
 <dd></dd>
 <dt><b class="package">md5c</b></dt>
 <dd></dd>
 <dt><b class="package">platform</b></dt>
-<dd></dd>
-<dt><b class="package">snit</b></dt>
-<dd></dd>
-<dt><b class="package">snitbutton</b></dt>
-<dd></dd>
-<dt><b class="package">wikit</b></dt>
 <dd><p>These are all external packages whose code has been inlined in the repository for easier
 development (less dependencies to pull), and quicker deployment from the repository
 (generation of starkit and -pack).</p>
-<p>The packages
-<b class="package">autoscroll</b>,
-<b class="package">snit</b>,
-<b class="package">snitbutton</b>, and
-<b class="package">wikit</b>
-are for the support of the Wikit GUI accessible from starkit and -pack when the
-application functionality (<b class="package">critcl::app</b>) is run with an empty command line.</p>
 <p><em>TODO</em> for maintainers: These should all be checked against their origin for
 updates and changes since they were inlined.</p></dd>
 </dl></dd>

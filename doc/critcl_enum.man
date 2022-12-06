@@ -1,5 +1,5 @@
 [comment {-*- tcl -*- doctools manpage}]
-[vset enum_version 1.1]
+[vset enum_version 1.2]
 [manpage_begin critcl::enum n [vset enum_version]]
 [include include/module2.inc]
 [keywords singleton {Tcl Interp Association}]
@@ -7,8 +7,8 @@
 [keywords {string to int mapping} conversion]
 [keywords {int to string mapping}]
 [titledesc {CriTcl - Wrap Support - String/Integer mapping}]
-[require Tcl 8.4]
-[require critcl [opt 3.1.11]]
+[require Tcl 8.6]
+[require critcl [opt 3.2]]
 [require critcl::enum [opt [vset enum_version]]]
 [description]
 [para]
@@ -143,8 +143,8 @@ The example shown below is the specification for a set of actions, methods,
 and the like, a function may take as argument.
 
 [example {
-package require Tcl 8.5
-package require critcl 3.1.11
+package require Tcl 8.6
+package require critcl 3.2
 
 critcl::buildrequirement {
     package require critcl::enum

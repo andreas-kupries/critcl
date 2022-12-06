@@ -1,7 +1,7 @@
 # -*- tcl -*-
 # STUBS handling -- Container.
 #
-# (c) 2011 Andreas Kupries http://wiki.tcl.tk/andreas%20kupries
+# (c) 2011,2022 Andreas Kupries http://wiki.tcl.tk/andreas%20kupries
 
 # A stubs table is represented by a dictionary value.
 # A container is a variable holding a stubs table value.
@@ -57,8 +57,7 @@
 # # ## ### ##### ######## #############
 ## Requisites
 
-package require Tcl 8.4
-package require dict84 ; # Ensure presence of a dict command.
+package require Tcl 8.6
 
 namespace eval ::stubs::container {}
 
@@ -382,5 +381,5 @@ namespace eval ::stubs::container {
 }
 
 # # ## ### #####
-package provide stubs::container 1
+package provide stubs::container 1.1
 return

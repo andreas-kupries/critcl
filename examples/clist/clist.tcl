@@ -3,7 +3,7 @@
 #	Set of list processing primitives. A Tcl companion file is then
 #	used to provide structure on top, here, an ensemble command.
 #
-# Copyright (c) 2011 Andreas Kupries <andreas_kupries@users.sourceforge.net>
+# Copyright (c) 2011,2022 Andreas Kupries <andreas_kupries@users.sourceforge.net>
 
 # Example of using a Tcl companion file to put a layer of structure
 # (and/or policy) on top of a set of C primitives.
@@ -13,13 +13,13 @@
 # # ## ### ##### ######## ############# #####################
 ## Requirements
 
-package require Tcl 8.5
-package require critcl 3
+package require Tcl 8.6
+package require critcl 3.2
 
 # # ## ### ##### ######## ############# #####################
 ## Administrivia
 
-critcl::tcl 8.5
+critcl::tcl 8.6
 critcl::license {Andreas Kupries} BSD
 
 critcl::summary {Extended list processing command.}

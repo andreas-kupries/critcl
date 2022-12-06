@@ -22,9 +22,8 @@
 # Modified by Miguel Sofer to use inlines and simple variables
 ##################################################
 
-package require Tcl 8.2
-namespace eval ::md5 {
-}
+package require Tcl 8.6
+namespace eval ::md5 {}
 
 if {![catch {package require Trf 2.0}]} {
     # Trf is available, so implement the functionality provided here
@@ -449,5 +448,4 @@ if {![catch {package require Trf 2.0}]} {
     }
 }
 
-package provide md5 1.4.1
-
+package provide md5 1.5

@@ -5,7 +5,7 @@
 
 cd [file dirname [file normalize [info script]]]
 
-package require critcl
+package require critcl 3.2
 
 puts v=[set v [package present critcl]]
 puts [package ifneeded critcl $v]

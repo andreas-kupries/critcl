@@ -5,18 +5,13 @@
 
 # CriTcl Utility Commands.
 
-package provide critcl::util 1.1
+package provide critcl::util 1.2
 
 # # ## ### ##### ######## ############# #####################
 ## Requirements.
 
-package require Tcl    8.4   ; # Min supported version.
-
-if {[catch {
-    package require critcl 3
-}]} {
-    package require critcl 2.1 ; # Only this and higher has the enhanced check, and checklink.
-}
+package require Tcl    8.6   ; # Min supported version.
+package require critcl 3.2
 
 namespace eval ::critcl::util {}
 

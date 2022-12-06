@@ -1,9 +1,56 @@
 [comment {-*- mode: tcl ; fill-column: 90 -*-}]
-[section {Changes for version 3.1.18.2}][comment {to be 3.2}]
-
-[strong {Not Released Yet}]
+[section {Changes for version 3.2}]
 
 [list_begin enumerated]
+
+[enum] [strong BREAKING] [vset critcl] now requires Tcl 8.6 to be run.
+
+[para] It also generates Tcl 8.6 extensions by default.
+
+[para] It is still possible to generates extensions for Tcl 8.4 and 8.5,
+       properly setting it via [cmd critcl::tcl].
+
+[para] [strong ATTENTION] It is planned to completely remove 8.4 and 8.5
+       support with [vset critcl] 3.3.
+
+       No date has been set for that release yet.
+
+[para] All utility packages have their versions and requirements bumped accordingly as
+       well.
+
+[enum] [strong BREAKING] [strong {Bug Fix}]
+       Issue [uri https://github.com/andreas-kupries/critcl/issues/115 #115].
+
+[para] Distributions using [syscmd build.tcl] for installation of critcl in their
+       packaging scripts have to be updated to the changed command signature of
+       [syscmd build.tcl] install, etc. See the details below.
+
+[para] Redone the argument handling for [method install], [method uninstall], and
+       [method targets]. The destination argument is gone.  All commands now take options
+       similar to what is known from GNU [syscmd configure], i.e.
+
+[list_begin options]
+[opt_def --prefix path]
+[opt_def --exec-prefix path]
+[opt_def --bin-dir path]
+[opt_def --lib-dir path]
+[opt_def --include-dir path]
+[list_end]
+
+[para] They now also respect the environment variable [var DESTDIR], and the associated
+       option [option --dest-dir].
+
+[para] The [option --prefix] defaults to the topdir from the bin directory holding the
+
+       [syscmd tclsh] running [syscmd build.tcl].  As Tcl command: [example {
+    file dirname [file dirname [info nameofexecutable]]
+}]
+
+[para] Added a command [method dirs] doing the same argument handling, for debugging.
+
+[enum] Removed the irrelevant packages [package autoscroll], [package cmdline],
+       [package dict84], [package lassign84], [package lmap84], [package snit],
+       [package snitbutton], and [package wikit].
 
 [enum] [strong {Documentation Redo}] Issue
        [uri https://github.com/andreas-kupries/critcl/issues/116 #116].
@@ -27,37 +74,6 @@
        [uri https://github.com/andreas-kupries/critcl/issues/118 #118].  Modified
        [cmd critcl::cproc] to accept C syntax for arguments, i.e.  Trailing comma on
        argument names, leading comma on type names, and lone comma characters.
-
-[enum] [strong {Bug Fix}]
-       Issue [uri https://github.com/andreas-kupries/critcl/issues/115 #115].
-
-[para] [strong BREAKING] Distributions using [syscmd build.tcl] for installation of critcl
-       in their packaging scripts have to be updated to the changed command signature of
-       [syscmd build.tcl] install, etc. See the details below.
-
-[para] Redone the argument handling for [method install], [method uninstall], and
-
-       [method targets]. The destination argument is gone.  All commands now take options
-       similar to what is known from GNU [syscmd configure], i.e.
-
-[list_begin options]
-[opt_def --prefix path]
-[opt_def --exec-prefix path]
-[opt_def --bin-dir path]
-[opt_def --lib-dir path]
-[opt_def --include-dir path]
-[list_end]
-
-[para] They now also respect the environment variable [var DESTDIR], and the associated
-       option [option --dest-dir].
-
-[para] The [option --prefix] defaults to the topdir from the bin directory holding the
-
-       [syscmd tclsh] running [syscmd build.tcl].  As Tcl command: [example {
-    file dirname [file dirname [info nameofexecutable]]
-}]
-
-[para] Added a command [method dirs] doing the same argument handling, for debugging.
 
 [enum] [strong {Performance Fix}] for [term {compile & run}] mode.
        Issue [uri https://github.com/andreas-kupries/critcl/issues/112 #112].

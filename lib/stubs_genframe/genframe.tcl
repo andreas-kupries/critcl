@@ -1,7 +1,7 @@
 # -*- tcl -*-
 # STUBS handling -- Code generation framework.
 #
-# (c) 2011 Andreas Kupries http://wiki.tcl.tk/andreas%20kupries
+# (c) 2011,2022 Andreas Kupries http://wiki.tcl.tk/andreas%20kupries
 
 # A stubs table is represented by a dictionary value.
 # A gen is a variable holding a stubs table value.
@@ -9,7 +9,7 @@
 # # ## ### ##### ######## #############
 ## Requisites
 
-package require Tcl 8.4
+package require Tcl 8.6
 package require stubs::container
 
 namespace eval ::stubs::gen::c {
@@ -414,5 +414,5 @@ namespace eval ::stubs::gen {
 }
 
 # # ## ### #####
-package provide stubs::gen 1
+package provide stubs::gen 1.1
 return

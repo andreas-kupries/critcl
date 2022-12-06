@@ -1,7 +1,7 @@
 # -*- tcl -*-
 # STUBS handling -- Write stubs table as .decls file
 #
-# (c) 2011 Andreas Kupries http://wiki.tcl.tk/andreas%20kupries
+# (c) 2011,2022 Andreas Kupries http://wiki.tcl.tk/andreas%20kupries
 
 # A stubs table is represented by a dictionary value.
 # A container is a variable holding a stubs table value.
@@ -9,10 +9,9 @@
 # # ## ### ##### ######## #############
 ## Requisites
 
-package require Tcl 8.4
+package require Tcl 8.6
 package require stubs::gen
 package require stubs::container
-package require lassign84
 
 namespace eval ::stubs::writer::g {
     namespace import ::stubs::gen::*
@@ -117,5 +116,5 @@ namespace eval ::stubs::writer {
 }
 
 # # ## ### #####
-package provide stubs::writer 1
+package provide stubs::writer 1.1
 return

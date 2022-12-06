@@ -1,12 +1,12 @@
 [comment {-*- tcl -*- doctools manpage}]
-[vset bitmap_version 1.0.1]
+[vset bitmap_version 1.1]
 [manpage_begin critcl::bitmap n [vset bitmap_version]]
 [include include/module2.inc]
 [keywords singleton {Tcl Interp Association}]
 [keywords bitmask bitset flags]
 [titledesc {CriTcl - Wrap Support - Bitset en- and decoding}]
-[require Tcl 8.4]
-[require critcl [opt 3.1.11]]
+[require Tcl 8.6]
+[require critcl [opt 3.2]]
 [require critcl::bitmap [opt [vset bitmap_version]]]
 [description]
 [para]
@@ -117,8 +117,8 @@ The example shown below is the specification of the event flags pulled
 from the draft work on a Tcl binding to Linux's inotify APIs.
 
 [example {
-package require Tcl 8.5
-package require critcl 3.1.11
+package require Tcl 8.6
+package require critcl 3.2
 
 critcl::buildrequirement {
     package require critcl::bitmap

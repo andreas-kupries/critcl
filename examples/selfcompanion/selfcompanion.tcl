@@ -12,13 +12,13 @@
 #	properly split off into a separate companion file such a
 #	dependency can be avoided.
 #
-# Copyright (c) 2011 Andreas Kupries <andreas_kupries@users.sourceforge.net>
+# Copyright (c) 2011,2022 Andreas Kupries <andreas_kupries@users.sourceforge.net>
 
 # # ## ### ##### ######## ############# #####################
 ## Requirements
 
-package require Tcl 8.4
-package require critcl 3
+package require Tcl 8.6
+package require critcl 3.2
 
 # # ## ### ##### ######## ############# #####################
 ## Define the Tcl companion code. This is done always, as we

@@ -4,7 +4,7 @@
 #	by the C parts and arranges them into a nice and proper
 #	ensemble command.
 #
-# Copyright (c) 2011 Andreas Kupries <andreas_kupries@users.sourceforge.net>
+# Copyright (c) 2011,2022 Andreas Kupries <andreas_kupries@users.sourceforge.net>
 
 # Example of using a Tcl companion file to put a layer of structure
 # (and/or policy) on top of a set of C primitives.

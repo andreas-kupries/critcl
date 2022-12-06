@@ -21,6 +21,7 @@
 # # ## ### ##### ######## ############# #####################
 ## Requirements
 
+package require Tcl 8.6
 package provide critcl::app [package require critcl]
 package require cmdline
 
@@ -1669,9 +1670,6 @@ proc ::critcl::app::PlaceCritclSupport {pkgdir} {
         critcl::enum      critcl-enum
         critcl::literals  critcl-literals
         critcl::platform  critcl-platform
-	dict84            dict84
-        lassign84         lassign84
-        lmap84            lmap84
 	stubs::container  stubs_container
         stubs::gen        stubs_genframe
         stubs::gen::decl  stubs_gen_decl
@@ -1697,7 +1695,6 @@ proc ::critcl::app::PlaceCritclSupport {pkgdir} {
     # by whatever is installed outside.
 
     set     pfiles {}
-    lappend pfiles lassign84/lassign dict84/dict lmap84/lmap
     lappend pfiles stubs_container/container stubs_reader/reader
     lappend pfiles stubs_genframe/genframe stubs_gen_decl/gen_decl
     lappend pfiles stubs_gen_macro/gen_macro stubs_gen_slot/gen_slot

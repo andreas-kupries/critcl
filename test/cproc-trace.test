@@ -4,7 +4,7 @@
 
 source [file join [file dirname [info script]] support testutilities.tcl]
 
-testsNeedTcl     8.4
+testsNeedTcl     8.6
 testsNeedTcltest 2
 
 useLocalFile test/support/crit_utils.tcl

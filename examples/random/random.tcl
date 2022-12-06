@@ -1,22 +1,22 @@
 # -*- tcl -*- (critcl actually, Tcl + embedded C)
 # sr.tcl --
 #
-#	Object-based rand number generators. The low-level math, i.e.
+#	Object-based random number generators. The low-level math, i.e.
 #	the rnmath functions, is provided by package 'rnmath'.
 #
 # Concept pulled out of and derived from tcllib/modules/simulation/random.tcl
 # Copyright (c) 2007 by Arjen Markus <arjenmarkus@users.sourceforge.net>
 #
 # Critcl code generation and setup
-# Copyright (c) 2011 by Andreas Kupries <andreas_kupris@users.sourceforge.net>
+# Copyright (c) 2011,2022 by Andreas Kupries <andreas_kupris@users.sourceforge.net>
 #
 # Example of how to IMPORT a C-level stubs API through critcl v3.
 
 # # ## ### ##### ######## ############# #####################
 ## Requirements
 
-package require Tcl 8.4
-package require critcl 3
+package require Tcl 8.6
+package require critcl 3.2
 
 critcl::buildrequirement {
     package require stubs::gen ; # Generator/iterator framework ...

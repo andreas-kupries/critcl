@@ -5,7 +5,8 @@
 #     - Fortran functions are not covered yet (void __stdcall ...)
 #
 
-package provide wrapfort 0.1
+package require Tcl 8.6
+package provide wrapfort 0.2
 
 # Wrapfort --
 #     Namespace which holds all relevant information and procedures

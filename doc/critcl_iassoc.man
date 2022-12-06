@@ -1,11 +1,11 @@
-[vset VERSION 1.1]
+[vset VERSION 1.2]
 [comment {-*- tcl -*- doctools manpage}]
 [manpage_begin critcl::iassoc n [vset VERSION]]
 [include include/module2.inc]
 [keywords singleton {Tcl Interp Association}]
 [titledesc {CriTcl - Code Gen - Tcl Interp Associations}]
-[require Tcl 8.4]
-[require critcl [opt 3.1]]
+[require Tcl 8.6]
+[require critcl [opt 3.2]]
 [require critcl::iassoc [opt [vset VERSION]]]
 [description]
 [para]
@@ -96,8 +96,8 @@ in the directory [file examples/queue] of the critcl source
 distribution/repository.
 
 [example {
-package require Tcl 8.4
-package require critcl 3.1
+package require Tcl 8.6
+package require critcl 3.2
 
 critcl::buildrequirement {
     package require critcl::iassoc

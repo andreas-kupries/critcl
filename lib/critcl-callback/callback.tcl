@@ -6,9 +6,9 @@
 # only provides stubs (i.e. functions) and data structures providing
 # C-level callback managers.
 
-package provide critcl::callback 1
+package provide critcl::callback 1.1
 
-package require critcl 3.1
+package require critcl 3.2
 critcl::buildrequirement {
     package require critcl::cutil ;# assertions, allocation support, tracing
 }
@@ -52,7 +52,7 @@ critcl::subject {Tcl callbacks from C}
 # # ## ### ##### ######## #############
 ## Implementation.
 
-critcl::tcl 8.5
+critcl::tcl 8.6
 critcl::cutil::alloc
 
 # # ## ### ##### ######## #############

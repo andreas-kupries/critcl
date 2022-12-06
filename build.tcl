@@ -1,7 +1,7 @@
 #!/bin/sh
 # -*- tcl -*- \
 exec tclsh "$0" ${1+"$@"}
-package require Tcl 8.4
+package require Tcl 8.6
 unset -nocomplain ::errorInfo
 set me [file normalize [info script]]
 proc main {} {
@@ -24,9 +24,6 @@ set packages {
     {critcl-literals  literals.tcl}
     {critcl-platform  platform.tcl}
     {critcl-util      util.tcl}
-    {dict84           dict.tcl}
-    {lassign84        lassign.tcl}
-    {lmap84           lmap.tcl}
     {stubs_container  container.tcl}
     {stubs_gen_decl   gen_decl.tcl}
     {stubs_gen_header gen_header.tcl}

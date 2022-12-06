@@ -10,13 +10,13 @@
 # separate data structure package, nor separately written method
 # implementations.
 #
-# Copyright (c) 2012 Andreas Kupries <andreas_kupries@users.sourceforge.net>
+# Copyright (c) 2012,2022 Andreas Kupries <andreas_kupries@users.sourceforge.net>
 #
 # See the file "license.terms" for information on usage and redistribution
 # of this file, and for a DISCLAIMER OF ALL WARRANTIES.
 
-package require Tcl 8.4
-package require critcl 3.1
+package require Tcl 8.6
+package require critcl 3.2
 
 critcl::buildrequirement {
     package require critcl::class ; # DSL, easy spec of Tcl class/object commands.

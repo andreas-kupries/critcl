@@ -6,15 +6,13 @@
 #
 # Copyright (c) 1998-1999 by Scriptics Corporation.
 # Copyright (c) 2007 Daniel A. Steffen <das@users.sourceforge.net>
-# Copyright (c) 2011 Andreas Kupries <andreas_kupries@users.sourceforge.net>
-# (Covnersion into package set).
+# Copyright (c) 2011,2022 Andreas Kupries <andreas_kupries@users.sourceforge.net>
+# (Conversion into package set).
 #
 # See the file "license.terms" for information on usage and redistribution
 # of this file, and for a DISCLAIMER OF ALL WARRANTIES.
-#
-# RCS: @(#) $Id: genStubs.tcl,v 1.22.2.4 2010/02/07 22:16:54 nijtmans Exp $
 
-package require Tcl 8.4
+package require Tcl 8.6
 
 lappend auto_path [file dirname [file normalize [info script]]]/lib/stubs
 lappend auto_path [file dirname [file normalize [info script]]]/lib/util84

@@ -1,4 +1,4 @@
-package require critcl
+package require critcl 3.2
 
 critcl::cproc add {int x int y} int {
     return x + y;

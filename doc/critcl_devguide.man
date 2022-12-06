@@ -185,17 +185,6 @@ The Tcl code implementing the package.
 C code template used by the package.
 [list_end][comment -----------------------------critcl::class]
 
-[def [package dict84]]
-[def [package lassign84]]
-[list_begin definitions][comment ---------------util84]
-[def [file lib/util84/dict.tcl]]
-[def [file lib/util84/lassign.tcl]]
-
-These are two packages implementing forward compatibility emulations of the [cmd dict] and
-[cmd lassign] commands introduced with Tcl 8.5.  These are used automatically when critcl
-is run by Tcl 8.4.
-
-[list_end][comment -----------------------------util84]
 
 [def [package stubs::*]]
 [list_begin definitions][comment ---------------stubs]
@@ -216,27 +205,13 @@ the changes in critcl version 3 yet.
 
 [list_end][comment -----------------------------critclf]
 
-[def [package autoscroll]]
-[def [package cmdline]]
 [def [package md5]]
 [def [package md5c]]
 [def [package platform]]
-[def [package snit]]
-[def [package snitbutton]]
-[def [package wikit]]
 
 These are all external packages whose code has been inlined in the repository for easier
 development (less dependencies to pull), and quicker deployment from the repository
 (generation of starkit and -pack).
-
-[para] The packages
-[package autoscroll],
-[package snit],
-[package snitbutton], and
-[package wikit]
-
-are for the support of the Wikit GUI accessible from starkit and -pack when the
-application functionality ([package critcl::app]) is run with an empty command line.
 
 [para] [strong TODO] for maintainers: These should all be checked against their origin for
 updates and changes since they were inlined.

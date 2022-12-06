@@ -1,8 +1,9 @@
 # critclf.tcl --
 #     Fortran version of Critcl
 #
-package provide critclf 0.1
-package require critcl
+package require Tcl 8.6
+package provide critclf 0.2
+package require critcl 3.2
 package require wrapfort
 
 namespace eval critcl {

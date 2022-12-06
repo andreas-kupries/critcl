@@ -47,6 +47,8 @@
 # searching search. Ditto a solaris 2.8 platform can use solaris 2.6
 # packages. Etc. This is handled by the other procedure, see below.
 
+package require Tcl 8.6
+
 # ### ### ### ######### ######### #########
 ## Requirements
 
@@ -383,7 +385,7 @@ proc ::platform::patterns {id} {
 # ### ### ### ######### ######### #########
 ## Ready
 
-package provide critcl::platform 1.0.15
+package provide critcl::platform 1.1
 
 # ### ### ### ######### ######### #########
 ## Demo application

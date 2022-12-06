@@ -1,6 +1,4 @@
 # -*- tcl -*- Critcl configuration file
-#
-#   $Id: Config,v 1.12 2006/08/25 09:05:28 steve Exp $
 
 # some defaults - you can override these in the platform specific section
 # but shouldn't need to for typical *nix toolchains using gcc

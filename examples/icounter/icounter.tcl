@@ -1,16 +1,16 @@
 # icounter.tcl --
 #
-#       Implementation of a counter associated an interpreter.
+#       Implementation of a counter associated with an interpreter.
 #       This code based on critcl v3.1, API compatible to the PTI [x].
 #       [x] Pure Tcl Implementation.
 #
-# Copyright (c) 2012 Andreas Kupries <andreas_kupries@users.sourceforge.net>
+# Copyright (c) 2012,2022 Andreas Kupries <andreas_kupries@users.sourceforge.net>
 #
 # See the file "license.terms" for information on usage and redistribution
 # of this file, and for a DISCLAIMER OF ALL WARRANTIES.
 
-package require Tcl 8.4
-package require critcl 3.1
+package require Tcl 8.6
+package require critcl 3.2
 
 critcl::buildrequirement {
     package require critcl::iassoc ; # Maintain an interpreter association.

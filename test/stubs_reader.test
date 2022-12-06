@@ -1,18 +1,13 @@
 # stubs_reader.test -*- tcl -*-
-#
-# $Id: stubs::reader.test,v 1.8 2010/07/06 19:39:00 andreas_kupries Exp $
 
 # -------------------------------------------------------------------------
 
 source [file join [file dirname [info script]] support testutilities.tcl]
 
-testsNeedTcl     8.4
+testsNeedTcl     8.6
 testsNeedTcltest 2
 
 support {
-    useLocal lib/lassign84/lassign.tcl  lassign84
-    useLocal lib/dict84/dict.tcl     dict84
-
     useLocal lib/stubs_container/container.tcl stubs::container
 }
 testing {

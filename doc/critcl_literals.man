@@ -1,12 +1,12 @@
 [comment {-*- tcl -*- doctools manpage}]
-[vset literal_version 1.3]
+[vset literal_version 1.4]
 [manpage_begin critcl::literals n [vset literal_version]]
 [include include/module2.inc]
 [keywords singleton {Tcl Interp Association}]
 [keywords {string pool} {literal pool}]
 [titledesc {CriTcl - Code Gen - Constant string pools}]
-[require Tcl 8.4]
-[require critcl [opt 3.1.11]]
+[require Tcl 8.6]
+[require critcl [opt 3.2]]
 [require critcl::literals [opt [vset literal_version]]]
 [description]
 [para]
@@ -137,8 +137,8 @@ The example shown below is the specification of the string pool pulled
 from the draft work on a Tcl binding to Linux's inotify APIs.
 
 [example {
-package require Tcl 8.5
-package require critcl 3.1.11
+package require Tcl 8.6
+package require critcl 3.2
 
 critcl::buildrequirement {
     package require critcl::literals

@@ -6,12 +6,12 @@
 # CriTcl Utility Commands. Specification of a C function and structure
 # associated with an interpreter made easy.
 
-package provide critcl::iassoc 1.1
+package provide critcl::iassoc 1.2
 
 # # ## ### ##### ######## ############# #####################
 ## Requirements.
 
-package require Tcl    8.4    ; # Min supported version.
+package require Tcl    8.6    ; # Min supported version.
 package require critcl 3.1.13 ; # Need 'meta?' to get the package name.
                                 # Need 'Deline' helper.
 package require critcl::util  ; # Use the package's Get/Put commands.

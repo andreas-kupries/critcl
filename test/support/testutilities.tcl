@@ -1,7 +1,7 @@
 # -*- tcl -*-
 # Testsuite utilities / boilerplate
 
-# Copyright (c) 2006-2018, Andreas Kupries <andreas_kupries@users.sourceforge.net>
+# Copyright (c) 2006-2022, Andreas Kupries <andreas_kupries@users.sourceforge.net>
 #                                          <akupries@shaw.ca>
 #                                          <andreas.kupries@gmail.com>
 
@@ -367,37 +367,6 @@ proc InitializeTclTest {} {
     }
     uplevel \#0 {namespace import -force ::tcltest::*}
     return
-}
-
-# ### ### ### ######### ######### #########
-## Command to construct wrong/args messages for Snit methods.
-
-proc snitErrors {} {
-    if {[package vsatisfies [package provide snit] 2]} {
-	# Snit 2.0+
-
-	proc snitWrongNumArgs {obj method arglist missingIndex} {
-	    regsub {^.*Snit_method} $method {} method
-	    tcltest::wrongNumArgs "$obj $method" $arglist $missingIndex
-	}
-
-	proc snitTooManyArgs {obj method arglist} {
-	    regsub {^.*Snit_method} $method {} method
-	    tcltest::tooManyArgs "$obj $method" $arglist
-	}
-
-    } else {
-	proc snitWrongNumArgs {obj method arglist missingIndex} {
-	    incr missingIndex 4
-	    tcltest::wrongNumArgs "$method" [linsert $arglist 0 \
-		    type selfns win self] $missingIndex
-	}
-
-	proc snitTooManyArgs {obj method arglist} {
-	    tcltest::tooManyArgs "$method" [linsert $arglist 0 \
-		    type selfns win self]
-	}
-    }
 }
 
 # ### ### ### ######### ######### #########

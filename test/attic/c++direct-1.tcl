@@ -1,4 +1,4 @@
-package require critcl
+package require critcl 3.2
 
 critcl::config language c++
 critcl::clibraries -lstdc++

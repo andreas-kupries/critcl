@@ -3,7 +3,7 @@
 #	Low-level stack data structure. With wrapping usable as
 #	a Tcl-level stack.
 #
-# Copyright (c) 2008-2011 Andreas Kupries <andreas_kupries@users.sourceforge.net>
+# Copyright (c) 2008-2011,2022 Andreas Kupries <andreas_kupries@users.sourceforge.net>
 
 # Example of exporting a C-level stubs API through critcl v3, with a
 # package header file containing public type definitions, macros,
@@ -12,8 +12,8 @@
 # # ## ### ##### ######## ############# #####################
 ## Requirements
 
-package require Tcl 8.4
-package require critcl 3 ;# stubs management
+package require Tcl 8.6
+package require critcl 3.2
 
 # # ## ### ##### ######## ############# #####################
 ## Administrivia

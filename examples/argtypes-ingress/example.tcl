@@ -1,6 +1,6 @@
 #!/usr/bin/env tclsh
 
-package require Tcl 8.5
+package require Tcl 8.6
 package require ingress
 
 # Main point is checking that all the conversions of all

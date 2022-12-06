@@ -4,7 +4,7 @@
 '\" Copyright (c) Steve Landers
 '\" Copyright (c) 2011-2022 Andreas Kupries
 '\"
-.TH "critcl_devguide" n 3\&.1\&.18\&.2 doc "C Runtime In Tcl (CriTcl)"
+.TH "critcl_devguide" n 3\&.2 doc "C Runtime In Tcl (CriTcl)"
 .\" The -*- nroff -*- definitions below are for supplemental macros used
 .\" in Tcl/Tk manual entries.
 .\"
@@ -533,19 +533,6 @@ The Tcl code implementing the package\&.
 C code template used by the package\&.
 .RE
 .TP
-\fBdict84\fR
-.TP
-\fBlassign84\fR
-.RS
-.TP
-"\fIlib/util84/dict\&.tcl\fR"
-.TP
-"\fIlib/util84/lassign\&.tcl\fR"
-These are two packages implementing forward compatibility emulations of the \fBdict\fR and
-\fBlassign\fR commands introduced with Tcl 8\&.5\&.  These are used automatically when critcl
-is run by Tcl 8\&.4\&.
-.RE
-.TP
 \fBstubs::*\fR
 .RS
 .TP
@@ -563,32 +550,14 @@ Arjen Markus' work on a critcl/Fortran\&. The code is outdated and has not been 
 the changes in critcl version 3 yet\&.
 .RE
 .TP
-\fBautoscroll\fR
-.TP
-\fBcmdline\fR
-.TP
 \fBmd5\fR
 .TP
 \fBmd5c\fR
 .TP
 \fBplatform\fR
-.TP
-\fBsnit\fR
-.TP
-\fBsnitbutton\fR
-.TP
-\fBwikit\fR
 These are all external packages whose code has been inlined in the repository for easier
 development (less dependencies to pull), and quicker deployment from the repository
 (generation of starkit and -pack)\&.
-.sp
-The packages
-\fBautoscroll\fR,
-\fBsnit\fR,
-\fBsnitbutton\fR, and
-\fBwikit\fR
-are for the support of the Wikit GUI accessible from starkit and -pack when the
-application functionality (\fBcritcl::app\fR) is run with an empty command line\&.
 .sp
 \fITODO\fR for maintainers: These should all be checked against their origin for
 updates and changes since they were inlined\&.

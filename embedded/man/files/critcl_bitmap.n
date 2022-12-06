@@ -2,7 +2,7 @@
 '\" Generated from file 'critcl_bitmap\&.man' by tcllib/doctools with format 'nroff'
 '\" Copyright (c) 2011-2018 Andreas Kupries
 '\"
-.TH "critcl::bitmap" n 1\&.0\&.1 doc "C Runtime In Tcl (CriTcl)"
+.TH "critcl::bitmap" n 1\&.1 doc "C Runtime In Tcl (CriTcl)"
 .\" The -*- nroff -*- definitions below are for supplemental macros used
 .\" in Tcl/Tk manual entries.
 .\"
@@ -274,11 +274,11 @@ Database Class:	\\fB\\$3\\fR
 .SH NAME
 critcl::bitmap \- CriTcl - Wrap Support - Bitset en- and decoding
 .SH SYNOPSIS
-package require \fBTcl  8\&.4\fR
+package require \fBTcl  8\&.6\fR
 .sp
-package require \fBcritcl  ?3\&.1\&.11?\fR
+package require \fBcritcl  ?3\&.2?\fR
 .sp
-package require \fBcritcl::bitmap  ?1\&.0\&.1?\fR
+package require \fBcritcl::bitmap  ?1\&.1?\fR
 .sp
 \fB::critcl::bitmap::def\fR \fIname\fR \fIdefinition\fR ?\fIexclusions\fR?
 .sp
@@ -411,8 +411,8 @@ from the draft work on a Tcl binding to Linux's inotify APIs\&.
 .CS
 
 
-package require Tcl 8\&.5
-package require critcl 3\&.1\&.11
+package require Tcl 8\&.6
+package require critcl 3\&.2
 
 critcl::buildrequirement {
     package require critcl::bitmap

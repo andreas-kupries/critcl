@@ -7,8 +7,8 @@ keep the size down.
 [file examples/queue] of the critcl source distribution/repository.
 
 [example {
-package require Tcl 8.4
-package require critcl 3.1
+package require Tcl 8.6
+package require critcl 3.2
 
 critcl::buildrequirement {
     package require critcl::class ; # DSL, easy spec of Tcl class/object commands.

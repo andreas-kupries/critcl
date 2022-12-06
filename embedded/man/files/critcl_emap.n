@@ -2,7 +2,7 @@
 '\" Generated from file 'critcl_emap\&.man' by tcllib/doctools with format 'nroff'
 '\" Copyright (c) 2011-2018 Andreas Kupries
 '\"
-.TH "critcl::emap" n 1\&.2 doc "C Runtime In Tcl (CriTcl)"
+.TH "critcl::emap" n 1\&.3 doc "C Runtime In Tcl (CriTcl)"
 .\" The -*- nroff -*- definitions below are for supplemental macros used
 .\" in Tcl/Tk manual entries.
 .\"
@@ -274,11 +274,11 @@ Database Class:	\\fB\\$3\\fR
 .SH NAME
 critcl::emap \- CriTcl - Wrap Support - Enum en- and decoding
 .SH SYNOPSIS
-package require \fBTcl  8\&.4\fR
+package require \fBTcl  8\&.6\fR
 .sp
-package require \fBcritcl  ?3\&.1\&.11?\fR
+package require \fBcritcl  ?3\&.2?\fR
 .sp
-package require \fBcritcl::emap  ?1\&.2?\fR
+package require \fBcritcl::emap  ?1\&.3?\fR
 .sp
 \fB::critcl::emap::def\fR \fIname\fR \fIdefinition\fR ?\fB-nocase\fR? ?\fB-mode\fR \fImode\fR?
 .sp
@@ -457,8 +457,8 @@ linenoise library\&.
 .CS
 
 
-package require Tcl 8\&.5
-package require critcl 3\&.1\&.11
+package require Tcl 8\&.6
+package require critcl 3\&.2
 
 critcl::buildrequirement {
     package require critcl::emap

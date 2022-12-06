@@ -2,7 +2,7 @@
 '\" Generated from file 'critcl_util\&.man' by tcllib/doctools with format 'nroff'
 '\" Copyright (c) 2011-2018 Andreas Kupries
 '\"
-.TH "critcl::util" n 1 doc "C Runtime In Tcl (CriTcl)"
+.TH "critcl::util" n 1\&.2 doc "C Runtime In Tcl (CriTcl)"
 .\" The -*- nroff -*- definitions below are for supplemental macros used
 .\" in Tcl/Tk manual entries.
 .\"
@@ -274,11 +274,11 @@ Database Class:	\\fB\\$3\\fR
 .SH NAME
 critcl::util \- CriTcl - Utilities
 .SH SYNOPSIS
-package require \fBTcl  8\&.4\fR
+package require \fBTcl  8\&.6\fR
 .sp
-package require \fBcritcl  ?2\&.1?\fR
+package require \fBcritcl  ?3\&.2?\fR
 .sp
-package require \fBcritcl::util  ?1?\fR
+package require \fBcritcl::util  ?1\&.2?\fR
 .sp
 \fB::critcl::util::checkfun\fR \fIname\fR ?\fIlabel\fR?
 .sp

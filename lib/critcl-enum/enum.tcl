@@ -7,12 +7,12 @@
 # from and to a C enum. Not a full Tcl_ObjType. Based on
 # Tcl_GetIndexFromObj() instead.
 
-package provide critcl::enum 1.1
+package provide critcl::enum 1.2
 
 # # ## ### ##### ######## ############# #####################
 ## Requirements.
 
-package require Tcl              8.4    ; # Min supported version.
+package require Tcl              8.6    ; # Min supported version.
 package require critcl           3.1.11 ; # make, include -- dict portability
 package require critcl::literals 1.1    ; # String pool for conversion to Tcl.
 

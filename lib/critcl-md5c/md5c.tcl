@@ -3,10 +3,8 @@
 # Wrapper for RSA's Message Digest in C
 #
 # Written by Jean-Claude Wippler <jcw@equi4.com>
-#
-# $Id: md5c.tcl,v 1.5 2009/05/06 22:46:10 patthoyts Exp $
 
-package require critcl
+package require critcl      3.2
 package provide critcl_md5c 0.12
 
 critcl::cheaders md5c_c/md5.h;                 # The RSA header file

@@ -12,15 +12,15 @@
 #     by C. Mooney (Sage Publications, 1997)
 #
 # Critcl code generation and setup
-# Copyright (c) 2011 by Andreas Kupries <andreas_kupris@users.sourceforge.net>
+# Copyright (c) 2011,2022 by Andreas Kupries <andreas_kupris@users.sourceforge.net>
 #
 # Example of how to EXPORT a C-level stubs API through critcl v3.
 
 # # ## ### ##### ######## ############# #####################
 ## Requirements
 
-package require Tcl 8.4
-package require critcl 3 ; # First providing stubs functionality
+package require Tcl 8.6
+package require critcl 3.2
 
 # # ## ### ##### ######## ############# #####################
 ## Configuration

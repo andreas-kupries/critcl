@@ -4,7 +4,7 @@
 [manpage_begin critcl_cproc_types n [vset VERSION]]
 [include include/module.inc]
 [titledesc {CriTcl cproc Type Reference}]
-[require Tcl 8.4]
+[require Tcl 8.6]
 [require critcl [opt [vset VERSION]]]
 [description]
 [para]

@@ -11,14 +11,14 @@
 # # ## ### ##### ######## ############# #####################
 # CriTcl Core.
 
-package provide critcl 3.1.18.2
+package provide critcl 3.2
 
 namespace eval ::critcl {}
 
 # # ## ### ##### ######## ############# #####################
 ## Requirements.
 
-package require Tcl 8.4 ; # Minimal supported Tcl runtime.
+package require Tcl 8.6 ; # Minimal supported Tcl runtime.
 if {[catch {
     package require platform 1.0.2 ; # Determine current platform.
 }]} {
@@ -35,12 +35,6 @@ if {[catch {
     # version.
     package require critcl::platform
 }
-
-# # ## ### ##### ######## ############# #####################
-# Ensure forward compatibility of commands defined in 8.5+.
-package require lassign84
-package require dict84
-package require lmap84
 
 # # ## ### ##### ######## ############# #####################
 ## https://github.com/andreas-kupries/critcl/issues/112
@@ -4732,7 +4726,7 @@ proc ::critcl::CollectEmbeddedSources {file destination libfile ininame placestu
 }
 
 proc ::critcl::MinTclVersion {file} {
-    set required [GetParam $file mintcl 8.4]
+    set required [GetParam $file mintcl 8.6]
     foreach version $v::hdrsavailable {
 	if {[package vsatisfies $version $required]} {
 	    return $version

@@ -1,7 +1,7 @@
 # -*- tcl -*-
 # STUBS handling -- Code generation: Writing the stub headers.
 #
-# (c) 2011 Andreas Kupries http://wiki.tcl.tk/andreas%20kupries
+# (c) 2011,2022 Andreas Kupries http://wiki.tcl.tk/andreas%20kupries
 
 # A stubs table is represented by a dictionary value.
 # A gen is a variable holding a stubs table value.
@@ -9,14 +9,12 @@
 # # ## ### ##### ######## #############
 ## Requisites
 
-package require Tcl 8.4
+package require Tcl 8.6
 package require stubs::gen
 package require stubs::container
 package require stubs::gen::slot
 package require stubs::gen::macro
 package require stubs::gen::decl
-# critcl, only user, ensured presence of a dict command.
-# lassign84, ditto
 
 namespace eval ::stubs::gen::header::g {
     namespace import ::stubs::gen::*
@@ -108,5 +106,5 @@ namespace eval ::stubs::gen::header {
 }
 
 # # ## ### ##### ######## #############
-package provide stubs::gen::header 1
+package provide stubs::gen::header 1.1
 return
