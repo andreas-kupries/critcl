@@ -17,8 +17,9 @@
 	} critcl_list_int_any;
 
 	static int
-	_critcl_variadic_int_item (Tcl_Interp* interp, Tcl_Obj* src, int* dst) {
-	    @1conv@
+	_critcl_list_int_any_item (Tcl_Interp* interp, Tcl_Obj* src, int* dst) {
+	    	{
+	if (Tcl_GetIntFromObj(interp, src, dst) != TCL_OK) return TCL_ERROR; }
 	    return TCL_OK;
 	}
     
@@ -48,7 +49,7 @@ tcl__aproc0(ClientData cd, Tcl_Interp *interp, int oc, Tcl_Obj *CONST ov[])
 	
 	_x.v = (int*) ((!_x.c) ? 0 : ckalloc (_x.c * sizeof (int)));
 	for (k = 0; k < _x.c; k++) {
-	    if (_critcl_variadic_int_item (interp, el[k], &(_x.v[k])) != TCL_OK) {
+	    if (_critcl_list_int_any_item (interp, el[k], &(_x.v[k])) != TCL_OK) {
 		ckfree ((char*) _x.v); /* Cleanup partial work */
 		return TCL_ERROR;
 	    }

@@ -42,7 +42,7 @@ tcl__aproc0(ClientData cd, Tcl_Interp *interp, int oc, Tcl_Obj *CONST ov[])
 	int src, dst, leftovers = (oc-1);
 	    _args.c = leftovers;
 	    _args.v = (int*) ((!leftovers) ? 0 : ckalloc (leftovers * sizeof (int)));
-	    _args.o = &ov[1];
+	    _args.o = (Tcl_Obj**) &ov[1];
 	    for (src = 1, dst = 0; leftovers > 0; dst++, src++, leftovers--) {
 	       if (_critcl_variadic_int_item (interp, ov[src], &(_args.v[dst])) != TCL_OK) {
 		   ckfree ((char*) _args.v); /* Cleanup partial work */
