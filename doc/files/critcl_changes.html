@@ -1,5 +1,5 @@
 <!DOCTYPE html><html><head>
-<title>critcl_introduction - C Runtime In Tcl (CriTcl)</title>
+<title>critcl_changes - C Runtime In Tcl (CriTcl)</title>
 <style type="text/css"><!--
     HTML {
 	background: 	#FFFFFF;
@@ -91,210 +91,155 @@
     }
 --></style>
 </head>
-<!-- Generated from file 'critcl_introduction.man' by tcllib/doctools with format 'html'
+<!-- Generated from file 'critcl_changes.man' by tcllib/doctools with format 'html'
    -->
-<!-- Copyright &amp;copy; Jean-Claude Wippler   -- Copyright &amp;copy; Steve Landers   -- Copyright &amp;copy; 2011-2018 Andreas Kupries
+<!-- Copyright &amp;copy; Jean-Claude Wippler   -- Copyright &amp;copy; Steve Landers   -- Copyright &amp;copy; 2011-2022 Andreas Kupries
    -->
-<!-- critcl_introduction.n
+<!-- critcl_changes.n
    -->
 <body><hr> [
    <a href="../toc.html">Table Of Contents</a>
 &#124; <a href="../index.html">Keyword Index</a>
  ] <hr>
 <div class="doctools">
-<h1 class="doctools_title">critcl_introduction(n) 3.1.18.1 doc &quot;C Runtime In Tcl (CriTcl)&quot;</h1>
+<h1 class="doctools_title">critcl_changes(n) 3.2 doc &quot;C Runtime In Tcl (CriTcl)&quot;</h1>
 <div id="name" class="doctools_section"><h2><a name="name">Name</a></h2>
-<p>critcl_introduction - Introduction To CriTcl</p>
+<p>critcl_changes - CriTcl Releases &amp; Changes</p>
 </div>
 <div id="toc" class="doctools_section"><h2><a name="toc">Table Of Contents</a></h2>
 <ul class="doctools_toc">
 <li class="doctools_section"><a href="#toc">Table Of Contents</a></li>
 <li class="doctools_section"><a href="#section1">Description</a></li>
-<li class="doctools_section"><a href="#section2">Related Documents</a></li>
-<li class="doctools_section"><a href="#section3">Modes Of Operation/Use</a></li>
-<li class="doctools_section"><a href="#section4">System Architecture</a></li>
-<li class="doctools_section"><a href="#section5">Examples</a></li>
-<li class="doctools_section"><a href="#section6">Changes for version 3.1.18.1</a></li>
-<li class="doctools_section"><a href="#section7">Changes for version 3.1.18</a></li>
-<li class="doctools_section"><a href="#section8">Changes for version 3.1.17</a></li>
-<li class="doctools_section"><a href="#section9">Changes for version 3.1.16</a></li>
-<li class="doctools_section"><a href="#section10">Changes for version 3.1.15</a></li>
-<li class="doctools_section"><a href="#section11">Changes for version 3.1.14</a></li>
-<li class="doctools_section"><a href="#section12">Changes for version 3.1.13</a></li>
-<li class="doctools_section"><a href="#section13">Changes for version 3.1.12</a></li>
-<li class="doctools_section"><a href="#section14">Changes for version 3.1.11</a></li>
-<li class="doctools_section"><a href="#section15">Changes for version 3.1.10</a></li>
-<li class="doctools_section"><a href="#section16">Changes for version 3.1.9</a></li>
-<li class="doctools_section"><a href="#section17">Changes for version 3.1.8</a></li>
-<li class="doctools_section"><a href="#section18">Changes for version 3.1.7</a></li>
-<li class="doctools_section"><a href="#section19">Changes for version 3.1.6</a></li>
-<li class="doctools_section"><a href="#section20">Changes for version 3.1.5</a></li>
-<li class="doctools_section"><a href="#section21">Changes for version 3.1.4</a></li>
-<li class="doctools_section"><a href="#section22">Changes for version 3.1.3</a></li>
-<li class="doctools_section"><a href="#section23">Changes for version 3.1.2</a></li>
-<li class="doctools_section"><a href="#section24">Changes for version 3.1.1</a></li>
-<li class="doctools_section"><a href="#section25">Changes for version 3.1</a></li>
-<li class="doctools_section"><a href="#section26">Changes for version 3.0.7</a></li>
-<li class="doctools_section"><a href="#section27">Changes for version 3.0.6</a></li>
-<li class="doctools_section"><a href="#section28">Changes for version 3.0.5</a></li>
-<li class="doctools_section"><a href="#section29">Changes for version 3.0.4</a></li>
-<li class="doctools_section"><a href="#section30">Changes for version 3.0.3</a></li>
-<li class="doctools_section"><a href="#section31">Changes for version 3.0.2</a></li>
-<li class="doctools_section"><a href="#section32">Changes for version 3.0.1</a></li>
-<li class="doctools_section"><a href="#section33">Changes for version 3</a></li>
-<li class="doctools_section"><a href="#section34">Changes for version 2.1</a></li>
-<li class="doctools_section"><a href="#section35">Authors</a></li>
-<li class="doctools_section"><a href="#section36">Bugs, Ideas, Feedback</a></li>
+<li class="doctools_section"><a href="#section2">Changes for version 3.2</a></li>
+<li class="doctools_section"><a href="#section3">Changes for version 3.1.18.1</a></li>
+<li class="doctools_section"><a href="#section4">Changes for version 3.1.18</a></li>
+<li class="doctools_section"><a href="#section5">Changes for version 3.1.17</a></li>
+<li class="doctools_section"><a href="#section6">Changes for version 3.1.16</a></li>
+<li class="doctools_section"><a href="#section7">Changes for version 3.1.15</a></li>
+<li class="doctools_section"><a href="#section8">Changes for version 3.1.14</a></li>
+<li class="doctools_section"><a href="#section9">Changes for version 3.1.13</a></li>
+<li class="doctools_section"><a href="#section10">Changes for version 3.1.12</a></li>
+<li class="doctools_section"><a href="#section11">Changes for version 3.1.11</a></li>
+<li class="doctools_section"><a href="#section12">Changes for version 3.1.10</a></li>
+<li class="doctools_section"><a href="#section13">Changes for version 3.1.9</a></li>
+<li class="doctools_section"><a href="#section14">Changes for version 3.1.8</a></li>
+<li class="doctools_section"><a href="#section15">Changes for version 3.1.7</a></li>
+<li class="doctools_section"><a href="#section16">Changes for version 3.1.6</a></li>
+<li class="doctools_section"><a href="#section17">Changes for version 3.1.5</a></li>
+<li class="doctools_section"><a href="#section18">Changes for version 3.1.4</a></li>
+<li class="doctools_section"><a href="#section19">Changes for version 3.1.3</a></li>
+<li class="doctools_section"><a href="#section20">Changes for version 3.1.2</a></li>
+<li class="doctools_section"><a href="#section21">Changes for version 3.1.1</a></li>
+<li class="doctools_section"><a href="#section22">Changes for version 3.1</a></li>
+<li class="doctools_section"><a href="#section23">Changes for version 3.0.7</a></li>
+<li class="doctools_section"><a href="#section24">Changes for version 3.0.6</a></li>
+<li class="doctools_section"><a href="#section25">Changes for version 3.0.5</a></li>
+<li class="doctools_section"><a href="#section26">Changes for version 3.0.4</a></li>
+<li class="doctools_section"><a href="#section27">Changes for version 3.0.3</a></li>
+<li class="doctools_section"><a href="#section28">Changes for version 3.0.2</a></li>
+<li class="doctools_section"><a href="#section29">Changes for version 3.0.1</a></li>
+<li class="doctools_section"><a href="#section30">Changes for version 3</a></li>
+<li class="doctools_section"><a href="#section31">Changes for version 2.1</a></li>
+<li class="doctools_section"><a href="#section32">Authors</a></li>
+<li class="doctools_section"><a href="#section33">Bugs, Ideas, Feedback</a></li>
 <li class="doctools_section"><a href="#keywords">Keywords</a></li>
 <li class="doctools_section"><a href="#category">Category</a></li>
 <li class="doctools_section"><a href="#copyright">Copyright</a></li>
 </ul>
 </div>
 <div id="section1" class="doctools_section"><h2><a name="section1">Description</a></h2>
-<p><i class="term">C Runtime In Tcl</i>, or <i class="term"><a href="critcl_pkg.html">CriTcl</a></i> , is a system for compiling C code
-embedded in Tcl on the fly and either loading the resulting objects into Tcl for
-immediate use or packaging them for distribution.  Use <i class="term"><a href="critcl_pkg.html">CriTcl</a></i> to improve
-performance by rewriting in C those routines that are performance bottlenecks.</p>
-<p>CriTcl started life as an experiment by Jean-Claude Wippler and was a
-self-contained Tcl package to build C code into a Tcl/Tk extension on
-the fly. It was somewhat inspired by Brian Ingerson's <i class="term">Inline</i>
-for <i class="term">Perl</i>, but is considerably more lightweight.</p>
-<p>It is for the last 5% to 10% when pure Tcl, which does go a long way,
-is not sufficient anymore. I.e. for</p>
-<ol class="doctools_enumerated">
-<li><p>when the last bits of performance are needed,</p></li>
-<li><p>access to 3rd party libraries,</p></li>
-<li><p>hiding critical pieces of your library or application, and</p></li>
-<li><p>simply needing features provided only by C.</p></li>
-</ol>
-<p>The following sections first reference a few related documents
-which may or may not be of interest to you, depending on if you are
-just a plain user of the system, trying to get and build/install it,
-or are going deep into the internals for either edification or
-modification.</p>
-<p>This is followed by an introduction to the modes of operation
-supported by the system, and its general architecture as seen by a
-user.</p>
-</div>
-<div id="section2" class="doctools_section"><h2><a name="section2">Related Documents</a></h2>
-<ol class="doctools_enumerated">
-<li><p><i class="term"><a href="license.html">Critcl - License</a></i>.</p></li>
-<li><p><i class="term"><a href="critcl_usingit.html">Using Critcl</a></i></p></li>
-<li><p><i class="term"><a href="critcl_sources.html">Critcl - How To Get The Sources</a></i>.</p></li>
-<li><p><i class="term"><a href="critcl_installer.html">Critcl - The Installer's Guide</a></i>.</p></li>
-<li><p><i class="term"><a href="critcl_apppkg.html">Critcl - Application Package Reference</a></i></p></li>
-<li><p><i class="term"><a href="critcl_pkg.html">Critcl - Package Reference</a></i></p></li>
-<li><p><i class="term"><a href="critcl_devguide.html">Critcl - The Developer's Guide</a></i>.</p></li>
-</ol>
-</div>
-<div id="section3" class="doctools_section"><h2><a name="section3">Modes Of Operation/Use</a></h2>
-<p>CriTcl can be used in three different modes of operation, called</p>
-<ol class="doctools_enumerated">
-<li><p><i class="term"><a href="../index.html#compile_run">Compile &amp; Run</a></i>, and</p></li>
-<li><p><i class="term"><a href="../index.html#generate_package">Generate Package</a></i></p></li>
-<li><p><i class="term">Generate TEA Package</i></p></li>
-</ol>
-<p><i class="term"><a href="../index.html#compile_run">Compile &amp; Run</a></i> was the original mode and is the default for
-<i class="term">critcl_pkg</i>.  Collects the C fragments from the
-<i class="term">Critcl script</i>, builds them as needed, and caches the results to
-improve load times later.</p>
-<p>The second mode, <i class="term"><a href="../index.html#generate_package">Generate Package</a></i>, was introduced to enable
-the creation of (prebuilt) deliverable packages which do not depend on
-the existence of a build system, i.e. C compiler, on the target
-machine.
-This was originally done through the experimental <b class="cmd">Critbind</b> tool,
-and is now handled by the <i class="term"><a href="critcl_app.html">CriTcl Application</a></i>, also named
-<b class="cmd"><a href="critcl_pkg.html">critcl</a></b>.</p>
-<p>Newly introduced with Critcl version 3 is
-<i class="term">Generate TEA Package</i>. This mode constructs a directory
-hierarchy from the package which can later be built like a regular TEA
-package, i.e. using</p>
-<pre class="doctools_example">
-	.../configure --prefix ...
-	make all isntall
-</pre>
-</div>
-<div id="section4" class="doctools_section"><h2><a name="section4">System Architecture</a></h2>
-<p>The system consists of two main layers, as seen in the figure below,
-plus a support layer containing general packages the system uses during
-operation.</p>
-<p><img alt="architecture" src="../image/architecture.png"></p>
-<ol class="doctools_enumerated">
-<li><p>At the top we have an application built on top of the core packages,
-providing command line access to the second and third usage modes,
-i.e. <i class="term"><a href="../index.html#generate_package">Generate Package</a></i> and <i class="term">Generate TEA Package</i>.</p>
-<dl class="doctools_definitions">
-<dt><b class="syscmd"><a href="critcl_pkg.html">critcl</a></b></dt>
-<dd></dd>
-<dt><b class="package"><a href="critcl_apppkg.html">critcl::app</a></b></dt>
-<dd></dd>
-</dl>
-</li>
-<li><p>Below that is the core package providing the essential functionality
-of the system, plus various utility packages which make common tasks
-more convenient.</p>
-<dl class="doctools_definitions">
-<dt><b class="package"><a href="critcl_pkg.html">critcl</a></b></dt>
-<dd></dd>
-<dt><b class="package"><a href="critcl_util.html">critcl::util</a></b></dt>
-<dd></dd>
-</dl>
-</li>
-<li><p>Lastly a layer of supporting packages, mostly external to critcl.</p>
-<dl class="doctools_definitions">
-<dt><b class="package">md5</b></dt>
-<dd><p>For this pure-Tcl package to be fast users should get one of several
-possible accelerator packages:</p>
-<ol class="doctools_enumerated">
-<li><p><b class="package">tcllibc</b></p></li>
-<li><p><b class="package">Trf</b></p></li>
-<li><p><b class="package">md5c</b></p></li>
-</ol></dd>
-<dt><b class="package">cmdline</b></dt>
-<dd></dd>
-<dt><b class="package">platform</b></dt>
-<dd></dd>
-<dt><b class="package">stubs::container</b></dt>
-<dd></dd>
-<dt><b class="package">stubs::reader</b></dt>
-<dd></dd>
-<dt><b class="package">stubs::writer</b></dt>
-<dd></dd>
-<dt><b class="package">stubs::gen</b></dt>
-<dd></dd>
-<dt><b class="package">stubs::gen::init</b></dt>
-<dd></dd>
-<dt><b class="package">stubs::gen::header</b></dt>
-<dd></dd>
-<dt><b class="package">stubs::gen::decl</b></dt>
-<dd></dd>
-<dt><b class="package">stubs::gen::macro</b></dt>
-<dd></dd>
-<dt><b class="package">stubs::gen::slot</b></dt>
-<dd></dd>
-<dt><b class="package">stubs::gen::lib</b></dt>
-<dd></dd>
-</dl>
-</li>
-</ol>
-</div>
-<div id="section5" class="doctools_section"><h2><a name="section5">Examples</a></h2>
-<p>The sources of Critcl, should you have gotten them, contain
-several larger examples show-casing various aspects of the
-system. These demonstration packages can all be found in the
-sub-directory &quot;<b class="file">examples/</b>&quot; of the sources.</p>
-<p>Lots of smaller examples can be found in the document
-<i class="term">Using CriTcl</i>, an introduction to Critcl by way of a of
-examples. These focus more on specific critcl commands than the
-overall picture shown by the large examples mentioned in the previous
-paragraph.</p>
+<p>Be welcome to the <i class="term">C Runtime In Tcl</i> (short: <i class="term"><a href="critcl.html">CriTcl</a></i>), a system for embedding and using C
+code from within <a href="http://core.tcl-lang.org/tcl">Tcl</a> scripts.</p>
+<p>Adding C code to <a href="http://core.tcl-lang.org/tcl">Tcl</a>/<a href="http://core.tcl-lang.org/tk">Tk</a> has never been easier.</p>
+<p>Improve performance by rewriting the performance bottlenecks in C.</p>
+<p>Import the functionality of shared libraries into Tcl scripts.
+See the changes done in each release of <i class="term"><a href="critcl.html">CriTcl</a></i>, from the latest at the top to the
+beginning of the project.</p>
 <p>The latest changes are found at the top.</p>
 </div>
-<div id="section6" class="doctools_section"><h2><a name="section6">Changes for version 3.1.18.1</a></h2>
+<div id="section2" class="doctools_section"><h2><a name="section2">Changes for version 3.2</a></h2>
+<ol class="doctools_enumerated">
+<li><p><em>BREAKING</em> <i class="term"><a href="critcl.html">CriTcl</a></i> now requires Tcl 8.6 to be run.</p>
+<p>It also generates Tcl 8.6 extensions by default.</p>
+<p>It is still possible to generates extensions for Tcl 8.4 and 8.5,
+       properly setting it via <b class="cmd">critcl::tcl</b>.</p>
+<p><em>ATTENTION</em> It is planned to completely remove 8.4 and 8.5
+       support with <i class="term"><a href="critcl.html">CriTcl</a></i> 3.3.
+       No date has been set for that release yet.</p>
+<p>All utility packages have their versions and requirements bumped accordingly as
+       well.</p></li>
+<li><p><em>BREAKING</em> <em>Bug Fix</em>
+       Issue <a href="https://github.com/andreas-kupries/critcl/issues/115">#115</a>.</p>
+<p>Distributions using <b class="syscmd">build.tcl</b> for installation of critcl in their
+       packaging scripts have to be updated to the changed command signature of
+       <b class="syscmd">build.tcl</b> install, etc. See the details below.</p>
+<p>Redone the argument handling for <b class="method">install</b>, <b class="method">uninstall</b>, and
+       <b class="method">targets</b>. The destination argument is gone.  All commands now take options
+       similar to what is known from GNU <b class="syscmd">configure</b>, i.e.</p>
+<dl class="doctools_options">
+<dt><b class="option">--prefix</b> path</dt>
+<dd></dd>
+<dt><b class="option">--exec-prefix</b> path</dt>
+<dd></dd>
+<dt><b class="option">--bin-dir</b> path</dt>
+<dd></dd>
+<dt><b class="option">--lib-dir</b> path</dt>
+<dd></dd>
+<dt><b class="option">--include-dir</b> path</dt>
+<dd></dd>
+</dl>
+<p>They now also respect the environment variable <b class="variable">DESTDIR</b>, and the associated
+       option <b class="option">--dest-dir</b>.</p>
+<p>The <b class="option">--prefix</b> defaults to the topdir from the bin directory holding the
+       <b class="syscmd">tclsh</b> running <b class="syscmd">build.tcl</b>.  As Tcl command:</p>
+<pre class="doctools_example">
+    file dirname [file dirname [info nameofexecutable]]
+</pre>
+<p>Added a command <b class="method">dirs</b> doing the same argument handling, for debugging.</p></li>
+<li><p>Removed the irrelevant packages <b class="package">autoscroll</b>, <b class="package">cmdline</b>,
+       <b class="package">dict84</b>, <b class="package">lassign84</b>, <b class="package">lmap84</b>, <b class="package">snit</b>,
+       <b class="package">snitbutton</b>, and <b class="package">wikit</b>.</p></li>
+<li><p><em>Documentation Redo</em> Issue
+       <a href="https://github.com/andreas-kupries/critcl/issues/116">#116</a>.
+       Reworked the documentation to use the system of 4 quadrants.
+       Reworked the introduction (How To Use Critcl) to be strongly
+       based on a series of examples.</p></li>
+<li><p><em>Bug Fix</em> Issue
+       <a href="https://github.com/andreas-kupries/critcl/issues/125">#125</a>.
+       Added missing method <b class="method">create</b> in object creation example
+       of installer documentation.</p></li>
+<li><p><em>Feature</em>. Extended <b class="cmd">cproc</b> argument type processing. Now able to
+       auto-create restricted scalar types. I.e. types derived from <i class="term">int</i>, etc. and
+       limited in the range of allowed values.</p>
+<p>Further able to auto-create restricted list types, i.e. types derived from
+       <i class="term">list</i> and either limited in length, or in the type of the elements, or both.</p></li>
+<li><p><em>Bug Fix / Enhancement</em> Issue
+       <a href="https://github.com/andreas-kupries/critcl/issues/118">#118</a>.  Modified
+       <b class="cmd">critcl::cproc</b> to accept C syntax for arguments, i.e.  Trailing comma on
+       argument names, leading comma on type names, and lone comma characters.</p></li>
+<li><p><em>Performance Fix</em> for <i class="term"><a href="../index.html#compile_run">compile &amp; run</a></i> mode.
+       Issue <a href="https://github.com/andreas-kupries/critcl/issues/112">#112</a>.</p>
+<p>Moved the command activating more precise code location tracking out of package
+       <b class="package"><a href="critcl.html">critcl</a></b> into package <b class="package">critcl::app</b>.</p>
+<p>Because generating packages ahead of time can bear the performance penalty invoked
+       by this <em>global</em> setting.</p>
+<p>Arbitrary libraries and applications using critcl dynamically
+       (<i class="term"><a href="../index.html#compile_run">compile &amp; run</a></i>) on the other hand likely cannot, and should not.</p></li>
+<li><p><em>Fix</em>
+       Issue <a href="https://github.com/andreas-kupries/critcl/issues/109">#109</a>.
+       Ignore <b class="syscmd">clang</b> suffices when computing the target identifier from a
+       configuration identifier.</p></li>
+<li><p><em>Feature</em>. Bumped package <b class="package"><a href="critcl_cutil.html">critcl::cutil</a></b> to version 0.2.1.
+       Simplified the implementation of macro <b class="cmd">ASSERT</b> by taking the underlying
+       <b class="function">Tcl_Panic</b>'s printf ability into account and added a new macro <b class="cmd">ASSERT_VA</b>
+       exporting the same ability to the user.</p></li>
+</ol>
+</div>
+<div id="section3" class="doctools_section"><h2><a name="section3">Changes for version 3.1.18.1</a></h2>
 <ol class="doctools_enumerated">
 <li><p><em>Attention</em>: While the overall version (of the bundle)
-       moves to 3.1.18.1 the versions of packages <b class="package"><a href="critcl_pkg.html">critcl</a></b> and
-       <b class="package"><a href="critcl_apppkg.html">critcl::app</a></b> are <em>unchanged</em>.</p></li>
+       moves to 3.1.18.1 the versions of packages <b class="package"><a href="critcl.html">critcl</a></b> and
+       <b class="package">critcl::app</b> are <em>unchanged</em>.</p></li>
 <li><p><em>Bugfix</em> Generally removed a number of 8.5-isms which
        slipped into 3.1.18, breaking ability to use it with Tcl 8.4.</p></li>
 <li><p><em>Bugfix</em> Corrected broken <em>build.tcl uninstall</em>.</p></li>
@@ -303,7 +248,7 @@ paragraph.</p>
        compilation of the generated code.</p></li>
 </ol>
 </div>
-<div id="section7" class="doctools_section"><h2><a name="section7">Changes for version 3.1.18</a></h2>
+<div id="section4" class="doctools_section"><h2><a name="section4">Changes for version 3.1.18</a></h2>
 <ol class="doctools_enumerated">
 <li><p>Feature (Developer support). Merged pull request #96 from
        sebres/main-direct-invoke. Enables direct invokation of the
@@ -381,7 +326,7 @@ paragraph.</p>
 <p>See the package reference for the details.</p></li>
 </ol>
 </div>
-<div id="section8" class="doctools_section"><h2><a name="section8">Changes for version 3.1.17</a></h2>
+<div id="section5" class="doctools_section"><h2><a name="section5">Changes for version 3.1.17</a></h2>
 <ol class="doctools_enumerated">
 <li><p>Extension: Allow duplicate arg- and result-type definitions if
        they are fully identical.</p></li>
@@ -397,7 +342,7 @@ paragraph.</p>
        the end (removal of duplicates, mainly).</p></li>
 <li><p>Bugfix: Fixed issue #76.
        Support installation directories which are not in the <b class="variable">auto_path</b>.
-       Without the patch the installed <b class="cmd"><a href="critcl_pkg.html">critcl</a></b> will not find its
+       Without the patch the installed <b class="cmd"><a href="critcl.html">critcl</a></b> will not find its
        own packages and fail. Thank you to
        <a href="https://github.com/lupylucke">Simon Bachmann</a> for the
        report and patch, and then his patience with me to getting to
@@ -413,10 +358,10 @@ paragraph.</p>
 <li><p>New supporting package <b class="package"><a href="critcl_cutil.html">critcl::cutil</a></b>. Provides common
        C level facilities useful to packages (assertions, tracing,
        memory allocation shorthands).</p></li>
-<li><p>Modified package <b class="package"><a href="critcl_pkg.html">critcl</a></b> to make use of the new
+<li><p>Modified package <b class="package"><a href="critcl.html">critcl</a></b> to make use of the new
        tracing facilities to provide tracing of arguments and results
        for <b class="cmd">critcl::ccommand</b> and <b class="cmd">critcl::cproc</b> invokations.</p></li>
-<li><p>Modified packages <b class="package"><a href="critcl_pkg.html">critcl</a></b> and <b class="package"><a href="critcl_class.html">critcl::class</a></b>
+<li><p>Modified packages <b class="package"><a href="critcl.html">critcl</a></b> and <b class="package"><a href="critcl_class.html">critcl::class</a></b>
        to provide better function names for (class) method tracing.
        Bumped package <b class="package"><a href="critcl_class.html">critcl::class</a></b> to version 1.0.7.</p></li>
 <li><p>Extended the support package <b class="package"><a href="critcl_literals.html">critcl::literals</a></b> with
@@ -433,7 +378,7 @@ paragraph.</p>
        default. Both modes can be used together.</p></li>
 </ol>
 </div>
-<div id="section9" class="doctools_section"><h2><a name="section9">Changes for version 3.1.16</a></h2>
+<div id="section6" class="doctools_section"><h2><a name="section6">Changes for version 3.1.16</a></h2>
 <ol class="doctools_enumerated">
 <li><p>New feature. Extended <b class="cmd">critcl::cproc</b>'s argument handling
        to allow arbitrary mixing of required and optional arguments.</p></li>
@@ -473,18 +418,18 @@ paragraph.</p>
        cache directory now also uses <b class="cmd">platform::identify</b> for the
        default path, instead of <b class="cmd">platform::generic</b>.</p></li>
 <li><p>Bugfix: Fixed issue #58. Simplified the setup and use of
-       md5. Critcl now makes use of its own package for md5, using
+       md5. CriTcl now makes use of its own package for md5, using
        itself to built it. There is no chicken/egg problem with this
        as the <b class="option">-pkg</b> mode used for this does not use md5. That
        is limited to mode <i class="term"><a href="../index.html#compile_run">compile &amp; run</a></i>.</p></li>
 </ol>
 </div>
-<div id="section10" class="doctools_section"><h2><a name="section10">Changes for version 3.1.15</a></h2>
+<div id="section7" class="doctools_section"><h2><a name="section7">Changes for version 3.1.15</a></h2>
 <ol class="doctools_enumerated">
 <li><p>Fixed version number bogosity with <b class="const">3.1.14</b>.</p></li>
 </ol>
 </div>
-<div id="section11" class="doctools_section"><h2><a name="section11">Changes for version 3.1.14</a></h2>
+<div id="section8" class="doctools_section"><h2><a name="section8">Changes for version 3.1.14</a></h2>
 <ol class="doctools_enumerated">
 <li><p>Fixed issue #36. Added message to target <b class="const">all</b> of the
         Makefile generated for TEA mode. Additionally tweaked other
@@ -514,7 +459,7 @@ paragraph.</p>
         location of the troubling declaration.</p></li>
 </ol>
 </div>
-<div id="section12" class="doctools_section"><h2><a name="section12">Changes for version 3.1.13</a></h2>
+<div id="section9" class="doctools_section"><h2><a name="section9">Changes for version 3.1.13</a></h2>
 <ol class="doctools_enumerated">
 <li><p>Merged PR #43. Fixed bug loading adjunct Tcl sources.</p></li>
 <li><p>Fixes in documentation and generated code of package
@@ -565,7 +510,7 @@ paragraph.</p>
 	a fix as they are all built on top of &quot;iassoc&quot;.</p></li>
 </ol>
 </div>
-<div id="section13" class="doctools_section"><h2><a name="section13">Changes for version 3.1.12</a></h2>
+<div id="section10" class="doctools_section"><h2><a name="section10">Changes for version 3.1.12</a></h2>
 <ol class="doctools_enumerated">
 <li><p>Fixed issue 42. Clear ::errorInfo immediately after startup to
        prevent leakage of irrelevant (caught) errors into our script
@@ -590,7 +535,7 @@ paragraph.</p>
 	<b class="package"><a href="critcl_enum.html">critcl::enum</a></b></p></li>
 </ol>
 </div>
-<div id="section14" class="doctools_section"><h2><a name="section14">Changes for version 3.1.11</a></h2>
+<div id="section11" class="doctools_section"><h2><a name="section11">Changes for version 3.1.11</a></h2>
 <ol class="doctools_enumerated">
 <li><p>Fixed issue #37, via pull request #38, with thanks to
        Jos DeCoster. Information was stored into the v::delproc
@@ -610,7 +555,7 @@ paragraph.</p>
        Built on top of <b class="package"><a href="critcl_iassoc.html">critcl::iassoc</a></b>.</p></li>
 </ol>
 </div>
-<div id="section15" class="doctools_section"><h2><a name="section15">Changes for version 3.1.10</a></h2>
+<div id="section12" class="doctools_section"><h2><a name="section12">Changes for version 3.1.10</a></h2>
 <ol class="doctools_enumerated">
 <li><p>Fixed code version numbering forgotten with 3.1.9.</p></li>
 <li><p>Fixed issue #35. In package mode (-pkg) the object cache
@@ -626,7 +571,7 @@ paragraph.</p>
 	sources. Bug and fix reported by Peter Spjuth.</p></li>
 </ol>
 </div>
-<div id="section16" class="doctools_section"><h2><a name="section16">Changes for version 3.1.9</a></h2>
+<div id="section13" class="doctools_section"><h2><a name="section13">Changes for version 3.1.9</a></h2>
 <ol class="doctools_enumerated">
 <li><p>Fixed issue #27. Added missing platform definitions for
 	various alternate linux and OS X targets.</p></li>
@@ -650,7 +595,7 @@ paragraph.</p>
 <li><p>Fixed issue #34. Handle files starting with a dot better.</p></li>
 </ol>
 </div>
-<div id="section17" class="doctools_section"><h2><a name="section17">Changes for version 3.1.8</a></h2>
+<div id="section14" class="doctools_section"><h2><a name="section14">Changes for version 3.1.8</a></h2>
 <ol class="doctools_enumerated">
 <li><p>Fixed issue with package indices generated for Tcl 8.4.
 	Join the list of commands with semi-colon, not newline.</p></li>
@@ -658,7 +603,7 @@ paragraph.</p>
 	consider while fixing bug #21 (see critcl 3.1.6).</p></li>
 </ol>
 </div>
-<div id="section18" class="doctools_section"><h2><a name="section18">Changes for version 3.1.7</a></h2>
+<div id="section15" class="doctools_section"><h2><a name="section15">Changes for version 3.1.7</a></h2>
 <ol class="doctools_enumerated">
 <li><p>Fixed issue #24. Extract and unconditionally display compiler
 	warnings found in the build log. Prevents users from missing
@@ -671,7 +616,7 @@ paragraph.</p>
 	inherit values from configurations defined before them.</p></li>
 </ol>
 </div>
-<div id="section19" class="doctools_section"><h2><a name="section19">Changes for version 3.1.6</a></h2>
+<div id="section16" class="doctools_section"><h2><a name="section16">Changes for version 3.1.6</a></h2>
 <ol class="doctools_enumerated">
 <li><p>Fixed issue #21. While the multi-definition of the stub-table
        pointer variables was ok with for all the C linkers seen so far
@@ -693,7 +638,7 @@ paragraph.</p>
 <li><p>Fixed issue #23.</p></li>
 </ol>
 </div>
-<div id="section20" class="doctools_section"><h2><a name="section20">Changes for version 3.1.5</a></h2>
+<div id="section17" class="doctools_section"><h2><a name="section17">Changes for version 3.1.5</a></h2>
 <ol class="doctools_enumerated">
 <li><p>Fixed issue #19. Made the regular expression extracting the
        MSVC version number more general to make it work on german
@@ -703,7 +648,7 @@ paragraph.</p>
        a unix emulation environment like msys/mingw.</p></li>
 </ol>
 </div>
-<div id="section21" class="doctools_section"><h2><a name="section21">Changes for version 3.1.4</a></h2>
+<div id="section18" class="doctools_section"><h2><a name="section18">Changes for version 3.1.4</a></h2>
 <ol class="doctools_enumerated">
 <li><p>Bugfix in package <b class="package"><a href="critcl_class.html">critcl::class</a></b>. Generate a dummy
        field in the class structure if the class has no class
@@ -714,7 +659,7 @@ paragraph.</p>
        <b class="cmd"><a href="critcl_class.html">critcl::class</a></b>.</p></li>
 </ol>
 </div>
-<div id="section22" class="doctools_section"><h2><a name="section22">Changes for version 3.1.3</a></h2>
+<div id="section19" class="doctools_section"><h2><a name="section19">Changes for version 3.1.3</a></h2>
 <ol class="doctools_enumerated">
 <li><p>Enhancement. In detail:</p></li>
 <li><p>Added new argument type &quot;pstring&quot;, for &quot;Pascal String&quot;, a
@@ -730,7 +675,7 @@ paragraph.</p>
        Versions bumped to 1.0.4 and 1.0.1 respectively.</p></li>
 </ol>
 </div>
-<div id="section23" class="doctools_section"><h2><a name="section23">Changes for version 3.1.2</a></h2>
+<div id="section20" class="doctools_section"><h2><a name="section20">Changes for version 3.1.2</a></h2>
 <ol class="doctools_enumerated">
 <li><p>Enhancement. In detail:</p></li>
 <li><p>Extended <b class="cmd">critcl::cproc</b> to be able to handle optional
@@ -741,7 +686,7 @@ paragraph.</p>
        emulation package <b class="package">lassign84</b> to 1.0.1.</p></li>
 </ol>
 </div>
-<div id="section24" class="doctools_section"><h2><a name="section24">Changes for version 3.1.1</a></h2>
+<div id="section21" class="doctools_section"><h2><a name="section21">Changes for version 3.1.1</a></h2>
 <ol class="doctools_enumerated">
 <li><p>Bugfixes all around. In detail:</p></li>
 <li><p>Fixed the generation of wrong#args errors for
@@ -755,7 +700,7 @@ separators. Bumped to version 1.0.1.</p></li>
 instance creation for clarity. Bumped to version 1.0.2.</p></li>
 </ol>
 </div>
-<div id="section25" class="doctools_section"><h2><a name="section25">Changes for version 3.1</a></h2>
+<div id="section22" class="doctools_section"><h2><a name="section22">Changes for version 3.1</a></h2>
 <ol class="doctools_enumerated">
 <li><p>Added a new higher-level package <b class="package"><a href="critcl_iassoc.html">critcl::iassoc</a></b>.</p>
 <p>This package simplifies the creation of code associating data
@@ -763,7 +708,7 @@ with an interpreter via Tcl's <b class="function">Tcl_(Get|Set)AssocData()</b> A
 user can concentrate on his data while all the necessary boilerplate
 C code to support this is generated by the package.</p>
 <p>This package uses several of the new features which were added
-to the core <b class="package"><a href="critcl_pkg.html">critcl</a></b> package, see below.</p></li>
+to the core <b class="package"><a href="critcl.html">critcl</a></b> package, see below.</p></li>
 <li><p>Added the higher-level package <b class="package"><a href="critcl_class.html">critcl::class</a></b>.</p>
 <p>This package simplifies the creation of C level objects with
 class and instance commands. The user can write a class definition
@@ -771,7 +716,7 @@ with class- and instance-variables and -methods similar to a TclOO
 class, with all the necessary boilerplate C code to support this
 generated by the package.</p>
 <p>This package uses several of the new features which were added
-to the core <b class="package"><a href="critcl_pkg.html">critcl</a></b> package, see below.</p></li>
+to the core <b class="package"><a href="critcl.html">critcl</a></b> package, see below.</p></li>
 <li><p>Extended the API for handling TEApot metadata. Added the
 command <b class="cmd">critcl::meta?</b> to query the stored information. Main use
 currently envisioned is retrieval of the current package's name by
@@ -783,7 +728,7 @@ file on execution of the first critcl command.</p>
 <li><p>Extended the API with a command, <b class="cmd">critcl::name2c</b>, exposing
 the process of converting a Tcl name into base name, namespace, and C
 namespace. This enables higher-level code generators to generate the same
-type of C identifiers as <b class="package"><a href="critcl_pkg.html">critcl</a></b> itself.</p>
+type of C identifiers as <b class="package"><a href="critcl.html">critcl</a></b> itself.</p>
 <p>The new package <b class="package"><a href="critcl_class.html">critcl::class</a></b> (see above) is a user
 of this command.</p></li>
 <li><p>Extended the API with a command, <b class="cmd">critcl::source</b>,
@@ -810,11 +755,11 @@ details of the provided commands.</p>
 <b class="package"><a href="critcl_class.html">critcl::class</a></b> (see above) are users of these facilities.</p></li>
 <li><p>Extended the API with commands giving users the ability to
 define custom argument and result types for <b class="cmd">::critcl::cproc</b>.</p>
-<p>See the section <b class="sectref">Advanced: Extending cproc</b> for
+<p>See the section <b class="sectref">CriTcl cproc Type Reference</b> for
 details of the provided commands.</p></li>
 </ol>
 </div>
-<div id="section26" class="doctools_section"><h2><a name="section26">Changes for version 3.0.7</a></h2>
+<div id="section23" class="doctools_section"><h2><a name="section23">Changes for version 3.0.7</a></h2>
 <ol class="doctools_enumerated">
 <li><p>Fixed the code generated by <b class="cmd">critcl::c++command</b>.
         The emitted code handed a non-static string table to
@@ -824,7 +769,7 @@ details of the provided commands.</p></li>
 	us to the general problem.</p></li>
 </ol>
 </div>
-<div id="section27" class="doctools_section"><h2><a name="section27">Changes for version 3.0.6</a></h2>
+<div id="section24" class="doctools_section"><h2><a name="section24">Changes for version 3.0.6</a></h2>
 <ol class="doctools_enumerated">
 <li><p>Fixed github issue 10. The critcl application now delivers a
 	proper exit code (1) on build failure, instead of always
@@ -837,7 +782,7 @@ details of the provided commands.</p></li>
 	the README.md shown by github</p></li>
 </ol>
 </div>
-<div id="section28" class="doctools_section"><h2><a name="section28">Changes for version 3.0.5</a></h2>
+<div id="section25" class="doctools_section"><h2><a name="section25">Changes for version 3.0.5</a></h2>
 <ol class="doctools_enumerated">
 <li><p>Fixed bug in the new code for #line pragmas triggered when
 	specifying C code without leading whitespace.</p></li>
@@ -845,7 +790,7 @@ details of the provided commands.</p></li>
 	source retrieval, installer, and developer's guides.</p></li>
 </ol>
 </div>
-<div id="section29" class="doctools_section"><h2><a name="section29">Changes for version 3.0.4</a></h2>
+<div id="section26" class="doctools_section"><h2><a name="section26">Changes for version 3.0.4</a></h2>
 <ol class="doctools_enumerated">
 <li><p>Fixed generation of the package's initname when the incoming
 	code is read from stdin and has no proper path.</p></li>
@@ -857,7 +802,7 @@ details of the provided commands.</p></li>
 	for shared libraries in preference over static. critcl handles
 	it now, as older GNU ld's do not understand it, nor the
 	various vendor-specific linkers.</p></li>
-<li><p>Fixed github issue #12. Critcl now determines the version of
+<li><p>Fixed github issue #12. CriTcl now determines the version of
 	MSVC in use and uses it to switch between various link debug
 	options. Simplified the handling of bufferoverflowU.lib also,
 	making use of the same mechanism and collapsing the two
@@ -875,7 +820,7 @@ details of the provided commands.</p></li>
 	release.</p></li>
 </ol>
 </div>
-<div id="section30" class="doctools_section"><h2><a name="section30">Changes for version 3.0.3</a></h2>
+<div id="section27" class="doctools_section"><h2><a name="section27">Changes for version 3.0.3</a></h2>
 <ol class="doctools_enumerated">
 <li><p>Fixed github issues 5 and 8, for the example build.tcl
 scripts. Working around a missing variable ::errorInfo. It should
@@ -883,7 +828,7 @@ always be present, however there seem to be revisions of Tcl around
 which violate this assumption.</p></li>
 </ol>
 </div>
-<div id="section31" class="doctools_section"><h2><a name="section31">Changes for version 3.0.2</a></h2>
+<div id="section28" class="doctools_section"><h2><a name="section28">Changes for version 3.0.2</a></h2>
 <ol class="doctools_enumerated">
 <li><p>Fixed issue in compile-and-run mode where commands put into the
 auto_index are not found by Tcl's [unknown] command.</p></li>
@@ -896,7 +841,7 @@ option <b class="option">-I</b>, just for library search paths.</p></li>
 revisions of Tcl around which violate this assumption.</p></li>
 </ol>
 </div>
-<div id="section32" class="doctools_section"><h2><a name="section32">Changes for version 3.0.1</a></h2>
+<div id="section29" class="doctools_section"><h2><a name="section29">Changes for version 3.0.1</a></h2>
 <ol class="doctools_enumerated">
 <li><p>Bugfixes all around. In detail:</p></li>
 <li><p>Fixed recording of Tcl version requirements. Keep package name
@@ -927,7 +872,7 @@ for the library in the paths specified by the environment variable
 LIB.</p></li>
 </ol>
 </div>
-<div id="section33" class="doctools_section"><h2><a name="section33">Changes for version 3</a></h2>
+<div id="section30" class="doctools_section"><h2><a name="section30">Changes for version 3</a></h2>
 <ol class="doctools_enumerated">
 <li><p>The command <b class="cmd">critcl::platform</b> was deprecated in version
 2.1, superceded by <b class="cmd">critcl::targetplatform</b>, yet kept for
@@ -979,22 +924,22 @@ getting sourced directly, or simply being adjunct datafiles.</p></li>
 <b class="cmd">critcl::api</b> for the management of stubs tables, be it their use,
 and/or declaration and export.</p>
 <p>Please see section <em>Stubs Table Management</em> of the
-<b class="package"><a href="critcl_pkg.html">critcl</a></b> package documentation for details.</p></li>
+<b class="package"><a href="critcl.html">critcl</a></b> package documentation for details.</p></li>
 <li><p>Extended the API used by critcl-based packages with the command
 <b class="cmd">critcl::userconfig</b> for the management of developer-specified
 custom configuration options, be it their use and/or declaration.</p>
 <p>Please see section <em>Custom Build Configuration</em> of the
-<b class="package"><a href="critcl_pkg.html">critcl</a></b> package documentation for details.</p></li>
+<b class="package"><a href="critcl.html">critcl</a></b> package documentation for details.</p></li>
 <li><p>Extended the API used by critcl-based packages with the
 commands <b class="cmd">critcl::description</b>, <b class="cmd">critcl::summary</b>,
 <b class="cmd">critcl::subject</b>, <b class="cmd">critcl::meta</b>, and
 <b class="cmd">critcl::buildrequirement</b> for the declaration of TEApot meta data
 for/about the package.</p>
 <p>Please see section <em>Package Meta Data</em> of the
-<b class="package"><a href="critcl_pkg.html">critcl</a></b> package documentation for details.</p></li>
+<b class="package"><a href="critcl.html">critcl</a></b> package documentation for details.</p></li>
 </ol>
 </div>
-<div id="section34" class="doctools_section"><h2><a name="section34">Changes for version 2.1</a></h2>
+<div id="section31" class="doctools_section"><h2><a name="section31">Changes for version 2.1</a></h2>
 <ol class="doctools_enumerated">
 <li><p>Fixed bug where <b class="cmd">critcl::tsources</b> interpreted relative
 paths as relative to the current working directory instead of
@@ -1080,7 +1025,7 @@ for use by advanced users. The new commands are</p>
 <li><p><b class="cmd">critcl::argconversion</b></p></li>
 </ol>
 <p>Please see section <em>Advanced Embedded C Code</em> of the
-<b class="package"><a href="critcl_pkg.html">critcl</a></b> package documentation for details.</p></li>
+<b class="package"><a href="critcl.html">critcl</a></b> package documentation for details.</p></li>
 <li><p>Extended the critcl package to intercept <b class="cmd">package
 provide</b> and record the file -&gt; package name mapping. Plus other
 internal changes now allow the use of namespaced package names while
@@ -1091,10 +1036,10 @@ still using proper path names and init function.</p></li>
 <li><p>Dropped remnants of support for Tcl 8.3 and before.</p></li>
 </ol>
 </div>
-<div id="section35" class="doctools_section"><h2><a name="section35">Authors</a></h2>
+<div id="section32" class="doctools_section"><h2><a name="section32">Authors</a></h2>
 <p>Jean Claude Wippler, Steve Landers, Andreas Kupries</p>
 </div>
-<div id="section36" class="doctools_section"><h2><a name="section36">Bugs, Ideas, Feedback</a></h2>
+<div id="section33" class="doctools_section"><h2><a name="section33">Bugs, Ideas, Feedback</a></h2>
 <p>This document, and the package it describes, will undoubtedly contain
 bugs and other problems.
 Please report them at <a href="https://github.com/andreas-kupries/critcl/issues">https://github.com/andreas-kupries/critcl/issues</a>.
@@ -1103,7 +1048,7 @@ and/or the documentation are also very welcome and should be reported
 at <a href="https://github.com/andreas-kupries/critcl/issues">https://github.com/andreas-kupries/critcl/issues</a> as well.</p>
 </div>
 <div id="keywords" class="doctools_section"><h2><a name="keywords">Keywords</a></h2>
-<p><a href="../index.html#c_code">C code</a>, <a href="../index.html#embedded_c_code">Embedded C Code</a>, <a href="../index.html#code_generator">code generator</a>, <a href="../index.html#compile_run">compile &amp; run</a>, <a href="../index.html#compiler">compiler</a>, <a href="../index.html#dynamic_code_generation">dynamic code generation</a>, <a href="../index.html#dynamic_compilation">dynamic compilation</a>, <a href="../index.html#generate_package">generate package</a>, <a href="../index.html#linker">linker</a>, <a href="../index.html#on_demand_compilation">on demand compilation</a>, <a href="../index.html#on_the_fly_compilation">on-the-fly compilation</a></p>
+<p><a href="../index.html#c_code">C code</a>, <a href="../index.html#embedded_c_code">Embedded C Code</a>, <a href="../index.html#calling_c_code_from_tcl">calling C code from Tcl</a>, <a href="../index.html#code_generator">code generator</a>, <a href="../index.html#compile_run">compile &amp; run</a>, <a href="../index.html#compiler">compiler</a>, <a href="../index.html#dynamic_code_generation">dynamic code generation</a>, <a href="../index.html#dynamic_compilation">dynamic compilation</a>, <a href="../index.html#generate_package">generate package</a>, <a href="../index.html#linker">linker</a>, <a href="../index.html#on_demand_compilation">on demand compilation</a>, <a href="../index.html#on_the_fly_compilation">on-the-fly compilation</a></p>
 </div>
 <div id="category" class="doctools_section"><h2><a name="category">Category</a></h2>
 <p>Glueing/Embedded C code</p>
@@ -1111,6 +1056,6 @@ at <a href="https://github.com/andreas-kupries/critcl/issues">https://github.com
 <div id="copyright" class="doctools_section"><h2><a name="copyright">Copyright</a></h2>
 <p>Copyright &copy; Jean-Claude Wippler<br>
 Copyright &copy; Steve Landers<br>
-Copyright &copy; 2011-2018 Andreas Kupries</p>
+Copyright &copy; 2011-2022 Andreas Kupries</p>
 </div>
 </div></body></html>
