@@ -39,7 +39,7 @@ Its value is essentially just the [var .s] field of [type pstring]'s structure.
 This then looks like [example {
     critcl::cproc hello {char* x} void {
 	/* char* x; */
-	printf("hello world, from %s (%d bytes)\n", x);
+	printf("hello world, from %s\n", x);
     }
 }]
 

@@ -288,6 +288,15 @@ See the changes done in each release of \fICriTcl\fR, from the latest at the top
 beginning of the project\&.
 .PP
 The latest changes are found at the top\&.
+.SH "CHANGES FOR VERSION 3\&.2\&.1 (TO COME)"
+.IP [1]
+\fIBug Fix\fR \fI#127\fR [https://github\&.com/andreas-kupries/critcl/issues/127]
+.IP [2]
+\fIBug Fix\fR \fI#128\fR [https://github\&.com/andreas-kupries/critcl/issues/128]
+.IP [3]
+\fIBug Fix\fR \fI#129\fR [https://github\&.com/andreas-kupries/critcl/issues/129]
+Fixed various typos in the documentation\&.
+.PP
 .SH "CHANGES FOR VERSION 3\&.2"
 .IP [1]
 \fIBREAKING\fR \fICriTcl\fR now requires Tcl 8\&.6 to be run\&.

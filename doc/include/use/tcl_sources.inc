@@ -35,7 +35,7 @@ command.
 
 [para] They can now be invoked as [example {
     greetings hello
-    greeting hi
+    greetings hi
 }]
 
 [enum] The Tcl builtin command [cmd string] is an ensemble as well, as is [cmd clock].

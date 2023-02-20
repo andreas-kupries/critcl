@@ -380,7 +380,7 @@ This then looks like</p>
 <pre class="doctools_example">
     critcl::cproc hello {char* x} void {
 	/* char* x; */
-	printf(&quot;hello world, from %s (%d bytes)\n&quot;, x);
+	printf(&quot;hello world, from %s\n&quot;, x);
     }
 </pre>
 </li>
@@ -686,7 +686,7 @@ commands referenced below.</p></li>
 <li><p>Use the command <b class="cmd">critcl::tcl</b> to tell <i class="term"><a href="critcl.html">CriTcl</a></i> the minimal version of Tcl
 the package is to be used with.</p>
 <p>This determines which Tcl headers all files are compiled against, and what version
-of the public Tcl API is available to the C coe.</p>
+of the public Tcl API is available to the C code.</p>
 <p>Currently <b class="const">8.4</b>, <b class="const">8.5</b> and <b class="const">8.6</b> are supported.</p>
 <p>If not specified <b class="const">8.4</b> is assumed.</p></li>
 </ol>
@@ -727,7 +727,7 @@ command.</p>
 <p>They can now be invoked as</p>
 <pre class="doctools_example">
     greetings hello
-    greeting hi
+    greetings hi
 </pre>
 </li>
 <li><p>The Tcl builtin command <b class="cmd">string</b> is an ensemble as well, as is <b class="cmd">clock</b>.</p></li>

@@ -574,7 +574,7 @@ This then looks like
 
     critcl::cproc hello {char* x} void {
 	/* char* x; */
-	printf("hello world, from %s (%d bytes)\\n", x);
+	printf("hello world, from %s\\n", x);
     }
 
 .CE
@@ -978,7 +978,7 @@ Use the command \fBcritcl::tcl\fR to tell \fICriTcl\fR the minimal version of Tc
 the package is to be used with\&.
 .sp
 This determines which Tcl headers all files are compiled against, and what version
-of the public Tcl API is available to the C coe\&.
+of the public Tcl API is available to the C code\&.
 .sp
 Currently \fB8\&.4\fR, \fB8\&.5\fR and \fB8\&.6\fR are supported\&.
 .sp
@@ -1039,7 +1039,7 @@ They can now be invoked as
 
 
     greetings hello
-    greeting hi
+    greetings hi
 
 .CE
 .IP [7]
