@@ -40,9 +40,56 @@ typedef struct scope_stack {
  *     => force header
  */
 
+#define MSGMAX (1024*1024)
+
+#ifdef CRITCL_TRACE_NOTHREADS
+
 static scope_stack* top   = 0;
 static int          level = 0;
 static int          closed = 1;
+static char         msg [MSGMAX];
+
+#define SETUP
+#define TOP    top
+#define LEVEL  level
+#define CLOSED closed
+#define MSG    msg
+#define CHAN   stdout
+
+#else
+
+typedef struct ThreadSpecificData {
+    scope_stack* top;
+    int          level;
+    int          closed;
+    char         msg [MSGMAX];
+    FILE*        chan;
+} ThreadSpecificData;
+
+/* copied from tclInt.h */
+#define TCL_TSD_INIT(keyPtr) \
+  (ThreadSpecificData *)Tcl_GetThreadData((keyPtr), sizeof(ThreadSpecificData))
+
+static Tcl_ThreadDataKey ctraceDataKey;
+
+#define TOP    tsdPtr->top
+#define LEVEL  tsdPtr->level
+#define CLOSED tsdPtr->closed
+#define MSG    tsdPtr->msg
+#define CHAN   chan()
+#define SETUP  ThreadSpecificData *tsdPtr = TCL_TSD_INIT(&ctraceDataKey)
+
+// Very lazy channel initialization - First actual write
+static FILE* chan (void) {
+    SETUP;
+    if (!tsdPtr->chan) {
+	sprintf (MSG, "%p.trace", Tcl_GetCurrentThread());
+	tsdPtr->chan = fopen (MSG, "w");
+    }
+    return tsdPtr->chan;
+}
+
+#endif
 
 /*
  * = = == === ===== ======== ============= =====================
@@ -53,23 +100,26 @@ static void
 indent (void)
 {
     int i;
-    for (i = 0; i < level; i++) { fwrite(" ", 1, 1, stdout); }
-    fflush (stdout);
+    SETUP;
+    for (i = 0; i < LEVEL; i++) { fwrite(" ", 1, 1, CHAN); }
+    fflush (CHAN);
 }
 
 static void
 scope (void)
 {
-    if (!top) return;
-    fwrite (top->scope, 1, strlen(top->scope), stdout);
-    fflush (stdout);
+    SETUP;
+    if (!TOP) return;
+    fwrite (TOP->scope, 1, strlen(TOP->scope), CHAN);
+    fflush (CHAN);
 }
 
 static void
 separator (void)
 {
-    fwrite(" | ", 1, 3, stdout);
-    fflush             (stdout);
+    SETUP;
+    fwrite(" | ", 1, 3, CHAN);
+    fflush             (CHAN);
 }
 
 /*
@@ -80,48 +130,52 @@ separator (void)
 void
 critcl_trace_push (const char* scope)
 {
+    SETUP;
     scope_stack* new = ALLOC (scope_stack);
     new->scope = scope;
-    new->down  = top;
-    top = new;
-    level += 4;
+    new->down  = TOP;
+    TOP        = new;
+    LEVEL     += 4;
 }
 
 void
 critcl_trace_pop (void)
 {
-    scope_stack* next = top->down;
-    level -= 4;
-    ckfree ((char*)top);
-    top = next;
+    SETUP;
+    scope_stack* next = TOP->down;
+    LEVEL -= 4;
+    ckfree ((char*) TOP);
+    TOP = next;
 }
 
 void
 critcl_trace_closer (int on)
 {
     if (!on) return;
-    fwrite ("\n", 1, 1, stdout);
-    fflush (stdout);
-    closed = 1;
+    SETUP;
+    fwrite ("\n", 1, 1, CHAN);
+    fflush (CHAN);
+    CLOSED = 1;
 }
 
 void
 critcl_trace_header (int on, int ind, const char* filename, int line)
 {
     if (!on) return;
-    if (!closed) critcl_trace_closer (1);
+    SETUP;
+    if (!CLOSED) critcl_trace_closer (1);
     // location prefix
 #if 0 /* varying path length breaks indenting by call level :( */
     if (filename) {
-	fprintf (stdout, "%s:%6d", filename, line);
-	fflush  (stdout);
+	fprintf (CHAN, "%s:%6d", filename, line);
+	fflush  (CHAN);
     }
 #endif
     // indentation, scope, separator
     if (ind) { indent (); }
     scope ();
     separator();
-    closed = 0;
+    CLOSED = 0;
 }
 
 void
@@ -131,18 +185,17 @@ critcl_trace_printf (int on, const char *format, ...)
      * 1MB output-buffer. We may trace large data structures. This is also a
      * reason why the implementation can be compiled out entirely.
      */
-#define MSGMAX (1024*1024)
-    static char msg [MSGMAX];
     int len;
     va_list args;
     if (!on) return;
-    if (closed) critcl_trace_header (1, 1, 0, 0);
+    SETUP;
+    if (CLOSED) critcl_trace_header (1, 1, 0, 0);
 
-    va_start(args, format);
-    len = vsnprintf(msg, MSGMAX, format, args);
-    va_end(args);
-    fwrite(msg, 1, len, stdout);
-    fflush             (stdout);
+    va_start (args, format);
+    len = vsnprintf (MSG, MSGMAX, format, args);
+    va_end (args);
+    fwrite (MSG, 1, len, CHAN);
+    fflush              (CHAN);
 }
 
 void
