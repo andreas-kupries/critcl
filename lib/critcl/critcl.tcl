@@ -5961,6 +5961,12 @@ proc ::critcl::Initialize {} {
 	} critcl_pstring;
     }
 
+    argtype dict {
+	int size;
+	if (Tcl_DictObjSize (interp, @@, &size) != TCL_OK) return TCL_ERROR;
+	@A = @@;
+    } Tcl_Obj* Tcl_Obj*
+
     argtype list {
 	if (Tcl_ListObjGetElements (interp, @@, &(@A.c), (Tcl_Obj***) &(@A.v)) != TCL_OK) return TCL_ERROR;
 	@A.o = @@;
