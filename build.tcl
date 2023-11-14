@@ -1,7 +1,7 @@
 #!/bin/sh
 # -*- tcl -*- \
 exec tclsh "$0" ${1+"$@"}
-package require Tcl 8.6
+package require Tcl 8.6 9
 unset -nocomplain ::errorInfo
 set me [file normalize [info script]]
 proc main {} {

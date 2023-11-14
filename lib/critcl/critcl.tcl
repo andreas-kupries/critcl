@@ -11,14 +11,14 @@
 # # ## ### ##### ######## ############# #####################
 # CriTcl Core.
 
-package provide critcl 3.2
+package provide critcl 3.2.1
 
 namespace eval ::critcl {}
 
 # # ## ### ##### ######## ############# #####################
 ## Requirements.
 
-package require Tcl 8.6 ; # Minimal supported Tcl runtime.
+package require Tcl 8.6 9 ; # Minimal supported Tcl runtime.
 if {[catch {
     package require platform 1.0.2 ; # Determine current platform.
 }]} {
