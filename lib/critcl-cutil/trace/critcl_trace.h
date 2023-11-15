@@ -2,7 +2,7 @@
 #define __CRITCL_UTIL_TRACE_H 1
 
 /*
- * Copyright (c) 2017-2018 Andreas Kupries <andreas_kupries@users.sourceforge.net>
+ * Copyright (c) 2017-2023 Andreas Kupries <andreas_kupries@users.sourceforge.net>
  *
  * Narrative tracing support, controlled by CRITCL_TRACER
  * = = == === ===== ======== ============= =====================
@@ -20,6 +20,13 @@
  * ATTENTION: The trace facility assumes a C99 compiler to have
  *            access to the __func__ string which holds the name
  *            of the current function.
+ *
+ * NOTE: define CRITCL_TRACE_NOTHREADS if the tracer is run on a single-threaded
+ *       process for sure. Else leave it at the new default of multi-threaded
+ *       operation.
+ *
+ *       In this mode it generates one `.trace` file per thread with active tracing.
+ *	 In single-threaded mode it writes to stdout as before.
  */
 
 #include <tcl.h>
