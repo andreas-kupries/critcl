@@ -5103,8 +5103,8 @@ proc ::critcl::ResolveColonSpec {lpath name} {
 }
 
 proc ::critcl::SetupTkStubs {fd mintcl} {
-    if {[package vcompare $mintcl 8.6] != 0} {
-	# Not 8.6. tkStubsPtr and tkIntXlibStubsPtr are not const yet.
+    if {[package vcompare $mintcl 8.6] < 0} {
+	# Before 8.6+. tkStubsPtr and tkIntXlibStubsPtr are not const yet.
 	set contents [Cat [Template tkstubs_noconst.c]]
     } else {
 	set contents [Cat [Template tkstubs.c]]
