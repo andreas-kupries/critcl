@@ -6,7 +6,7 @@
 #
 # Copyright (c) 2001-20?? Jean-Claude Wippler
 # Copyright (c) 2002-20?? Steve Landers
-# Copyright (c) 20??-2022 Andreas Kupries <andreas_kupries@users.sourceforge.net>
+# Copyright (c) 20??-2023 Andreas Kupries <andreas_kupries@users.sourceforge.net>
 
 # # ## ### ##### ######## ############# #####################
 # CriTcl Core.
@@ -69,23 +69,11 @@ proc ::critcl::md5_hex {s} {
 
 # # ## ### ##### ######## ############# #####################
 
-if {[package vsatisfies [package present Tcl] 8.5]} {
-    # 8.5+
-    proc ::critcl::lappendlist {lvar list} {
-	if {![llength $list]} return
-	upvar $lvar dest
-	lappend dest {*}$list
-	return
-    }
-} else {
-    # 8.4
-    proc ::critcl::lappendlist {lvar list} {
-	if {![llength $list]} return
-	upvar $lvar dest
-	set dest [eval [linsert $list 0 linsert $dest end]]
-	#set dest [concat $dest $list]
-	return
-    }
+proc ::critcl::lappendlist {lvar list} {
+    if {![llength $list]} return
+    upvar $lvar dest
+    lappend dest {*}$list
+    return
 }
 
 # # ## ### ##### ######## ############# #####################
