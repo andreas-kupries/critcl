@@ -13,7 +13,7 @@
 #
 # Copyright (c) 2001-20?? Jean-Claude Wippler
 # Copyright (c) 2002-20?? Steve Landers
-# Copyright (c) 20??-2022 Andreas Kupries <andreas_kupries@users.sourceforge.net>
+# Copyright (c) 20??-2023 Andreas Kupries <andreas_kupries@users.sourceforge.net>
 #
 # \
     exec tclkit $0 ${1+"$@"}
@@ -21,7 +21,7 @@
 # # ## ### ##### ######## ############# #####################
 ## Requirements
 
-package require Tcl 8.6
+package require Tcl 8.6 9
 package provide critcl::app [package require critcl]
 package require cmdline
 

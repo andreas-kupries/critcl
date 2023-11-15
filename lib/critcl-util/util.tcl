@@ -5,12 +5,12 @@
 
 # CriTcl Utility Commands.
 
-package provide critcl::util 1.2
+package provide critcl::util 1.2.1
 
 # # ## ### ##### ######## ############# #####################
 ## Requirements.
 
-package require Tcl    8.6   ; # Min supported version.
+package require Tcl    8.6 9 ; # Min supported version.
 package require critcl 3.2
 
 namespace eval ::critcl::util {}

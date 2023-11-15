@@ -5,14 +5,14 @@
 
 # CriTcl Utility Commands To Provide Common C-level utility functions.
 #
-# Copyright (c) 2017-2022 Andreas Kupries <andreas_kupries@users.sourceforge.net>
+# Copyright (c) 2017-2023 Andreas Kupries <andreas_kupries@users.sourceforge.net>
 
-package provide critcl::cutil 0.3
+package provide critcl::cutil 0.4
 
 # # ## ### ##### ######## ############# #####################
 ## Requirements.
 
-package require Tcl    8.6   ; # Min supported version.
+package require Tcl    8.6 9   ; # Min supported version.
 package require critcl 3.2
 
 namespace eval ::critcl::cutil {}

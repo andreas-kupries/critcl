@@ -6,12 +6,12 @@
 # CriTcl Utility Package for bitmap en- and decoder.
 # Based on i-assoc.
 
-package provide critcl::bitmap 1.1
+package provide critcl::bitmap 1.1.1
 
 # # ## ### ##### ######## ############# #####################
 ## Requirements.
 
-package require Tcl    8.6     ; # Min supported version.
+package require Tcl    8.6 9     ; # Min supported version.
 package require critcl 3.2
 package require critcl::iassoc
 

@@ -22,7 +22,7 @@
 # Modified by Miguel Sofer to use inlines and simple variables
 ##################################################
 
-package require Tcl 8.6
+package require Tcl 8.6 9
 namespace eval ::md5 {}
 
 if {![catch {package require Trf 2.0}]} {

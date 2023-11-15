@@ -6,14 +6,14 @@
 # CriTcl Utility Package for Shared Tcl_Obj* literals of a package.
 # Based on critcl::iassoc.
 #
-# Copyright (c) 20??-2022 Andreas Kupries <andreas_kupries@users.sourceforge.net>
+# Copyright (c) 20??-2023 Andreas Kupries <andreas_kupries@users.sourceforge.net>
 
-package provide critcl::literals 1.4
+package provide critcl::literals 1.4.1
 
 # # ## ### ##### ######## ############# #####################
 ## Requirements.
 
-package require Tcl    8.6     ; # Min supported version.
+package require Tcl    8.6 9   ; # Min supported version.
 package require critcl 3.1.11  ; # make, include -- dict portability
 package require critcl::iassoc
 
