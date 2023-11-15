@@ -4715,7 +4715,12 @@ proc ::critcl::CollectEmbeddedSources {file destination libfile ininame placestu
 }
 
 proc ::critcl::MinTclVersion {file} {
-    set required [GetParam $file mintcl 8.6]
+    # For the default differentiate 8.x and 9.x series. When running under 9+ an
+    # 8.x default is not sensible.
+    set mintcldefault 8.6
+    if {[package vsatisfies [package provide Tcl] 9]} { set mintcldefault 9 }
+
+    set required [GetParam $file mintcl $mintcldefault]
     foreach version $v::hdrsavailable {
 	if {[package vsatisfies $version $required]} {
 	    return $version
