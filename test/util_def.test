@@ -68,15 +68,15 @@ test critcl-util-def-1.2.4 {util-def, wrong\#args, too many} -constraints tcl8.4
 
 test critcl-util-def-2.0 {util-def} -setup {
     set here [critcl::cache]
-    file mkdir    ~/.critcl-tests-[pid]
-    critcl::cache ~/.critcl-tests-[pid]
+    file mkdir    $env(HOME)/.critcl-tests-[pid]
+    critcl::cache $env(HOME)/.critcl-tests-[pid]
 } -body {
     critcl::util::def C foo 333
     inspect C
 } -cleanup {
     critcl::cache $here
     unset here
-    file delete -force ~/.critcl-tests-[pid]
+    file delete -force $env(HOME)/.critcl-tests-[pid]
 } -result [viewFile [localPath test/assets/def-2.0]]
 
 # -------------------------------------------------------------------------

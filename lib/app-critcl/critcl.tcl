@@ -192,10 +192,11 @@ proc ::critcl::app::main {argv} {
 }
 
 proc ::critcl::app::PackageCache {} {
+    global env
     if {$v::cache ne {}} {
 	return $v::cache
     }
-    return [file join ~ .critcl pkg[pid].[clock seconds]]
+    return [file join $env(HOME) .critcl pkg[pid].[clock seconds]]
 }
 
 proc ::critcl::app::StopOnFailed {} {

@@ -48,7 +48,7 @@ test critcl-cache-2.0 {cache, default, home directory} -body {
 test critcl-cache-2.1 {cache, redirecting cache} -setup {
     set here [critcl::cache]
 } -body {
-    critcl::cache ~/FOO
+    critcl::cache $env(HOME)/FOO
 } -cleanup {
     critcl::cache $here
     unset here

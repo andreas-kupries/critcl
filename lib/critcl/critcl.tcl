@@ -3135,6 +3135,7 @@ proc ::critcl::showallconfig {{ofd ""}} {
 }
 
 proc ::critcl::setconfig {targetconfig} {
+    global env
     set v::targetconfig   $targetconfig
 
     # Strip the compiler information from the configuration to get the
@@ -3168,14 +3169,14 @@ proc ::critcl::setconfig {targetconfig} {
 	    }
 	}
     }
-    if {[info exists ::env(CFLAGS)]} {
+    if {[info exists env(CFLAGS)]} {
 	variable c::compile
-	append   c::compile      " $::env(CFLAGS)"
+	append   c::compile      " $env(CFLAGS)"
     }
-    if {[info exists ::env(LDFLAGS)]} {
+    if {[info exists env(LDFLAGS)]} {
 	variable c::link
-	append   c::link         " $::env(LDFLAGS)"
-	append   c::link_preload " $::env(LDFLAGS)"
+	append   c::link         " $env(LDFLAGS)"
+	append   c::link_preload " $env(LDFLAGS)"
     }
     if {[string match $v::targetplatform $v::buildplatform]} {
 	# expand platform to match host if it contains wildcards
@@ -3199,7 +3200,7 @@ proc ::critcl::setconfig {targetconfig} {
     # current platform, and we can make a simple choice for the
     # directory.
 
-    cache [file join ~ .critcl [platform::identify]]
+    cache [file join $env(HOME) .critcl [platform::identify]]
 
     # Initialize Tcl variables based on the chosen tooling
     foreach idx [array names v::toolchain $v::targetplatform,*] {
