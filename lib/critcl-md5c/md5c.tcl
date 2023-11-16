@@ -45,7 +45,7 @@ critcl::ccode {
 	MD5Final(buf, &dup);
 
 	/* convert via a byte array to properly handle null bytes */
-	temp = Tcl_NewByteArrayObj(buf, sizeof buf);
+	temp = Tcl_NewByteArrayObj(buf, sizeof (buf));
 	Tcl_IncrRefCount(temp);
 
 	str = Tcl_GetStringFromObj(temp, &obj->length);
@@ -71,7 +71,7 @@ critcl::ccode {
 critcl::ccommand md5c {dummy ip objc objv} {
     MD5_CTX *mp;
     unsigned char *data;
-    int size;
+    Tcl_Size size;
     Tcl_Obj *obj;
 
     if (objc < 2 || objc > 3) {

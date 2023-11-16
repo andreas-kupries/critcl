@@ -52,7 +52,6 @@ critcl::subject {Tcl callbacks from C}
 # # ## ### ##### ######## #############
 ## Implementation.
 
-critcl::tcl 8.6
 critcl::cutil::alloc
 
 # # ## ### ##### ######## #############

@@ -79,7 +79,7 @@ critcl_callback_invoke (critcl_callback_p callback, int objc, Tcl_Obj** objv)
     TRACE_FUNC ("((critcl_callback_p) %p, objc %d, (Tcl_Obj**) %p)", callback, objc, objv);
     ASSERT (objc <= callback->nargs, "Too many arguments");
 
-    int i, j;
+    Tcl_Size i, j;
 
     for (i = 0; i < callback->nfixed; i++) {
 	TRACE ("I [%3d] = (TclObj*) %p = '%s'", i, callback->command [i], Tcl_GetString (callback->command [i]));

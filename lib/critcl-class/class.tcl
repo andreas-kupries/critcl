@@ -1114,7 +1114,7 @@ proc ::critcl::class::spec::method_introspection {} {
 static Tcl_Obj*
 ComputeMethodList (CONST char** table)
 {
-    int n, i;
+    Tcl_Size n, i;
     char** item;
     Tcl_Obj** lv;
     Tcl_Obj* result;

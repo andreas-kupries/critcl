@@ -238,7 +238,7 @@ proc ::critcl::ccommand {name anames args} {
 	if {$oc eq ""} { set oc objc }
 	if {$ov eq ""} { set ov objv }
 
-	set ca "(ClientData $cd, Tcl_Interp *$ip, int $oc, Tcl_Obj *CONST $ov\[])"
+	set ca "(ClientData $cd, Tcl_Interp *$ip, Tcl_Size $oc, Tcl_Obj *CONST $ov\[])"
 
 	if {$v::options(trace)} {
 	    # For ccommand tracing we will emit a shim after the implementation.
@@ -455,7 +455,7 @@ proc ::critcl::MakeList {type ev} {
 
 	typedef struct critcl_@nctype@ {
 	    Tcl_Obj* o; /* Original list object, for pass-through cases */
-	    int      c; /* Element count */
+	    Tcl_Size c; /* Element count */
 	    @type@*  v; /* Allocated array of the elements */
 	} critcl_@nctype@;
 
@@ -3504,7 +3504,7 @@ proc ::critcl::c++command {tclname class constructors methods} {
     #
     # Build the body of the function that processes the tcl commands for the class
     #
-    set cmdproc "int cmdproc_$tclname\(ClientData cd, Tcl_Interp* ip, int objc, Tcl_Obj *CONST objv\[]) \{\n"
+    set cmdproc "int cmdproc_$tclname\(ClientData cd, Tcl_Interp* ip, Tcl_Size objc, Tcl_Obj *CONST objv\[]) \{\n"
     append cmdproc "    int index;\n"
     append cmdproc "    $class* $classptr = ($class*) cd;\n"
 
@@ -3524,7 +3524,7 @@ proc ::critcl::c++command {tclname class constructors methods} {
 	lappend adefs $a
     }
     append cmdproc "    static const char* cmds\[]=\{\"[join $tnames {","}]\",NULL\};\n"
-    append cmdproc "    if (objc<2) \{\n"
+    append cmdproc "    if (objc < 2) \{\n"
     append cmdproc "       Tcl_WrongNumArgs(ip, 1, objv, \"expecting pathName option\");\n"
     append cmdproc "       return TCL_ERROR;\n"
     append cmdproc "    \}\n\n"
@@ -3558,7 +3558,7 @@ proc ::critcl::c++command {tclname class constructors methods} {
 	set ncargs [expr {$nargs + 2}]
 
 	append cmdproc "        case $ndx: \{\n"
-	append cmdproc "            if (objc==$ncargs) \{\n"
+	append cmdproc "            if (objc == $ncargs) \{\n"
 	append cmdproc  [ProcessArgs types $names $cnames]
 	append cmdproc "                "
 	if {$rtype ne "void"} {
@@ -4750,7 +4750,7 @@ proc ::critcl::TclIncludes {file} {
 	set path [file join [cache] $hdrs]
     }
 
-    return [list $c::include$path]
+    return [list $c::include$path $c::include$v::hdrdir]
 }
 
 proc ::critcl::TclHeader {file {header {}}} {
@@ -5951,12 +5951,12 @@ proc ::critcl::Initialize {} {
 	typedef struct critcl_pstring {
 	    Tcl_Obj*    o;
 	    const char* s;
-	    int         len;
+	    Tcl_Size    len;
 	} critcl_pstring;
     }
 
     argtype dict {
-	int size;
+	Tcl_Size size;
 	if (Tcl_DictObjSize (interp, @@, &size) != TCL_OK) return TCL_ERROR;
 	@A = @@;
     } Tcl_Obj* Tcl_Obj*
@@ -5970,7 +5970,7 @@ proc ::critcl::Initialize {} {
 	typedef struct critcl_list {
 	    Tcl_Obj*        o;
 	    Tcl_Obj* const* v;
-	    int             c;
+	    Tcl_Size        c;
 	} critcl_list;
     }
 
@@ -6007,7 +6007,7 @@ proc ::critcl::Initialize {} {
 
     ## The next set of argument types looks to be very broken. We are keeping
     ## them for now, but declare them as DEPRECATED. Their documentation was
-    ## removed with version 3.2. Their implementation will be in 3.3 as well,
+    ## removed with version 3.2. Their implementation will be gone from 3.3 as well,
     ## fully exterminating them.
 
     argtype int* {
@@ -6047,7 +6047,7 @@ proc ::critcl::Initialize {} {
 	typedef struct critcl_bytes {
 	    Tcl_Obj*             o;
 	    const unsigned char* s;
-	    int                len;
+	    Tcl_Size             len;
 	} critcl_bytes;
     }
 
@@ -6137,11 +6137,11 @@ proc ::critcl::Initialize {} {
 
     # Static and volatile strings. Duplicate.
     resulttype char* {
-	Tcl_SetObjResult(interp, Tcl_NewStringObj(rv,-1));
+	Tcl_SetObjResult(interp, Tcl_NewStringObj(rv, -1));
 	return TCL_OK;
     }
     resulttype {const char*} {
-	Tcl_SetObjResult(interp, Tcl_NewStringObj(rv,-1));
+	Tcl_SetObjResult(interp, Tcl_NewStringObj(rv, -1));
 	return TCL_OK;
     }
     resulttype vstring = char*
@@ -6151,7 +6151,7 @@ proc ::critcl::Initialize {} {
     # We are avoiding the Tcl_Obj* API here, as its use requires an
     # additional duplicate of the string, churning memory and
     # requiring more copying.
-    #   Tcl_SetObjResult(interp, Tcl_NewStringObj(rv,-1));
+    #   Tcl_SetObjResult(interp, Tcl_NewStringObj(rv, -1));
     #   Tcl_Free (rv);
     resulttype string {
 	Tcl_SetResult (interp, rv, TCL_DYNAMIC);
