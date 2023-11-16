@@ -7,7 +7,7 @@
  */
 
 #include <callback.h>
-#include <tcl.h>
+#include <tclpre9compat.h>	/* tcl.h + Portability Tcl <=8.6 */
 
 typedef struct critcl_callback {
 
