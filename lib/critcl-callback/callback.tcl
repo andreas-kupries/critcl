@@ -71,9 +71,9 @@ critcl::api header c/callback.h
 
 critcl::api function critcl_callback_p critcl_callback_new {
     Tcl_Interp* interp
-    int         objc
+    Tcl_Size    objc
     Tcl_Obj**   objv
-    int         nargs
+    Tcl_Size    nargs
 }
 
 # Modify the specified callback by placing the argument into the first
@@ -101,7 +101,7 @@ critcl::api function void critcl_callback_destroy {
 
 critcl::api function int critcl_callback_invoke {
     critcl_callback_p callback
-    int               objc
+    Tcl_Size          objc
     Tcl_Obj**         objv
 }
 

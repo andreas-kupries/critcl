@@ -15,7 +15,7 @@ TRACE_ON;
  */
 
 critcl_callback_p
-critcl_callback_new (Tcl_Interp* interp, int objc, Tcl_Obj** objv, int nargs)
+critcl_callback_new (Tcl_Interp* interp, Tcl_Size objc, Tcl_Obj** objv, Tcl_Size nargs)
 {
     TRACE_FUNC ("((Interp*) %p, objc %d, (Tcl_Obj**) %p, nargs %d)",
 		interp, objc, objv, nargs);
@@ -74,7 +74,7 @@ critcl_callback_destroy (critcl_callback_p callback)
 }
 
 int
-critcl_callback_invoke (critcl_callback_p callback, int objc, Tcl_Obj** objv)
+critcl_callback_invoke (critcl_callback_p callback, Tcl_Size objc, Tcl_Obj** objv)
 {
     TRACE_FUNC ("((critcl_callback_p) %p, objc %d, (Tcl_Obj**) %p)", callback, objc, objv);
     ASSERT (objc <= callback->nargs, "Too many arguments");
