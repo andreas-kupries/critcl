@@ -26,6 +26,18 @@
     #define TCL_SIZE_MODIFIER ""
     #define Tcl_GetSizeIntFromObj Tcl_GetIntFromObj
     #define Tcl_NewSizeIntObj     Tcl_NewIntObj
+#else
+    #define Tcl_NewSizeIntObj     Tcl_NewWideIntObj
+#endif
+
+/*
+ * - - -- --- ----- -------- ------------- ---------------------
+ * Critcl (3.2.1+) emits the command creation API using Tcl_Size by default.
+ * Map this to the older int-based API when compiling against Tcl 8.x or older.
+ */
+
+#if TCL_MAJOR_VERSION <= 8
+#define Tcl_CreateObjCommand2 Tcl_CreateObjCommand
 #endif
 
 /*

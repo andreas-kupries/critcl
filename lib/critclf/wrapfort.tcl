@@ -208,7 +208,7 @@ proc ::Wrapfort::ExternalInterfaces {arglist} {
 proc ::Wrapfort::WriteTclCreateCommand {cmdname routine} {
 
     Output2 [string map [list CMDNAME $cmdname ROUTINE $routine] \
-        "    Tcl_CreateObjCommand( interp, \"CMDNAME\", c__ROUTINE, NULL, NULL );"]
+        "    Tcl_CreateObjCommand2( interp, \"CMDNAME\", c__ROUTINE, NULL, NULL );"]
 }
 
 

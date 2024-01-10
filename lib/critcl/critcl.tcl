@@ -3491,7 +3491,7 @@ proc ::critcl::c++command {tclname class constructors methods} {
     append comproc "        return TCL_ERROR;\n"
     append comproc "    \}\n"
 
-    append comproc "    Tcl_CreateObjCommand(ip, Tcl_GetString(objv\[1]), cmdproc_$tclname, (ClientData) $classptr, delproc_$tclname);\n"
+    append comproc "    Tcl_CreateObjCommand2(ip, Tcl_GetString(objv\[1]), cmdproc_$tclname, (ClientData) $classptr, delproc_$tclname);\n"
     append comproc "    return TCL_OK;\n"
     #
     #  Build the body of the c function called when the object is deleted
@@ -4098,7 +4098,7 @@ proc ::critcl::scan::critcl::userconfig {cmd args} {
 
 proc ::critcl::EmitShimHeader {wname} {
     # Function head
-    set ca "(ClientData cd, Tcl_Interp *interp, int oc, Tcl_Obj *CONST ov\[])"
+    set ca "(ClientData cd, Tcl_Interp *interp, Tcl_Size oc, Tcl_Obj *CONST ov\[])"
     Emitln
     Emitln "static int"
     Emitln "$wname$ca"
@@ -4705,7 +4705,7 @@ proc ::critcl::CollectEmbeddedSources {file destination libfile ininame placestu
 	} else {
 	    set dp 0
 	}
-	puts $fd "  Tcl_CreateObjCommand(interp, [PadRight [expr {$max+4}] ns_$name,] [PadRight [expr {$max+5}] tcl_$name,] $cd, $dp);"
+	puts $fd "  Tcl_CreateObjCommand2(interp, [PadRight [expr {$max+4}] ns_$name,] [PadRight [expr {$max+5}] tcl_$name,] $cd, $dp);"
     }
 
     # Complete the trailer and be done.
