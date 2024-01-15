@@ -58,5 +58,28 @@
 
 /*
  * - - -- --- ----- -------- ------------- ---------------------
+ * Interpreter Save/Restore Support
+ * Critcl definitions abstracting over Tcl 8.6 vs 9 differences.
+ */
+
+#if TCL_MAJOR_VERSION < 9
+
+typedef Tcl_SavedResult Critcl_InterpState;
+
+#define Critcl_StateSave(interp,statevar)    Tcl_SaveResult ((interp), &(statevar))
+#define Critcl_StateRestore(interp,statevar) Tcl_RestoreResult ((interp), &(statevar));
+#define Critcl_StateDiscard(statevar)        Tcl_DiscardResult (&(statevar))
+
+#else
+
+typedef Tcl_InterpState Critcl_InterpState;
+
+#define Critcl_StateSave(interp,statevar)    (statevar) = Tcl_SaveInterpState ((interp), TCL_OK)
+#define Critcl_StateRestore(interp,statevar) Tcl_RestoreInterpState ((interp), (statevar))
+#define Critcl_StateDiscard(statevar)        Tcl_DiscardInterpState (statevar)
+#endif
+
+/*
+ * - - -- --- ----- -------- ------------- ---------------------
  */
 #endif /* CRITCL_TCL9_COMPAT_H */
