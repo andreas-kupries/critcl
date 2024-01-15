@@ -158,9 +158,11 @@ proc ::critcl::CCodeCore {file text} {
 
     set block {}
     lassign [HeaderLines $text] leadoffset text
+    Transition9Check [at::Loc $leadoffset -3 $file] $text
     if {$v::options(lines)} {
 	append block [at::CPragma $leadoffset -3 $file]
     }
+
     append block $text \n
     dict update v::code($file) config c {
 	dict lappend c fragments $digest
@@ -250,6 +252,7 @@ proc ::critcl::ccommand {name anames args} {
 
 	Emit   \{\n
 	lassign [HeaderLines $body] leadoffset body
+	Transition9Check [at::Loc $leadoffset -2 $file] $body
 	if {$v::options(lines)} {
 	    Emit [at::CPragma $leadoffset -2 $file]
 	}
@@ -395,7 +398,8 @@ proc ::critcl::MakeList {type ev} {
 	set new {
 	    int k;
 	    Tcl_Obj** el;
-	    if (Tcl_ListObjGetElements (interp, @@, &(@A.c), &el) != TCL_OK) return TCL_ERROR;
+	    if (Tcl_ListObjGetElements (interp, @@, /* OK tcl9 */
+			&(@A.c), &el) != TCL_OK) return TCL_ERROR;
 	    @A.o = @@;
 	}
     }
@@ -1337,6 +1341,7 @@ proc ::critcl::argtype {name conversion {ctype {}} {ctypeb {}}} {
 	set ctype      $actype($ctype)
     } else {
 	lassign [HeaderLines $conversion] leadoffset conversion
+	Transition9Check [at::Loc $leadoffset 0 [This]] $conversion
 	set conversion "\t\{\n[at::caller! $leadoffset]\t[string trim $conversion] \}"
     }
     if {$ctype eq {}} {
@@ -1419,6 +1424,7 @@ proc ::critcl::resulttype {name conversion {ctype {}}} {
 	set ctype      $rctype($ctype)
     } else {
 	lassign [HeaderLines $conversion] leadoffset conversion
+	Transition9Check [at::Loc $leadoffset 0 [This]] $conversion
 	set conversion [at::caller! $leadoffset]\t[string trimright $conversion]
     }
     if {$ctype eq {}} {
@@ -1549,6 +1555,13 @@ proc ::critcl::cproc {name adefs rtype {body "#"} args} {
 	Emit   "static [ResultCType $rtype] "
 	Emitln "${cname}([join $cargs {, }])"
 	Emit   \{\n
+
+	at::caller
+	at::incrt $name
+	at::incrt $adefs
+	at::incrt $rtype
+	Transition9Check [at::raw] $body
+
 	lassign [HeaderLines $body] leadoffset body
 	if {$v::options(lines)} {
 	    Emit [at::CPragma $leadoffset -2 $file]
@@ -1587,6 +1600,7 @@ proc ::critcl::CInitCore {file text edecls} {
     set initc {}
     set skip [Lines $text]
     lassign [HeaderLines $text] leadoffset text
+    Transition9Check [at::Loc $leadoffset -2 $file] $text
     if {$v::options(lines)} {
 	append initc [at::CPragma $leadoffset -2 $file]
     }
@@ -1594,6 +1608,7 @@ proc ::critcl::CInitCore {file text edecls} {
 
     set edec {}
     lassign [HeaderLines $edecls] leadoffset edecls
+    Transition9Check [at::Loc $leadoffset -2 $file] $edecls
     if {$v::options(lines)} {
 	incr leadoffset $skip
 	append edec [at::CPragma $leadoffset -2 $file]
@@ -3245,7 +3260,7 @@ proc ::critcl::getconfigvalue {var} {
 # C critcl::clean_cache
 # C critcl::clibraries
 # C critcl::cobjects
-# C critcl::config I, lines, force, keepsrc, combine
+# C critcl::config I, L, lines, force, keepsrc, combine, trace, tcl9, outdir
 # C critcl::debug
 # C critcl::error               | App overrides our implementation.
 # C critcl::getconfigvalue
@@ -5863,6 +5878,218 @@ proc ::critcl::LengthLongestWord {words} {
 }
 
 # # ## ### ##### ######## ############# #####################
+## Tcl 8.6 vs 9 checking. The check is simple, there is no C
+## parsing. No detection of C comments either.
+
+proc ::critcl::Transition9Check {loc script} {
+    if {!$v::options(tcl9)} return
+
+    lassign $loc filename lno
+    if {$filename eq {}} { set filename <undef> }
+    if {$lno      eq {}} { set lno      1 }
+
+    foreach line [split $script \n] {
+	Transition9CheckLine $filename $lno $line
+	incr lno
+    }
+    return
+}
+
+proc ::critcl::Transition9CheckLine {file lno codeline} {
+    set prefix "File \"$file\", line $lno: "
+    set common "Tcl 9 compatibility warning "
+
+    set issue 0
+    set state 0
+
+    foreach {kind fun} [Transition9TclSize] {
+	if {![string match *${fun}* $codeline]} continue
+	# Problem function seen.
+	if {[string match {*OK tcl9*} $codeline]} continue
+	# And not marked as OK.
+	# Report
+	critcl::msg "${prefix}${common}(Tcl_Size): $fun ($kind)"
+	incr issue
+    }
+
+    foreach pattern {
+	Tcl_SavedResult
+	Tcl_SaveResult
+	Tcl_RestoreResult
+	Tcl_DiscardResult
+    } {
+	if {![string match *${pattern}* $codeline]} continue
+	# Problem function/type seen.
+	critcl::msg "$prefix${common}(Interp state handling): $pattern"
+	incr state
+    }
+
+    if {$issue} { critcl::msg "$prefix$codeline" }
+    if {$state} { critcl::msg "${prefix}Use Critcl_State... functionality" }
+    return
+}
+
+proc ::critcl::Transition9TclSize {} {
+    return {
+	InParam Tcl_AppendFormatToObj
+	InParam Tcl_AppendLimitedToObj
+	InParam Tcl_AppendLimitedToObj
+	InParam Tcl_AppendToObj
+	InParam Tcl_AppendUnicodeToObj
+	InParam Tcl_AttemptSetObjLength
+	InParam Tcl_Char16ToUtfDString
+	InParam Tcl_Concat
+	InParam Tcl_ConcatObj
+	InParam Tcl_ConvertCountedElement
+	InParam Tcl_CreateAlias
+	InParam Tcl_CreateAliasObj
+	InParam Tcl_CreateObjTrace
+	InParam Tcl_CreateObjTrace2
+	InParam Tcl_CreateTrace
+	InParam Tcl_DbNewByteArrayObj
+	InParam Tcl_DbNewListObj
+	InParam Tcl_DbNewStringObj
+	InParam Tcl_DetachPids
+	InParam Tcl_DictObjPutKeyList
+	InParam Tcl_DictObjRemoveKeyList
+	InParam Tcl_DStringAppend
+	InParam Tcl_DStringSetLength
+	InParam Tcl_EvalEx
+	InParam Tcl_EvalObjv
+	InParam Tcl_EvalTokensStandard
+	InParam Tcl_ExternalToUtf
+	InParam Tcl_ExternalToUtf
+	InParam Tcl_ExternalToUtfDString
+	InParam Tcl_ExternalToUtfDStringEx
+	InParam Tcl_Format
+	InParam Tcl_FSJoinPath
+	InParam Tcl_FSJoinToPath
+	InParam Tcl_GetIndexFromObjStruct
+	InParam Tcl_GetIntForIndex
+	InParam Tcl_GetNumber
+	InParam Tcl_GetRange
+	InParam Tcl_GetRange
+	InParam Tcl_GetThreadData
+	InParam Tcl_GetUniChar
+	InParam Tcl_JoinPath
+	InParam Tcl_LimitSetCommands
+	InParam Tcl_LinkArray
+	InParam Tcl_ListObjIndex
+	InParam Tcl_ListObjReplace
+	InParam Tcl_ListObjReplace
+	InParam Tcl_ListObjReplace
+	InParam Tcl_LogCommandInfo
+	InParam Tcl_MacOSXOpenVersionedBundleResources
+	InParam Tcl_MainEx
+	InParam Tcl_Merge
+	InParam Tcl_NewByteArrayObj
+	InParam Tcl_NewListObj
+	InParam Tcl_NewStringObj
+	InParam Tcl_NewUnicodeObj
+	InParam Tcl_NRCallObjProc
+	InParam Tcl_NRCallObjProc2
+	InParam Tcl_NRCmdSwap
+	InParam Tcl_NREvalObjv
+	InParam Tcl_NumUtfChars
+	InParam Tcl_OpenCommandChannel
+	InParam Tcl_ParseBraces
+	InParam Tcl_ParseCommand
+	InParam Tcl_ParseExpr
+	InParam Tcl_ParseQuotedString
+	InParam Tcl_ParseVarName
+	InParam Tcl_PkgRequireProc
+	InParam Tcl_ProcObjCmd
+	InParam Tcl_Read
+	InParam Tcl_ReadChars
+	InParam Tcl_ReadRaw
+	InParam Tcl_RegExpExecObj
+	InParam Tcl_RegExpExecObj
+	InParam Tcl_RegExpRange
+	InParam Tcl_ScanCountedElement
+	InParam Tcl_SetByteArrayLength
+	InParam Tcl_SetByteArrayObj
+	InParam Tcl_SetChannelBufferSize
+	InParam Tcl_SetListObj
+	InParam Tcl_SetObjLength
+	InParam Tcl_SetRecursionLimit
+	InParam Tcl_SetStringObj
+	InParam Tcl_SetUnicodeObj
+	InParam Tcl_Ungets
+	InParam Tcl_UniCharAtIndex
+	InParam Tcl_UniCharToUtfDString
+	InParam Tcl_UtfAtIndex
+	InParam Tcl_UtfCharComplete
+	InParam Tcl_UtfToChar16DString
+	InParam Tcl_UtfToExternal
+	InParam Tcl_UtfToExternal
+	InParam Tcl_UtfToExternalDString
+	InParam Tcl_UtfToExternalDStringEx
+	InParam Tcl_UtfToUniCharDString
+	InParam Tcl_Write
+	InParam Tcl_WriteChars
+	InParam Tcl_WriteRaw
+	InParam Tcl_WrongNumArgs
+	InParam Tcl_ZlibAdler32
+	InParam Tcl_ZlibCRC32
+	InParam Tcl_ZlibInflate
+	InParam Tcl_ZlibStreamGet
+	InParam TclGetRange
+	InParam TclGetRange
+	InParam TclGetUniChar
+	InParam TclNumUtfChars
+	InParam TclUtfAtIndex
+	InParam TclUtfCharComplete
+
+	OutParam Tcl_DictObjSize
+	OutParam Tcl_ExternalToUtfDStringEx
+	OutParam Tcl_FSSplitPath
+	OutParam Tcl_GetByteArrayFromObj
+	OutParam Tcl_GetBytesFromObj
+	OutParam Tcl_GetIntForIndex
+	OutParam Tcl_GetSizeIntFromObj
+	OutParam Tcl_GetStringFromObj
+	OutParam Tcl_GetUnicodeFromObj
+	OutParam Tcl_ListObjGetElements
+	OutParam Tcl_ListObjLength
+	OutParam Tcl_ParseArgsObjv
+	OutParam Tcl_SplitList
+	OutParam Tcl_SplitPath
+	OutParam Tcl_UtfToExternalDStringEx
+
+	Return Tcl_Char16Len
+	Return Tcl_ConvertCountedElement
+	Return Tcl_ConvertElement
+	Return Tcl_GetChannelBufferSize
+	Return Tcl_GetCharLength
+	Return Tcl_GetEncodingNulLength
+	Return Tcl_Gets
+	Return Tcl_GetsObj
+	Return Tcl_NumUtfChars
+	Return Tcl_Read
+	Return Tcl_ReadChars
+	Return Tcl_ReadRaw
+	Return Tcl_ScanCountedElement
+	Return Tcl_ScanElement
+	Return Tcl_SetRecursionLimit
+	Return Tcl_Ungets
+	Return Tcl_UniCharLen
+	Return Tcl_UniCharToUtf
+	Return Tcl_UtfBackslash
+	Return Tcl_UtfToChar16
+	Return Tcl_UtfToLower
+	Return Tcl_UtfToTitle
+	Return Tcl_UtfToUniChar
+	Return Tcl_UtfToUpper
+	Return Tcl_Write
+	Return Tcl_WriteChars
+	Return Tcl_WriteObj
+	Return Tcl_WriteRaw
+	Return TclGetCharLength
+	Return TclNumUtfChars
+    }
+}
+
+# # ## ### ##### ######## ############# #####################
 ## Initialization
 
 proc ::critcl::Initialize {} {
@@ -5987,7 +6214,8 @@ proc ::critcl::Initialize {} {
     } Tcl_Obj* Tcl_Obj*
 
     argtype list {
-	if (Tcl_ListObjGetElements (interp, @@, &(@A.c), (Tcl_Obj***) &(@A.v)) != TCL_OK) return TCL_ERROR;
+	if (Tcl_ListObjGetElements (interp, @@, /* OK tcl9 */
+		    &(@A.c), (Tcl_Obj***) &(@A.v)) != TCL_OK) return TCL_ERROR;
 	@A.o = @@;
     } critcl_list critcl_list
 
@@ -6317,6 +6545,8 @@ namespace eval ::critcl {
 				  #   the user for mode 'generate
 				  #   package'.
 	set options(language) "" ;# - String. XXX
+	set options(tcl9)     1  ;# - Boolean. If set critcl will check C code
+				  #   fragments for 8.6/9 compatibility problems.
 	set options(lines)    1  ;# - Boolean. If set the generator will
 				  #   emit #line-directives to help locating
 				  #   C code in the .tcl in case of compile

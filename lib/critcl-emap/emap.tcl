@@ -294,7 +294,7 @@ proc critcl::emap::EncoderTclNocase {name} {
 	     * conversion.
 	     */
 	    state = Tcl_DuplicateObj (state);
-	    Tcl_SetObjLength(state, Tcl_UtfToLower (Tcl_GetString (state)));
+	    Tcl_SetObjLength(state, Tcl_UtfToLower (Tcl_GetString (state))); /* OK tcl9 */
 	    res = Tcl_GetIndexFromObj (interp, state, @NAME@_emap_cstr, "@NAME@", 0, &id);
 	    Tcl_DecrRefCount (state);
 	    if (res != TCL_OK) {

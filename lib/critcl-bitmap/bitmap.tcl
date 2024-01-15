@@ -135,11 +135,11 @@ proc critcl::bitmap::def {name dict {exclusions {}}} {
 		       int*        result)
 	{
 	    @NAME@_iassoc_data context = @NAME@_iassoc (interp);
-	    TclSize lc, i;
+	    Tcl_Size lc, i;
 	    int mask, id;
 	    Tcl_Obj** lv;
 
-	    if (Tcl_ListObjGetElements (interp, flags, &lc, &lv) != TCL_OK) {
+	    if (Tcl_ListObjGetElements (interp, flags, &lc, &lv) != TCL_OK) { /* OK tcl9 */
 		return TCL_ERROR;
 	    }
 

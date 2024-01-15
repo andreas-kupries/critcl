@@ -281,6 +281,10 @@ proc ::critcl::app::Cmdline {argv} {
 		critcl::config force 1
 		::critcl::print stderr "Compilation forced"
 	    }
+	    disable-tcl9 {
+		critcl::config tcl9 0
+		::critcl::print stderr "Disabled checking for Tcl 9 compatibility issues"
+	    }
 	    keep       {
 		critcl::config keepsrc 1
 		#critcl::config lines 0
