@@ -1611,7 +1611,7 @@ proc ::critcl::CInitCore {file text edecls} {
 ## Public API to code origin handling.
 
 namespace eval ::critcl::at {
-    namespace export caller caller! here here! get get* incr incrt =
+    namespace export caller caller! here here! get get* raw raw* incr incrt =
     catch { namespace ensemble create }
 }
 
@@ -1658,6 +1658,16 @@ proc ::critcl::at::get {} {
     return $result
 }
 
+proc ::critcl::at::raw {} {
+    variable where
+    if {![info exists where]} {
+	return -code error "No location defined"
+    }
+    set result $where
+    set where {}
+    return $result
+}
+
 proc ::critcl::at::get* {} {
     variable where
     if {!$::critcl::v::options(lines)} {
@@ -1667,6 +1677,14 @@ proc ::critcl::at::get* {} {
 	return -code error "No location defined"
     }
     return [Format $where]
+}
+
+proc ::critcl::at::raw* {} {
+    variable where
+    if {![info exists where]} {
+	return -code error "No location defined"
+    }
+    return $where
 }
 
 proc ::critcl::at::= {file line} {
@@ -4585,6 +4603,13 @@ proc ::critcl::at::Where {leadoffset level file} {
     #puts XXX-NO-DATA-$loc(type)
     set where {}
     return
+}
+
+proc ::critcl::at::Loc {leadoffset level file} {
+    # internal variant of 'caller!'
+    ::incr level -1
+    Where $leadoffset $level $file
+    return [raw]
 }
 
 proc ::critcl::at::CPragma {leadoffset level file} {
