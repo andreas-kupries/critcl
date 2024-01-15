@@ -28,9 +28,11 @@ testing {
     puts *\t[join [info loaded] \n*\t]
     puts -\t[critcl::This]
     puts -\t[file dirname [file dirname [info library]]]/include/*
+    puts -\t[file dirname [file dirname [info nameofexecutable]]]/include/*
 
     # Access to the stubs include files
     critcl::cheaders [file dirname [file dirname [info library]]]/include/*
+    critcl::cheaders [file dirname [file dirname [info nameofexecutable]]]/include/*
 
     critcl::api import critcl::callback 1
 
