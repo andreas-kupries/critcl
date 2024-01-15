@@ -66,7 +66,7 @@ proc SETUP {} {
 	    }
 
 	    # # ## ### ##### ######## ############# #####################
-	    insvariable int at {
+	    insvariable Tcl_Size at {
 		Index of next element to return from the main queue.
 		(variable: queue).
 	    } {
@@ -102,7 +102,7 @@ proc SETUP {} {
 	    method put command {
 		item... = objv[2]...
 	    } {
-		int i;
+		Tcl_Size i;
 
 		if (objc < 3) {
 		    Tcl_WrongNumArgs (interp, 2, objv, "item ?item ...?");
@@ -110,14 +110,14 @@ proc SETUP {} {
 		}
 
 		for (i = 2; i < objc; i++) {
-					    Tcl_ListObjAppendElement (interp, instance->append, objv[i]);
-					}
+		    Tcl_ListObjAppendElement (interp, instance->append, objv[i]);
+		}
 
 		return TCL_OK;
 	    }
 
 	    # # ## ### ##### ######## ############# #####################
-	    method size proc {} int {
+	    method size proc {} wideint {
 		return QueueSize (instance, NULL, NULL, NULL);
 	    }
 
@@ -132,7 +132,7 @@ proc SETUP {} {
 		    * using the unget stack.
 		    */
 
-		    int queuec = 0;
+		    Tcl_Size queuec = 0;
 		    Tcl_ListObjLength (NULL, instance->queue,  &queuec);
 
 		    instance->at --;
@@ -144,12 +144,12 @@ proc SETUP {} {
 
 	    # # ## ### ##### ######## ############# #####################
 	    support {
-		static int
-		QueueSize (@instancetype@ q, int* u, int* r, int* a)
+		static Tcl_Size
+		QueueSize (@instancetype@ q, Tcl_Size* u, Tcl_Size* r, Tcl_Size* a)
 		{
-		    int ungetc  = 0;
-		    int queuec  = 0;
-		    int appendc = 0;
+		    Tcl_Size ungetc  = 0;
+		    Tcl_Size queuec  = 0;
+		    Tcl_Size appendc = 0;
 
 		    Tcl_ListObjLength (NULL, q->unget,  &ungetc);
 		    Tcl_ListObjLength (NULL, q->queue,  &queuec);
@@ -165,8 +165,8 @@ proc SETUP {} {
 		static void
 		QueueShift (@instancetype@ q)
 		{
-		    int queuec = 0;
-		    int appendc = 0;
+		    Tcl_Size queuec = 0;
+		    Tcl_Size appendc = 0;
 
 		    /* The queue is not done yet, no shift */
 		    Tcl_ListObjLength (NULL, q->queue, &queuec);
@@ -188,7 +188,7 @@ proc SETUP {} {
 		static int
 		QueueRetrieve (@instancetype@  instance,
 			       Tcl_Interp*     interp,
-			       int             objc,
+			       Tcl_Size        objc,
 			       Tcl_Obj* CONST* objv,
 			       int             get)
 		{
@@ -196,13 +196,12 @@ proc SETUP {} {
 		    *	       [0]  [1]       [2]
 		    */
 
-		    int       listc = 0;
+		    Tcl_Size  listc = 0, n = 1;
 		    Tcl_Obj** listv;
 		    Tcl_Obj*  r;
-		    int       n = 1;
-		    int       ungetc;
-		    int       queuec;
-		    int       appendc;
+		    Tcl_Size  ungetc;
+		    Tcl_Size  queuec;
+		    Tcl_Size  appendc;
 
 		    if ((objc != 2) && (objc != 3)) {
 			Tcl_WrongNumArgs (interp, 2, objv, "?n?");
@@ -279,7 +278,7 @@ proc SETUP {} {
 			* sources.
 			*/
 
-			int i = 0, j;
+			Tcl_Size i = 0, j;
 			Tcl_Obj** resv = (Tcl_Obj**) ckalloc (n * sizeof (Tcl_Obj*));
 
 			if (ungetc) {
