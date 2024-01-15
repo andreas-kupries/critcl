@@ -7,7 +7,7 @@ return "foo";
 }
 
 static int
-tcl__aproc0(ClientData cd, Tcl_Interp *interp, int oc, Tcl_Obj *CONST ov[])
+tcl__aproc0(ClientData cd, Tcl_Interp *interp, Tcl_Size oc, Tcl_Obj *CONST ov[])
 {
   char* rv;
   critcl_trace_cmd_args (ns__aproc0, oc, ov);
@@ -21,6 +21,6 @@ tcl__aproc0(ClientData cd, Tcl_Interp *interp, int oc, Tcl_Obj *CONST ov[])
   rv = c__aproc0();
 
   /* (vstring return) - - -- --- ----- -------- */
-	Tcl_SetObjResult(interp, Tcl_NewStringObj(rv,-1));
+	Tcl_SetObjResult(interp, Tcl_NewStringObj(rv, -1));
 	return critcl_trace_cmd_result (TCL_OK, interp);
 }

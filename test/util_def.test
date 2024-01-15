@@ -5,7 +5,7 @@
 
 source [file join [file dirname [info script]] support testutilities.tcl]
 
-testsNeedTcl     8.6
+testsNeedTcl     8.6 9
 testsNeedTcltest 2
 
 support {
@@ -27,6 +27,10 @@ overrides
 # -------------------------------------------------------------------------
 ## util::def syntax
 
+test critcl-util-def-1.0.7 {util-def, wrong\#args, not enough} -constraints tcl9 -body {
+    critcl::util::def
+} -returnCodes error -result {wrong # args: should be "critcl::util::def configfile define ?value?"}
+
 test critcl-util-def-1.0.6 {util-def, wrong\#args, not enough} -constraints tcl8.6plus -body {
     critcl::util::def
 } -returnCodes error -result {wrong # args: should be "critcl::util::def configfile define ?value?"}
@@ -39,6 +43,10 @@ test critcl-util-def-1.0.4 {util-def, wrong\#args, not enough} -constraints tcl8
     critcl::util::def
 } -returnCodes error -result {wrong # args: should be "critcl::util::def configfile define ?value?"}
 
+test critcl-util-def-1.1.7 {util-def, wrong\#args, not enough} -constraints tcl9 -body {
+    critcl::util::def C
+} -returnCodes error -result {wrong # args: should be "critcl::util::def configfile define ?value?"}
+
 test critcl-util-def-1.1.6 {util-def, wrong\#args, not enough} -constraints tcl8.6plus -body {
     critcl::util::def C
 } -returnCodes error -result {wrong # args: should be "critcl::util::def configfile define ?value?"}
@@ -49,6 +57,10 @@ test critcl-util-def-1.1.5 {util-def, wrong\#args, not enough} -constraints tcl8
 
 test critcl-util-def-1.1.4 {util-def, wrong\#args, not enough} -constraints tcl8.4 -body {
     critcl::util::def C
+} -returnCodes error -result {wrong # args: should be "critcl::util::def configfile define ?value?"}
+
+test critcl-util-def-1.2.7 {util-def, wrong\#args, too many} -constraints tcl9 -body {
+    critcl::util::def C D V X
 } -returnCodes error -result {wrong # args: should be "critcl::util::def configfile define ?value?"}
 
 test critcl-util-def-1.2.6 {util-def, wrong\#args, too many} -constraints tcl8.6plus -body {

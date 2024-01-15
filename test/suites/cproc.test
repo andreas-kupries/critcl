@@ -38,6 +38,10 @@ on-traced-on
 # -------------------------------------------------------------------------
 ## cproc syntax
 
+test critcl-cproc${suffix}-1.0.7 {cproc, wrong\#args} -constraints tcl9 -body {
+    critcl::cproc
+} -returnCodes error -result {wrong # args: should be "critcl::cproc name adefs rtype ?body? ?arg ...?"}
+
 test critcl-cproc${suffix}-1.0.6 {cproc, wrong\#args} -constraints tcl8.6plus -body {
     critcl::cproc
 } -returnCodes error -result {wrong # args: should be "critcl::cproc name adefs rtype ?body? ?arg ...?"}

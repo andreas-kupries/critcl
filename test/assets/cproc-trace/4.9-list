@@ -7,7 +7,7 @@
 	typedef struct critcl_list {
 	    Tcl_Obj*        o;
 	    Tcl_Obj* const* v;
-	    int             c;
+	    Tcl_Size        c;
 	} critcl_list;
     
 #endif /* CRITCL_list _________ */
@@ -18,7 +18,7 @@ static void c__aproc0(critcl_list x)
 }
 
 static int
-tcl__aproc0(ClientData cd, Tcl_Interp *interp, int oc, Tcl_Obj *CONST ov[])
+tcl__aproc0(ClientData cd, Tcl_Interp *interp, Tcl_Size oc, Tcl_Obj *CONST ov[])
 {
   critcl_list _x;
 
@@ -31,7 +31,8 @@ tcl__aproc0(ClientData cd, Tcl_Interp *interp, int oc, Tcl_Obj *CONST ov[])
 
   /* (list x) - - -- --- ----- -------- */
 	{
-	if (Tcl_ListObjGetElements (interp, ov[1], &(_x.c), (Tcl_Obj***) &(_x.v)) != TCL_OK) return critcl_trace_cmd_result (TCL_ERROR, interp);
+	if (Tcl_ListObjGetElements (interp, ov[1], /* OK tcl9 */
+		    &(_x.c), (Tcl_Obj***) &(_x.v)) != TCL_OK) return critcl_trace_cmd_result (TCL_ERROR, interp);
 	_x.o = ov[1]; }
 
   /* Call - - -- --- ----- -------- */

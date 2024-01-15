@@ -12,7 +12,7 @@
 
 	typedef struct critcl_list_int {
 	    Tcl_Obj* o; /* Original list object, for pass-through cases */
-	    int      c; /* Element count */
+	    Tcl_Size c; /* Element count */
 	    int*  v; /* Allocated array of the elements */
 	} critcl_list_int;
 
@@ -31,7 +31,7 @@ static void c__aproc0(critcl_list_int a)
 }
 
 static int
-tcl__aproc0(ClientData cd, Tcl_Interp *interp, int oc, Tcl_Obj *CONST ov[])
+tcl__aproc0(ClientData cd, Tcl_Interp *interp, Tcl_Size oc, Tcl_Obj *CONST ov[])
 {
   critcl_list_int _a;
 
@@ -46,7 +46,8 @@ tcl__aproc0(ClientData cd, Tcl_Interp *interp, int oc, Tcl_Obj *CONST ov[])
 	{
 	int k;
 	    Tcl_Obj** el;
-	    if (Tcl_ListObjGetElements (interp, ov[1], &(_a.c), &el) != TCL_OK) return critcl_trace_cmd_result (TCL_ERROR, interp);
+	    if (Tcl_ListObjGetElements (interp, ov[1], /* OK tcl9 */
+			&(_a.c), &el) != TCL_OK) return critcl_trace_cmd_result (TCL_ERROR, interp);
 	    _a.o = ov[1];
 	
 	_a.v = (int*) ((!_a.c) ? 0 : ckalloc (_a.c * sizeof (int)));

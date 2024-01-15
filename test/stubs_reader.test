@@ -4,7 +4,7 @@
 
 source [file join [file dirname [info script]] support testutilities.tcl]
 
-testsNeedTcl     8.6
+testsNeedTcl     8.6 9
 testsNeedTcltest 2
 
 support {
@@ -191,7 +191,7 @@ test stubs-reader-3.5 {text, array-flag} -setup {
         library tcl
         interface tcl
 	declare 17 {
-	    Tcl_Obj *Tcl_ConcatObj(int objc, Tcl_Obj *const objv[])
+	    Tcl_Obj *Tcl_ConcatObj(Tcl_Size objc, Tcl_Obj *const objv[])
 	}
     }
     stubs::container::print $T
@@ -206,7 +206,7 @@ test stubs-reader-3.5 {text, array-flag} -setup {
         declare 17 generic {
             function Tcl_ConcatObj
             return {Tcl_Obj *}
-            argument {int objc}
+            argument {Tcl_Size objc}
             argument {{Tcl_Obj *const} objv {[]}}
         }
     }

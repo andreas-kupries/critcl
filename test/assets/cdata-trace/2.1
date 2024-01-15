@@ -2,7 +2,7 @@
 
 #define ns__alpha_x0 "::alpha-x"
 static int
-tcl__alpha_x0_actual(ClientData dummy, Tcl_Interp *ip, int objc, Tcl_Obj *CONST objv[])
+tcl__alpha_x0_actual(ClientData dummy, Tcl_Interp *ip, Tcl_Size objc, Tcl_Obj *CONST objv[])
 {
 static char script[4] = {
         98,101,116,97,
@@ -12,7 +12,7 @@ static char script[4] = {
 }
 
 static int
-tcl__alpha_x0(ClientData dummy, Tcl_Interp *ip, int objc, Tcl_Obj *CONST objv[])
+tcl__alpha_x0(ClientData dummy, Tcl_Interp *ip, Tcl_Size objc, Tcl_Obj *CONST objv[])
 {
   int _rv;
   critcl_trace_cmd_args (ns__alpha_x0, objc, objv);

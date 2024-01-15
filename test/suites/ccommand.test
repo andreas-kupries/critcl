@@ -36,6 +36,10 @@ on-traced-on
 # -------------------------------------------------------------------------
 ## ccommand syntax
 
+test critcl-ccommand${suffix}-1.0.7 {ccommand, wrong\#args} -constraints tcl9 -body {
+    critcl::ccommand
+} -returnCodes error -result {wrong # args: should be "critcl::ccommand name anames ?arg ...?"}
+
 test critcl-ccommand${suffix}-1.0.6 {ccommand, wrong\#args} -constraints tcl8.6plus -body {
     critcl::ccommand
 } -returnCodes error -result {wrong # args: should be "critcl::ccommand name anames ?arg ...?"}
