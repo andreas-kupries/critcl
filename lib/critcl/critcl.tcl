@@ -1993,6 +1993,10 @@ proc ::critcl::tcl {version} {
 
     msg "  (tcl $version)"
 
+    # When a minimum Tcl version is requested it can be assumed that the C code will work for that
+    # version. Doing compatibility checks of any kind is not needed.
+    config tcl9 0
+
     UUID.extend $file .mintcl $version
     dict set v::code($file) config mintcl $version
 
@@ -5896,37 +5900,57 @@ proc ::critcl::Transition9Check {loc script} {
 }
 
 proc ::critcl::Transition9CheckLine {file lno codeline} {
-    set prefix "File \"$file\", line $lno: "
-    set common "Tcl 9 compatibility warning "
+    set reported 0
 
-    set issue 0
-    set state 0
-
+    # Tcl_Size I
     foreach {kind fun} [Transition9TclSize] {
-	if {![string match *${fun}* $codeline]} continue
-	# Problem function seen.
-	if {[string match {*OK tcl9*} $codeline]} continue
-	# And not marked as OK.
-	# Report
-	critcl::msg "${prefix}${common}(Tcl_Size): $fun ($kind)"
-	incr issue
+	if {![string match *${fun}*    $codeline]} continue
+	if { [string match {*OK tcl9*} $codeline]} continue
+	T9Report $file $lno $codeline "(Tcl_Size): $fun ($kind)"
     }
 
-    foreach pattern {
-	Tcl_SavedResult
-	Tcl_SaveResult
-	Tcl_RestoreResult
-	Tcl_DiscardResult
+    # Tcl_Size II
+    foreach {fun replace} {
+	Tcl_GetIntFromObj Tcl_GetSizeIntFromObj
+	Tcl_NewIntObj	  Tcl_NewSizeIntObj
+    } {
+	if {![string match *${fun}*    $codeline]} continue
+	if { [string match {*OK tcl9*} $codeline]} continue
+	T9Report $file $lno $codeline "(Tcl_Size): $fun, check if replacement $replace is needed"
+    }
+
+    # Tcl Interp State handling
+    foreach {pattern message} {
+	Tcl_SavedResult   {Reewrite to use type `Tcl_InterpState` instead}
+	Tcl_SaveResult    {Rewrite to `<statevar> = Tcl_SaveInterpState (<interp>, TCL_OK)`}
+	Tcl_RestoreResult {Rewrite to `Tcl_RestoreInterpState (<interp>, <statevar>)`}
+	Tcl_DiscardResult {Rewrite to `Tcl_DiscardInterpState (<statevar>)`}
     } {
 	if {![string match *${pattern}* $codeline]} continue
-	# Problem function/type seen.
-	critcl::msg "$prefix${common}(Interp state handling): $pattern"
-	incr state
+	T9Report $file $lno $codeline "(Interp State handling): $message"
     }
 
-    if {$issue} { critcl::msg "$prefix$codeline" }
-    if {$state} { critcl::msg "${prefix}Use Critcl_State... functionality" }
+    # command creation
+    if { [string match *Tcl_CreateObjCommand*  $codeline] &&
+	![string match *Tcl_CreateObjCommand2* $codeline]} {
+	T9Report $file $lno $codeline "(Tcl_Size): Use `Tcl_CreateObjCommand2` for command creation"
+    }
     return
+}
+
+proc ::critcl::T9Report {fname lno code msg} {
+    upvar 1 reported reported
+
+    set prefix "File \"$fname\", line $lno: "
+    set common "Tcl 9 compatibility warning "
+
+    set blue \033\[34m
+    set off  \033\[0m
+    set mag  \033\[35m
+
+    if {!$reported} { critcl::msg "$prefix$blue[string trim $code]$off" }
+    incr reported
+    critcl::msg "$prefix${common}: $mag$msg$off"
 }
 
 proc ::critcl::Transition9TclSize {} {
