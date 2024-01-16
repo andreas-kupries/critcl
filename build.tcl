@@ -344,18 +344,24 @@ proc _doc {} {
     puts "Removing old documentation..."
     file delete -force [file join .. embedded man]
     file delete -force [file join .. embedded www]
+    file delete -force [file join .. embedded md]
 
     file mkdir [file join .. embedded man]
     file mkdir [file join .. embedded www]
+    file mkdir [file join .. embedded md]
 
     puts "Generating man pages..."
-    exec 2>@ stderr >@ stdout dtplite -ext n -o [file join .. embedded man] nroff .
+    exec 2>@ stderr >@ stdout dtplite -ext  n -o [file join .. embedded man] nroff .
     puts "Generating html..."
-    exec 2>@ stderr >@ stdout dtplite        -o [file join .. embedded www] html .
+    exec 2>@ stderr >@ stdout dtplite         -o [file join .. embedded www] html .
+    puts "Generating markdown..."
+    exec 2>@ stderr >@ stdout dtplite -ext md -o [file join .. embedded md] markdown .
 
     cd  [file join .. embedded man]
     file delete -force .idxdoc .tocdoc
     cd  [file join .. www]
+    file delete -force .idxdoc .tocdoc
+    cd  [file join .. md]
     file delete -force .idxdoc .tocdoc
 
     return
