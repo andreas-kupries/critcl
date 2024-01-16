@@ -396,6 +396,16 @@ when compilation is done against Tcl 8\&.6\&.
 \fBcritcl::cproc\fR, and derived places (\fBcritcl::class\fR)\&.
 .RE
 .PP
+.SH "ADDITIONAL REFERENCES"
+.IP [1]
+\fIhttps://wiki\&.tcl-lang\&.org/page/Porting+extensions+to+Tcl+9\fR
+.IP [2]
+\fIhttps://wiki\&.tcl-lang\&.org/page/Tcl+9+functions+using+Tcl%5FSize\fR
+.IP [3]
+\fIhttps://core\&.tcl-lang\&.org/tcl/wiki?name=Migrating%20scripts%20to%20Tcl%209\fR
+.IP [4]
+\fIhttps://core\&.tcl-lang\&.org/tcl/wiki?name=Migrating%20C%20extensions%20to%20Tcl%209\fR
+.PP
 .SH AUTHORS
 Jean Claude Wippler, Steve Landers, Andreas Kupries
 .SH "BUGS, IDEAS, FEEDBACK"

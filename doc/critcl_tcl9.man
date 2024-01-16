@@ -136,6 +136,15 @@ packages to make their code workable for both Tcl 8.6 and 9.
 [list_end]
 [list_end]
 
+[section {Additional References}]
+[list_begin enumerated]
+[enum] [uri https://wiki.tcl-lang.org/page/Porting+extensions+to+Tcl+9]
+[enum] [uri https://wiki.tcl-lang.org/page/Tcl+9+functions+using+Tcl%5FSize]
+[enum] [uri https://core.tcl-lang.org/tcl/wiki?name=Migrating%20scripts%20to%20Tcl%209]
+[enum] [uri https://core.tcl-lang.org/tcl/wiki?name=Migrating%20C%20extensions%20to%20Tcl%209]
+[list_end]
+
+
 [comment {= = == === ===== ======== ============= =====================}]
 [include include/feedback.inc]
 [manpage_end]
