@@ -1,8 +1,10 @@
 '\"
-'\" Generated from file 'critcl_enum\&.man' by tcllib/doctools with format 'nroff'
+'\" Generated from file 'critcl_tcl9\&.man' by tcllib/doctools with format 'nroff'
+'\" Copyright (c) Jean-Claude Wippler
+'\" Copyright (c) Steve Landers
 '\" Copyright (c) 2011-2024 Andreas Kupries
 '\"
-.TH "critcl::enum" n 1\&.2 doc "C Runtime In Tcl (CriTcl)"
+.TH "critcl_tcl9" n 3\&.2\&.1 doc "C Runtime In Tcl (CriTcl)"
 .\" The -*- nroff -*- definitions below are for supplemental macros used
 .\" in Tcl/Tk manual entries.
 .\"
@@ -272,210 +274,145 @@ Database Class:	\\fB\\$3\\fR
 ..
 .BS
 .SH NAME
-critcl::enum \- CriTcl - Wrap Support - String/Integer mapping
-.SH SYNOPSIS
-package require \fBTcl  8\&.6\fR
-.sp
-package require \fBcritcl  ?3\&.2?\fR
-.sp
-package require \fBcritcl::enum  ?1\&.2?\fR
-.sp
-\fB::critcl::enum::def\fR \fIname\fR \fIdefinition\fR ?\fImode\fR?
-.sp
-.BE
+critcl_tcl9 \- How To Adapt Critcl Packages for Tcl 9
 .SH DESCRIPTION
 .PP
 Be welcome to the \fIC Runtime In Tcl\fR (short: \fICriTcl\fR), a system for embedding and using C
 code from within \fITcl\fR [http://core\&.tcl-lang\&.org/tcl] scripts\&.
 .PP
-This document is the reference manpage for the
-\fBcritcl::enum\fR package\&. This package provides convenience
-commands for advanced functionality built on top of both critcl core
-and package \fBcritcl::literals\fR\&.
-.PP
-It is an extended form of string pool which not only converts
-integer values into Tcl-level strings, but also handles the reverse
-direction, converting from strings to the associated integer values\&.
-.PP
-It essentially provides a bi-directional mapping between a C
-enumeration type and a set of strings, one per enumeration value\&.
-\fINote\fR that the C enumeration in question is created by the
-definition\&. It is not possible to use the symbols of an existing
-enumeration type\&.
-.PP
-This package was written to make the declaration and management
-of such mappings easy\&. It uses a string pool for one of the directions,
-using its ability to return shared literals and conserve memory\&.
-.PP
-Its intended audience are mainly developers wishing to write
-Tcl packages with embedded C code\&.
-.PP
-This package resides in the Core Package Layer of CriTcl\&.
-.PP
-.PS
-.nf
-+----------------+
-|Applications    |
-| critcl         |
-| critcl::app    |
-+----------------+
-
-*================*
-|Core Packages   |
-| critcl         |
-| critcl::util   |
-*================*
-
-+----------------+
-|Support Packages|
-| stubs::*       |
-| md5, platform  |
-|  \&.\&.\&.           |
-+----------------+
-
-.fi
-.PE
-.PP
-.SH API
-.TP
-\fB::critcl::enum::def\fR \fIname\fR \fIdefinition\fR ?\fImode\fR?
-This command defines two C functions for the conversion between
-C values and Tcl_Obj'ects, with named derived from \fIname\fR\&.
+This guide contains notes and actions to take by writers of \fICriTcl\fR-based
+packages to make their code workable for both Tcl 8\&.6 and 9\&.
+.IP [1]
+Generally, if there is no interest in moving to Tcl 9, i\&.e\&. Tcl 8\&.[456]
+are the only supported runtimes, then just keep using \fICriTcl\fR \fB3\&.2\fR\&.
 .sp
-The \fIdefinition\fR dictionary provides the mapping from the
-specified C-level symbolic names to the strings themselves\&.
+The remainder of this document can be ignored\&.
+.IP [2]
+Use \fICriTcl\fR version 3\&.2\&.1 \fIif, and only if\fR
+Tcl 9 support is wanted\&.
 .sp
-The \fImode\fR-list configures the output somewhat\&.
-The two allowed modes are \fB+list\fR and \fBtcl\fR\&.
-All modes can be used together\&.
-The default mode is \fBtcl\fR\&.
-Using mode \fB+list\fR implies \fBtcl\fR as well\&.
+With some work this will then also provide backward compatibility with Tcl 8\&.6\&.
+.IP [3]
+Header "\fItcl\&.h\fR"
 .sp
-For mode \fBtcl\fR the new function has two arguments, a
-\fBTcl_Interp*\fR pointer refering to the interpreter holding the
-string pool, and a code of type "\fIname\fR_pool_names" (see below),
-the symbolic name of the string to return\&. The result of the function
-is a \fBTcl_Obj*\fR pointer to the requested string constant\&.
+Replace any inclusion of Tcl's public "\fItcl\&.h\fR" header file in the package's
+C code with the inclusion of \fICriTcl\fR's new header file "\fItclpre9compat\&.h\fR"\&.
 .sp
-For mode \fB+list\fR all of \fBtcl\fR applies, plus an
-additional function is generated which takes three arguments, in
-order: a \fBTcl_Interp*\fR pointer refering to the interpreter
-holding the string pool, an \fBint\fR holding the size of the last
-argument, and an array of type "\fIname\fR_pool_names" holding the
-codes (see below), the symbolic names of the strings to return\&. The
-result of the function is a \fBTcl_Obj*\fR pointer to a Tcl list
-holding the requested string constants\&.
+This includes "\fItcl\&.h\fR" and further provides a set of compatibility definitions
+which make supporting both Tcl 8\&.6 and Tcl 9 in a single code base easier\&.
 .sp
-The underlying string pool is automatically initialized on
-first access, and finalized on interpreter destruction\&.
+The following notes assume that this compatibility layer is in place\&.
+.IP [4]
+\fBcritcl::tcl\fR
 .sp
-The package generates multiple things (declarations and
-definitions) with names derived from \fIname\fR, which has to be a
-proper C identifier\&.
+Before \fICriTcl\fR 3\&.2\&.1 a single default (\fB8\&.4\fR) was used for
+the minimum Tcl version, to be overriden by an explicit \fBcritcl::tcl\fR in the
+package code\&.
+.sp
+Now the default is dynamic, based on the \fIruntime\fR version, i\&.e\&.
+\fBpackage provide Tcl\fR, \fICriTcl\fR is run with/on\&.
+.sp
+When running on Tcl 9 the new default is version \fB9\fR, and \fB8\&.6\fR else\&.
+\fINote\fR how this other default was bumped up from \fB8\&.4\fR\&.
+.sp
+As a consequence it is possible to
 .RS
-.TP
-\fIname\fR_pool_names
-The C enumeration type containing the specified symbolic names\&.
-.TP
-\fIname\fR_ToObj
-The function converting from integer value to Tcl string\&.
-Its signature is
+.IP [1]
+Support just Tcl 8\&.4+, 8\&.5+, by having an explicit \fBcritcl::tcl 8\&.x\fR in
+the package code\&.
 .sp
-.CS
-
-
-Tcl_Obj* \fIname\fR_ToObj (Tcl_Interp* interp, \fIname\fR_names literal);
-
-.CE
-.TP
-\fIname\fR_ToObjList
-The mode \fB+list\fR function converting from integer array to Tcl
-list of strings\&.
-Its signature is
+\fIRemember however\fR, it is better to simply stick with
+\fICriTcl\fR \fB3\&.2\fR for this\&.
+.IP [2]
+Support just Tcl 9 by having an explicit \fBcritcl::tcl 9\fR in the package code\&.
+.IP [3]
+Support both Tcl 8\&.6 and Tcl 9 (but not 8\&.4/8\&.5) by leaving \fBcritcl::tcl\fR out of the code
+and using the proper \fBtclsh\fR version to run \fICriTcl\fR with\&.
+.RE
+.IP [5]
+Code checking
 .sp
-.CS
-
-
-Tcl_Obj* \fIname\fR_ToObjList (Tcl_Interp* interp, int c, \fIname\fR_names* literal);
-
-.CE
-.TP
-\fIname\fR_GetFromObj
-The function converting from Tcl string to integer value\&.
-Its signature is
+\fICriTcl\fR 3\&.2\&.1 comes with a very basic set of code checks pointing
+out places where compatibility might or will be an issue\&.
 .sp
-.CS
-
-
-int \fIname\fR_GetFromObj (Tcl_Interp* interp, Tcl_Obj* obj, int flags, int* literal);
-
-.CE
-.IP
-The \fIflags\fR are like for \fBTcl_GetIndexFromObj\fR\&.
-.TP
-\fIname\fR\&.h
-A header file containing the declarations for the converter functions,
-for use by other parts of the system, if necessary\&.
+It is very basic because it simply greps the code line by line for a number
+of patterns and reports on their presence\&. The C code is not fully parsed\&.
+The check can and will report pattern found in C code comments, for example\&.
 .sp
-The generated file is stored in a place where it will not
-interfere with the overall system outside of the package, yet also be
-available for easy inclusion by package files (\fBcsources\fR)\&.
-.TP
-\fIname\fR
-At the level of critcl itself the command registers a new result-type
-for \fBcritcl::cproc\fR, which takes an integer result from the function
-and converts it to the equivalent string in the pool for the script\&.
-.TP
-\fIname\fR
-At the level of critcl itself the command registers a new argument-type
-for \fBcritcl::cproc\fR, which takes a Tcl string and converts it to the
-equivalent integer for delivery to the function\&.
+The main patterns deal with functions affected by the change to \fBTcl_Size\fR,
+the removal of old-style interpreter state handling, and command creation\&.
+.sp
+A warning message is printed for all detections\&.
+.sp
+This is disabled for the \fBTcl_Size\fR-related pattern if the line also matches
+the pattern \fB*OK tcl9*\fR\&.
+.sp
+In this way all places in the code already handled can be marked and excluded
+from the warnings\&.
+.RS
+.IP [1]
+Interpreter State handling
+.sp
+Tcl 9 removed the type \fBTcl_SavedResult\fR and its associated functions
+\fBTcl_SaveResult\fR, \fBTcl_RestoreResult\fR, and \fBTcl_DiscardResult\fR\&.
+.sp
+If the package uses this type and functions a rewrite is necessary\&.
+.sp
+With Tcl 9 use of type \fBTcl_InterpState\fR and its functions
+\fBTcl_SaveInterpState\fR, \fBTcl_RestoreInterpState\fR, and
+\fBTcl_DiscardInterpState\fR is now required\&.
+.sp
+As these were introduced with Tcl 8\&.5 the rewrite gives us compatibility with
+Tcl 8\&.6 for free\&.
+.IP [2]
+\fBTcl_Size\fR
+.sp
+One of the main changes introduced with Tcl 9 is the breaking of the 2G barrier
+for the number of bytes in a string, elements in a list, etc\&.
+In a lot of interfaces \fBint\fR was replaced with \fBTcl_Size\fR, which is
+effectively \fBptrdiff_t\fR behind the scenes\&.
+.sp
+The "\fItclpre9compat\&.h\fR" header mentioned above provides a suitable definition
+of \fBTcl_Size\fR for \fB8\&.6\fR, i\&.e\&. maps it to \fBint\fR\&.
+This enables the package code to use \fBTcl_Size\fR everywhere and still have it
+work for both Tcl 8\&.6 and 9\&.
+.sp
+It is of course necessary to rewrite the package code to use \fBTcl_Size\fR\&.
+The checker reports all lines in the C code using a function whose signature
+was changed to use \fBTcl_Size\fR over \fBint\fR\&.
+.IP [3]
+Command creation\&.
+.sp
+This is technically a part of the \fBTcl_Size\fR changes\&.
+.sp
+All places using \fBTcl_CreateObjCommand\fR have to be rewritten to use
+\fBTcl_CreateObjCommand2\fR instead, and the registered command functions
+to use \fBTcl_Size\fR for their \fIobjc\fR argument\&.
+.sp
+The "\fItclpre9compat\&.h\fR" header maps this back to the old function
+when compilation is done against Tcl 8\&.6\&.
+.sp
+\fICriTcl\fR does this itself for the commands created via \fBcritcl::ccommand\fR,
+\fBcritcl::cproc\fR, and derived places (\fBcritcl::class\fR)\&.
 .RE
 .PP
-.SH EXAMPLE
-The example shown below is the specification for a set of actions, methods,
-and the like, a function may take as argument\&.
-.CS
-
-
-package require Tcl 8\&.6
-package require critcl 3\&.2
-
-critcl::buildrequirement {
-    package require critcl::enum
-}
-
-critcl::enum::def action {
-    w_create	"create"
-    w_directory	"directory"
-    w_events	"events"
-    w_file	"file"
-    w_handler	"handler"
-    w_remove	"remove"
-}
-
-# Declarations: action\&.h
-# Type:         action_names
-# Accessor:     Tcl_Obj* action_ToObj (Tcl_Interp* interp, int literal);
-# Accessor:     int action_GetFromObj (Tcl_Interp* interp, Tcl_Obj* o, int flags, int* literal);
-# ResultType:   action
-# ArgType:      action
-
-.CE
 .SH AUTHORS
-Andreas Kupries
+Jean Claude Wippler, Steve Landers, Andreas Kupries
 .SH "BUGS, IDEAS, FEEDBACK"
 This document, and the package it describes, will undoubtedly contain
 bugs and other problems\&.
-Please report such at \fIhttps://github\&.com/andreas-kupries/critcl\fR\&.
-Please also report any ideas for enhancements you may have for either
-package and/or documentation\&.
+Please report them at \fIhttps://github\&.com/andreas-kupries/critcl/issues\fR\&.
+Ideas for enhancements you may have for either package, application,
+and/or the documentation are also very welcome and should be reported
+at \fIhttps://github\&.com/andreas-kupries/critcl/issues\fR as well\&.
 .SH KEYWORDS
-C code, Embedded C Code, Tcl Interp Association, code generator, compile & run, compiler, conversion, dynamic code generation, dynamic compilation, generate package, int to string mapping, linker, literal pool, on demand compilation, on-the-fly compilation, singleton, string pool, string to int mapping
+C code, Embedded C Code, calling C code from Tcl, code generator, compile & run, compiler, dynamic code generation, dynamic compilation, generate package, linker, on demand compilation, on-the-fly compilation
 .SH CATEGORY
 Glueing/Embedded C code
 .SH COPYRIGHT
 .nf
+Copyright (c) Jean-Claude Wippler
+Copyright (c) Steve Landers
 Copyright (c) 2011-2024 Andreas Kupries
 
 .fi

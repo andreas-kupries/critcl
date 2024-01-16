@@ -335,3 +335,6 @@ doc
 .TP
 \fBcritcl_package\fR
 \fIfiles/critcl_package\&.n\fR: CriTcl Package Reference
+.TP
+\fBcritcl_tcl9\fR
+\fIfiles/critcl_tcl9\&.n\fR: How To Adapt Critcl Packages for Tcl 9

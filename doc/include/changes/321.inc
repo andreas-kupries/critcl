@@ -1,11 +1,24 @@
 [section {Changes for version 3.2.1 (to come)}]
 [list_begin enumerated]
 
+[enum] Support for Tcl 8.4 and 8.5 is removed, as announced with 3.2.
+
 [enum] Modified packages to accept operation under Tcl 9.
        Bumped package versions appropriately.
        Bumped copyrights.
 
+[para] The [term {How To Adapt Critcl Packages for Tcl 9}]
+       contains the details relevant to writers of [vset critcl]-based packages.
+
 [enum] Set different minimum Tcl requirements for the 8.x and 9.x series.
+
+[para] If no minimum is declared the minimum depends on the Tcl version
+       used to run the critcl package or application.
+
+[para] When running under Tcl 9 the default minimum is version [const 9].
+       For anything else the new default minimum is [const 8.6].
+
+[para] [strong Reminder]: Support for Tcl 8.4 and 8.5 was removed.
 
 [enum] Made [file ~]-handling portable across the 8.x and 9 boundary
        (via [const HOME] environment variable).

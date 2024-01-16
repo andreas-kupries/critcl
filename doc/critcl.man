@@ -56,6 +56,7 @@ This section is currently empty.
 [enum] [term {How To Get The CriTcl Sources}].
 [enum] [term {How To Install CriTcl}].
 [enum] [term {How To Use CriTcl}] - A light introduction through examples.
+[enum] [strong NEW]: [term {How To Adapt Critcl Packages for Tcl 9}].
 [list_end]
 
 [comment {= = == === ===== ======== ============= =====================}]
