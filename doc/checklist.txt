@@ -12,3 +12,9 @@ When releasing:
           - `lib/critcl/pkgindex.tcl`
           - `lib/critcl/critcl.tcl`
       - The version in `doc/pkg_version.inc`.
+
+  - Regenerate the embedded documentation.
+
+  - Commit
+
+  - Push
