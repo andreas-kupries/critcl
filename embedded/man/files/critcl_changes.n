@@ -290,7 +290,19 @@ beginning of the project\&.
 The latest changes are found at the top\&.
 .SH "CHANGES FOR VERSION 3\&.2\&.1 (TO COME)"
 .IP [1]
-Support for Tcl 8\&.4 and 8\&.5 is removed, as announced with 3\&.2\&.
+As announced with 3\&.2:
+.RS
+.IP [1]
+Removed support for Tcl 8\&.4 and 8\&.5\&.
+.IP [2]
+Removed support for the argument types
+\fBint*\fR,
+\fBfloat*\fR,
+\fBdouble*\fR,
+\fBbytearray\fR,
+\fBrawchar\fR, and
+\fBrawchar*\fR\&.
+.RE
 .IP [2]
 Modified packages to accept operation under Tcl 9\&.
 Bumped package versions appropriately\&.

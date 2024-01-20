@@ -1,7 +1,19 @@
 [section {Changes for version 3.2.1 (to come)}]
 [list_begin enumerated]
 
-[enum] Support for Tcl 8.4 and 8.5 is removed, as announced with 3.2.
+[enum] As announced with 3.2:
+[list_begin enumerated]
+
+[enum] Removed support for Tcl 8.4 and 8.5.
+
+[enum] Removed support for the argument types
+       [type int*],
+       [type float*],
+       [type double*],
+       [type bytearray],
+       [type rawchar], and
+       [type rawchar*].
+[list_end]
 
 [enum] Modified packages to accept operation under Tcl 9.
        Bumped package versions appropriately.

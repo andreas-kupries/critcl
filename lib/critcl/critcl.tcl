@@ -6282,36 +6282,6 @@ proc ::critcl::Initialize {} {
 
     argtype variadic_Tcl_Obj* = variadic_object
 
-    ## The next set of argument types looks to be very broken. We are keeping
-    ## them for now, but declare them as DEPRECATED. Their documentation was
-    ## removed with version 3.2. Their implementation will be gone from 3.3 as well,
-    ## fully exterminating them.
-
-    argtype int* {
-	/* Raw pointer in binary Tcl value */
-	@A = (int*) Tcl_GetByteArrayFromObj(@@, NULL);
-	Tcl_InvalidateStringRep(@@);
-    }
-    argtype float* {
-	/* Raw pointer in binary Tcl value */
-	@A = (float*) Tcl_GetByteArrayFromObj(@@, NULL);
-    }
-    argtype double* {
-	/* Raw pointer in binary Tcl value */
-	@A = (double*) Tcl_GetByteArrayFromObj(@@, NULL);
-    }
-
-    # OLD Raw binary string. Length information is _NOT_ propagated.  Declaring
-    # it and its aliases as DEPRECATED. Their documentation was removed in
-    # version 3.2. Their implementation will be in 3.3 as well, fully
-    # exterminating them.
-    argtype bytearray {
-	/* Raw binary string. Length information is _NOT_ propagated */
-	@A = (char*) Tcl_GetByteArrayFromObj(@@, NULL);
-    } char* char*
-    argtype rawchar = bytearray
-    argtype rawchar* = bytearray
-
     # NEW Raw binary string _with_ length information.
 
     argtype bytes {

@@ -111,7 +111,13 @@ The latest changes are found at the top\.
 
 # <a name='section2'></a>Changes for version 3\.2\.1 \(to come\)
 
-  1. Support for Tcl 8\.4 and 8\.5 is removed, as announced with 3\.2\.
+  1. As announced with 3\.2:
+
+       1) Removed support for Tcl 8\.4 and 8\.5\.
+
+       1) Removed support for the argument types __int\*__, __float\*__,
+          __double\*__, __bytearray__, __rawchar__, and
+          __rawchar\*__\.
 
   1. Modified packages to accept operation under Tcl 9\. Bumped package versions
      appropriately\. Bumped copyrights\.
