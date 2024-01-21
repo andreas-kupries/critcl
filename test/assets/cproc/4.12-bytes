@@ -30,7 +30,8 @@ tcl__aproc0(ClientData cd, Tcl_Interp *interp, Tcl_Size oc, Tcl_Obj *CONST ov[])
   /* (bytes x) - - -- --- ----- -------- */
 	{
 	/* Raw binary string _with_ length information */
-	_x.s = Tcl_GetByteArrayFromObj(ov[1], &(_x.len));
+	_x.s = Tcl_GetBytesFromObj(interp, ov[1], &(_x.len));
+	if (_x.s == NULL) return TCL_ERROR;
 	_x.o = ov[1]; }
 
   /* Call - - -- --- ----- -------- */

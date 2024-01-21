@@ -260,17 +260,25 @@ foreach type {
     pstring
     list
     object
-    bytearray
+    --bytearray--
     bytes
     channel
     unshared-channel
     take-channel
 } {
-    set td [string map {{ } _ > gt * _} $type]
-    test critcl-cproc${suffix}-4.${n}-$td "cproc, $type argument" -body {
-        get critcl::cproc aproc [list $type x] void { }
-    } -result [viewFile [localPath test/assets/cproc${suffix}/4.${n}-$td]]
-    incr n ; unset td
+    # allow marking of types as gone.
+    # allows us to keep the numbers of all tests when types go away.
+    # no need to renumber all the files for types after the removed type.
+    # and new types can reuse the slot in the future
+
+    if {![string match "--*--" $type]} {
+        set td [string map {{ } _ > gt * _} $type]
+        test critcl-cproc${suffix}-4.${n}-$td "cproc, $type argument" -body {
+            get critcl::cproc aproc [list $type x] void { }
+        } -result [viewFile [localPath test/assets/cproc${suffix}/4.${n}-$td]]
+        unset td
+    }
+    incr n
 }
 
 test critcl-cproc${suffix}-4.${n}-vobject "cproc, variadic Tcl_Obj* argument" -body {

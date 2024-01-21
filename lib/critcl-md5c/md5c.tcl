@@ -97,8 +97,9 @@ critcl::ccommand md5c {dummy ip objc objv} {
     }
 
     mp = (MD5_CTX *) obj->internalRep.otherValuePtr;
-    data = Tcl_GetByteArrayFromObj(objv[1], &size); /* OK tcl9 */
 
+    data = Tcl_GetBytesFromObj(ip, objv[1], &size); /* OK tcl9 */
+    if (data == NULL) return TCL_ERROR;
 
     MD5Update(mp, data, size);
     Tcl_SetObjResult(ip, obj);

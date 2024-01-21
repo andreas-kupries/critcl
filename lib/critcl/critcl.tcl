@@ -64,7 +64,11 @@ proc ::critcl::md5_hex {s} {
 	return [format %032d [incr v::uuidcounter]]
     }
     package require critcl_md5c
-    binary scan [md5c $s] H* md; return $md
+    # As `s` is an arbitrary string of unknown origin we cannot assume
+    # that it contains byte data. And we definitely cannot assume that
+    # it only contains ASCII characters. For MD5 to operate correctly
+    # we have to convert the string into a proper series of bytes.
+    binary scan [md5c [encoding convertto utf-8 $s]] H* md; return $md
 }
 
 # # ## ### ##### ######## ############# #####################
@@ -5902,6 +5906,13 @@ proc ::critcl::Transition9Check {loc script} {
 proc ::critcl::Transition9CheckLine {file lno codeline} {
     set reported 0
 
+    # TIP 568 Tcl_GetByteArrayFromObj transition to Tcl_GetBytesFromObj
+    if {[string match *Tcl_GetByteArrayFromObj* $codeline]} {
+	T9Report $file $lno $codeline "(TIP 568): Use `Tcl_GetBytesFromObj` and handle NULL results."
+	T9Report $file $lno $codeline "(TIP 568): Read the referenced TIP for the sordid details."
+	T9Report $file $lno $codeline "(TIP 568): Document the obligations of the script level."
+    }
+
     # Tcl_Size I
     foreach {kind fun} [Transition9TclSize] {
 	if {![string match *${fun}*    $codeline]} continue
@@ -6286,7 +6297,8 @@ proc ::critcl::Initialize {} {
 
     argtype bytes {
 	/* Raw binary string _with_ length information */
-	@A.s = Tcl_GetByteArrayFromObj(@@, &(@A.len));
+	@A.s = Tcl_GetBytesFromObj(interp, @@, &(@A.len));
+	if (@A.s == NULL) return TCL_ERROR;
 	@A.o = @@;
     } critcl_bytes critcl_bytes
 

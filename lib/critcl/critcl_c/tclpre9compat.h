@@ -34,10 +34,14 @@
  * - - -- --- ----- -------- ------------- ---------------------
  * Critcl (3.2.1+) emits the command creation API using Tcl_Size by default.
  * Map this to the older int-based API when compiling against Tcl 8.x or older.
+ *
+ * Further map use of `Tcl_GetBytesFromObj` to the old `Tcl_GetByteArrayFromObj`.
+ * This loses the interp argument, and the ability to return NULL.
  */
 
 #if TCL_MAJOR_VERSION <= 8
 #define Tcl_CreateObjCommand2 Tcl_CreateObjCommand
+#define Tcl_GetBytesFromObj(interp,obj,sizeptr) Tcl_GetByteArrayFromObj(obj,sizeptr)
 #endif
 
 /*
