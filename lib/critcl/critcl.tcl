@@ -4373,6 +4373,13 @@ proc ::critcl::SetParam {type values {expand 1} {uuid 0} {unique 0}} {
 	}
     }
 
+    if {$type eq "csources"} {
+	foreach v $tmp {
+	    at::= $v 1
+	    Transition9Check [at::raw] [Cat $v]
+	}
+    }
+
     # And save into the system state.
     dict update v::code($file) config c {
 	foreach v $tmp {
@@ -5911,6 +5918,23 @@ proc ::critcl::Transition9CheckLine {file lno codeline} {
 	T9Report $file $lno $codeline "(TIP 568): Use `Tcl_GetBytesFromObj` and handle NULL results."
 	T9Report $file $lno $codeline "(TIP 568): Read the referenced TIP for the sordid details."
 	T9Report $file $lno $codeline "(TIP 568): Document the obligations of the script level."
+    }
+
+    foreach fun {
+	Tcl_NewStringObj
+	Tcl_AppendToObj
+	Tcl_AddObjErrorInfo
+	Tcl_DStringAppend
+	Tcl_NumUtfChars
+	Tcl_UtfToUniCharDString
+	Tcl_LogCommandInfo
+	Tcl_AppendLimitedToObj
+    } {
+	if { [string match *${fun}*     $codeline] &&
+	     [string match *-1*         $codeline] &&
+	     ![string match {*OK tcl9*} $codeline]} {
+	    T9Report $file $lno $codeline "(TIP 494): Use TCL_AUTO_LENGTH for string length."
+	}
     }
 
     # Tcl_Size I
