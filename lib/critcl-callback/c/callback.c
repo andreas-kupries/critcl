@@ -91,7 +91,7 @@ critcl_callback_invoke (critcl_callback_p callback, Tcl_Size objc, Tcl_Obj** obj
 	callback->command [i] = objv [j];
     }
 
-    int res = Tcl_EvalObjv (callback->interp, i, callback->command, TCL_EVAL_GLOBAL);
+    int res = Tcl_EvalObjv (callback->interp, i, callback->command, TCL_EVAL_GLOBAL); /* OK tcl9 */
 
     for (i = 0; i < callback->nfixed; i++) {
 	Tcl_DecrRefCount (callback->command [i]);

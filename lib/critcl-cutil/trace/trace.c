@@ -68,7 +68,7 @@ typedef struct ThreadSpecificData {
 
 /* copied from tclInt.h */
 #define TCL_TSD_INIT(keyPtr) \
-  (ThreadSpecificData *)Tcl_GetThreadData((keyPtr), sizeof(ThreadSpecificData))
+    (ThreadSpecificData *)Tcl_GetThreadData((keyPtr), sizeof(ThreadSpecificData)) /* OK tcl9 */
 
 static Tcl_ThreadDataKey ctraceDataKey;
 
