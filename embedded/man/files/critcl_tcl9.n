@@ -335,6 +335,10 @@ Code checking
 \fICriTcl\fR 3\&.2\&.1 comes with a very basic set of code checks pointing
 out places where compatibility might or will be an issue\&.
 .sp
+The implementation checks all inlined C code declared by \fBcritcl::ccode\fR,
+\fBcritcl::ccommand\fR, \fBcritcl::cproc\fR (and related/derived commands), as well
+as the C companion files declared with \fBcritcl::csources\fR\&.
+.sp
 It is very basic because it simply greps the code line by line for a number
 of patterns and reports on their presence\&. The C code is not fully parsed\&.
 The check can and will report pattern found in C code comments, for example\&.
@@ -356,7 +360,7 @@ Interpreter State handling
 Tcl 9 removed the type \fBTcl_SavedResult\fR and its associated functions
 \fBTcl_SaveResult\fR, \fBTcl_RestoreResult\fR, and \fBTcl_DiscardResult\fR\&.
 .sp
-If the package uses this type and functions a rewrite is necessary\&.
+When a package uses this type and the related functions a rewrite is necessary\&.
 .sp
 With Tcl 9 use of type \fBTcl_InterpState\fR and its functions
 \fBTcl_SaveInterpState\fR, \fBTcl_RestoreInterpState\fR, and
@@ -378,8 +382,33 @@ This enables the package code to use \fBTcl_Size\fR everywhere and still have it
 work for both Tcl 8\&.6 and 9\&.
 .sp
 It is of course necessary to rewrite the package code to use \fBTcl_Size\fR\&.
+.sp
 The checker reports all lines in the C code using a function whose signature
 was changed to use \fBTcl_Size\fR over \fBint\fR\&.
+.sp
+Note that it is necessary to manually check the package code for places where
+a \fB%d\fR text formatting specification should be replaced with
+\fBTCL_SIZE_FMT\fR\&.
+.sp
+I\&.e\&. all places where \fBTcl_Size\fR values are formatted with \fBprintf\fR-style
+functions a formatting string
+.CS
+
+"\&.\&.\&. %d \&.\&.\&."
+.CE
+.IP has to be replaced with
+.CS
+
+"\&.\&.\&. " TCL_SIZE_FMT " \&.\&.\&."
+.CE
+.sp
+The macro \fBTCL_SIZE_FMT\fR is defined by Critcl's compatibility layer, as an
+extension of the \fBTCL_SIZE_MODIFIER\fR macro which only contains the
+formatting modifier to insert into a plain \fB%d\fR to handle \fBTcl_Size\fR
+values\&.
+.sp
+\fINote\fR how the original formatting string is split into multiple strings\&.
+The C compiler will fuse these back together into a single string\&.
 .IP [3]
 Command creation\&.
 .sp
@@ -394,6 +423,25 @@ when compilation is done against Tcl 8\&.6\&.
 .sp
 \fICriTcl\fR does this itself for the commands created via \fBcritcl::ccommand\fR,
 \fBcritcl::cproc\fR, and derived places (\fBcritcl::class\fR)\&.
+.IP [4]
+TIP 494\&. This TIP adds three semantic constants wrapping \fB-1\fR to Tcl 9 to
+make the meaning of code clearer\&. As part of this it also casts the constant to the
+proper type\&. They are:
+.RS
+.IP \(bu
+\fBTCL_IO_FAILURE\fR
+.IP \(bu
+\fBTCL_AUTO_LENGTH\fR
+.IP \(bu
+\fBTCL_INDEX_NONE\fR
+.RE
+.sp
+Critcl's compatibility layer provides the same constants to Tcl 8\&.6\&.
+.sp
+Critcl's new checker highlights places where \fBTCL_AUTO_LENGTH\fR is suitable\&.
+.sp
+Doing this for the other two constants looks to require deeper and proper parsing
+of C code, which the checker does not do\&.
 .RE
 .PP
 .SH "ADDITIONAL REFERENCES"

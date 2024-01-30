@@ -158,6 +158,9 @@ packages to make their code workable for both Tcl 8.6 and 9.</p>
 <li><p>Code checking</p>
 <p><i class="term"><a href="critcl.html">CriTcl</a></i> 3.2.1 comes with a very basic set of code checks pointing
        out places where compatibility might or will be an issue.</p>
+<p>The implementation checks all inlined C code declared by <b class="cmd">critcl::ccode</b>,
+       <b class="cmd">critcl::ccommand</b>, <b class="cmd">critcl::cproc</b> (and related/derived commands), as well
+       as the C companion files declared with <b class="cmd">critcl::csources</b>.</p>
 <p>It is very basic because it simply greps the code line by line for a number
        of patterns and reports on their presence. The C code is not fully parsed.
        The check can and will report pattern found in C code comments, for example.</p>
@@ -172,7 +175,7 @@ packages to make their code workable for both Tcl 8.6 and 9.</p>
 <li><p>Interpreter State handling</p>
 <p>Tcl 9 removed the type <b class="type">Tcl_SavedResult</b> and its associated functions
        <b class="function">Tcl_SaveResult</b>, <b class="function">Tcl_RestoreResult</b>, and <b class="function">Tcl_DiscardResult</b>.</p>
-<p>If the package uses this type and functions a rewrite is necessary.</p>
+<p>When a package uses this type and the related functions a rewrite is necessary.</p>
 <p>With Tcl 9 use of type <b class="type">Tcl_InterpState</b> and its functions
        <b class="function">Tcl_SaveInterpState</b>, <b class="function">Tcl_RestoreInterpState</b>, and
        <b class="function">Tcl_DiscardInterpState</b> is now required.</p>
@@ -187,9 +190,23 @@ packages to make their code workable for both Tcl 8.6 and 9.</p>
        of <b class="type">Tcl_Size</b> for <b class="const">8.6</b>, i.e. maps it to <b class="type">int</b>.
        This enables the package code to use <b class="type">Tcl_Size</b> everywhere and still have it
        work for both Tcl 8.6 and 9.</p>
-<p>It is of course necessary to rewrite the package code to use <b class="type">Tcl_Size</b>.
-       The checker reports all lines in the C code using a function whose signature
-       was changed to use <b class="type">Tcl_Size</b> over <b class="type">int</b>.</p></li>
+<p>It is of course necessary to rewrite the package code to use <b class="type">Tcl_Size</b>.</p>
+<p>The checker reports all lines in the C code using a function whose signature
+       was changed to use <b class="type">Tcl_Size</b> over <b class="type">int</b>.</p>
+<p>Note that it is necessary to manually check the package code for places where
+       a <b class="const">%d</b> text formatting specification should be replaced with
+       <b class="const">TCL_SIZE_FMT</b>.</p>
+<p>I.e. all places where <b class="type">Tcl_Size</b> values are formatted with <b class="function">printf</b>-style
+       functions a formatting string</p>
+<pre class="doctools_example">&quot;... %d ...&quot;</pre>
+<p>has to be replaced with</p>
+<pre class="doctools_example">&quot;... &quot; TCL_SIZE_FMT &quot; ...&quot;</pre>
+<p>The macro <b class="cmd">TCL_SIZE_FMT</b> is defined by Critcl's compatibility layer, as an
+       extension of the <b class="cmd">TCL_SIZE_MODIFIER</b> macro which only contains the
+       formatting modifier to insert into a plain <b class="const">%d</b> to handle <b class="type">Tcl_Size</b>
+       values.</p>
+<p><em>Note</em> how the original formatting string is split into multiple strings.
+       The C compiler will fuse these back together into a single string.</p></li>
 <li><p>Command creation.</p>
 <p>This is technically a part of the <b class="type">Tcl_Size</b> changes.</p>
 <p>All places using <b class="function">Tcl_CreateObjCommand</b> have to be rewritten to use
@@ -199,6 +216,18 @@ packages to make their code workable for both Tcl 8.6 and 9.</p>
        when compilation is done against Tcl 8.6.</p>
 <p><i class="term"><a href="critcl.html">CriTcl</a></i> does this itself for the commands created via <b class="cmd">critcl::ccommand</b>,
        <b class="cmd">critcl::cproc</b>, and derived places (<b class="package"><a href="critcl_class.html">critcl::class</a></b>).</p></li>
+<li><p>TIP 494. This TIP adds three semantic constants wrapping <b class="const">-1</b> to Tcl 9 to
+       make the meaning of code clearer. As part of this it also casts the constant to the
+       proper type. They are:</p>
+<ul class="doctools_itemized">
+<li><p><b class="const">TCL_IO_FAILURE</b></p></li>
+<li><p><b class="const">TCL_AUTO_LENGTH</b></p></li>
+<li><p><b class="const">TCL_INDEX_NONE</b></p></li>
+</ul>
+<p>Critcl's compatibility layer provides the same constants to Tcl 8.6.</p>
+<p>Critcl's new checker highlights places where <b class="const">TCL_AUTO_LENGTH</b> is suitable.</p>
+<p>Doing this for the other two constants looks to require deeper and proper parsing
+       of C code, which the checker does not do.</p></li>
 </ol>
 </li>
 </ol>

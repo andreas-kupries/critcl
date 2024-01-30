@@ -97,6 +97,11 @@ Tcl 8\.6 and 9\.
      *[CriTcl](critcl\.md)* 3\.2\.1 comes with a very basic set of code
      checks pointing out places where compatibility might or will be an issue\.
 
+     The implementation checks all inlined C code declared by
+     __critcl::ccode__, __critcl::ccommand__, __critcl::cproc__ \(and
+     related/derived commands\), as well as the C companion files declared with
+     __critcl::csources__\.
+
      It is very basic because it simply greps the code line by line for a number
      of patterns and reports on their presence\. The C code is not fully parsed\.
      The check can and will report pattern found in C code comments, for
@@ -120,7 +125,8 @@ Tcl 8\.6 and 9\.
           functions __Tcl\_SaveResult__, __Tcl\_RestoreResult__, and
           __Tcl\_DiscardResult__\.
 
-          If the package uses this type and functions a rewrite is necessary\.
+          When a package uses this type and the related functions a rewrite is
+          necessary\.
 
           With Tcl 9 use of type __Tcl\_InterpState__ and its functions
           __Tcl\_SaveInterpState__, __Tcl\_RestoreInterpState__, and
@@ -143,9 +149,32 @@ Tcl 8\.6 and 9\.
           everywhere and still have it work for both Tcl 8\.6 and 9\.
 
           It is of course necessary to rewrite the package code to use
-          __Tcl\_Size__\. The checker reports all lines in the C code using a
-          function whose signature was changed to use __Tcl\_Size__ over
-          __int__\.
+          __Tcl\_Size__\.
+
+          The checker reports all lines in the C code using a function whose
+          signature was changed to use __Tcl\_Size__ over __int__\.
+
+          Note that it is necessary to manually check the package code for
+          places where a __%d__ text formatting specification should be
+          replaced with __TCL\_SIZE\_FMT__\.
+
+          I\.e\. all places where __Tcl\_Size__ values are formatted with
+          __printf__\-style functions a formatting string
+
+              "... %d ..."
+
+          has to be replaced with
+
+              "... " TCL_SIZE_FMT " ..."
+
+          The macro __TCL\_SIZE\_FMT__ is defined by Critcl's compatibility
+          layer, as an extension of the __TCL\_SIZE\_MODIFIER__ macro which
+          only contains the formatting modifier to insert into a plain
+          __%d__ to handle __Tcl\_Size__ values\.
+
+          *Note* how the original formatting string is split into multiple
+          strings\. The C compiler will fuse these back together into a single
+          string\.
 
        1) Command creation\.
 
@@ -161,6 +190,24 @@ Tcl 8\.6 and 9\.
           *[CriTcl](critcl\.md)* does this itself for the commands created
           via __critcl::ccommand__, __critcl::cproc__, and derived
           places \(__[critcl::class](critcl\_class\.md)__\)\.
+
+       1) TIP 494\. This TIP adds three semantic constants wrapping __\-1__ to
+          Tcl 9 to make the meaning of code clearer\. As part of this it also
+          casts the constant to the proper type\. They are:
+
+            - __TCL\_IO\_FAILURE__
+
+            - __TCL\_AUTO\_LENGTH__
+
+            - __TCL\_INDEX\_NONE__
+
+          Critcl's compatibility layer provides the same constants to Tcl 8\.6\.
+
+          Critcl's new checker highlights places where __TCL\_AUTO\_LENGTH__
+          is suitable\.
+
+          Doing this for the other two constants looks to require deeper and
+          proper parsing of C code, which the checker does not do\.
 
 # <a name='section2'></a>Additional References
 

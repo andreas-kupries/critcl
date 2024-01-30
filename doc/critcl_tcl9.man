@@ -69,6 +69,10 @@ packages to make their code workable for both Tcl 8.6 and 9.
 [para] [vset critcl] [vset VERSION] comes with a very basic set of code checks pointing
        out places where compatibility might or will be an issue.
 
+[para] The implementation checks all inlined C code declared by [cmd critcl::ccode],
+       [cmd critcl::ccommand], [cmd critcl::cproc] (and related/derived commands), as well
+       as the C companion files declared with [cmd critcl::csources].
+
 [para] It is very basic because it simply greps the code line by line for a number
        of patterns and reports on their presence. The C code is not fully parsed.
        The check can and will report pattern found in C code comments, for example.
@@ -91,7 +95,7 @@ packages to make their code workable for both Tcl 8.6 and 9.
 [para] Tcl 9 removed the type [type Tcl_SavedResult] and its associated functions
        [fun Tcl_SaveResult], [fun Tcl_RestoreResult], and [fun Tcl_DiscardResult].
 
-[para] If the package uses this type and functions a rewrite is necessary.
+[para] When a package uses this type and the related functions a rewrite is necessary.
 
 [para] With Tcl 9 use of type [type Tcl_InterpState] and its functions
        [fun Tcl_SaveInterpState], [fun Tcl_RestoreInterpState], and
@@ -116,8 +120,24 @@ packages to make their code workable for both Tcl 8.6 and 9.
 
 [para] It is of course necessary to rewrite the package code to use [type Tcl_Size].
 
-       The checker reports all lines in the C code using a function whose signature
+[para] The checker reports all lines in the C code using a function whose signature
        was changed to use [type Tcl_Size] over [type int].
+
+[para] Note that it is necessary to manually check the package code for places where
+       a [const %d] text formatting specification should be replaced with
+       [const TCL_SIZE_FMT].
+
+[para] I.e. all places where [type Tcl_Size] values are formatted with [fun printf]-style
+       functions a formatting string [example {"... %d ..."}] has to be replaced with
+       [example {"... " TCL_SIZE_FMT " ..."}]
+
+[para] The macro [cmd TCL_SIZE_FMT] is defined by Critcl's compatibility layer, as an
+       extension of the [cmd TCL_SIZE_MODIFIER] macro which only contains the
+       formatting modifier to insert into a plain [const %d] to handle [type Tcl_Size]
+       values.
+
+[para] [strong Note] how the original formatting string is split into multiple strings.
+       The C compiler will fuse these back together into a single string.
 
 [enum] Command creation.
 
@@ -132,6 +152,23 @@ packages to make their code workable for both Tcl 8.6 and 9.
 
 [para] [vset critcl] does this itself for the commands created via [cmd critcl::ccommand],
        [cmd critcl::cproc], and derived places ([package critcl::class]).
+
+[enum] TIP 494. This TIP adds three semantic constants wrapping [const -1] to Tcl 9 to
+       make the meaning of code clearer. As part of this it also casts the constant to the
+       proper type. They are:
+
+[list_begin itemized]
+[item] [const TCL_IO_FAILURE]
+[item] [const TCL_AUTO_LENGTH]
+[item] [const TCL_INDEX_NONE]
+[list_end]
+
+[para] Critcl's compatibility layer provides the same constants to Tcl 8.6.
+
+[para] Critcl's new checker highlights places where [const TCL_AUTO_LENGTH] is suitable.
+
+[para] Doing this for the other two constants looks to require deeper and proper parsing
+       of C code, which the checker does not do.
 
 [list_end]
 [list_end]
