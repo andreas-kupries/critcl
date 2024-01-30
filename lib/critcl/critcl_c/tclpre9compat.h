@@ -23,12 +23,19 @@
         typedef int Tcl_Size;
     #endif
 
+    /* TIP #494 constants, for 8.6 too */
+    #define TCL_IO_FAILURE   ((Tcl_Size)-1)
+    #define TCL_AUTO_LENGTH  ((Tcl_Size)-1)
+    #define TCL_INDEX_NONE   ((Tcl_Size)-1)
+
     #define TCL_SIZE_MODIFIER ""
     #define Tcl_GetSizeIntFromObj Tcl_GetIntFromObj
     #define Tcl_NewSizeIntObj     Tcl_NewIntObj
 #else
     #define Tcl_NewSizeIntObj     Tcl_NewWideIntObj
 #endif
+
+#define TCL_SIZE_FMT "%" TCL_SIZE_MODIFIER "d"
 
 /*
  * - - -- --- ----- -------- ------------- ---------------------
