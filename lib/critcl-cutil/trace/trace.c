@@ -1,10 +1,11 @@
 /*
- * Copyright (c) 2017-2023 Andreas Kupries <andreas_kupries@users.sourceforge.net>
+ * Copyright (c) 2017-2024 Andreas Kupries <andreas_kupries@users.sourceforge.net>
  * = = == === ===== ======== ============= =====================
  */
 
 #include <critcl_alloc.h>
 #include <string.h>
+#include <stdarg.h>
 
 /*
  * = = == === ===== ======== ============= =====================
