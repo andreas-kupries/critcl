@@ -33,11 +33,13 @@ namespace eval critcl {
                               foptimize fextra_cflags}
         set configvars [concat $configvars $fconfigvars]
     }
-    namespace eval c [list
-        foreach var $v::fconfigvars {
+    namespace eval c {
+	variable var
+        foreach var $::critcl::v::fconfigvars {
             variable $var
         }
-    ]
+	unset var
+    }
     readconfig $configfile
 }
 

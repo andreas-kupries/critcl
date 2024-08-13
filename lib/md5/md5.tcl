@@ -352,7 +352,11 @@ if {![catch {package require Trf 2.0}]} {
 	regsub -all -- {\[ *<<< +\[ *expr +({[^\}]*})\] +([0-9]+) *\]} $md5body {(([set x [expr \1]] << \2) |  (($x >> R\2) \& S\2))} md5body
 
 	# now replace the R and S
-	set map {}
+	variable map {}
+	variable i
+	variable tName
+	variable tVal
+
 	foreach i {
 	    7 12 17 22
 	    5  9 14 20

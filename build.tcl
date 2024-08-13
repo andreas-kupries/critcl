@@ -720,8 +720,7 @@ proc Hstarkit {} { return "?destination? ?interpreter?\n\tGenerate a starkit\n\t
 proc _starkit {{dst critcl.kit} {interp tclkit}} {
     package require vfs::mk4
 
-    set c [open $dst w]
-    fconfigure $c -translation binary -encoding binary
+    set c [open $dst wb]
     puts -nonewline $c "#!/bin/sh\n# -*- tcl -*- \\\nexec $interp \"\$0\" \$\{1+\"\$@\"\}\npackage require starkit\nstarkit::header mk4 -readonly\n\032################################################################################################################################################################"
     close $c
 

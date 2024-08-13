@@ -12,7 +12,7 @@
 # See the file "license.terms" for information on usage and redistribution
 # of this file, and for a DISCLAIMER OF ALL WARRANTIES.
 
-package require Tcl 8.6
+package require Tcl 8.6 9
 
 lappend auto_path [file dirname [file normalize [info script]]]/lib/stubs
 lappend auto_path [file dirname [file normalize [info script]]]/lib/util84

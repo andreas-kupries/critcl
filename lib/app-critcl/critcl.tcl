@@ -578,7 +578,7 @@ proc ::critcl::app::Help {} {
 }
 
 proc ::critcl::app::Selftest {} {
-    foreach t [glob -directory [file join $starkit::topdir test] *.tst] {
+    foreach t [glob -directory [file join $::starkit::topdir test] *.tst] {
         source $t
     }
     return
