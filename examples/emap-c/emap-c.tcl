@@ -7,7 +7,7 @@
 # # ## ### ##### ######## ############# #####################
 ## Requirements
 
-package require Tcl          8.6
+package require Tcl          8.6 9
 package require critcl       3.1.11
 package require critcl::emap 1
 

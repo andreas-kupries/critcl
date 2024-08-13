@@ -1,6 +1,6 @@
 #!/usr/bin/env tclsh
 
-package require Tcl 8.5
+package require Tcl 8.5 9
 package require optional
 
 foreach a {

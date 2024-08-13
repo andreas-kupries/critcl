@@ -15,7 +15,7 @@
 # See the file "license.terms" for information on usage and redistribution
 # of this file, and for a DISCLAIMER OF ALL WARRANTIES.
 
-package require Tcl 8.6
+package require Tcl 8.6 9
 package require critcl 3.2
 
 critcl::buildrequirement {
