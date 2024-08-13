@@ -2,7 +2,7 @@
 #define __CRITCL_UTIL_TRACE_H 1
 
 /*
- * Copyright (c) 2017-2023 Andreas Kupries <andreas_kupries@users.sourceforge.net>
+ * Copyright (c) 2017-2024 Andreas Kupries <andreas_kupries@users.sourceforge.net>
  *
  * Narrative tracing support, controlled by CRITCL_TRACER
  * = = == === ===== ======== ============= =====================
@@ -27,6 +27,10 @@
  *
  *       In this mode it generates one `.trace` file per thread with active tracing.
  *	 In single-threaded mode it writes to stdout as before.
+ *
+ * NOTE 2: The above can be done through the `critcl::tracer-config` command, i.e.
+ *         invoke:
+ *             critcl::tracer-config -nothreads
  */
 
 #include <tcl.h>
@@ -58,7 +62,10 @@
  */
 
 #ifndef CRITCL_TRACER
-/* Tracing disabled. All macros vanish */
+/* Tracing is disabled. All macros vanish / devolve to their untraced functionality.
+ */
+
+#define TRACE_THREAD_EXIT TCL_THREAD_CREATE_RETURN
 #define TRACE_PUSH_SCOPE(string)
 #define TRACE_PUSH_FUNC
 #define TRACE_POP
@@ -89,8 +96,10 @@
 #endif
 
 #ifdef CRITCL_TRACER
-/* Tracing active. Macros expand to content.
+/* Tracing is active. All macros are properly defined.
  */
+#define TRACE_THREAD_EXIT TRACE ("THREAD EXIT %s", "(void)") ; TRACE_POP ; critcl_trace_thread_end() ; TCL_THREAD_CREATE_RETURN
+
 #define TRACE_PUSH_SCOPE(string) critcl_trace_push (string)
 #define TRACE_PUSH_FUNC          TRACE_PUSH_SCOPE (__func__)
 #define TRACE_POP                critcl_trace_pop()
@@ -110,7 +119,8 @@
 #define TRACE_TAG_ADD(tag, format, ...) critcl_trace_printf (TRACE_TAG_VAR (tag), format, __VA_ARGS__)
 #define TRACE_TAG_CLOSER(tag)           critcl_trace_closer (TRACE_TAG_VAR (tag))
 
-/* Highlevel (convenience) tracing.
+/*
+ * Highlevel (convenience) tracing support.
  */
 
 #define TRACE_FUNC(format, ...) TRACE_TAG_FUNC        (THIS_FILE, format, __VA_ARGS__)
@@ -129,16 +139,20 @@
 #define TRACE_DO(code)          TRACE_TAG_DO (THIS_FILE, code)
 #define TRACE_TAG_DO(tag, code) if (TRACE_TAG_VAR (tag)) { code ; }
 
-/* Support functions used in the macros.
+/*
+ * Declarations for the support functions used in the macros.
  */
 
-extern void critcl_trace_push      (const char* scope);
-extern void critcl_trace_pop       (void);
-extern void critcl_trace_header    (int on, int indent, const char *filename, int line);
-extern void critcl_trace_printf    (int on, const char *pat, ...);
-extern void critcl_trace_closer    (int on);
+extern void critcl_trace_push       (const char* scope);
+extern void critcl_trace_pop        (void);
+extern void critcl_trace_header     (int on, int indent, const char *filename, int line);
+extern void critcl_trace_printf     (int on, const char *pat, ...);
+extern void critcl_trace_closer     (int on);
+extern void critcl_trace_thread_end (void);
 
-/* Support functions used by the implementation of "critcl::cproc".
+/*
+ * Declarations for the support functions used by the
+ * implementation of "critcl::cproc".
  */
 
 extern void critcl_trace_cmd_args   (const char* scope, int oc, Tcl_Obj*const* ov);
