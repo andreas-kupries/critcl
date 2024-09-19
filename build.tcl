@@ -576,6 +576,9 @@ proc _install {args} {
 
 	puts "${prefix}Installed application:  $theapp"
 
+	# C packages - Need major Tcl version
+	set major [lindex [split [info patchlevel] .] 0]
+
 	# Special package: critcl_md5c
 	# Local MD5 hash implementation.
 
@@ -590,8 +593,8 @@ proc _install {args} {
 
 	set src     [file join $selfdir lib critcl-md5c md5c.tcl]
 	set version [version $src]
-	set name    critcl_md5c
-	set dst     [file join $dstl [pkgdirname $name $version]]
+	set name    critcl_md5c_tcl$major
+	set dst     [file join $dstl $name-$version]
 	set cmd     {}
 
 	lappend cmd exec >@ stdout 2>@ stderr
@@ -623,8 +626,8 @@ proc _install {args} {
 
 	set src     [file join $selfdir lib critcl-callback callback.tcl]
 	set version [version $src]
-	set name    critcl_callback
-	set dst     [file join $dstl $name$version]
+	set name    critcl_callback_tcl$major
+	set dst     [file join $dstl $name-$version]
 	set dsth    [file join $dsti $name]
 	set cmd     {}
 
