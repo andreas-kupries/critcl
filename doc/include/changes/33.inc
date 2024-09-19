@@ -1,4 +1,4 @@
-[section {Changes for version 3.2.1 (to come)}]
+[section {Changes for version 3.3}]
 [list_begin enumerated]
 
 [enum] As announced with 3.2:
@@ -48,5 +48,15 @@ Fixed various typos in the documentation.
        mode can be (re)activated by defining [const CRITCL_TRACE_NOTHREADS].
 
 [para] Package bumped to version 0.4.
+
+[enum] Reworked the installer to add [const tclX] markers to the installation directories of the
+       C-based support packages ([package critcl::callback], [package critcl::md5c]), where
+       [var X] is the major version number of the [syscmd tclsh] which ran critcl.
+
+[enum] In other words, one of [const tcl8] or [const tcl9].
+
+[enum] Broke lingering dependencies on the Tcllib packages [package cmdline] and [package fileutil].
+
+[para] There no circularities between Critcl and Tcllib any longer, simplifying installation.
 
 [list_end]

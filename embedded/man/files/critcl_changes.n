@@ -4,7 +4,7 @@
 '\" Copyright (c) Steve Landers
 '\" Copyright (c) 2011-2024 Andreas Kupries
 '\"
-.TH "critcl_changes" n 3\&.2\&.1 doc "C Runtime In Tcl (CriTcl)"
+.TH "critcl_changes" n 3\&.3 doc "C Runtime In Tcl (CriTcl)"
 .\" The -*- nroff -*- definitions below are for supplemental macros used
 .\" in Tcl/Tk manual entries.
 .\"
@@ -288,7 +288,7 @@ See the changes done in each release of \fICriTcl\fR, from the latest at the top
 beginning of the project\&.
 .PP
 The latest changes are found at the top\&.
-.SH "CHANGES FOR VERSION 3\&.2\&.1 (TO COME)"
+.SH "CHANGES FOR VERSION 3\&.3"
 .IP [1]
 As announced with 3\&.2:
 .RS
@@ -338,6 +338,16 @@ multi-threaded environment\&. This new mode is also default\&. The old single-th
 mode can be (re)activated by defining \fBCRITCL_TRACE_NOTHREADS\fR\&.
 .sp
 Package bumped to version 0\&.4\&.
+.IP [10]
+Reworked the installer to add \fBtclX\fR markers to the installation directories of the
+C-based support packages (\fBcritcl::callback\fR, \fBcritcl::md5c\fR), where
+\fBX\fR is the major version number of the \fBtclsh\fR which ran critcl\&.
+.IP [11]
+In other words, one of \fBtcl8\fR or \fBtcl9\fR\&.
+.IP [12]
+Broke lingering dependencies on the Tcllib packages \fBcmdline\fR and \fBfileutil\fR\&.
+.sp
+There no circularities between Critcl and Tcllib any longer, simplifying installation\&.
 .PP
 .SH "CHANGES FOR VERSION 3\&.2"
 .IP [1]

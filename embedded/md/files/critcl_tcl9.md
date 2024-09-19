@@ -4,7 +4,7 @@
 [//000000003]: # (Copyright &copy; Jean\-Claude Wippler)
 [//000000004]: # (Copyright &copy; Steve Landers)
 [//000000005]: # (Copyright &copy; 2011\-2024 Andreas Kupries)
-[//000000006]: # (critcl\_tcl9\(n\) 3\.2\.1 doc "C Runtime In Tcl \(CriTcl\)")
+[//000000006]: # (critcl\_tcl9\(n\) 3\.3 doc "C Runtime In Tcl \(CriTcl\)")
 
 <hr> [ <a href="../toc.md">Table Of Contents</a> &#124; <a
 href="../index.md">Keyword Index</a> ] <hr>
@@ -47,7 +47,7 @@ Tcl 8\.6 and 9\.
 
      The remainder of this document can be ignored\.
 
-  1. Use *[CriTcl](critcl\.md)* version 3\.2\.1 *if, and only if* Tcl 9
+  1. Use *[CriTcl](critcl\.md)* version 3\.3 *if, and only if* Tcl 9
      support is wanted\.
 
      With some work this will then also provide backward compatibility with Tcl
@@ -67,7 +67,7 @@ Tcl 8\.6 and 9\.
 
   1. __critcl::tcl__
 
-     Before *[CriTcl](critcl\.md)* 3\.2\.1 a single default \(__8\.4__\) was
+     Before *[CriTcl](critcl\.md)* 3\.3 a single default \(__8\.4__\) was
      used for the minimum Tcl version, to be overriden by an explicit
      __critcl::tcl__ in the package code\.
 
@@ -94,8 +94,8 @@ Tcl 8\.6 and 9\.
 
   1. Code checking
 
-     *[CriTcl](critcl\.md)* 3\.2\.1 comes with a very basic set of code
-     checks pointing out places where compatibility might or will be an issue\.
+     *[CriTcl](critcl\.md)* 3\.3 comes with a very basic set of code checks
+     pointing out places where compatibility might or will be an issue\.
 
      The implementation checks all inlined C code declared by
      __critcl::ccode__, __critcl::ccommand__, __critcl::cproc__ \(and

@@ -274,11 +274,11 @@ Database Class:	\\fB\\$3\\fR
 .SH NAME
 critcl::bitmap \- CriTcl - Wrap Support - Bitset en- and decoding
 .SH SYNOPSIS
-package require \fBTcl  8\&.6\fR
+package require \fBTcl 8\&.6\fR
 .sp
-package require \fBcritcl  ?3\&.2?\fR
+package require \fBcritcl ?3\&.2?\fR
 .sp
-package require \fBcritcl::bitmap  ?1\&.1?\fR
+package require \fBcritcl::bitmap ?1\&.1?\fR
 .sp
 \fB::critcl::bitmap::def\fR \fIname\fR \fIdefinition\fR ?\fIexclusions\fR?
 .sp

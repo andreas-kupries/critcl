@@ -39,7 +39,7 @@
 
 /*
  * - - -- --- ----- -------- ------------- ---------------------
- * Critcl (3.2.1+) emits the command creation API using Tcl_Size by default.
+ * Critcl (3.3+) emits the command creation API using Tcl_Size by default.
  * Map this to the older int-based API when compiling against Tcl 8.x or older.
  *
  * Further map use of `Tcl_GetBytesFromObj` to the old `Tcl_GetByteArrayFromObj`.

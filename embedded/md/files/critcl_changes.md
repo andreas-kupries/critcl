@@ -4,7 +4,7 @@
 [//000000003]: # (Copyright &copy; Jean\-Claude Wippler)
 [//000000004]: # (Copyright &copy; Steve Landers)
 [//000000005]: # (Copyright &copy; 2011\-2024 Andreas Kupries)
-[//000000006]: # (critcl\_changes\(n\) 3\.2\.1 doc "C Runtime In Tcl \(CriTcl\)")
+[//000000006]: # (critcl\_changes\(n\) 3\.3 doc "C Runtime In Tcl \(CriTcl\)")
 
 <hr> [ <a href="../toc.md">Table Of Contents</a> &#124; <a
 href="../index.md">Keyword Index</a> ] <hr>
@@ -19,7 +19,7 @@ critcl\_changes \- CriTcl Releases & Changes
 
   - [Description](#section1)
 
-  - [Changes for version 3\.2\.1 \(to come\)](#section2)
+  - [Changes for version 3\.3](#section2)
 
   - [Changes for version 3\.2](#section3)
 
@@ -109,7 +109,7 @@ to the beginning of the project\.
 
 The latest changes are found at the top\.
 
-# <a name='section2'></a>Changes for version 3\.2\.1 \(to come\)
+# <a name='section2'></a>Changes for version 3\.3
 
   1. As announced with 3\.2:
 
@@ -158,6 +158,20 @@ The latest changes are found at the top\.
      __CRITCL\_TRACE\_NOTHREADS__\.
 
      Package bumped to version 0\.4\.
+
+  1. Reworked the installer to add __tclX__ markers to the installation
+     directories of the C\-based support packages
+     \(__[critcl::callback](critcl\_callback\.md)__, __critcl::md5c__\),
+     where __X__ is the major version number of the __tclsh__ which ran
+     critcl\.
+
+  1. In other words, one of __tcl8__ or __tcl9__\.
+
+  1. Broke lingering dependencies on the Tcllib packages __cmdline__ and
+     __fileutil__\.
+
+     There no circularities between Critcl and Tcllib any longer, simplifying
+     installation\.
 
 # <a name='section3'></a>Changes for version 3\.2
 

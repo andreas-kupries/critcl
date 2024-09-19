@@ -274,11 +274,11 @@ Database Class:	\\fB\\$3\\fR
 .SH NAME
 critcl::class \- CriTcl - Code Gen - C Classes
 .SH SYNOPSIS
-package require \fBTcl  8\&.6\fR
+package require \fBTcl 8\&.6\fR
 .sp
-package require \fBcritcl  ?3\&.2?\fR
+package require \fBcritcl ?3\&.2?\fR
 .sp
-package require \fBcritcl::class  ?1\&.1?\fR
+package require \fBcritcl::class ?1\&.1?\fR
 .sp
 \fB::critcl::class::define\fR \fIname\fR \fIscript\fR
 .sp

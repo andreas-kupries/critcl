@@ -274,11 +274,11 @@ Database Class:	\\fB\\$3\\fR
 .SH NAME
 critcl::literals \- CriTcl - Code Gen - Constant string pools
 .SH SYNOPSIS
-package require \fBTcl  8\&.6\fR
+package require \fBTcl 8\&.6\fR
 .sp
-package require \fBcritcl  ?3\&.2?\fR
+package require \fBcritcl ?3\&.2?\fR
 .sp
-package require \fBcritcl::literals  ?1\&.4?\fR
+package require \fBcritcl::literals ?1\&.4?\fR
 .sp
 \fB::critcl::literals::def\fR \fIname\fR \fIdefinition\fR ?\fImode\fR?
 .sp

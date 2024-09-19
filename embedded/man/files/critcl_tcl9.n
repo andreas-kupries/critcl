@@ -4,7 +4,7 @@
 '\" Copyright (c) Steve Landers
 '\" Copyright (c) 2011-2024 Andreas Kupries
 '\"
-.TH "critcl_tcl9" n 3\&.2\&.1 doc "C Runtime In Tcl (CriTcl)"
+.TH "critcl_tcl9" n 3\&.3 doc "C Runtime In Tcl (CriTcl)"
 .\" The -*- nroff -*- definitions below are for supplemental macros used
 .\" in Tcl/Tk manual entries.
 .\"
@@ -288,7 +288,7 @@ are the only supported runtimes, then just keep using \fICriTcl\fR \fB3\&.2\fR\&
 .sp
 The remainder of this document can be ignored\&.
 .IP [2]
-Use \fICriTcl\fR version 3\&.2\&.1 \fIif, and only if\fR
+Use \fICriTcl\fR version 3\&.3 \fIif, and only if\fR
 Tcl 9 support is wanted\&.
 .sp
 With some work this will then also provide backward compatibility with Tcl 8\&.6\&.
@@ -305,7 +305,7 @@ The following notes assume that this compatibility layer is in place\&.
 .IP [4]
 \fBcritcl::tcl\fR
 .sp
-Before \fICriTcl\fR 3\&.2\&.1 a single default (\fB8\&.4\fR) was used for
+Before \fICriTcl\fR 3\&.3 a single default (\fB8\&.4\fR) was used for
 the minimum Tcl version, to be overriden by an explicit \fBcritcl::tcl\fR in the
 package code\&.
 .sp
@@ -332,7 +332,7 @@ and using the proper \fBtclsh\fR version to run \fICriTcl\fR with\&.
 .IP [5]
 Code checking
 .sp
-\fICriTcl\fR 3\&.2\&.1 comes with a very basic set of code checks pointing
+\fICriTcl\fR 3\&.3 comes with a very basic set of code checks pointing
 out places where compatibility might or will be an issue\&.
 .sp
 The implementation checks all inlined C code declared by \fBcritcl::ccode\fR,

@@ -274,11 +274,11 @@ Database Class:	\\fB\\$3\\fR
 .SH NAME
 critcl::callback \- CriTcl - C-level Callback Utilities
 .SH SYNOPSIS
-package require \fBTcl  8\&.6\fR
+package require \fBTcl 8\&.6\fR
 .sp
-package require \fBcritcl  ?3\&.2?\fR
+package require \fBcritcl ?3\&.2?\fR
 .sp
-package require \fBcritcl::callback  ?1\&.1?\fR
+package require \fBcritcl::callback ?1\&.1?\fR
 .sp
 \fBcritcl_callback_p\fR \fBcritcl_callback_new\fR \fIinterp\fR \fIobjc\fR \fIobjv\fR \fInargs\fR
 .sp

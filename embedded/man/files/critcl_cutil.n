@@ -274,11 +274,11 @@ Database Class:	\\fB\\$3\\fR
 .SH NAME
 critcl::cutil \- CriTcl - C-level Utilities
 .SH SYNOPSIS
-package require \fBTcl  8\&.6\fR
+package require \fBTcl 8\&.6\fR
 .sp
-package require \fBcritcl  ?3\&.2?\fR
+package require \fBcritcl ?3\&.2?\fR
 .sp
-package require \fBcritcl::cutil  ?0\&.3?\fR
+package require \fBcritcl::cutil ?0\&.3?\fR
 .sp
 \fB::critcl::cutil::alloc\fR
 .sp

@@ -4,7 +4,7 @@
 [//000000003]: # (Copyright &copy; Jean\-Claude Wippler)
 [//000000004]: # (Copyright &copy; Steve Landers)
 [//000000005]: # (Copyright &copy; 2011\-2024 Andreas Kupries)
-[//000000006]: # (critcl\_cproc\_types\(n\) 3\.2\.1 doc "C Runtime In Tcl \(CriTcl\)")
+[//000000006]: # (critcl\_cproc\_types\(n\) 3\.3 doc "C Runtime In Tcl \(CriTcl\)")
 
 <hr> [ <a href="../toc.md">Table Of Contents</a> &#124; <a
 href="../index.md">Keyword Index</a> ] <hr>
@@ -54,7 +54,7 @@ critcl\_cproc\_types \- CriTcl cproc Type Reference
 # <a name='synopsis'></a>SYNOPSIS
 
 package require Tcl 8\.6  
-package require critcl ?3\.2\.1?  
+package require critcl ?3\.3?  
 
 [__::critcl::has\-resulttype__ *name*](#1)  
 [__::critcl::resulttype__ *name* *body* ?*ctype*?](#2)  
