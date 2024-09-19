@@ -927,7 +927,7 @@ proc ::critcl::app::PlaceShlib {} {
 proc ::critcl::app::ExportHeaders {} {
     set incdir [CreateIncludeDirectory]
 
-    foreach dir $v::headers {
+    foreach dir [lsort -dict -uniq $v::headers] {
 	set stem [file tail $dir]
 	set dst  [file join $incdir $stem]
 
