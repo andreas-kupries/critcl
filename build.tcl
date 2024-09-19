@@ -91,8 +91,7 @@ proc version {file} {
     return [lindex $provisions 0 3]
 }
 proc tmpdir {} {
-    package require fileutil
-    set tmpraw [fileutil::tempfile critcl.]
+    set tmpraw "critcl.[clock clicks]"
     set tmpdir $tmpraw.[pid]
     file delete -force $tmpdir
     file mkdir $tmpdir
@@ -269,6 +268,13 @@ proc query {q c} {
 proc thisexe {} {
     return [info nameofexecutable]
 }
+proc cat {path} {
+    # Easier to write our own copy than requiring fileutil and then using fileutil::cat.
+    set fd   [open $path r]
+    set data [read $fd]
+    close $fd
+    return $data
+}
 proc Hsynopsis {} { return "\n\tGenerate a synopsis of procs and builtin types" }
 proc _synopsis {} {
     puts Public:
@@ -433,7 +439,7 @@ proc _release {} {
     #file copy -force [file join $tmpdir critcl31.kit] [file join download critcl31.kit]
     #file copy -force [file join $tmpdir critcl31.exe] [file join download critcl31.exe]
 
-    set index   [fileutil::cat index.html]
+    set index   [cat index.html]
     set pattern   "\\\[commit .*\\\] \\(v\[^)\]*\\)<!-- current"
     set replacement "\[commit $commit\] (v$version)<!-- current"
     regsub $pattern $index $replacement index

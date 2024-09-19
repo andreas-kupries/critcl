@@ -5637,8 +5637,7 @@ proc ::critcl::Copy {src dst} {
 }
 
 proc ::critcl::Cat {path} {
-    # Easier to write our own copy than requiring fileutil and then
-    # using fileutil::cat.
+    # Easier to write our own copy than requiring fileutil and then using fileutil::cat.
 
     set fd [open $path r]
     set data [read $fd]

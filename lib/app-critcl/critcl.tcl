@@ -23,7 +23,6 @@
 
 package require Tcl 8.6 9
 package provide critcl::app [package require critcl]
-package require cmdline
 
 # It is expected here that critcl already imported platform, or an
 # equivalent package, i.e. the critcl::platform fallback. No need to
@@ -213,7 +212,7 @@ proc ::critcl::app::Cmdline {argv} {
 
     # Rationalized application name. Direct user is the intercepted
     # '::critcl::error' command.
-    set ::argv0 [cmdline::getArgv0]
+    set ::argv0 [file rootname [file tail $::argv0]]
 
     # Semi-global application configuration.
     set v::verbose  0      ; # Default, no logging.
@@ -249,7 +248,7 @@ proc ::critcl::app::Cmdline {argv} {
 
     # Process the command line...
 
-    while {[set result [cmdline::getopt argv $options opt arg]] != 0} {
+    while {[set result [Getopt argv $options opt arg]] != 0} {
 	if {$result == -1} {
 	    switch -glob -- $opt {
 		with-* {
@@ -1787,6 +1786,90 @@ proc ::critcl::app::LocateAutoconf {iswin} {
     }
 
     return $ac
+}
+
+
+# # ## ### ##### ######## ############# #####################
+## inline the needed parts of tcllib's cmdline
+
+proc ::critcl::app::Getopt {argvVar optstring optVar valVar} {
+    upvar 1 $argvVar argsList
+    upvar 1 $optVar option
+    upvar 1 $valVar value
+
+    set result [GetKnownOpt argsList $optstring option value]
+
+    if {$result < 0} {
+        # Collapse unknown-option error into any-other-error result.
+        set result -1
+    }
+    return $result
+}
+
+proc ::critcl::app::GetKnownOpt {argvVar optstring optVar valVar} {
+    upvar 1 $argvVar argsList
+    upvar 1 $optVar  option
+    upvar 1 $valVar  value
+
+    # default settings for a normal return
+    set value ""
+    set option ""
+    set result 0
+
+    # check if we're past the end of the args list
+    if {[llength $argsList] != 0} {
+
+	# if we got -- or an option that doesn't begin with -, return (skipping
+	# the --).  otherwise process the option arg.
+	switch -glob -- [set arg [lindex $argsList 0]] {
+	    "--" {
+		set argsList [lrange $argsList 1 end]
+	    }
+	    "--*" -
+	    "-*" {
+		set option [string range $arg 1 end]
+		if {[string equal [string range $option 0 0] "-"]} {
+		    set option [string range $arg 2 end]
+		}
+
+		# support for format: [-]-option=value
+		set idx [string first "=" $option 1]
+		if {$idx != -1} {
+		    set _val   [string range $option [expr {$idx+1}] end]
+		    set option [string range $option 0   [expr {$idx-1}]]
+		}
+
+		if {[lsearch -exact $optstring $option] != -1} {
+		    # Booleans are set to 1 when present
+		    set value 1
+		    set result 1
+		    set argsList [lrange $argsList 1 end]
+		} elseif {[lsearch -exact $optstring "$option.arg"] != -1} {
+		    set result 1
+		    set argsList [lrange $argsList 1 end]
+
+		    if {[info exists _val]} {
+			set value $_val
+		    } elseif {[llength $argsList]} {
+			set value [lindex $argsList 0]
+			set argsList [lrange $argsList 1 end]
+		    } else {
+			set value "Option \"$option\" requires an argument"
+			set result -2
+		    }
+		} else {
+		    # Unknown option.
+		    set value "Illegal option \"-$option\""
+		    set result -1
+		}
+	    }
+	    default {
+		# Skip ahead
+	    }
+	}
+    }
+
+    return $result
 }
 
 # # ## ### ##### ######## ############# #####################
