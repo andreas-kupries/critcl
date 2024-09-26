@@ -268,6 +268,13 @@ proc query {q c} {
 proc thisexe {} {
     return [info nameofexecutable]
 }
+proc wfile {path data} {
+    # Easier to write our own copy than requiring fileutil and then using fileutil::writeFile.
+    set fd [open $path w]
+    puts -nonewline $fd $data
+    close $fd
+    return
+}
 proc cat {path} {
     # Easier to write our own copy than requiring fileutil and then using fileutil::cat.
     set fd   [open $path r]
@@ -443,7 +450,7 @@ proc _release {} {
     set pattern   "\\\[commit .*\\\] \\(v\[^)\]*\\)<!-- current"
     set replacement "\[commit $commit\] (v$version)<!-- current"
     regsub $pattern $index $replacement index
-    fileutil::writeFile index.html $index
+    wfile index.html $index
 
     # # ## ### ##### ######## #############
     reminder $commit
