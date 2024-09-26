@@ -126,8 +126,8 @@ static @classtype@_mgr
 static @instancetype@
 @stem@_Constructor (Tcl_Interp* interp,
 		    @classtype@ class,
-		    int            objcskip,
-		    int            objc,
+		    Tcl_Size       objcskip,
+		    Tcl_Size       objc,
 		    Tcl_Obj*const* objv)
 {
 @ivardecl@;
@@ -176,7 +176,7 @@ static void
 static int
 @stem@_InstanceCommand (ClientData      clientData,
 			Tcl_Interp*     interp,
-			int             objc,
+			Tcl_Size        objc,
 			Tcl_Obj* CONST* objv)
 {
     @instancetype@ instance = (@instancetype@) clientData;
@@ -252,7 +252,7 @@ static CONST char*
 int
 @stem@_ClassCommand (ClientData      clientData,
 		     Tcl_Interp*     interp,
-		     int             objc,
+		     Tcl_Size        objc,
 		     Tcl_Obj* CONST* objv)
 {
     @classtype@_mgr classmgr;
@@ -296,8 +296,8 @@ static int
 @stem@_NewInstance (const char*     name,
 		    @classtype@_mgr classmgr,
 		    Tcl_Interp*     interp,
-		    int             objcskip,
-		    int             objc,
+		    Tcl_Size        objcskip,
+		    Tcl_Size        objc,
 		    Tcl_Obj* CONST* objv)
 {
     @instancetype@ instance;
@@ -355,10 +355,10 @@ static int
 	return TCL_ERROR;
     }
 
-    cmd = Tcl_CreateObjCommand (interp, Tcl_GetString (fqn),
-				@stem@_InstanceCommand,
-				(ClientData) instance,
-				@stem@_Destructor);
+    cmd = Tcl_CreateObjCommand2 (interp, Tcl_GetString (fqn),
+				 @stem@_InstanceCommand,
+				 (ClientData) instance,
+				 @stem@_Destructor);
 
     @stem@_PostConstructor (interp, instance, cmd, fqn);
 
@@ -370,7 +370,7 @@ static int
 static int
 @stem@_CM_createCmd (@classtype@_mgr classmgr,
 		     Tcl_Interp*     interp,
-		     int             objc,
+		     Tcl_Size        objc,
 		     Tcl_Obj* CONST* objv)
 {
     /* <class> create <name> ... */
@@ -392,7 +392,7 @@ static int
 static int
 @stem@_CM_newCmd (@classtype@_mgr classmgr,
 		  Tcl_Interp*     interp,
-		  int             objc,
+		  Tcl_Size        objc,
 		  Tcl_Obj* CONST* objv)
 {
     /* <class> new ... */
@@ -421,7 +421,7 @@ typedef struct @capiprefix@* @capiprefix@_p;
 
 @capiprefix@_p
 @capiprefix@_new (Tcl_Interp*	  interp,
-		  int		  objc,
+		  Tcl_Size	  objc,
 		  Tcl_Obj* CONST* objv)
 {
     @classtype@_mgr classmgr = @stem@_Class (interp);
@@ -450,7 +450,7 @@ void
 int
 @capiprefix@_invoke (@capiprefix@_p instance,
 		     Tcl_Interp*     interp,
-		     int	     objc,
+		     Tcl_Size	     objc,
 		     Tcl_Obj* CONST* objv)
 {
     Tcl_Obj** v = (Tcl_Obj**) ckalloc ((objc+1)*sizeof (Tcl_Obj*));

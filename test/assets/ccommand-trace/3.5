@@ -1,12 +1,12 @@
 *#define ns__command0 "::command"
 static int
-tcl__command0_actual(ClientData clientdata, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv\[\])
+tcl__command0_actual(ClientData clientdata, Tcl_Interp *interp, Tcl_Size objc, Tcl_Obj *CONST objv\[\])
 {
 return TCL_OK;
 }
 
 static int
-tcl__command0(ClientData clientdata, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv\[\])
+tcl__command0(ClientData clientdata, Tcl_Interp *interp, Tcl_Size objc, Tcl_Obj *CONST objv\[\])
 {
   int _rv;
   critcl_trace_cmd_args (ns__command0, objc, objv);
@@ -15,5 +15,5 @@ tcl__command0(ClientData clientdata, Tcl_Interp *interp, int objc, Tcl_Obj *CONS
 }
 *
 Fake_Init*
-*Tcl_CreateObjCommand(interp, ns__command0, tcl__command0, ABC, NULL);
+*Tcl_CreateObjCommand2(interp, ns__command0, tcl__command0, ABC, NULL);
 *

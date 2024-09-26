@@ -1,6 +1,6 @@
 '\"
 '\" Generated from file 'critcl_literals\&.man' by tcllib/doctools with format 'nroff'
-'\" Copyright (c) 2011-2018 Andreas Kupries
+'\" Copyright (c) 2011-2024 Andreas Kupries
 '\"
 .TH "critcl::literals" n 1\&.4 doc "C Runtime In Tcl (CriTcl)"
 .\" The -*- nroff -*- definitions below are for supplemental macros used
@@ -274,11 +274,11 @@ Database Class:	\\fB\\$3\\fR
 .SH NAME
 critcl::literals \- CriTcl - Code Gen - Constant string pools
 .SH SYNOPSIS
-package require \fBTcl  8\&.6\fR
+package require \fBTcl 8\&.6\fR
 .sp
-package require \fBcritcl  ?3\&.2?\fR
+package require \fBcritcl ?3\&.2?\fR
 .sp
-package require \fBcritcl::literals  ?1\&.4?\fR
+package require \fBcritcl::literals ?1\&.4?\fR
 .sp
 \fB::critcl::literals::def\fR \fIname\fR \fIdefinition\fR ?\fImode\fR?
 .sp
@@ -473,6 +473,6 @@ C code, Embedded C Code, Tcl Interp Association, code generator, compile & run, 
 Glueing/Embedded C code
 .SH COPYRIGHT
 .nf
-Copyright (c) 2011-2018 Andreas Kupries
+Copyright (c) 2011-2024 Andreas Kupries
 
 .fi

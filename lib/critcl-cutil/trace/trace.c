@@ -1,10 +1,11 @@
 /*
- * Copyright (c) 2017-2018 Andreas Kupries <andreas_kupries@users.sourceforge.net>
+ * Copyright (c) 2017-2024 Andreas Kupries <andreas_kupries@users.sourceforge.net>
  * = = == === ===== ======== ============= =====================
  */
 
 #include <critcl_alloc.h>
 #include <string.h>
+#include <stdarg.h>
 
 /*
  * = = == === ===== ======== ============= =====================
@@ -56,6 +57,12 @@ static char         msg [MSGMAX];
 #define MSG    msg
 #define CHAN   stdout
 
+/* Thread end means nothing
+ */
+
+void
+critcl_trace_thread_end (void) {}
+
 #else
 
 typedef struct ThreadSpecificData {
@@ -68,7 +75,7 @@ typedef struct ThreadSpecificData {
 
 /* copied from tclInt.h */
 #define TCL_TSD_INIT(keyPtr) \
-  (ThreadSpecificData *)Tcl_GetThreadData((keyPtr), sizeof(ThreadSpecificData))
+    (ThreadSpecificData *)Tcl_GetThreadData((keyPtr), sizeof(ThreadSpecificData)) /* OK tcl9 */
 
 static Tcl_ThreadDataKey ctraceDataKey;
 
@@ -84,9 +91,31 @@ static FILE* chan (void) {
     SETUP;
     if (!tsdPtr->chan) {
 	sprintf (MSG, "%p.trace", Tcl_GetCurrentThread());
-	tsdPtr->chan = fopen (MSG, "w");
+	tsdPtr->chan = fopen (MSG, "a");
+	if (!tsdPtr->chan) {
+	    Tcl_Panic ("out of files to open: %s", MSG);
+	}
     }
     return tsdPtr->chan;
+}
+
+/* Thread end marker, use it to close the trace file for the ended thread.
+ * This is needed to keep the number of open files under control as traced
+ * threads are spawned and end. Without it we will run out of file slots
+ * over time and break.
+ *
+ * Example: Benchmarks running a traced command with threads a few thousand
+ * times.
+ */
+
+void
+critcl_trace_thread_end (void)
+{
+    SETUP;
+    if (!tsdPtr->chan) return;
+    fclose (tsdPtr->chan);
+    tsdPtr->chan = NULL;
+    return;
 }
 
 #endif

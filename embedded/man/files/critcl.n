@@ -2,9 +2,9 @@
 '\" Generated from file 'critcl\&.man' by tcllib/doctools with format 'nroff'
 '\" Copyright (c) Jean-Claude Wippler
 '\" Copyright (c) Steve Landers
-'\" Copyright (c) 2011-2022 Andreas Kupries
+'\" Copyright (c) 2011-2024 Andreas Kupries
 '\"
-.TH "critcl" n 3\&.2 doc "C Runtime In Tcl (CriTcl)"
+.TH "critcl" n 3\&.3 doc "C Runtime In Tcl (CriTcl)"
 .\" The -*- nroff -*- definitions below are for supplemental macros used
 .\" in Tcl/Tk manual entries.
 .\"
@@ -347,6 +347,8 @@ This section is currently empty\&.
 \fIHow To Install CriTcl\fR\&.
 .IP [3]
 \fIHow To Use CriTcl\fR - A light introduction through examples\&.
+.IP [4]
+\fINEW\fR: \fIHow To Adapt Critcl Packages for Tcl 9\fR\&.
 .PP
 .SH "REFERENCES - THEORETICAL WORK - TO GAIN KNOWLEGDE"
 .IP [1]
@@ -399,6 +401,6 @@ Glueing/Embedded C code
 .nf
 Copyright (c) Jean-Claude Wippler
 Copyright (c) Steve Landers
-Copyright (c) 2011-2022 Andreas Kupries
+Copyright (c) 2011-2024 Andreas Kupries
 
 .fi

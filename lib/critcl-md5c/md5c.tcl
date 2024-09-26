@@ -45,10 +45,10 @@ critcl::ccode {
 	MD5Final(buf, &dup);
 
 	/* convert via a byte array to properly handle null bytes */
-	temp = Tcl_NewByteArrayObj(buf, sizeof buf);
+	temp = Tcl_NewByteArrayObj(buf, sizeof (buf)); /* OK tcl9 */
 	Tcl_IncrRefCount(temp);
 
-	str = Tcl_GetStringFromObj(temp, &obj->length);
+	str = Tcl_GetStringFromObj(temp, &obj->length); /* OK tcl9 */
 	obj->bytes = Tcl_Alloc(obj->length + 1);
 	memcpy(obj->bytes, str, obj->length + 1);
 
@@ -71,11 +71,11 @@ critcl::ccode {
 critcl::ccommand md5c {dummy ip objc objv} {
     MD5_CTX *mp;
     unsigned char *data;
-    int size;
+    Tcl_Size size;
     Tcl_Obj *obj;
 
     if (objc < 2 || objc > 3) {
-	Tcl_WrongNumArgs(ip, 1, objv, "data ?context?");
+	Tcl_WrongNumArgs(ip, 1, objv, "data ?context?"); /* OK tcl9 */
 	return TCL_ERROR;
     }
 
@@ -97,8 +97,9 @@ critcl::ccommand md5c {dummy ip objc objv} {
     }
 
     mp = (MD5_CTX *) obj->internalRep.otherValuePtr;
-    data = Tcl_GetByteArrayFromObj(objv[1], &size);
 
+    data = Tcl_GetBytesFromObj(ip, objv[1], &size); /* OK tcl9 */
+    if (data == NULL) return TCL_ERROR;
 
     MD5Update(mp, data, size);
     Tcl_SetObjResult(ip, obj);

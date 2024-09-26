@@ -6,7 +6,7 @@
 [comment {--- Copyright, Categorization, Keywords ---}]
 [copyright {Jean-Claude Wippler}]
 [copyright {Steve Landers}]
-[copyright {2011-2022 Andreas Kupries}]
+[copyright {2011-2024 Andreas Kupries}]
 [moddesc   {C Runtime In Tcl (CriTcl)}]
 [category  {Glueing/Embedded C code}]
 [keywords  {C code} {Embedded C Code}]

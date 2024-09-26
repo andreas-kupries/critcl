@@ -4,7 +4,7 @@
 
 source [file join [file dirname [info script]] support testutilities.tcl]
 
-testsNeedTcl     8.6
+testsNeedTcl     8.6 9
 testsNeedTcltest 2
 
 support {
@@ -179,7 +179,7 @@ test stubs-writer-2.5 {text, array-flag} -setup {
         library tcl
         interface tcl
 	declare 0 {
-	    Tcl_Obj *Tcl_ConcatObj(int objc, Tcl_Obj *const objv[])
+	    Tcl_Obj *Tcl_ConcatObj(Tcl_Size objc, Tcl_Obj *const objv[])
 	}
     }
     stubs::writer::gen $T
@@ -196,7 +196,7 @@ library   tcl
 interface tcl
 
 declare 0 generic {
-    Tcl_Obj * Tcl_ConcatObj (int objc, Tcl_Obj *const objv[])
+    Tcl_Obj * Tcl_ConcatObj (Tcl_Size objc, Tcl_Obj *const objv[])
 }
 
 # END tcl}

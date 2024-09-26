@@ -91,8 +91,8 @@ proc ::critcl::runtime::precopy {dll} {
 	set dir $env(TEMP)
     } elseif {[info exists env(TMP)]} {
 	set dir $env(TMP)
-    } elseif {[info exists ~]} {
-	set dir ~
+    } elseif {[file exists $env(HOME)]} {
+	set dir $env(HOME)
     } else {
 	set dir .
     }

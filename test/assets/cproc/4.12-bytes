@@ -7,7 +7,7 @@
 	typedef struct critcl_bytes {
 	    Tcl_Obj*             o;
 	    const unsigned char* s;
-	    int                len;
+	    Tcl_Size             len;
 	} critcl_bytes;
     
 #endif /* CRITCL_bytes _________ */
@@ -18,7 +18,7 @@ static void c__aproc0(critcl_bytes x)
 }
 
 static int
-tcl__aproc0(ClientData cd, Tcl_Interp *interp, int oc, Tcl_Obj *CONST ov[])
+tcl__aproc0(ClientData cd, Tcl_Interp *interp, Tcl_Size oc, Tcl_Obj *CONST ov[])
 {
   critcl_bytes _x;
 
@@ -30,7 +30,8 @@ tcl__aproc0(ClientData cd, Tcl_Interp *interp, int oc, Tcl_Obj *CONST ov[])
   /* (bytes x) - - -- --- ----- -------- */
 	{
 	/* Raw binary string _with_ length information */
-	_x.s = Tcl_GetByteArrayFromObj(ov[1], &(_x.len));
+	_x.s = Tcl_GetBytesFromObj(interp, ov[1], &(_x.len));
+	if (_x.s == NULL) return TCL_ERROR;
 	_x.o = ov[1]; }
 
   /* Call - - -- --- ----- -------- */

@@ -5,8 +5,8 @@
 #     - Fortran functions are not covered yet (void __stdcall ...)
 #
 
-package require Tcl 8.6
-package provide wrapfort 0.2
+package require Tcl 8.6 9
+package provide wrapfort 0.3
 
 # Wrapfort --
 #     Namespace which holds all relevant information and procedures
@@ -208,7 +208,7 @@ proc ::Wrapfort::ExternalInterfaces {arglist} {
 proc ::Wrapfort::WriteTclCreateCommand {cmdname routine} {
 
     Output2 [string map [list CMDNAME $cmdname ROUTINE $routine] \
-        "    Tcl_CreateObjCommand( interp, \"CMDNAME\", c__ROUTINE, NULL, NULL );"]
+        "    Tcl_CreateObjCommand2( interp, \"CMDNAME\", c__ROUTINE, NULL, NULL );"]
 }
 
 

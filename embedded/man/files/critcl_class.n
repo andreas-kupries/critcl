@@ -1,6 +1,6 @@
 '\"
 '\" Generated from file 'critcl_class\&.man' by tcllib/doctools with format 'nroff'
-'\" Copyright (c) 2011-2018 Andreas Kupries
+'\" Copyright (c) 2011-2024 Andreas Kupries
 '\"
 .TH "critcl::class" n 1\&.1 doc "C Runtime In Tcl (CriTcl)"
 .\" The -*- nroff -*- definitions below are for supplemental macros used
@@ -274,11 +274,11 @@ Database Class:	\\fB\\$3\\fR
 .SH NAME
 critcl::class \- CriTcl - Code Gen - C Classes
 .SH SYNOPSIS
-package require \fBTcl  8\&.6\fR
+package require \fBTcl 8\&.6\fR
 .sp
-package require \fBcritcl  ?3\&.2?\fR
+package require \fBcritcl ?3\&.2?\fR
 .sp
-package require \fBcritcl::class  ?1\&.1?\fR
+package require \fBcritcl::class ?1\&.1?\fR
 .sp
 \fB::critcl::class::define\fR \fIname\fR \fIscript\fR
 .sp
@@ -973,6 +973,6 @@ C class, C code, C instance, C object, Embedded C Code, code generator, compile 
 Glueing/Embedded C code
 .SH COPYRIGHT
 .nf
-Copyright (c) 2011-2018 Andreas Kupries
+Copyright (c) 2011-2024 Andreas Kupries
 
 .fi

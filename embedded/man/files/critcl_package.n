@@ -2,9 +2,9 @@
 '\" Generated from file 'critcl_package\&.man' by tcllib/doctools with format 'nroff'
 '\" Copyright (c) Jean-Claude Wippler
 '\" Copyright (c) Steve Landers
-'\" Copyright (c) 2011-2022 Andreas Kupries
+'\" Copyright (c) 2011-2024 Andreas Kupries
 '\"
-.TH "critcl_package" n 3\&.2 doc "C Runtime In Tcl (CriTcl)"
+.TH "critcl_package" n 3\&.3 doc "C Runtime In Tcl (CriTcl)"
 .\" The -*- nroff -*- definitions below are for supplemental macros used
 .\" in Tcl/Tk manual entries.
 .\"
@@ -276,13 +276,13 @@ Database Class:	\\fB\\$3\\fR
 .SH NAME
 critcl_package \- CriTcl Package Reference
 .SH SYNOPSIS
-package require \fBTcl  8\&.6\fR
+package require \fBTcl 8\&.6\fR
 .sp
-package require \fBcritcl  ?3\&.2?\fR
+package require \fBcritcl ?3\&.3?\fR
 .sp
-package require \fBplatform  ?1\&.0\&.2?\fR
+package require \fBplatform ?1\&.0\&.2?\fR
 .sp
-package require \fBmd5  ?2?\fR
+package require \fBmd5 ?2?\fR
 .sp
 \fB::critcl::ccode\fR \fIfragment\fR
 .sp
@@ -2428,6 +2428,6 @@ Glueing/Embedded C code
 .nf
 Copyright (c) Jean-Claude Wippler
 Copyright (c) Steve Landers
-Copyright (c) 2011-2022 Andreas Kupries
+Copyright (c) 2011-2024 Andreas Kupries
 
 .fi

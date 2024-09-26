@@ -6,19 +6,19 @@
 #
 # Copyright (c) 2001-20?? Jean-Claude Wippler
 # Copyright (c) 2002-20?? Steve Landers
-# Copyright (c) 20??-2022 Andreas Kupries <andreas_kupries@users.sourceforge.net>
+# Copyright (c) 20??-2023 Andreas Kupries <andreas_kupries@users.sourceforge.net>
 
 # # ## ### ##### ######## ############# #####################
 # CriTcl Core.
 
-package provide critcl 3.2
+package provide critcl 3.3
 
 namespace eval ::critcl {}
 
 # # ## ### ##### ######## ############# #####################
 ## Requirements.
 
-package require Tcl 8.6 ; # Minimal supported Tcl runtime.
+package require Tcl 8.6 9 ; # Minimal supported Tcl runtime.
 if {[catch {
     package require platform 1.0.2 ; # Determine current platform.
 }]} {
@@ -64,28 +64,20 @@ proc ::critcl::md5_hex {s} {
 	return [format %032d [incr v::uuidcounter]]
     }
     package require critcl_md5c
-    binary scan [md5c $s] H* md; return $md
+    # As `s` is an arbitrary string of unknown origin we cannot assume
+    # that it contains byte data. And we definitely cannot assume that
+    # it only contains ASCII characters. For MD5 to operate correctly
+    # we have to convert the string into a proper series of bytes.
+    binary scan [md5c [encoding convertto utf-8 $s]] H* md; return $md
 }
 
 # # ## ### ##### ######## ############# #####################
 
-if {[package vsatisfies [package present Tcl] 8.5]} {
-    # 8.5+
-    proc ::critcl::lappendlist {lvar list} {
-	if {![llength $list]} return
-	upvar $lvar dest
-	lappend dest {*}$list
-	return
-    }
-} else {
-    # 8.4
-    proc ::critcl::lappendlist {lvar list} {
-	if {![llength $list]} return
-	upvar $lvar dest
-	set dest [eval [linsert $list 0 linsert $dest end]]
-	#set dest [concat $dest $list]
-	return
-    }
+proc ::critcl::lappendlist {lvar list} {
+    if {![llength $list]} return
+    upvar $lvar dest
+    lappend dest {*}$list
+    return
 }
 
 # # ## ### ##### ######## ############# #####################
@@ -170,9 +162,11 @@ proc ::critcl::CCodeCore {file text} {
 
     set block {}
     lassign [HeaderLines $text] leadoffset text
+    Transition9Check [at::Loc $leadoffset -3 $file] $text
     if {$v::options(lines)} {
 	append block [at::CPragma $leadoffset -3 $file]
     }
+
     append block $text \n
     dict update v::code($file) config c {
 	dict lappend c fragments $digest
@@ -250,7 +244,7 @@ proc ::critcl::ccommand {name anames args} {
 	if {$oc eq ""} { set oc objc }
 	if {$ov eq ""} { set ov objv }
 
-	set ca "(ClientData $cd, Tcl_Interp *$ip, int $oc, Tcl_Obj *CONST $ov\[])"
+	set ca "(ClientData $cd, Tcl_Interp *$ip, Tcl_Size $oc, Tcl_Obj *CONST $ov\[])"
 
 	if {$v::options(trace)} {
 	    # For ccommand tracing we will emit a shim after the implementation.
@@ -262,6 +256,7 @@ proc ::critcl::ccommand {name anames args} {
 
 	Emit   \{\n
 	lassign [HeaderLines $body] leadoffset body
+	Transition9Check [at::Loc $leadoffset -2 $file] $body
 	if {$v::options(lines)} {
 	    Emit [at::CPragma $leadoffset -2 $file]
 	}
@@ -407,7 +402,8 @@ proc ::critcl::MakeList {type ev} {
 	set new {
 	    int k;
 	    Tcl_Obj** el;
-	    if (Tcl_ListObjGetElements (interp, @@, &(@A.c), &el) != TCL_OK) return TCL_ERROR;
+	    if (Tcl_ListObjGetElements (interp, @@, /* OK tcl9 */
+			&(@A.c), &el) != TCL_OK) return TCL_ERROR;
 	    @A.o = @@;
 	}
     }
@@ -467,7 +463,7 @@ proc ::critcl::MakeList {type ev} {
 
 	typedef struct critcl_@nctype@ {
 	    Tcl_Obj* o; /* Original list object, for pass-through cases */
-	    int      c; /* Element count */
+	    Tcl_Size c; /* Element count */
 	    @type@*  v; /* Allocated array of the elements */
 	} critcl_@nctype@;
 
@@ -1349,6 +1345,7 @@ proc ::critcl::argtype {name conversion {ctype {}} {ctypeb {}}} {
 	set ctype      $actype($ctype)
     } else {
 	lassign [HeaderLines $conversion] leadoffset conversion
+	Transition9Check [at::Loc $leadoffset 0 [This]] $conversion
 	set conversion "\t\{\n[at::caller! $leadoffset]\t[string trim $conversion] \}"
     }
     if {$ctype eq {}} {
@@ -1431,6 +1428,7 @@ proc ::critcl::resulttype {name conversion {ctype {}}} {
 	set ctype      $rctype($ctype)
     } else {
 	lassign [HeaderLines $conversion] leadoffset conversion
+	Transition9Check [at::Loc $leadoffset 0 [This]] $conversion
 	set conversion [at::caller! $leadoffset]\t[string trimright $conversion]
     }
     if {$ctype eq {}} {
@@ -1561,6 +1559,13 @@ proc ::critcl::cproc {name adefs rtype {body "#"} args} {
 	Emit   "static [ResultCType $rtype] "
 	Emitln "${cname}([join $cargs {, }])"
 	Emit   \{\n
+
+	at::caller
+	at::incrt $name
+	at::incrt $adefs
+	at::incrt $rtype
+	Transition9Check [at::raw] $body
+
 	lassign [HeaderLines $body] leadoffset body
 	if {$v::options(lines)} {
 	    Emit [at::CPragma $leadoffset -2 $file]
@@ -1599,6 +1604,7 @@ proc ::critcl::CInitCore {file text edecls} {
     set initc {}
     set skip [Lines $text]
     lassign [HeaderLines $text] leadoffset text
+    Transition9Check [at::Loc $leadoffset -2 $file] $text
     if {$v::options(lines)} {
 	append initc [at::CPragma $leadoffset -2 $file]
     }
@@ -1606,6 +1612,7 @@ proc ::critcl::CInitCore {file text edecls} {
 
     set edec {}
     lassign [HeaderLines $edecls] leadoffset edecls
+    Transition9Check [at::Loc $leadoffset -2 $file] $edecls
     if {$v::options(lines)} {
 	incr leadoffset $skip
 	append edec [at::CPragma $leadoffset -2 $file]
@@ -1623,7 +1630,7 @@ proc ::critcl::CInitCore {file text edecls} {
 ## Public API to code origin handling.
 
 namespace eval ::critcl::at {
-    namespace export caller caller! here here! get get* incr incrt =
+    namespace export caller caller! here here! get get* raw raw* incr incrt =
     catch { namespace ensemble create }
 }
 
@@ -1670,6 +1677,16 @@ proc ::critcl::at::get {} {
     return $result
 }
 
+proc ::critcl::at::raw {} {
+    variable where
+    if {![info exists where]} {
+	return -code error "No location defined"
+    }
+    set result $where
+    set where {}
+    return $result
+}
+
 proc ::critcl::at::get* {} {
     variable where
     if {!$::critcl::v::options(lines)} {
@@ -1679,6 +1696,14 @@ proc ::critcl::at::get* {} {
 	return -code error "No location defined"
     }
     return [Format $where]
+}
+
+proc ::critcl::at::raw* {} {
+    variable where
+    if {![info exists where]} {
+	return -code error "No location defined"
+    }
+    return $where
 }
 
 proc ::critcl::at::= {file line} {
@@ -1971,6 +1996,10 @@ proc ::critcl::tcl {version} {
     HandleDeclAfterBuild
 
     msg "  (tcl $version)"
+
+    # When a minimum Tcl version is requested it can be assumed that the C code will work for that
+    # version. Doing compatibility checks of any kind is not needed.
+    config tcl9 0
 
     UUID.extend $file .mintcl $version
     dict set v::code($file) config mintcl $version
@@ -3135,6 +3164,7 @@ proc ::critcl::showallconfig {{ofd ""}} {
 }
 
 proc ::critcl::setconfig {targetconfig} {
+    global env
     set v::targetconfig   $targetconfig
 
     # Strip the compiler information from the configuration to get the
@@ -3168,14 +3198,14 @@ proc ::critcl::setconfig {targetconfig} {
 	    }
 	}
     }
-    if {[info exists ::env(CFLAGS)]} {
+    if {[info exists env(CFLAGS)]} {
 	variable c::compile
-	append   c::compile      " $::env(CFLAGS)"
+	append   c::compile      " $env(CFLAGS)"
     }
-    if {[info exists ::env(LDFLAGS)]} {
+    if {[info exists env(LDFLAGS)]} {
 	variable c::link
-	append   c::link         " $::env(LDFLAGS)"
-	append   c::link_preload " $::env(LDFLAGS)"
+	append   c::link         " $env(LDFLAGS)"
+	append   c::link_preload " $env(LDFLAGS)"
     }
     if {[string match $v::targetplatform $v::buildplatform]} {
 	# expand platform to match host if it contains wildcards
@@ -3199,7 +3229,7 @@ proc ::critcl::setconfig {targetconfig} {
     # current platform, and we can make a simple choice for the
     # directory.
 
-    cache [file join ~ .critcl [platform::identify]]
+    cache [file join $env(HOME) .critcl [platform::identify]]
 
     # Initialize Tcl variables based on the chosen tooling
     foreach idx [array names v::toolchain $v::targetplatform,*] {
@@ -3238,7 +3268,7 @@ proc ::critcl::getconfigvalue {var} {
 # C critcl::clean_cache
 # C critcl::clibraries
 # C critcl::cobjects
-# C critcl::config I, lines, force, keepsrc, combine
+# C critcl::config I, L, lines, force, keepsrc, combine, trace, tcl9, outdir
 # C critcl::debug
 # C critcl::error               | App overrides our implementation.
 # C critcl::getconfigvalue
@@ -3502,7 +3532,7 @@ proc ::critcl::c++command {tclname class constructors methods} {
     append comproc "        return TCL_ERROR;\n"
     append comproc "    \}\n"
 
-    append comproc "    Tcl_CreateObjCommand(ip, Tcl_GetString(objv\[1]), cmdproc_$tclname, (ClientData) $classptr, delproc_$tclname);\n"
+    append comproc "    Tcl_CreateObjCommand2(ip, Tcl_GetString(objv\[1]), cmdproc_$tclname, (ClientData) $classptr, delproc_$tclname);\n"
     append comproc "    return TCL_OK;\n"
     #
     #  Build the body of the c function called when the object is deleted
@@ -3515,7 +3545,7 @@ proc ::critcl::c++command {tclname class constructors methods} {
     #
     # Build the body of the function that processes the tcl commands for the class
     #
-    set cmdproc "int cmdproc_$tclname\(ClientData cd, Tcl_Interp* ip, int objc, Tcl_Obj *CONST objv\[]) \{\n"
+    set cmdproc "int cmdproc_$tclname\(ClientData cd, Tcl_Interp* ip, Tcl_Size objc, Tcl_Obj *CONST objv\[]) \{\n"
     append cmdproc "    int index;\n"
     append cmdproc "    $class* $classptr = ($class*) cd;\n"
 
@@ -3535,7 +3565,7 @@ proc ::critcl::c++command {tclname class constructors methods} {
 	lappend adefs $a
     }
     append cmdproc "    static const char* cmds\[]=\{\"[join $tnames {","}]\",NULL\};\n"
-    append cmdproc "    if (objc<2) \{\n"
+    append cmdproc "    if (objc < 2) \{\n"
     append cmdproc "       Tcl_WrongNumArgs(ip, 1, objv, \"expecting pathName option\");\n"
     append cmdproc "       return TCL_ERROR;\n"
     append cmdproc "    \}\n\n"
@@ -3569,7 +3599,7 @@ proc ::critcl::c++command {tclname class constructors methods} {
 	set ncargs [expr {$nargs + 2}]
 
 	append cmdproc "        case $ndx: \{\n"
-	append cmdproc "            if (objc==$ncargs) \{\n"
+	append cmdproc "            if (objc == $ncargs) \{\n"
 	append cmdproc  [ProcessArgs types $names $cnames]
 	append cmdproc "                "
 	if {$rtype ne "void"} {
@@ -4109,7 +4139,7 @@ proc ::critcl::scan::critcl::userconfig {cmd args} {
 
 proc ::critcl::EmitShimHeader {wname} {
     # Function head
-    set ca "(ClientData cd, Tcl_Interp *interp, int oc, Tcl_Obj *CONST ov\[])"
+    set ca "(ClientData cd, Tcl_Interp *interp, Tcl_Size oc, Tcl_Obj *CONST ov\[])"
     Emitln
     Emitln "static int"
     Emitln "$wname$ca"
@@ -4340,6 +4370,13 @@ proc ::critcl::SetParam {type values {expand 1} {uuid 0} {unique 0}} {
 		lappend tmp $v
 		if {$unique} { dict set have $v . }
 	    }
+	}
+    }
+
+    if {$type eq "csources"} {
+	foreach v $tmp {
+	    at::= $v 1
+	    Transition9Check [at::raw] [Cat $v]
 	}
     }
 
@@ -4598,6 +4635,13 @@ proc ::critcl::at::Where {leadoffset level file} {
     return
 }
 
+proc ::critcl::at::Loc {leadoffset level file} {
+    # internal variant of 'caller!'
+    ::incr level -1
+    Where $leadoffset $level $file
+    return [raw]
+}
+
 proc ::critcl::at::CPragma {leadoffset level file} {
     # internal variant of 'caller!'
     ::incr level -1
@@ -4716,7 +4760,7 @@ proc ::critcl::CollectEmbeddedSources {file destination libfile ininame placestu
 	} else {
 	    set dp 0
 	}
-	puts $fd "  Tcl_CreateObjCommand(interp, [PadRight [expr {$max+4}] ns_$name,] [PadRight [expr {$max+5}] tcl_$name,] $cd, $dp);"
+	puts $fd "  Tcl_CreateObjCommand2(interp, [PadRight [expr {$max+4}] ns_$name,] [PadRight [expr {$max+5}] tcl_$name,] $cd, $dp);"
     }
 
     # Complete the trailer and be done.
@@ -4726,7 +4770,12 @@ proc ::critcl::CollectEmbeddedSources {file destination libfile ininame placestu
 }
 
 proc ::critcl::MinTclVersion {file} {
-    set required [GetParam $file mintcl 8.6]
+    # For the default differentiate 8.x and 9.x series. When running under 9+ an
+    # 8.x default is not sensible.
+    set mintcldefault 8.6
+    if {[package vsatisfies [package provide Tcl] 9]} { set mintcldefault 9 }
+
+    set required [GetParam $file mintcl $mintcldefault]
     foreach version $v::hdrsavailable {
 	if {[package vsatisfies $version $required]} {
 	    return $version
@@ -4756,7 +4805,7 @@ proc ::critcl::TclIncludes {file} {
 	set path [file join [cache] $hdrs]
     }
 
-    return [list $c::include$path]
+    return [list $c::include$path $c::include$v::hdrdir]
 }
 
 proc ::critcl::TclHeader {file {header {}}} {
@@ -5114,8 +5163,8 @@ proc ::critcl::ResolveColonSpec {lpath name} {
 }
 
 proc ::critcl::SetupTkStubs {fd mintcl} {
-    if {[package vcompare $mintcl 8.6] != 0} {
-	# Not 8.6. tkStubsPtr and tkIntXlibStubsPtr are not const yet.
+    if {[package vcompare $mintcl 8.6] < 0} {
+	# Before 8.6+. tkStubsPtr and tkIntXlibStubsPtr are not const yet.
 	set contents [Cat [Template tkstubs_noconst.c]]
     } else {
 	set contents [Cat [Template tkstubs.c]]
@@ -5588,8 +5637,7 @@ proc ::critcl::Copy {src dst} {
 }
 
 proc ::critcl::Cat {path} {
-    # Easier to write our own copy than requiring fileutil and then
-    # using fileutil::cat.
+    # Easier to write our own copy than requiring fileutil and then using fileutil::cat.
 
     set fd [open $path r]
     set data [read $fd]
@@ -5844,6 +5892,262 @@ proc ::critcl::LengthLongestWord {words} {
 }
 
 # # ## ### ##### ######## ############# #####################
+## Tcl 8.6 vs 9 checking. The check is simple, there is no C
+## parsing. No detection of C comments either.
+
+proc ::critcl::Transition9Check {loc script} {
+    if {!$v::options(tcl9)} return
+
+    lassign $loc filename lno
+    if {$filename eq {}} { set filename <undef> }
+    if {$lno      eq {}} { set lno      1 }
+
+    foreach line [split $script \n] {
+	Transition9CheckLine $filename $lno $line
+	incr lno
+    }
+    return
+}
+
+proc ::critcl::Transition9CheckLine {file lno codeline} {
+    set reported 0
+
+    # TIP 568 Tcl_GetByteArrayFromObj transition to Tcl_GetBytesFromObj
+    if {[string match *Tcl_GetByteArrayFromObj* $codeline]} {
+	T9Report $file $lno $codeline "(TIP 568): Use `Tcl_GetBytesFromObj` and handle NULL results."
+	T9Report $file $lno $codeline "(TIP 568): Read the referenced TIP for the sordid details."
+	T9Report $file $lno $codeline "(TIP 568): Document the obligations of the script level."
+    }
+
+    foreach fun {
+	Tcl_NewStringObj
+	Tcl_AppendToObj
+	Tcl_AddObjErrorInfo
+	Tcl_DStringAppend
+	Tcl_NumUtfChars
+	Tcl_UtfToUniCharDString
+	Tcl_LogCommandInfo
+	Tcl_AppendLimitedToObj
+    } {
+	if { [string match *${fun}*     $codeline] &&
+	     [string match *-1*         $codeline] &&
+	     ![string match {*OK tcl9*} $codeline]} {
+	    T9Report $file $lno $codeline "(TIP 494): Use TCL_AUTO_LENGTH for string length."
+	}
+    }
+
+    # Tcl_Size I
+    foreach {kind fun} [Transition9TclSize] {
+	if {![string match *${fun}*    $codeline]} continue
+	if { [string match {*OK tcl9*} $codeline]} continue
+	T9Report $file $lno $codeline "(Tcl_Size): $fun ($kind)"
+    }
+
+    # Tcl_Size II
+    foreach {fun replace} {
+	Tcl_GetIntFromObj Tcl_GetSizeIntFromObj
+	Tcl_NewIntObj	  Tcl_NewSizeIntObj
+    } {
+	if {![string match *${fun}*    $codeline]} continue
+	if { [string match {*OK tcl9*} $codeline]} continue
+	T9Report $file $lno $codeline "(Tcl_Size): $fun, check if replacement $replace is needed"
+    }
+
+    # Tcl Interp State handling
+    foreach {pattern message} {
+	Tcl_SavedResult   {Reewrite to use type `Tcl_InterpState` instead}
+	Tcl_SaveResult    {Rewrite to `<statevar> = Tcl_SaveInterpState (<interp>, TCL_OK)`}
+	Tcl_RestoreResult {Rewrite to `Tcl_RestoreInterpState (<interp>, <statevar>)`}
+	Tcl_DiscardResult {Rewrite to `Tcl_DiscardInterpState (<statevar>)`}
+    } {
+	if {![string match *${pattern}* $codeline]} continue
+	T9Report $file $lno $codeline "(Interp State handling): $message"
+    }
+
+    # command creation
+    if { [string match *Tcl_CreateObjCommand*  $codeline] &&
+	![string match *Tcl_CreateObjCommand2* $codeline]} {
+	T9Report $file $lno $codeline "(Tcl_Size): Use `Tcl_CreateObjCommand2` for command creation"
+    }
+    return
+}
+
+proc ::critcl::T9Report {fname lno code msg} {
+    upvar 1 reported reported
+
+    set prefix "File \"$fname\", line $lno: "
+    set common "Tcl 9 compatibility warning "
+
+    set blue \033\[34m
+    set off  \033\[0m
+    set mag  \033\[35m
+
+    if {!$reported} { critcl::msg "$prefix$blue[string trim $code]$off" }
+    incr reported
+    critcl::msg "$prefix${common}: $mag$msg$off"
+}
+
+proc ::critcl::Transition9TclSize {} {
+    return {
+	InParam Tcl_AppendFormatToObj
+	InParam Tcl_AppendLimitedToObj
+	InParam Tcl_AppendLimitedToObj
+	InParam Tcl_AppendToObj
+	InParam Tcl_AppendUnicodeToObj
+	InParam Tcl_AttemptSetObjLength
+	InParam Tcl_Char16ToUtfDString
+	InParam Tcl_Concat
+	InParam Tcl_ConcatObj
+	InParam Tcl_ConvertCountedElement
+	InParam Tcl_CreateAlias
+	InParam Tcl_CreateAliasObj
+	InParam Tcl_CreateObjTrace
+	InParam Tcl_CreateObjTrace2
+	InParam Tcl_CreateTrace
+	InParam Tcl_DbNewByteArrayObj
+	InParam Tcl_DbNewListObj
+	InParam Tcl_DbNewStringObj
+	InParam Tcl_DetachPids
+	InParam Tcl_DictObjPutKeyList
+	InParam Tcl_DictObjRemoveKeyList
+	InParam Tcl_DStringAppend
+	InParam Tcl_DStringSetLength
+	InParam Tcl_EvalEx
+	InParam Tcl_EvalObjv
+	InParam Tcl_EvalTokensStandard
+	InParam Tcl_ExternalToUtf
+	InParam Tcl_ExternalToUtf
+	InParam Tcl_ExternalToUtfDString
+	InParam Tcl_ExternalToUtfDStringEx
+	InParam Tcl_Format
+	InParam Tcl_FSJoinPath
+	InParam Tcl_FSJoinToPath
+	InParam Tcl_GetIndexFromObjStruct
+	InParam Tcl_GetIntForIndex
+	InParam Tcl_GetNumber
+	InParam Tcl_GetRange
+	InParam Tcl_GetRange
+	InParam Tcl_GetThreadData
+	InParam Tcl_GetUniChar
+	InParam Tcl_JoinPath
+	InParam Tcl_LimitSetCommands
+	InParam Tcl_LinkArray
+	InParam Tcl_ListObjIndex
+	InParam Tcl_ListObjReplace
+	InParam Tcl_ListObjReplace
+	InParam Tcl_ListObjReplace
+	InParam Tcl_LogCommandInfo
+	InParam Tcl_MacOSXOpenVersionedBundleResources
+	InParam Tcl_MainEx
+	InParam Tcl_Merge
+	InParam Tcl_NewByteArrayObj
+	InParam Tcl_NewListObj
+	InParam Tcl_NewStringObj
+	InParam Tcl_NewUnicodeObj
+	InParam Tcl_NRCallObjProc
+	InParam Tcl_NRCallObjProc2
+	InParam Tcl_NRCmdSwap
+	InParam Tcl_NREvalObjv
+	InParam Tcl_NumUtfChars
+	InParam Tcl_OpenCommandChannel
+	InParam Tcl_ParseBraces
+	InParam Tcl_ParseCommand
+	InParam Tcl_ParseExpr
+	InParam Tcl_ParseQuotedString
+	InParam Tcl_ParseVarName
+	InParam Tcl_PkgRequireProc
+	InParam Tcl_ProcObjCmd
+	InParam Tcl_Read
+	InParam Tcl_ReadChars
+	InParam Tcl_ReadRaw
+	InParam Tcl_RegExpExecObj
+	InParam Tcl_RegExpExecObj
+	InParam Tcl_RegExpRange
+	InParam Tcl_ScanCountedElement
+	InParam Tcl_SetByteArrayLength
+	InParam Tcl_SetByteArrayObj
+	InParam Tcl_SetChannelBufferSize
+	InParam Tcl_SetListObj
+	InParam Tcl_SetObjLength
+	InParam Tcl_SetRecursionLimit
+	InParam Tcl_SetStringObj
+	InParam Tcl_SetUnicodeObj
+	InParam Tcl_Ungets
+	InParam Tcl_UniCharAtIndex
+	InParam Tcl_UniCharToUtfDString
+	InParam Tcl_UtfAtIndex
+	InParam Tcl_UtfCharComplete
+	InParam Tcl_UtfToChar16DString
+	InParam Tcl_UtfToExternal
+	InParam Tcl_UtfToExternal
+	InParam Tcl_UtfToExternalDString
+	InParam Tcl_UtfToExternalDStringEx
+	InParam Tcl_UtfToUniCharDString
+	InParam Tcl_Write
+	InParam Tcl_WriteChars
+	InParam Tcl_WriteRaw
+	InParam Tcl_WrongNumArgs
+	InParam Tcl_ZlibAdler32
+	InParam Tcl_ZlibCRC32
+	InParam Tcl_ZlibInflate
+	InParam Tcl_ZlibStreamGet
+	InParam TclGetRange
+	InParam TclGetRange
+	InParam TclGetUniChar
+	InParam TclNumUtfChars
+	InParam TclUtfAtIndex
+	InParam TclUtfCharComplete
+
+	OutParam Tcl_DictObjSize
+	OutParam Tcl_ExternalToUtfDStringEx
+	OutParam Tcl_FSSplitPath
+	OutParam Tcl_GetByteArrayFromObj
+	OutParam Tcl_GetBytesFromObj
+	OutParam Tcl_GetIntForIndex
+	OutParam Tcl_GetSizeIntFromObj
+	OutParam Tcl_GetStringFromObj
+	OutParam Tcl_GetUnicodeFromObj
+	OutParam Tcl_ListObjGetElements
+	OutParam Tcl_ListObjLength
+	OutParam Tcl_ParseArgsObjv
+	OutParam Tcl_SplitList
+	OutParam Tcl_SplitPath
+	OutParam Tcl_UtfToExternalDStringEx
+
+	Return Tcl_Char16Len
+	Return Tcl_ConvertCountedElement
+	Return Tcl_ConvertElement
+	Return Tcl_GetChannelBufferSize
+	Return Tcl_GetCharLength
+	Return Tcl_GetEncodingNulLength
+	Return Tcl_Gets
+	Return Tcl_GetsObj
+	Return Tcl_NumUtfChars
+	Return Tcl_Read
+	Return Tcl_ReadChars
+	Return Tcl_ReadRaw
+	Return Tcl_ScanCountedElement
+	Return Tcl_ScanElement
+	Return Tcl_SetRecursionLimit
+	Return Tcl_Ungets
+	Return Tcl_UniCharLen
+	Return Tcl_UniCharToUtf
+	Return Tcl_UtfBackslash
+	Return Tcl_UtfToChar16
+	Return Tcl_UtfToLower
+	Return Tcl_UtfToTitle
+	Return Tcl_UtfToUniChar
+	Return Tcl_UtfToUpper
+	Return Tcl_Write
+	Return Tcl_WriteChars
+	Return Tcl_WriteObj
+	Return Tcl_WriteRaw
+	Return TclGetCharLength
+	Return TclNumUtfChars
+    }
+}
+
+# # ## ### ##### ######## ############# #####################
 ## Initialization
 
 proc ::critcl::Initialize {} {
@@ -5957,18 +6261,19 @@ proc ::critcl::Initialize {} {
 	typedef struct critcl_pstring {
 	    Tcl_Obj*    o;
 	    const char* s;
-	    int         len;
+	    Tcl_Size    len;
 	} critcl_pstring;
     }
 
     argtype dict {
-	int size;
+	Tcl_Size size;
 	if (Tcl_DictObjSize (interp, @@, &size) != TCL_OK) return TCL_ERROR;
 	@A = @@;
     } Tcl_Obj* Tcl_Obj*
 
     argtype list {
-	if (Tcl_ListObjGetElements (interp, @@, &(@A.c), (Tcl_Obj***) &(@A.v)) != TCL_OK) return TCL_ERROR;
+	if (Tcl_ListObjGetElements (interp, @@, /* OK tcl9 */
+		    &(@A.c), (Tcl_Obj***) &(@A.v)) != TCL_OK) return TCL_ERROR;
 	@A.o = @@;
     } critcl_list critcl_list
 
@@ -5976,7 +6281,7 @@ proc ::critcl::Initialize {} {
 	typedef struct critcl_list {
 	    Tcl_Obj*        o;
 	    Tcl_Obj* const* v;
-	    int             c;
+	    Tcl_Size        c;
 	} critcl_list;
     }
 
@@ -6011,41 +6316,12 @@ proc ::critcl::Initialize {} {
 
     argtype variadic_Tcl_Obj* = variadic_object
 
-    ## The next set of argument types looks to be very broken. We are keeping
-    ## them for now, but declare them as DEPRECATED. Their documentation was
-    ## removed with version 3.2. Their implementation will be in 3.3 as well,
-    ## fully exterminating them.
-
-    argtype int* {
-	/* Raw pointer in binary Tcl value */
-	@A = (int*) Tcl_GetByteArrayFromObj(@@, NULL);
-	Tcl_InvalidateStringRep(@@);
-    }
-    argtype float* {
-	/* Raw pointer in binary Tcl value */
-	@A = (float*) Tcl_GetByteArrayFromObj(@@, NULL);
-    }
-    argtype double* {
-	/* Raw pointer in binary Tcl value */
-	@A = (double*) Tcl_GetByteArrayFromObj(@@, NULL);
-    }
-
-    # OLD Raw binary string. Length information is _NOT_ propagated.  Declaring
-    # it and its aliases as DEPRECATED. Their documentation was removed in
-    # version 3.2. Their implementation will be in 3.3 as well, fully
-    # exterminating them.
-    argtype bytearray {
-	/* Raw binary string. Length information is _NOT_ propagated */
-	@A = (char*) Tcl_GetByteArrayFromObj(@@, NULL);
-    } char* char*
-    argtype rawchar = bytearray
-    argtype rawchar* = bytearray
-
     # NEW Raw binary string _with_ length information.
 
     argtype bytes {
 	/* Raw binary string _with_ length information */
-	@A.s = Tcl_GetByteArrayFromObj(@@, &(@A.len));
+	@A.s = Tcl_GetBytesFromObj(interp, @@, &(@A.len));
+	if (@A.s == NULL) return TCL_ERROR;
 	@A.o = @@;
     } critcl_bytes critcl_bytes
 
@@ -6053,7 +6329,7 @@ proc ::critcl::Initialize {} {
 	typedef struct critcl_bytes {
 	    Tcl_Obj*             o;
 	    const unsigned char* s;
-	    int                len;
+	    Tcl_Size             len;
 	} critcl_bytes;
     }
 
@@ -6143,11 +6419,11 @@ proc ::critcl::Initialize {} {
 
     # Static and volatile strings. Duplicate.
     resulttype char* {
-	Tcl_SetObjResult(interp, Tcl_NewStringObj(rv,-1));
+	Tcl_SetObjResult(interp, Tcl_NewStringObj(rv, -1));
 	return TCL_OK;
     }
     resulttype {const char*} {
-	Tcl_SetObjResult(interp, Tcl_NewStringObj(rv,-1));
+	Tcl_SetObjResult(interp, Tcl_NewStringObj(rv, -1));
 	return TCL_OK;
     }
     resulttype vstring = char*
@@ -6157,7 +6433,7 @@ proc ::critcl::Initialize {} {
     # We are avoiding the Tcl_Obj* API here, as its use requires an
     # additional duplicate of the string, churning memory and
     # requiring more copying.
-    #   Tcl_SetObjResult(interp, Tcl_NewStringObj(rv,-1));
+    #   Tcl_SetObjResult(interp, Tcl_NewStringObj(rv, -1));
     #   Tcl_Free (rv);
     resulttype string {
 	Tcl_SetResult (interp, rv, TCL_DYNAMIC);
@@ -6298,6 +6574,8 @@ namespace eval ::critcl {
 				  #   the user for mode 'generate
 				  #   package'.
 	set options(language) "" ;# - String. XXX
+	set options(tcl9)     1  ;# - Boolean. If set critcl will check C code
+				  #   fragments for 8.6/9 compatibility problems.
 	set options(lines)    1  ;# - Boolean. If set the generator will
 				  #   emit #line-directives to help locating
 				  #   C code in the .tcl in case of compile

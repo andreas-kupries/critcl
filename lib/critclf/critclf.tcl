@@ -1,8 +1,8 @@
 # critclf.tcl --
 #     Fortran version of Critcl
 #
-package require Tcl 8.6
-package provide critclf 0.2
+package require Tcl 8.6 9
+package provide critclf 0.3
 package require critcl 3.2
 package require wrapfort
 
@@ -33,11 +33,13 @@ namespace eval critcl {
                               foptimize fextra_cflags}
         set configvars [concat $configvars $fconfigvars]
     }
-    namespace eval c [list
-        foreach var $v::fconfigvars {
+    namespace eval c {
+	variable var
+        foreach var $::critcl::v::fconfigvars {
             variable $var
         }
-    ]
+	unset var
+    }
     readconfig $configfile
 }
 

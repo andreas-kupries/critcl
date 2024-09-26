@@ -21,7 +21,7 @@ set header "
 #endif
 void __stdcall ROUTINE(); /* Important! */
 static int c__ROUTINE( ClientData client_data, Tcl_Interp *interp,
-                       int objc, struct Tcl_Obj * CONST objv\[\] ) {
+                       Tcl_Size objc, struct Tcl_Obj * CONST objv\[\] ) {
     int _rc_ = TCL_OK ;"
 
 set declaration(integer)        {    long NAME;}
@@ -210,9 +210,9 @@ set fdecl_result(double)              {    double NAME;}
 
 set finitialisation(start)             {
     Tcl_Obj    *objv[NOARGS]    ;
-    int         objc   = NOARGS ;
+    Tcl_Size    objc   = NOARGS ;
     int         error           ;
-    int         length          ;
+    Tcl_Size    length          ;
     Tcl_Interp *interp = saved_interp ;
 
     if ( Tcl_ListObjLength( interp, NAME_tclprocs, &length ) != TCL_OK ||

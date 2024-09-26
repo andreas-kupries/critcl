@@ -343,6 +343,9 @@ critcl_license
 .TP
 \fBfiles/critcl_package\&.n\fR
 critcl_package
+.TP
+\fBfiles/critcl_tcl9\&.n\fR
+critcl_tcl9
 .RE
 C instance
 .RS
@@ -421,6 +424,9 @@ critcl_license
 .TP
 \fBfiles/critcl_package\&.n\fR
 critcl_package
+.TP
+\fBfiles/critcl_tcl9\&.n\fR
+critcl_tcl9
 .RE
 Tcl Interp Association
 .RS
@@ -496,6 +502,9 @@ critcl_license
 .TP
 \fBfiles/critcl_package\&.n\fR
 critcl_package
+.TP
+\fBfiles/critcl_tcl9\&.n\fR
+critcl_tcl9
 .RE
 code generator
 .RS
@@ -562,6 +571,9 @@ critcl_license
 .TP
 \fBfiles/critcl_package\&.n\fR
 critcl_package
+.TP
+\fBfiles/critcl_tcl9\&.n\fR
+critcl_tcl9
 .RE
 compile & run
 .RS
@@ -628,6 +640,9 @@ critcl_license
 .TP
 \fBfiles/critcl_package\&.n\fR
 critcl_package
+.TP
+\fBfiles/critcl_tcl9\&.n\fR
+critcl_tcl9
 .RE
 compiler
 .RS
@@ -694,6 +709,9 @@ critcl_license
 .TP
 \fBfiles/critcl_package\&.n\fR
 critcl_package
+.TP
+\fBfiles/critcl_tcl9\&.n\fR
+critcl_tcl9
 .RE
 conversion
 .RS
@@ -766,6 +784,9 @@ critcl_license
 .TP
 \fBfiles/critcl_package\&.n\fR
 critcl_package
+.TP
+\fBfiles/critcl_tcl9\&.n\fR
+critcl_tcl9
 .RE
 dynamic compilation
 .RS
@@ -832,6 +853,9 @@ critcl_license
 .TP
 \fBfiles/critcl_package\&.n\fR
 critcl_package
+.TP
+\fBfiles/critcl_tcl9\&.n\fR
+critcl_tcl9
 .RE
 flags
 .RS
@@ -907,6 +931,9 @@ critcl_license
 .TP
 \fBfiles/critcl_package\&.n\fR
 critcl_package
+.TP
+\fBfiles/critcl_tcl9\&.n\fR
+critcl_tcl9
 .RE
 int to string mapping
 .RS
@@ -979,6 +1006,9 @@ critcl_license
 .TP
 \fBfiles/critcl_package\&.n\fR
 critcl_package
+.TP
+\fBfiles/critcl_tcl9\&.n\fR
+critcl_tcl9
 .RE
 literal pool
 .RS
@@ -1054,6 +1084,9 @@ critcl_license
 .TP
 \fBfiles/critcl_package\&.n\fR
 critcl_package
+.TP
+\fBfiles/critcl_tcl9\&.n\fR
+critcl_tcl9
 .RE
 on-the-fly compilation
 .RS
@@ -1120,6 +1153,9 @@ critcl_license
 .TP
 \fBfiles/critcl_package\&.n\fR
 critcl_package
+.TP
+\fBfiles/critcl_tcl9\&.n\fR
+critcl_tcl9
 .RE
 singleton
 .RS

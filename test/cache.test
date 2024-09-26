@@ -5,7 +5,7 @@
 
 source [file join [file dirname [info script]] support testutilities.tcl]
 
-testsNeedTcl     8.6
+testsNeedTcl     8.6 9
 testsNeedTcltest 2
 
 support {
@@ -24,6 +24,10 @@ overrides
 
 # -------------------------------------------------------------------------
 ## cache syntax
+
+test critcl-cache-1.0.7 {cache, wrong\#args, too many} -constraints tcl9 -body {
+    critcl::cache C X
+} -returnCodes error -result {wrong # args: should be "critcl::cache ?dir?"}
 
 test critcl-cache-1.0.6 {cache, wrong\#args, too many} -constraints tcl8.6plus -body {
     critcl::cache C X
@@ -48,7 +52,7 @@ test critcl-cache-2.0 {cache, default, home directory} -body {
 test critcl-cache-2.1 {cache, redirecting cache} -setup {
     set here [critcl::cache]
 } -body {
-    critcl::cache ~/FOO
+    critcl::cache $env(HOME)/FOO
 } -cleanup {
     critcl::cache $here
     unset here

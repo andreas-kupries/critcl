@@ -6,14 +6,14 @@
 # CriTcl Utility Package for en- and decoding an external enum.
 # Based on i-assoc.
 #
-# Copyright (c) 2014-2022 Andreas Kupries <andreas_kupries@users.sourceforge.net>
+# Copyright (c) 2014-2023 Andreas Kupries <andreas_kupries@users.sourceforge.net>
 
-package provide critcl::emap 1.3
+package provide critcl::emap 1.3.1
 
 # # ## ### ##### ######## ############# #####################
 ## Requirements.
 
-package require Tcl    8.6     ; # Min supported version.
+package require Tcl    8.6 9   ; # Min supported version.
 package require critcl 3.1.11  ; # make, include -- dict portability
 package require critcl::iassoc
 
@@ -294,7 +294,7 @@ proc critcl::emap::EncoderTclNocase {name} {
 	     * conversion.
 	     */
 	    state = Tcl_DuplicateObj (state);
-	    Tcl_SetObjLength(state, Tcl_UtfToLower (Tcl_GetString (state)));
+	    Tcl_SetObjLength(state, Tcl_UtfToLower (Tcl_GetString (state))); /* OK tcl9 */
 	    res = Tcl_GetIndexFromObj (interp, state, @NAME@_emap_cstr, "@NAME@", 0, &id);
 	    Tcl_DecrRefCount (state);
 	    if (res != TCL_OK) {

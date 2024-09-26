@@ -1,12 +1,12 @@
 # -*- tcl -*-
 # STUBS handling -- Reader.
 #
-# (c) 2011,2022 Andreas Kupries http://wiki.tcl.tk/andreas%20kupries
+# (c) 2011,2022-2023 Andreas Kupries http://wiki.tcl.tk/andreas%20kupries
 
 # # ## ### ##### ######## #############
 ## Requisites
 
-package require Tcl 8.6
+package require Tcl 8.6 9
 package require stubs::container
 
 # A stubs table is represented by a dictionary value.
@@ -241,5 +241,5 @@ namespace eval ::stubs::reader {
 }
 
 # # ## ### #####
-package provide stubs::reader 1.1
+package provide stubs::reader 1.1.1
 return

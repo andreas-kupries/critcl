@@ -3,4 +3,4 @@
  * binary: $libfile
  */
 $api
-#include "tcl.h"
+#include "tclpre9compat.h" /* tcl.h + Portability Tcl <=8.6 */

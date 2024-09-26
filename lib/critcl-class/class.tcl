@@ -7,12 +7,12 @@
 # class made easy, with code for object command and method dispatch
 # generated.
 
-package provide critcl::class 1.2
+package provide critcl::class 1.2.1
 
 # # ## ### ##### ######## ############# #####################
 ## Requirements.
 
-package require Tcl    8.6    ; # Min supported version.
+package require Tcl    8.6 9  ; # Min supported version.
 package require critcl 3.1.17 ; # Need 'meta?' to get the package name.
                                 # Need 'name2c' returning 4 values.
                                 # Need 'Deline' helper.
@@ -1114,7 +1114,7 @@ proc ::critcl::class::spec::method_introspection {} {
 static Tcl_Obj*
 ComputeMethodList (CONST char** table)
 {
-    int n, i;
+    Tcl_Size n, i;
     char** item;
     Tcl_Obj** lv;
     Tcl_Obj* result;

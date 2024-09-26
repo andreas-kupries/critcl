@@ -5,7 +5,7 @@
 
 source [file join [file dirname [info script]] support testutilities.tcl]
 
-testsNeedTcl     8.6
+testsNeedTcl     8.6 9
 testsNeedTcltest 2
 
 support {
@@ -44,15 +44,15 @@ test critcl-util-undef-1.2 {util-undef, wrong\#args, too many} -body {
 
 test critcl-util-undef-2.0 {util-undef} -setup {
     set here [critcl::cache]
-    file mkdir    ~/.critcl-tests-[pid]
-    critcl::cache ~/.critcl-tests-[pid]
+    file mkdir    $env(HOME)/.critcl-tests-[pid]
+    critcl::cache $env(HOME)/.critcl-tests-[pid]
 } -body {
     critcl::util::undef C foo
     inspect C
 } -cleanup {
     critcl::cache $here
     unset here
-    file delete -force ~/.critcl-tests-[pid]
+    file delete -force $env(HOME)/.critcl-tests-[pid]
 } -result [viewFile [localPath test/assets/undef-2.0]]
 
 # -------------------------------------------------------------------------

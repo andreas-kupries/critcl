@@ -1,13 +1,13 @@
 /* ---------------------------------------------------------------------- */
 
 static int
-snafu_actual(ClientData clientdata, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[])
+snafu_actual(ClientData clientdata, Tcl_Interp *interp, Tcl_Size objc, Tcl_Obj *CONST objv[])
 {
 return TCL_OK;
 }
 
 static int
-snafu(ClientData clientdata, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[])
+snafu(ClientData clientdata, Tcl_Interp *interp, Tcl_Size objc, Tcl_Obj *CONST objv[])
 {
   int _rv;
   critcl_trace_cmd_args ("snafu", objc, objv);

@@ -1,8 +1,7 @@
 # -*- tcl -*-
 # Testsuite utilities / boilerplate
 
-# Copyright (c) 2006-2022, Andreas Kupries <andreas_kupries@users.sourceforge.net>
-#                                          <akupries@shaw.ca>
+# Copyright (c) 2006-2024, Andreas Kupries <andreas_kupries@users.sourceforge.net>
 #                                          <andreas.kupries@gmail.com>
 
 set auto_path [linsert $auto_path 0 \
@@ -26,14 +25,14 @@ namespace eval ::testutils {
 ## Declare the minimal version of Tcl required to run the package
 ## tested by this testsuite, and its dependencies.
 
-proc testsNeedTcl {version} {
+proc testsNeedTcl {args} {
     # This command ensures that a minimum version of Tcl is used to
     # run the tests in the calling testsuite. If the minimum is not
     # met by the active interpreter we forcibly bail out of the
     # testsuite calling the command. The command has to be called
     # immediately after loading the utilities.
 
-    if {[package vsatisfies [package provide Tcl] $version]} return
+    if {[package vsatisfies [package provide Tcl] {*}$args]} return
 
     puts "    Aborting the tests found in \"[file tail [info script]]\""
     puts "    Requiring at least Tcl $version, have [package present Tcl]."
@@ -205,6 +204,9 @@ proc InitializeTclTest {} {
 
     ::tcltest::testConstraint tcl8.6plus \
 	[expr {[package vsatisfies [package provide Tcl] 8.6]}]
+
+    ::tcltest::testConstraint tcl9 \
+	[expr {[package vsatisfies [package provide Tcl] 9]}]
 
     ::tcltest::testConstraint tcl8.4minus \
 	[expr {![package vsatisfies [package provide Tcl] 8.5]}]

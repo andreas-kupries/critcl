@@ -7,7 +7,7 @@
 	typedef struct critcl_pstring {
 	    Tcl_Obj*    o;
 	    const char* s;
-	    int         len;
+	    Tcl_Size    len;
 	} critcl_pstring;
     
 #endif /* CRITCL_pstring _________ */
@@ -18,7 +18,7 @@ static void c__aproc0(critcl_pstring x)
 }
 
 static int
-tcl__aproc0(ClientData cd, Tcl_Interp *interp, int oc, Tcl_Obj *CONST ov[])
+tcl__aproc0(ClientData cd, Tcl_Interp *interp, Tcl_Size oc, Tcl_Obj *CONST ov[])
 {
   critcl_pstring _x;
 

@@ -18,7 +18,7 @@ static void c__aproc0(critcl_variadic_object args)
 }
 
 static int
-tcl__aproc0(ClientData cd, Tcl_Interp *interp, int oc, Tcl_Obj *CONST ov[])
+tcl__aproc0(ClientData cd, Tcl_Interp *interp, Tcl_Size oc, Tcl_Obj *CONST ov[])
 {
   critcl_variadic_object _args;
   /* (object args, ...) - - -- --- ----- -------- */

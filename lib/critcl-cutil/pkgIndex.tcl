@@ -1,2 +1,2 @@
-if {![package vsatisfies [package provide Tcl] 8.6]} {return}
-package ifneeded critcl::cutil 0.3 [list source [file join $dir cutil.tcl]]
+if {![package vsatisfies [package provide Tcl] 8.6 9]} {return}
+package ifneeded critcl::cutil 0.5 [list source [file join $dir cutil.tcl]]

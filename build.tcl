@@ -1,7 +1,7 @@
 #!/bin/sh
 # -*- tcl -*- \
 exec tclsh "$0" ${1+"$@"}
-package require Tcl 8.6
+package require Tcl 8.6 9
 unset -nocomplain ::errorInfo
 set me [file normalize [info script]]
 proc main {} {
@@ -91,8 +91,7 @@ proc version {file} {
     return [lindex $provisions 0 3]
 }
 proc tmpdir {} {
-    package require fileutil
-    set tmpraw [fileutil::tempfile critcl.]
+    set tmpraw "critcl.[clock clicks]"
     set tmpdir $tmpraw.[pid]
     file delete -force $tmpdir
     file mkdir $tmpdir
@@ -269,6 +268,13 @@ proc query {q c} {
 proc thisexe {} {
     return [info nameofexecutable]
 }
+proc cat {path} {
+    # Easier to write our own copy than requiring fileutil and then using fileutil::cat.
+    set fd   [open $path r]
+    set data [read $fd]
+    close $fd
+    return $data
+}
 proc Hsynopsis {} { return "\n\tGenerate a synopsis of procs and builtin types" }
 proc _synopsis {} {
     puts Public:
@@ -344,18 +350,24 @@ proc _doc {} {
     puts "Removing old documentation..."
     file delete -force [file join .. embedded man]
     file delete -force [file join .. embedded www]
+    file delete -force [file join .. embedded md]
 
     file mkdir [file join .. embedded man]
     file mkdir [file join .. embedded www]
+    file mkdir [file join .. embedded md]
 
     puts "Generating man pages..."
-    exec 2>@ stderr >@ stdout dtplite -ext n -o [file join .. embedded man] nroff .
+    exec 2>@ stderr >@ stdout dtplite -ext  n -o [file join .. embedded man] nroff .
     puts "Generating html..."
-    exec 2>@ stderr >@ stdout dtplite        -o [file join .. embedded www] html .
+    exec 2>@ stderr >@ stdout dtplite         -o [file join .. embedded www] html .
+    puts "Generating markdown..."
+    exec 2>@ stderr >@ stdout dtplite -ext md -o [file join .. embedded md] markdown .
 
     cd  [file join .. embedded man]
     file delete -force .idxdoc .tocdoc
     cd  [file join .. www]
+    file delete -force .idxdoc .tocdoc
+    cd  [file join .. md]
     file delete -force .idxdoc .tocdoc
 
     return
@@ -427,7 +439,7 @@ proc _release {} {
     #file copy -force [file join $tmpdir critcl31.kit] [file join download critcl31.kit]
     #file copy -force [file join $tmpdir critcl31.exe] [file join download critcl31.exe]
 
-    set index   [fileutil::cat index.html]
+    set index   [cat index.html]
     set pattern   "\\\[commit .*\\\] \\(v\[^)\]*\\)<!-- current"
     set replacement "\[commit $commit\] (v$version)<!-- current"
     regsub $pattern $index $replacement index
@@ -570,6 +582,9 @@ proc _install {args} {
 
 	puts "${prefix}Installed application:  $theapp"
 
+	# C packages - Need major Tcl version
+	set major [lindex [split [info patchlevel] .] 0]
+
 	# Special package: critcl_md5c
 	# Local MD5 hash implementation.
 
@@ -584,8 +599,8 @@ proc _install {args} {
 
 	set src     [file join $selfdir lib critcl-md5c md5c.tcl]
 	set version [version $src]
-	set name    critcl_md5c
-	set dst     [file join $dstl [pkgdirname $name $version]]
+	set name    critcl_md5c_tcl$major
+	set dst     [file join $dstl $name-$version]
 	set cmd     {}
 
 	lappend cmd exec >@ stdout 2>@ stderr
@@ -617,8 +632,8 @@ proc _install {args} {
 
 	set src     [file join $selfdir lib critcl-callback callback.tcl]
 	set version [version $src]
-	set name    critcl_callback
-	set dst     [file join $dstl $name$version]
+	set name    critcl_callback_tcl$major
+	set dst     [file join $dstl $name-$version]
 	set dsth    [file join $dsti $name]
 	set cmd     {}
 
@@ -714,8 +729,7 @@ proc Hstarkit {} { return "?destination? ?interpreter?\n\tGenerate a starkit\n\t
 proc _starkit {{dst critcl.kit} {interp tclkit}} {
     package require vfs::mk4
 
-    set c [open $dst w]
-    fconfigure $c -translation binary -encoding binary
+    set c [open $dst wb]
     puts -nonewline $c "#!/bin/sh\n# -*- tcl -*- \\\nexec $interp \"\$0\" \$\{1+\"\$@\"\}\npackage require starkit\nstarkit::header mk4 -readonly\n\032################################################################################################################################################################"
     close $c
 

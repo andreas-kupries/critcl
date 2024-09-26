@@ -1,6 +1,6 @@
 '\"
 '\" Generated from file 'critcl_bitmap\&.man' by tcllib/doctools with format 'nroff'
-'\" Copyright (c) 2011-2018 Andreas Kupries
+'\" Copyright (c) 2011-2024 Andreas Kupries
 '\"
 .TH "critcl::bitmap" n 1\&.1 doc "C Runtime In Tcl (CriTcl)"
 .\" The -*- nroff -*- definitions below are for supplemental macros used
@@ -274,11 +274,11 @@ Database Class:	\\fB\\$3\\fR
 .SH NAME
 critcl::bitmap \- CriTcl - Wrap Support - Bitset en- and decoding
 .SH SYNOPSIS
-package require \fBTcl  8\&.6\fR
+package require \fBTcl 8\&.6\fR
 .sp
-package require \fBcritcl  ?3\&.2?\fR
+package require \fBcritcl ?3\&.2?\fR
 .sp
-package require \fBcritcl::bitmap  ?1\&.1?\fR
+package require \fBcritcl::bitmap ?1\&.1?\fR
 .sp
 \fB::critcl::bitmap::def\fR \fIname\fR \fIdefinition\fR ?\fIexclusions\fR?
 .sp
@@ -464,6 +464,6 @@ C code, Embedded C Code, Tcl Interp Association, bitmask, bitset, code generator
 Glueing/Embedded C code
 .SH COPYRIGHT
 .nf
-Copyright (c) 2011-2018 Andreas Kupries
+Copyright (c) 2011-2024 Andreas Kupries
 
 .fi

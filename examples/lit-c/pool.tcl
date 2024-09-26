@@ -8,7 +8,7 @@
 # # ## ### ##### ######## ############# #####################
 ## Requirements
 
-package require Tcl              8.6
+package require Tcl              8.6 9
 package require critcl           3.2
 package require critcl::literals 1.2 ;# result-type
 

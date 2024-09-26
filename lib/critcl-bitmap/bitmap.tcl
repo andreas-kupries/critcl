@@ -6,12 +6,12 @@
 # CriTcl Utility Package for bitmap en- and decoder.
 # Based on i-assoc.
 
-package provide critcl::bitmap 1.1
+package provide critcl::bitmap 1.1.1
 
 # # ## ### ##### ######## ############# #####################
 ## Requirements.
 
-package require Tcl    8.6     ; # Min supported version.
+package require Tcl    8.6 9     ; # Min supported version.
 package require critcl 3.2
 package require critcl::iassoc
 
@@ -135,10 +135,11 @@ proc critcl::bitmap::def {name dict {exclusions {}}} {
 		       int*        result)
 	{
 	    @NAME@_iassoc_data context = @NAME@_iassoc (interp);
-	    int mask, lc, i, id;
+	    Tcl_Size lc, i;
+	    int mask, id;
 	    Tcl_Obj** lv;
 
-	    if (Tcl_ListObjGetElements (interp, flags, &lc, &lv) != TCL_OK) {
+	    if (Tcl_ListObjGetElements (interp, flags, &lc, &lv) != TCL_OK) { /* OK tcl9 */
 		return TCL_ERROR;
 	    }
 
