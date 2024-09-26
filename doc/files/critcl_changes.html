@@ -1,4 +1,6 @@
 <!DOCTYPE html><html><head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <title>critcl_changes - C Runtime In Tcl (CriTcl)</title>
 <style type="text/css"><!--
     HTML {
@@ -93,7 +95,7 @@
 </head>
 <!-- Generated from file 'critcl_changes.man' by tcllib/doctools with format 'html'
    -->
-<!-- Copyright &amp;copy; Jean-Claude Wippler   -- Copyright &amp;copy; Steve Landers   -- Copyright &amp;copy; 2011-2022 Andreas Kupries
+<!-- Copyright &amp;copy; Jean-Claude Wippler   -- Copyright &amp;copy; Steve Landers   -- Copyright &amp;copy; 2011-2024 Andreas Kupries
    -->
 <!-- critcl_changes.n
    -->
@@ -102,7 +104,7 @@
 &#124; <a href="../index.html">Keyword Index</a>
  ] <hr>
 <div class="doctools">
-<h1 class="doctools_title">critcl_changes(n) 3.2 doc &quot;C Runtime In Tcl (CriTcl)&quot;</h1>
+<h1 class="doctools_title">critcl_changes(n) 3.3 doc &quot;C Runtime In Tcl (CriTcl)&quot;</h1>
 <div id="name" class="doctools_section"><h2><a name="name">Name</a></h2>
 <p>critcl_changes - CriTcl Releases &amp; Changes</p>
 </div>
@@ -110,7 +112,7 @@
 <ul class="doctools_toc">
 <li class="doctools_section"><a href="#toc">Table Of Contents</a></li>
 <li class="doctools_section"><a href="#section1">Description</a></li>
-<li class="doctools_section"><a href="#section2">Changes for version 3.2.1 (to come)</a></li>
+<li class="doctools_section"><a href="#section2">Changes for version 3.3</a></li>
 <li class="doctools_section"><a href="#section3">Changes for version 3.2</a></li>
 <li class="doctools_section"><a href="#section4">Changes for version 3.1.18.1</a></li>
 <li class="doctools_section"><a href="#section5">Changes for version 3.1.18</a></li>
@@ -158,12 +160,48 @@ See the changes done in each release of <i class="term"><a href="critcl.html">Cr
 beginning of the project.</p>
 <p>The latest changes are found at the top.</p>
 </div>
-<div id="section2" class="doctools_section"><h2><a name="section2">Changes for version 3.2.1 (to come)</a></h2>
+<div id="section2" class="doctools_section"><h2><a name="section2">Changes for version 3.3</a></h2>
 <ol class="doctools_enumerated">
+<li><p>As announced with 3.2:</p>
+<ol class="doctools_enumerated">
+<li><p>Removed support for Tcl 8.4 and 8.5.</p></li>
+<li><p>Removed support for the argument types
+       <b class="type">int*</b>,
+       <b class="type">float*</b>,
+       <b class="type">double*</b>,
+       <b class="type">bytearray</b>,
+       <b class="type">rawchar</b>, and
+       <b class="type">rawchar*</b>.</p></li>
+</ol>
+</li>
+<li><p>Modified packages to accept operation under Tcl 9.
+       Bumped package versions appropriately.
+       Bumped copyrights.</p>
+<p>The <i class="term"><a href="critcl_tcl9.html">How To Adapt Critcl Packages for Tcl 9</a></i>
+       contains the details relevant to writers of <i class="term"><a href="critcl.html">CriTcl</a></i>-based packages.</p></li>
+<li><p>Set different minimum Tcl requirements for the 8.x and 9.x series.</p>
+<p>If no minimum is declared the minimum depends on the Tcl version
+       used to run the critcl package or application.</p>
+<p>When running under Tcl 9 the default minimum is version <b class="const">9</b>.
+       For anything else the new default minimum is <b class="const">8.6</b>.</p>
+<p><em>Reminder</em>: Support for Tcl 8.4 and 8.5 was removed.</p></li>
+<li><p>Made &quot;<b class="file">~</b>&quot;-handling portable across the 8.x and 9 boundary
+       (via <b class="const">HOME</b> environment variable).</p></li>
+<li><p>Bumped embedded <b class="package">tclconfig</b> to version 2.67. Patch supplied by Paul Obermeier.</p></li>
 <li><p><em>Bug Fix</em> <a href="https://github.com/andreas-kupries/critcl/issues/127">#127</a></p></li>
 <li><p><em>Bug Fix</em> <a href="https://github.com/andreas-kupries/critcl/issues/128">#128</a></p></li>
 <li><p><em>Bug Fix</em> <a href="https://github.com/andreas-kupries/critcl/issues/129">#129</a>
 Fixed various typos in the documentation.</p></li>
+<li><p>Reworked internals of <b class="package"><a href="critcl_cutil.html">critcl::cutil</a></b>'s tracer to support operation in a
+       multi-threaded environment. This new mode is also default. The old single-threaded
+       mode can be (re)activated by defining <b class="const">CRITCL_TRACE_NOTHREADS</b>.</p>
+<p>Package bumped to version 0.4.</p></li>
+<li><p>Reworked the installer to add <b class="const">tclX</b> markers to the installation directories of the
+       C-based support packages (<b class="package"><a href="critcl_callback.html">critcl::callback</a></b>, <b class="package">critcl::md5c</b>), where
+       <b class="variable">X</b> is the major version number of the <b class="syscmd">tclsh</b> which ran critcl.</p></li>
+<li><p>In other words, one of <b class="const">tcl8</b> or <b class="const">tcl9</b>.</p></li>
+<li><p>Broke lingering dependencies on the Tcllib packages <b class="package">cmdline</b> and <b class="package">fileutil</b>.</p>
+<p>There no circularities between Critcl and Tcllib any longer, simplifying installation.</p></li>
 </ol>
 </div>
 <div id="section3" class="doctools_section"><h2><a name="section3">Changes for version 3.2</a></h2>
@@ -1065,6 +1103,6 @@ at <a href="https://github.com/andreas-kupries/critcl/issues">https://github.com
 <div id="copyright" class="doctools_section"><h2><a name="copyright">Copyright</a></h2>
 <p>Copyright &copy; Jean-Claude Wippler<br>
 Copyright &copy; Steve Landers<br>
-Copyright &copy; 2011-2022 Andreas Kupries</p>
+Copyright &copy; 2011-2024 Andreas Kupries</p>
 </div>
 </div></body></html>
