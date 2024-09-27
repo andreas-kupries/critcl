@@ -104,7 +104,7 @@
 &#124; <a href="../index.html">Keyword Index</a>
  ] <hr>
 <div class="doctools">
-<h1 class="doctools_title">critcl_tcl9(n) 3.3 doc &quot;C Runtime In Tcl (CriTcl)&quot;</h1>
+<h1 class="doctools_title">critcl_tcl9(n) 3.3.1 doc &quot;C Runtime In Tcl (CriTcl)&quot;</h1>
 <div id="name" class="doctools_section"><h2><a name="name">Name</a></h2>
 <p>critcl_tcl9 - How To Adapt Critcl Packages for Tcl 9</p>
 </div>
@@ -129,7 +129,7 @@ packages to make their code workable for both Tcl 8.6 and 9.</p>
 <li><p>Generally, if there is no interest in moving to Tcl 9, i.e. Tcl 8.[456]
        are the only supported runtimes, then just keep using <i class="term"><a href="critcl.html">CriTcl</a></i> <b class="const">3.2</b>.</p>
 <p>The remainder of this document can be ignored.</p></li>
-<li><p>Use <i class="term"><a href="critcl.html">CriTcl</a></i> version 3.3 <em>if, and only if</em>
+<li><p>Use <i class="term"><a href="critcl.html">CriTcl</a></i> version 3.3.1 <em>if, and only if</em>
        Tcl 9 support is wanted.</p>
 <p>With some work this will then also provide backward compatibility with Tcl 8.6.</p></li>
 <li><p>Header &quot;<b class="file">tcl.h</b>&quot;</p>
@@ -139,7 +139,7 @@ packages to make their code workable for both Tcl 8.6 and 9.</p>
        which make supporting both Tcl 8.6 and Tcl 9 in a single code base easier.</p>
 <p>The following notes assume that this compatibility layer is in place.</p></li>
 <li><p><b class="cmd">critcl::tcl</b></p>
-<p>Before <i class="term"><a href="critcl.html">CriTcl</a></i> 3.3 a single default (<b class="const">8.4</b>) was used for
+<p>Before <i class="term"><a href="critcl.html">CriTcl</a></i> 3.3.1 a single default (<b class="const">8.4</b>) was used for
        the minimum Tcl version, to be overriden by an explicit <b class="cmd">critcl::tcl</b> in the
        package code.</p>
 <p>Now the default is dynamic, based on the <em>runtime</em> version, i.e.
@@ -158,7 +158,7 @@ packages to make their code workable for both Tcl 8.6 and 9.</p>
 </ol>
 </li>
 <li><p>Code checking</p>
-<p><i class="term"><a href="critcl.html">CriTcl</a></i> 3.3 comes with a very basic set of code checks pointing
+<p><i class="term"><a href="critcl.html">CriTcl</a></i> 3.3.1 comes with a very basic set of code checks pointing
        out places where compatibility might or will be an issue.</p>
 <p>The implementation checks all inlined C code declared by <b class="cmd">critcl::ccode</b>,
        <b class="cmd">critcl::ccommand</b>, <b class="cmd">critcl::cproc</b> (and related/derived commands), as well
