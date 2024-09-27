@@ -57,6 +57,6 @@ Fixed various typos in the documentation.
 
 [enum] Broke lingering dependencies on the Tcllib packages [package cmdline] and [package fileutil].
 
-[para] There no circularities between Critcl and Tcllib any longer, simplifying installation.
+[para] There are no circularities between Critcl and Tcllib any longer, simplifying installation.
 
 [list_end]
