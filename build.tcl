@@ -149,7 +149,7 @@ proc savedoc {tmpdir} {
     return
 }
 proc pkgdirname {name version} {
-	return $name$version
+	return $name-$version
 }
 proc placedoc {tmpdir} {
     file delete -force doc
@@ -607,7 +607,7 @@ proc _install {args} {
 	set src     [file join $selfdir lib critcl-md5c md5c.tcl]
 	set version [version $src]
 	set name    critcl_md5c_tcl$major
-	set dst     [file join $dstl $name-$version]
+	set dst     [file join $dstl [pkgdirname $name $version]]
 	set cmd     {}
 
 	lappend cmd exec >@ stdout 2>@ stderr
@@ -640,8 +640,8 @@ proc _install {args} {
 	set src     [file join $selfdir lib critcl-callback callback.tcl]
 	set version [version $src]
 	set name    critcl_callback_tcl$major
-	set dst     [file join $dstl $name-$version]
-	set dsth    [file join $dsti $name]
+	set dst     [file join $dstl [pkgdirname $name $version]]
+	set dsth    [file join $dsti critcl_callback] ;# headers unversioned
 	set cmd     {}
 
 	lappend cmd exec >@ stdout 2>@ stderr
@@ -687,10 +687,13 @@ proc _drop {args} {
     set dstl [dest-dir][lib-dir]
     set dsti [dest-dir][include-dir]
 
+    # C packages - Need major Tcl version
+    set major [lindex [split [info patchlevel] .] 0]
+
     # Add the special packages (see install). Not special with regard
     # to removal. Except for the name
-    lappend packages [list critcl-md5c     md5c.tcl     critcl_md5c]
-    lappend packages [list critcl-callback callback.tcl critcl_callback]
+    lappend packages [list critcl-md5c     md5c.tcl     critcl_md5c_tcl$major]
+    lappend packages [list critcl-callback callback.tcl critcl_callback_tcl$major]
 
     set selfdir [file dirname $me]
 
@@ -714,7 +717,7 @@ proc _drop {args} {
 	    set version {}
 	}
 
-	set namevers [file join $dstl $name$version]
+	set namevers [file join $dstl [pkgdirname $name $version]]
 
 	file delete -force $namevers
 	puts "Removed package:     $namevers"
