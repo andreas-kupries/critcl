@@ -4,7 +4,7 @@
 '\" Copyright (c) Steve Landers
 '\" Copyright (c) 2011-2024 Andreas Kupries
 '\"
-.TH "critcl_changes" n 3\&.3 doc "C Runtime In Tcl (CriTcl)"
+.TH "critcl_changes" n 3\&.3\&.1 doc "C Runtime In Tcl (CriTcl)"
 .\" The -*- nroff -*- definitions below are for supplemental macros used
 .\" in Tcl/Tk manual entries.
 .\"
@@ -288,6 +288,12 @@ See the changes done in each release of \fICriTcl\fR, from the latest at the top
 beginning of the project\&.
 .PP
 The latest changes are found at the top\&.
+.SH "CHANGES FOR VERSION 3\&.3\&.1"
+.IP [1]
+Oops\&. Added refresh of tcl 8\&.6, 8\&.7 headers which was left behind behind\&.
+.IP [2]
+Oops\&. Fixed mismatch of package directories computed by install vs uninstall\&.
+.PP
 .SH "CHANGES FOR VERSION 3\&.3"
 .IP [1]
 As announced with 3\&.2:
@@ -347,7 +353,7 @@ In other words, one of \fBtcl8\fR or \fBtcl9\fR\&.
 .IP [12]
 Broke lingering dependencies on the Tcllib packages \fBcmdline\fR and \fBfileutil\fR\&.
 .sp
-There no circularities between Critcl and Tcllib any longer, simplifying installation\&.
+There are no circularities between Critcl and Tcllib any longer, simplifying installation\&.
 .PP
 .SH "CHANGES FOR VERSION 3\&.2"
 .IP [1]

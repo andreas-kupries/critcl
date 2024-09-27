@@ -4,7 +4,7 @@
 '\" Copyright (c) Steve Landers
 '\" Copyright (c) 2011-2024 Andreas Kupries
 '\"
-.TH "critcl_application" n 3\&.3 doc "C Runtime In Tcl (CriTcl)"
+.TH "critcl_application" n 3\&.3\&.1 doc "C Runtime In Tcl (CriTcl)"
 .\" The -*- nroff -*- definitions below are for supplemental macros used
 .\" in Tcl/Tk manual entries.
 .\"

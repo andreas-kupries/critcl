@@ -4,7 +4,7 @@
 [//000000003]: # (Copyright &copy; Jean\-Claude Wippler)
 [//000000004]: # (Copyright &copy; Steve Landers)
 [//000000005]: # (Copyright &copy; 2011\-2024 Andreas Kupries)
-[//000000006]: # (critcl\_changes\(n\) 3\.3 doc "C Runtime In Tcl \(CriTcl\)")
+[//000000006]: # (critcl\_changes\(n\) 3\.3\.1 doc "C Runtime In Tcl \(CriTcl\)")
 
 <hr> [ <a href="../toc.md">Table Of Contents</a> &#124; <a
 href="../index.md">Keyword Index</a> ] <hr>
@@ -19,71 +19,73 @@ critcl\_changes \- CriTcl Releases & Changes
 
   - [Description](#section1)
 
-  - [Changes for version 3\.3](#section2)
+  - [Changes for version 3\.3\.1](#section2)
 
-  - [Changes for version 3\.2](#section3)
+  - [Changes for version 3\.3](#section3)
 
-  - [Changes for version 3\.1\.18\.1](#section4)
+  - [Changes for version 3\.2](#section4)
 
-  - [Changes for version 3\.1\.18](#section5)
+  - [Changes for version 3\.1\.18\.1](#section5)
 
-  - [Changes for version 3\.1\.17](#section6)
+  - [Changes for version 3\.1\.18](#section6)
 
-  - [Changes for version 3\.1\.16](#section7)
+  - [Changes for version 3\.1\.17](#section7)
 
-  - [Changes for version 3\.1\.15](#section8)
+  - [Changes for version 3\.1\.16](#section8)
 
-  - [Changes for version 3\.1\.14](#section9)
+  - [Changes for version 3\.1\.15](#section9)
 
-  - [Changes for version 3\.1\.13](#section10)
+  - [Changes for version 3\.1\.14](#section10)
 
-  - [Changes for version 3\.1\.12](#section11)
+  - [Changes for version 3\.1\.13](#section11)
 
-  - [Changes for version 3\.1\.11](#section12)
+  - [Changes for version 3\.1\.12](#section12)
 
-  - [Changes for version 3\.1\.10](#section13)
+  - [Changes for version 3\.1\.11](#section13)
 
-  - [Changes for version 3\.1\.9](#section14)
+  - [Changes for version 3\.1\.10](#section14)
 
-  - [Changes for version 3\.1\.8](#section15)
+  - [Changes for version 3\.1\.9](#section15)
 
-  - [Changes for version 3\.1\.7](#section16)
+  - [Changes for version 3\.1\.8](#section16)
 
-  - [Changes for version 3\.1\.6](#section17)
+  - [Changes for version 3\.1\.7](#section17)
 
-  - [Changes for version 3\.1\.5](#section18)
+  - [Changes for version 3\.1\.6](#section18)
 
-  - [Changes for version 3\.1\.4](#section19)
+  - [Changes for version 3\.1\.5](#section19)
 
-  - [Changes for version 3\.1\.3](#section20)
+  - [Changes for version 3\.1\.4](#section20)
 
-  - [Changes for version 3\.1\.2](#section21)
+  - [Changes for version 3\.1\.3](#section21)
 
-  - [Changes for version 3\.1\.1](#section22)
+  - [Changes for version 3\.1\.2](#section22)
 
-  - [Changes for version 3\.1](#section23)
+  - [Changes for version 3\.1\.1](#section23)
 
-  - [Changes for version 3\.0\.7](#section24)
+  - [Changes for version 3\.1](#section24)
 
-  - [Changes for version 3\.0\.6](#section25)
+  - [Changes for version 3\.0\.7](#section25)
 
-  - [Changes for version 3\.0\.5](#section26)
+  - [Changes for version 3\.0\.6](#section26)
 
-  - [Changes for version 3\.0\.4](#section27)
+  - [Changes for version 3\.0\.5](#section27)
 
-  - [Changes for version 3\.0\.3](#section28)
+  - [Changes for version 3\.0\.4](#section28)
 
-  - [Changes for version 3\.0\.2](#section29)
+  - [Changes for version 3\.0\.3](#section29)
 
-  - [Changes for version 3\.0\.1](#section30)
+  - [Changes for version 3\.0\.2](#section30)
 
-  - [Changes for version 3](#section31)
+  - [Changes for version 3\.0\.1](#section31)
 
-  - [Changes for version 2\.1](#section32)
+  - [Changes for version 3](#section32)
 
-  - [Authors](#section33)
+  - [Changes for version 2\.1](#section33)
 
-  - [Bugs, Ideas, Feedback](#section34)
+  - [Authors](#section34)
+
+  - [Bugs, Ideas, Feedback](#section35)
 
   - [Keywords](#keywords)
 
@@ -109,7 +111,14 @@ to the beginning of the project\.
 
 The latest changes are found at the top\.
 
-# <a name='section2'></a>Changes for version 3\.3
+# <a name='section2'></a>Changes for version 3\.3\.1
+
+  1. Oops\. Added refresh of tcl 8\.6, 8\.7 headers which was left behind behind\.
+
+  1. Oops\. Fixed mismatch of package directories computed by install vs
+     uninstall\.
+
+# <a name='section3'></a>Changes for version 3\.3
 
   1. As announced with 3\.2:
 
@@ -170,10 +179,10 @@ The latest changes are found at the top\.
   1. Broke lingering dependencies on the Tcllib packages __cmdline__ and
      __fileutil__\.
 
-     There no circularities between Critcl and Tcllib any longer, simplifying
-     installation\.
+     There are no circularities between Critcl and Tcllib any longer,
+     simplifying installation\.
 
-# <a name='section3'></a>Changes for version 3\.2
+# <a name='section4'></a>Changes for version 3\.2
 
   1. *BREAKING* *[CriTcl](critcl\.md)* now requires Tcl 8\.6 to be run\.
 
@@ -272,7 +281,7 @@ The latest changes are found at the top\.
      taking the underlying __Tcl\_Panic__'s printf ability into account and
      added a new macro __ASSERT\_VA__ exporting the same ability to the user\.
 
-# <a name='section4'></a>Changes for version 3\.1\.18\.1
+# <a name='section5'></a>Changes for version 3\.1\.18\.1
 
   1. *Attention*: While the overall version \(of the bundle\) moves to 3\.1\.18\.1
      the versions of packages __[critcl](critcl\.md)__ and
@@ -287,7 +296,7 @@ The latest changes are found at the top\.
      version 1\.1\.1\. Fixed partial template substitution breaking compilation of
      the generated code\.
 
-# <a name='section5'></a>Changes for version 3\.1\.18
+# <a name='section6'></a>Changes for version 3\.1\.18
 
   1. Feature \(Developer support\)\. Merged pull request \#96 from
      sebres/main\-direct\-invoke\. Enables direct invokation of the "main\.tcl" file
@@ -382,7 +391,7 @@ The latest changes are found at the top\.
 
      See the package reference for the details\.
 
-# <a name='section6'></a>Changes for version 3\.1\.17
+# <a name='section7'></a>Changes for version 3\.1\.17
 
   1. Extension: Allow duplicate arg\- and result\-type definitions if they are
      fully identical\.
@@ -441,7 +450,7 @@ The latest changes are found at the top\.
      existing functionality is accessible under mode __tcl__, which also is
      the default\. Both modes can be used together\.
 
-# <a name='section7'></a>Changes for version 3\.1\.16
+# <a name='section8'></a>Changes for version 3\.1\.16
 
   1. New feature\. Extended __critcl::cproc__'s argument handling to allow
      arbitrary mixing of required and optional arguments\.
@@ -493,11 +502,11 @@ The latest changes are found at the top\.
      not use md5\. That is limited to mode *[compile &
      run](\.\./index\.md\#compile\_run)*\.
 
-# <a name='section8'></a>Changes for version 3\.1\.15
+# <a name='section9'></a>Changes for version 3\.1\.15
 
   1. Fixed version number bogosity with __3\.1\.14__\.
 
-# <a name='section9'></a>Changes for version 3\.1\.14
+# <a name='section10'></a>Changes for version 3\.1\.14
 
   1. Fixed issue \#36\. Added message to target __all__ of the Makefile
      generated for TEA mode\. Additionally tweaked other parts of the output to
@@ -531,7 +540,7 @@ The latest changes are found at the top\.
      frame\!\)\. This should make it easier to determine the location of the
      troubling declaration\.
 
-# <a name='section10'></a>Changes for version 3\.1\.13
+# <a name='section11'></a>Changes for version 3\.1\.13
 
   1. Merged PR \#43\. Fixed bug loading adjunct Tcl sources\.
 
@@ -582,7 +591,7 @@ The latest changes are found at the top\.
      critcl::class 1\.0\.1\. Note: "literals", "enum", "emap", and "bitmap" do not
      require a fix as they are all built on top of "iassoc"\.
 
-# <a name='section11'></a>Changes for version 3\.1\.12
+# <a name='section12'></a>Changes for version 3\.1\.12
 
   1. Fixed issue 42\. Clear ::errorInfo immediately after startup to prevent
      leakage of irrelevant \(caught\) errors into our script and confusing the
@@ -616,7 +625,7 @@ The latest changes are found at the top\.
      __[critcl::bitmap](critcl\_bitmap\.md)__, and
      __[critcl::enum](critcl\_enum\.md)__
 
-# <a name='section12'></a>Changes for version 3\.1\.11
+# <a name='section13'></a>Changes for version 3\.1\.11
 
   1. Fixed issue \#37, via pull request \#38, with thanks to Jos DeCoster\.
      Information was stored into the v::delproc and v::clientdata arrays using a
@@ -638,7 +647,7 @@ The latest changes are found at the top\.
      whose string elements represent that set\. Built on top of
      __[critcl::iassoc](critcl\_iassoc\.md)__\.
 
-# <a name='section13'></a>Changes for version 3\.1\.10
+# <a name='section14'></a>Changes for version 3\.1\.10
 
   1. Fixed code version numbering forgotten with 3\.1\.9\.
 
@@ -655,7 +664,7 @@ The latest changes are found at the top\.
      not rebuilding a library for changed sources\. Bug and fix reported by Peter
      Spjuth\.
 
-# <a name='section14'></a>Changes for version 3\.1\.9
+# <a name='section15'></a>Changes for version 3\.1\.9
 
   1. Fixed issue \#27\. Added missing platform definitions for various alternate
      linux and OS X targets\.
@@ -682,7 +691,7 @@ The latest changes are found at the top\.
 
   1. Fixed issue \#34\. Handle files starting with a dot better\.
 
-# <a name='section15'></a>Changes for version 3\.1\.8
+# <a name='section16'></a>Changes for version 3\.1\.8
 
   1. Fixed issue with package indices generated for Tcl 8\.4\. Join the list of
      commands with semi\-colon, not newline\.
@@ -690,7 +699,7 @@ The latest changes are found at the top\.
   1. Fixed issue \#26 which brought up use\-cases I had forgotten to consider
      while fixing bug \#21 \(see critcl 3\.1\.6\)\.
 
-# <a name='section16'></a>Changes for version 3\.1\.7
+# <a name='section17'></a>Changes for version 3\.1\.7
 
   1. Fixed issue \#24\. Extract and unconditionally display compiler warnings
      found in the build log\. Prevents users from missing warnings which, while
@@ -703,7 +712,7 @@ The latest changes are found at the top\.
   1. New feature, by Ashok P\. Nadkarni\. Platform configurations can inherit
      values from configurations defined before them\.
 
-# <a name='section17'></a>Changes for version 3\.1\.6
+# <a name='section18'></a>Changes for version 3\.1\.6
 
   1. Fixed issue \#21\. While the multi\-definition of the stub\-table pointer
      variables was ok with for all the C linkers seen so far C\+\+ linkers did not
@@ -729,7 +738,7 @@ The latest changes are found at the top\.
 
   1. Fixed issue \#23\.
 
-# <a name='section18'></a>Changes for version 3\.1\.5
+# <a name='section19'></a>Changes for version 3\.1\.5
 
   1. Fixed issue \#19\. Made the regular expression extracting the MSVC version
      number more general to make it work on german language systems\. This may
@@ -738,7 +747,7 @@ The latest changes are found at the top\.
   1. Fixed issue \#20\. Made option \-tea work on windows, at least in a unix
      emulation environment like msys/mingw\.
 
-# <a name='section19'></a>Changes for version 3\.1\.4
+# <a name='section20'></a>Changes for version 3\.1\.4
 
   1. Bugfix in package __[critcl::class](critcl\_class\.md)__\. Generate a
      dummy field in the class structure if the class has no class variables\.
@@ -750,7 +759,7 @@ The latest changes are found at the top\.
   1. Fixed issue \#16, a typo in the documentation of command
      __[critcl::class](critcl\_class\.md)__\.
 
-# <a name='section20'></a>Changes for version 3\.1\.3
+# <a name='section21'></a>Changes for version 3\.1\.3
 
   1. Enhancement\. In detail:
 
@@ -767,7 +776,7 @@ The latest changes are found at the top\.
      data scanner to ensure that the template files are made part of the
      package\. Versions bumped to 1\.0\.4 and 1\.0\.1 respectively\.
 
-# <a name='section21'></a>Changes for version 3\.1\.2
+# <a name='section22'></a>Changes for version 3\.1\.2
 
   1. Enhancement\. In detail:
 
@@ -779,7 +788,7 @@ The latest changes are found at the top\.
      variables to the empty string\. Bumped version of emulation package
      __lassign84__ to 1\.0\.1\.
 
-# <a name='section22'></a>Changes for version 3\.1\.1
+# <a name='section23'></a>Changes for version 3\.1\.1
 
   1. Bugfixes all around\. In detail:
 
@@ -795,7 +804,7 @@ The latest changes are found at the top\.
   1. Extended a __[critcl::class](critcl\_class\.md)__ generated error
      message in instance creation for clarity\. Bumped to version 1\.0\.2\.
 
-# <a name='section23'></a>Changes for version 3\.1
+# <a name='section24'></a>Changes for version 3\.1
 
   1. Added a new higher\-level package
      __[critcl::iassoc](critcl\_iassoc\.md)__\.
@@ -872,7 +881,7 @@ The latest changes are found at the top\.
      See the section __CriTcl cproc Type Reference__ for details of the
      provided commands\.
 
-# <a name='section24'></a>Changes for version 3\.0\.7
+# <a name='section25'></a>Changes for version 3\.0\.7
 
   1. Fixed the code generated by __critcl::c\+\+command__\. The emitted code
      handed a non\-static string table to __Tcl\_GetIndexFromObj__, in
@@ -880,7 +889,7 @@ The latest changes are found at the top\.
      address\. This was a memory smash waiting to happen\. Thanks to Brian Griffin
      for alrerting us to the general problem\.
 
-# <a name='section25'></a>Changes for version 3\.0\.6
+# <a name='section26'></a>Changes for version 3\.0\.6
 
   1. Fixed github issue 10\. The critcl application now delivers a proper exit
      code \(1\) on build failure, instead of always indicating success \(status 0\)\.
@@ -892,7 +901,7 @@ The latest changes are found at the top\.
   1. Documentation cleanup, mainly in the installation guide, and the README\.md
      shown by github
 
-# <a name='section26'></a>Changes for version 3\.0\.5
+# <a name='section27'></a>Changes for version 3\.0\.5
 
   1. Fixed bug in the new code for \#line pragmas triggered when specifying C
      code without leading whitespace\.
@@ -900,7 +909,7 @@ The latest changes are found at the top\.
   1. Extended the documentation to have manpages for the license, source
      retrieval, installer, and developer's guides\.
 
-# <a name='section27'></a>Changes for version 3\.0\.4
+# <a name='section28'></a>Changes for version 3\.0\.4
 
   1. Fixed generation of the package's initname when the incoming code is read
      from stdin and has no proper path\.
@@ -933,13 +942,13 @@ The latest changes are found at the top\.
   1. Extended the build script with targets to regenerate the embedded
      documentation, and diagrams, and to generate a release\.
 
-# <a name='section28'></a>Changes for version 3\.0\.3
+# <a name='section29'></a>Changes for version 3\.0\.3
 
   1. Fixed github issues 5 and 8, for the example build\.tcl scripts\. Working
      around a missing variable ::errorInfo\. It should always be present, however
      there seem to be revisions of Tcl around which violate this assumption\.
 
-# <a name='section29'></a>Changes for version 3\.0\.2
+# <a name='section30'></a>Changes for version 3\.0\.2
 
   1. Fixed issue in compile\-and\-run mode where commands put into the auto\_index
      are not found by Tcl's \[unknown\] command\.
@@ -954,7 +963,7 @@ The latest changes are found at the top\.
      It should always be present, however there seem to be revisions of Tcl
      around which violate this assumption\.
 
-# <a name='section30'></a>Changes for version 3\.0\.1
+# <a name='section31'></a>Changes for version 3\.0\.1
 
   1. Bugfixes all around\. In detail:
 
@@ -991,7 +1000,7 @@ The latest changes are found at the top\.
      not needed\. Just superfluous\. We search for the library in the paths
      specified by the environment variable LIB\.
 
-# <a name='section31'></a>Changes for version 3
+# <a name='section32'></a>Changes for version 3
 
   1. The command __critcl::platform__ was deprecated in version 2\.1,
      superceded by __critcl::targetplatform__, yet kept for compatibility\.
@@ -1066,7 +1075,7 @@ The latest changes are found at the top\.
      Please see section *Package Meta Data* of the
      __[critcl](critcl\.md)__ package documentation for details\.
 
-# <a name='section32'></a>Changes for version 2\.1
+# <a name='section33'></a>Changes for version 2\.1
 
   1. Fixed bug where __critcl::tsources__ interpreted relative paths as
      relative to the current working directory instead of relative to the
@@ -1186,11 +1195,11 @@ The latest changes are found at the top\.
 
   1. Dropped remnants of support for Tcl 8\.3 and before\.
 
-# <a name='section33'></a>Authors
+# <a name='section34'></a>Authors
 
 Jean Claude Wippler, Steve Landers, Andreas Kupries
 
-# <a name='section34'></a>Bugs, Ideas, Feedback
+# <a name='section35'></a>Bugs, Ideas, Feedback
 
 This document, and the package it describes, will undoubtedly contain bugs and
 other problems\. Please report them at

@@ -6,12 +6,12 @@
 #
 # Copyright (c) 2001-20?? Jean-Claude Wippler
 # Copyright (c) 2002-20?? Steve Landers
-# Copyright (c) 20??-2023 Andreas Kupries <andreas_kupries@users.sourceforge.net>
+# Copyright (c) 20??-2024 Andreas Kupries <andreas_kupries@users.sourceforge.net>
 
 # # ## ### ##### ######## ############# #####################
 # CriTcl Core.
 
-package provide critcl 3.3
+package provide critcl 3.3.1
 
 namespace eval ::critcl {}
 
