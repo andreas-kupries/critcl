@@ -327,11 +327,20 @@ proc ::platform::patterns {id} {
 		}
 	    }
 	}
+	macosx-aarch64 {
+	    lappend res macosx-arm macosx-arm64 macosx-universal2
+	}
+	macosx-arm {
+	    lappend res macosx-arm64 macosx-aarch64 macosx-universal2
+	}
+	macosx-arm64 {
+	    lappend res macosx-arm macosx-aarch64 macosx-universal2
+	}
 	macosx-powerpc {
 	    lappend res macosx-universal
 	}
 	macosx-x86_64 {
-	    lappend res macosx-i386-x86_64
+	    lappend res macosx-i386-x86_64 macosx-universal2
 	}
 	macosx-ix86 {
 	    lappend res macosx-universal macosx-i386-x86_64
@@ -341,11 +350,20 @@ proc ::platform::patterns {id} {
 	    if {[regexp {macosx([^-]*)-(.*)} $id -> v cpu]} {
 
 		switch -exact -- $cpu {
+		    aarch64 {
+	        lappend alt arm arm64 universal2
+	        }
+		    arm {
+	        lappend alt arm64 aarch64 universal2
+	        }
+		    arm64 {
+	        lappend alt arm aarch64 universal2
+	        }
 		    ix86    {
 			lappend alt i386-x86_64
 			lappend alt universal
 		    }
-		    x86_64  { lappend alt i386-x86_64 }
+		    x86_64  { lappend alt i386-x86_64 universal2 }
 		    default { set alt {} }
 		}
 
