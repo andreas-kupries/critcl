@@ -117,8 +117,16 @@ proc ::critcl::runtime::MapPlatform {{mapping {}}} {
 	set v [split $version .]
 	set v1 [lindex $v 0]
 	set v2 [lindex $v 1]
-	incr v1 -4
-	set version 10.$v1.$v2
+	set v3 [lindex $v 2]
+	# Darwin 19 and earlier are macOS 10.x. Darwin 20 and later are macOS
+    # 11, macOS 12, etc.
+    if {$v1 >= 20} {
+        incr v1 -9
+        set version $v1.$v2.$v3
+    } else {
+        incr v1 -4
+        set version 10.$v1.$v2
+	}
     } else {
 	# Strip trailing non-version info
 	regsub -- {-.*$} $version {} version

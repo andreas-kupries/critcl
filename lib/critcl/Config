@@ -81,20 +81,31 @@ threadflags     -DUSE_THREAD_ALLOC=1 -D_REENTRANT=1 -D_THREAD_SAFE=1    \
 # OSX - check if universal binaries supported by the installed toolchain
 
 if {[string match macosx-* $platform]} {
+    if {[info exists ::env(osxmin)] && $::env(osxmin) ne ""} {
+        set osxmin $::env(osxmin)
+    } elseif {[info exists ::env(MACOSX_DEPLOYMENT_TARGET)] && $::env(MACOSX_DEPLOYMENT_TARGET) ne ""} {
+        set osxmin $::env(MACOSX_DEPLOYMENT_TARGET)
+    }
     if {[info exists ::env(SDKROOT)] && $::env(SDKROOT) ne ""} {
         set SDKROOT $::env(SDKROOT)
+    } elseif {![catch {exec xcrun --show-sdk-path} sdkpath] && $sdkpath ne {} && [file exists $sdkpath]} {
+        set SDKROOT $sdkpath
     } else {
         # look for an SDK supporting universal binaries
+        set SDKROOT  ""
         set pos [string length MacOSX]
 	set sdklist {}
-	set base /Developer
-	catch {set base [exec xcode-select -print-path]}
+	set bases {/Library/Developer/CommandLineTools /Developer}
+	catch {lappend bases [exec xcode-select -print-path]}
+	foreach base $bases {
         foreach dir [glob -nocomplain -tails \
 			    -directory $base/SDKs MacOSX*] {
             set ver [string trimright \
                         [file rootname [string range $dir $pos end]] u]
-            if {"$ver" != "" && [package vcompare $ver 10.4] >= 0}  {
-                # 10.4 is earliest supporting universal that we support
+            if {"$ver" != "" && [package vcompare $ver 10.4] >= 0
+                && (![info exists osxmin] || [package vcompare $ver $osxmin] >= 0)}  {
+                # 10.4 is earliest supporting universal that we support, and
+                # the deployment target cannot be newer than the SDK.
                 set path($ver) $dir
                 lappend sdklist $ver
             }
@@ -102,16 +113,21 @@ if {[string match macosx-* $platform]} {
         if {[llength $sdklist]} {
             set ver [lindex [lsort -command "package vcompare" $sdklist] 0]
             set SDKROOT $base/SDKs/$path($ver)
-        } else {
-            set SDKROOT  ""
+            break
         }
     }
+    }
+    if {![info exists osxmin]} {
     if {$SDKROOT ne ""} {
         # get the SDKsettings for the min OSX value supported
 	set info ""
-        if [catch {
+	if {[catch {
+	        set osxmin [exec plutil -extract DefaultProperties.MACOSX_DEPLOYMENT_TARGET \
+	                        raw $SDKROOT/SDKSettings.plist]
+	}]} {
+        if {[catch {
                 set info [exec defaults read $SDKROOT/SDKSettings buildSettings]
-        }] {
+        }]} {
             catch {
                 set info [exec defaults read $SDKROOT/SDKSettings DefaultProperties \
 			      -dict MACOSX_DEPLOYMENT_TARGET]
@@ -126,18 +142,27 @@ if {[string match macosx-* $platform]} {
         regsub -all {[\n"\;=\{\}]+} $info "" info ;#" help emacs hilighting
         regsub -all {\s+} $info " " info
         set osxmin [lindex $info 1]
+        }
     } else {
         # use the current platform
         foreach {v1 v2 v3} [split $::tcl_platform(osVersion) .] break
-        incr v1 -4
-        set osxmin 10.$v1.$v2
+        # Darwin 19 and earlier are macOS 10.x. Darwin 20 and later are macOS
+        # 11, macOS 12, etc.
+        if {$v1 >= 20} {
+            incr v1 -9
+            set osxmin ${v1}.0
+        } else {
+            incr v1 -4
+            set osxmin 10.$v1
+        }
         # do we actually need to check if universal is supported, given the
         # gcc check below will do it for us?
         # set info [exec lipo -info /usr/lib/libSystem.dylib]
         # set plats [split [string trim [lindex [split $info :] 2]]]
     }
-    if {[info exists ::env(osxmin)] && $::env(osxmin) ne ""} {
-        set osxmin $::env(osxmin)
+    }
+    if {$SDKROOT eq ""} {
+        set SDKROOT /
     }
     set universal 0
     catch {
@@ -145,6 +170,7 @@ if {[string match macosx-* $platform]} {
 	set ppc64  [expr {[exec gcc -v -arch ppc64  > /dev/null 2>@stdout] eq ""}]
 	set i386   [expr {[exec gcc -v -arch i386   > /dev/null 2>@stdout] eq ""}]
 	set x86_64 [expr {[exec gcc -v -arch x86_64 > /dev/null 2>@stdout] eq ""}]
+	set arm64  [expr {[exec gcc -v -arch arm64  > /dev/null 2>@stdout] eq ""}]
     }
 }
 
@@ -165,7 +191,21 @@ macosx-powerpc link         gcc -bundle -arch ppc \
 macosx-powerpc link_preload -undefined dynamic_lookup -mmacosx-version-min=10.3
 macosx-powerpc strip
 
-# default on OSX intel is universal containing x86 32 and 64 bit
+# default on macOS 11+ is universal containing arm 64 bit and x86 64 bit
+macosx-universal2 when            $arm64 && $x86_64
+macosx-universal2 compile         clang -c -arch arm64 -arch x86_64 \
+    -isysroot $SDKROOT \
+    -mmacosx-version-min=$osxmin
+macosx-universal2 link            clang -bundle -arch arm64 -arch x86_64 \
+    -isysroot $SDKROOT \
+    -mmacosx-version-min=$osxmin
+macosx-universal2 link_preload    -undefined dynamic_lookup
+macosx-universal2 strip
+macosx-universal2 platform        macosx-universal2 $osxmin \
+	    macosx-arm64 \
+	    macosx-x86_64
+
+# default on older OSX intel is universal containing x86 32 and 64 bit
 macosx-ix86 when            $i386 && $x86_64
 macosx-ix86 compile         gcc -c -arch i386 -arch x86_64 \
     -isysroot $SDKROOT \
@@ -255,6 +295,22 @@ macosx-x86_64 link          gcc -bundle -arch x86_64
 macosx-x86_64 link_preload  -undefined dynamic_lookup
 macosx-x86_64 strip
 macosx-x86_64 platform      macosx-x86_64
+
+# OSX arm 64 bit
+macosx-arm64 when           $arm64
+macosx-arm64 compile        clang -c -arch arm64
+macosx-arm64 link           clang -bundle -arch arm64
+macosx-arm64 link_preload   -undefined dynamic_lookup
+macosx-arm64 strip
+macosx-arm64 platform       macosx-arm64
+
+macosx-aarch64 when         $arm64
+macosx-aarch64 copy         macosx-arm64
+macosx-aarch64 platform     macosx-aarch64
+
+macosx-arm when             $arm64
+macosx-arm copy             macosx-arm64
+macosx-arm platform         macosx-arm
 
 # Linux - 32 bit or 64 bit build - select using "-target" if you don't
 #         want the platform default (32 on 32, 64 on 64). This requires
