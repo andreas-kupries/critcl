@@ -94,6 +94,8 @@ this is planned\.
 
 # <a name='section4'></a>Known Users
 
+  - [AKTIVE](https://core\.tcl\.tk/akupries/aktive)
+
   - [AnKH](https://core\.tcl\-lang\.org/akupries/ankh)
 
   - [TclYAML](https://core\.tcl\.tk/akupries/tclyaml)
@@ -110,7 +112,8 @@ this is planned\.
 
 # <a name='section5'></a>Tutorials \- Practical Study \- To Learn
 
-This section is currently empty\.
+  1. *[How To Use CriTcl](critcl\_howto\_use\.md)* \- A light introduction
+     through examples\.
 
 # <a name='section6'></a>Explanations \- Theoretical Knowledge \- To Understand
 
@@ -125,7 +128,7 @@ This section is currently empty\.
   1. *[How To Use CriTcl](critcl\_howto\_use\.md)* \- A light introduction
      through examples\.
 
-  1. *NEW*: *[How To Adapt Critcl Packages for Tcl 9](critcl\_tcl9\.md)*\.
+  1. *[How To Adapt Critcl Packages for Tcl 9](critcl\_tcl9\.md)*\.
 
 # <a name='section8'></a>References \- Theoretical Work \- To Gain Knowlegde
 

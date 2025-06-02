@@ -42,7 +42,9 @@ a few how-to guides. Tutorials and Explanations are in need of expansion, this i
 [comment {= = == === ===== ======== ============= =====================}]
 [section {Tutorials - Practical Study - To Learn}]
 
-This section is currently empty.
+[list_begin enumerated]
+[enum] [term {How To Use CriTcl}] - A light introduction through examples.
+[list_end]
 
 [comment {= = == === ===== ======== ============= =====================}]
 [section {Explanations - Theoretical Knowledge - To Understand}]
@@ -56,7 +58,7 @@ This section is currently empty.
 [enum] [term {How To Get The CriTcl Sources}].
 [enum] [term {How To Install CriTcl}].
 [enum] [term {How To Use CriTcl}] - A light introduction through examples.
-[enum] [strong NEW]: [term {How To Adapt Critcl Packages for Tcl 9}].
+[enum] [term {How To Adapt Critcl Packages for Tcl 9}].
 [list_end]
 
 [comment {= = == === ===== ======== ============= =====================}]

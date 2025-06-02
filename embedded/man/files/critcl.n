@@ -322,6 +322,8 @@ Theoretical | \fBExplanations\fR    | \fBReferences\fR
 a few how-to guides\&. Tutorials and Explanations are in need of expansion, this is planned\&.
 .SH "KNOWN USERS"
 .IP \(bu
+\fIAKTIVE\fR [https://core\&.tcl\&.tk/akupries/aktive]
+.IP \(bu
 \fIAnKH\fR [https://core\&.tcl-lang\&.org/akupries/ankh]
 .IP \(bu
 \fITclYAML\fR [https://core\&.tcl\&.tk/akupries/tclyaml]
@@ -337,7 +339,9 @@ a few how-to guides\&. Tutorials and Explanations are in need of expansion, this
 \fICRIMP\fR [https://core\&.tcl\&.tk/akupries/crimp]
 .PP
 .SH "TUTORIALS - PRACTICAL STUDY - TO LEARN"
-This section is currently empty\&.
+.IP [1]
+\fIHow To Use CriTcl\fR - A light introduction through examples\&.
+.PP
 .SH "EXPLANATIONS - THEORETICAL KNOWLEDGE - TO UNDERSTAND"
 This section is currently empty\&.
 .SH "HOW-TO GUIDES - PRACTICAL WORK - TO SOLVE PROBLEMS"
@@ -348,7 +352,7 @@ This section is currently empty\&.
 .IP [3]
 \fIHow To Use CriTcl\fR - A light introduction through examples\&.
 .IP [4]
-\fINEW\fR: \fIHow To Adapt Critcl Packages for Tcl 9\fR\&.
+\fIHow To Adapt Critcl Packages for Tcl 9\fR\&.
 .PP
 .SH "REFERENCES - THEORETICAL WORK - TO GAIN KNOWLEGDE"
 .IP [1]
