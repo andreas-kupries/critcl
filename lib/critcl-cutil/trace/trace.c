@@ -177,6 +177,37 @@ critcl_trace_pop (void)
     TOP = next;
 }
 
+int
+critcl_trace_scope (void)
+{
+    SETUP;
+    return LEVEL;
+}
+
+void
+critcl_trace_dump (int until)
+{
+    SETUP;
+    // save state
+    int          level = LEVEL;
+    scope_stack* top   = TOP;
+
+    critcl_trace_printf (1, "TRACE DUMP until %d", until);
+
+    while (LEVEL > until) {
+	indent();
+	scope();
+	separator();
+	critcl_trace_closer (1);
+	// pop without release
+	LEVEL -= 4;
+	TOP   = TOP->down;
+    }
+    // restore state
+    LEVEL = level;
+    TOP   = top;
+}
+
 void
 critcl_trace_closer (int on)
 {

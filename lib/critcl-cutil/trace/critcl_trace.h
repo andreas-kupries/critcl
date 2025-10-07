@@ -34,6 +34,7 @@
  */
 
 #include <tcl.h>
+#include <critcl_assert.h>
 
 /*
  * Main (convenience) commands:
@@ -50,6 +51,7 @@
  * - TRACE_PUSH_SCOPE :: Start a named scope, no output
  * - TRACE_PUSH_FUNC  :: Start a scope, named by the current function, no output
  * - TRACE_POP        :: End a scope, no output
+ * - TRACE_SCOPE      :: Determine scope (int level)
 
  * Tracing
  * - TRACE_HEADER  :: Start of trace line (location, indentation, scope)
@@ -69,6 +71,8 @@
 #define TRACE_PUSH_SCOPE(string)
 #define TRACE_PUSH_FUNC
 #define TRACE_POP
+#define TRACE_SCOPE
+#define TRACE_DUMP(until)
 #define TRACE_ON
 #define TRACE_OFF
 #define TRACE_HEADER(indent)
@@ -101,8 +105,10 @@
 #define TRACE_THREAD_EXIT TRACE ("THREAD EXIT %s", "(void)") ; TRACE_POP ; critcl_trace_thread_end() ; TCL_THREAD_CREATE_RETURN
 
 #define TRACE_PUSH_SCOPE(string) critcl_trace_push (string)
-#define TRACE_PUSH_FUNC          TRACE_PUSH_SCOPE (__func__)
-#define TRACE_POP                critcl_trace_pop()
+#define TRACE_PUSH_FUNC          TRACE_PUSH_SCOPE (__func__) ; int __scope__ = TRACE_SCOPE
+#define TRACE_POP                if (__scope__ != TRACE_SCOPE) { TRACE_DUMP (0) ; ASSERT_VA (0, "trace scope mismatch on function exit", ", %s", __func__); } ; critcl_trace_pop()
+#define TRACE_SCOPE              critcl_trace_scope()
+#define TRACE_DUMP(until)        critcl_trace_dump(until)
 
 #define TRACE_ON  TRACE_TAG_ON  (THIS_FILE)
 #define TRACE_OFF TRACE_TAG_OFF (THIS_FILE)
@@ -149,6 +155,9 @@ extern void critcl_trace_header     (int on, int indent, const char *filename, i
 extern void critcl_trace_printf     (int on, const char *pat, ...);
 extern void critcl_trace_closer     (int on);
 extern void critcl_trace_thread_end (void);
+
+extern int  critcl_trace_scope      (void);
+extern void critcl_trace_dump       (int until);
 
 /*
  * Declarations for the support functions used by the
