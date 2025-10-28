@@ -42,7 +42,6 @@ extern "C" {
  * win/configure.ac	(as above)
  * win/tcl.m4		(not patchlevel)
  * README.md		(sections 0 and 2, with and without separator)
- * macosx/Tcl-Common.xcconfig (not patchlevel) 1 LOC
  * win/README		(not patchlevel) (sections 0 and 2)
  * unix/tcl.spec	(1 LOC patch)
  */
@@ -52,11 +51,11 @@ extern "C" {
 #endif
 #if TCL_MAJOR_VERSION == 9
 #   define TCL_MINOR_VERSION	0
-#   define TCL_RELEASE_LEVEL	TCL_BETA_RELEASE
-#   define TCL_RELEASE_SERIAL	4
+#   define TCL_RELEASE_LEVEL	TCL_FINAL_RELEASE
+#   define TCL_RELEASE_SERIAL	2
 
 #   define TCL_VERSION		"9.0"
-#   define TCL_PATCH_LEVEL	"9.0b4"
+#   define TCL_PATCH_LEVEL	"9.0.2"
 #endif /* TCL_MAJOR_VERSION */
 
 #if defined(RC_INVOKED)
@@ -112,9 +111,9 @@ extern "C" {
 #   else
 #	define TCL_FORMAT_PRINTF(a,b) __attribute__ ((__format__ (__printf__, a, b)))
 #   endif
-#   define TCL_NORETURN __attribute__ ((noreturn))
-#   define TCL_NOINLINE __attribute__ ((noinline))
-#   define TCL_NORETURN1 __attribute__ ((noreturn))
+#   define TCL_NORETURN __attribute__ ((__noreturn__))
+#   define TCL_NOINLINE __attribute__ ((__noinline__))
+#   define TCL_NORETURN1 __attribute__ ((__noreturn__))
 #else
 #   define TCL_FORMAT_PRINTF(a,b)
 #   if defined(_MSC_VER)
@@ -323,9 +322,15 @@ typedef unsigned TCL_WIDE_INT_TYPE	Tcl_WideUInt;
 #define Tcl_DoubleAsWide(val)	((Tcl_WideInt)((double)(val)))
 
 #if TCL_MAJOR_VERSION < 9
+# ifndef Tcl_Size
     typedef int Tcl_Size;
+# endif
+# ifndef TCL_SIZE_MAX
 #   define TCL_SIZE_MAX ((int)(((unsigned int)-1)>>1))
+# endif
+# ifndef TCL_SIZE_MODIFIER
 #   define TCL_SIZE_MODIFIER ""
+#endif
 #else
     typedef ptrdiff_t Tcl_Size;
 #   define TCL_SIZE_MAX ((Tcl_Size)(((size_t)-1)>>1))
@@ -729,6 +734,10 @@ typedef union Tcl_ObjInternalRep {	/* The internal representation: */
 	void *ptr;		/*     not used internally any more. */
 	unsigned long value;
     } ptrAndLongRep;
+    struct {			/*   - use for pointer and length reps */
+	void *ptr;
+	Tcl_Size size;
+    } ptrAndSize;
 } Tcl_ObjInternalRep;
 
 /*
@@ -2084,7 +2093,7 @@ typedef struct Tcl_EncodingType {
  */
 
 #ifndef TCL_UTF_MAX
-#   if TCL_MAJOR_VERSION > 8
+#   if defined(BUILD_tcl) || TCL_MAJOR_VERSION > 8
 #	define TCL_UTF_MAX		4
 #   else
 #	define TCL_UTF_MAX		3
@@ -2318,7 +2327,7 @@ const char *		TclTomMathInitializeStubs(Tcl_Interp *interp,
 const char *		TclInitStubTable(const char *version);
 void *			TclStubCall(void *arg);
 #if defined(_WIN32)
-    TCL_NORETURN void	Tcl_ConsolePanic(const char *format, ...);
+    TCL_NORETURN void Tcl_ConsolePanic(const char *format, ...);
 #else
 #   define Tcl_ConsolePanic ((Tcl_PanicProc *)NULL)
 #endif
@@ -2336,14 +2345,9 @@ void *			TclStubCall(void *arg);
 	    (exact)|(TCL_MAJOR_VERSION<<8)|(0xFF<<16), \
 	    TCL_STUB_MAGIC)
 # endif
-#elif TCL_RELEASE_LEVEL == TCL_FINAL_RELEASE
-#   define Tcl_InitStubs(interp, version, exact) \
-	(Tcl_InitStubs)(interp, version, \
-	    (exact)|(TCL_MAJOR_VERSION<<8)|(TCL_MINOR_VERSION<<16), \
-	    TCL_STUB_MAGIC)
 #else
 #   define Tcl_InitStubs(interp, version, exact) \
-	(Tcl_InitStubs)(interp, (((exact)&1) ? (version) : "9.0b3"), \
+	(Tcl_InitStubs)(interp, version, \
 	    (exact)|(TCL_MAJOR_VERSION<<8)|(TCL_MINOR_VERSION<<16), \
 	    TCL_STUB_MAGIC)
 #endif
@@ -2352,14 +2356,10 @@ void *			TclStubCall(void *arg);
 #   define Tcl_InitStubs(interp, version, exact) \
 	Tcl_Panic(((void)interp, (void)version, \
 		(void)exact, "Please define -DUSE_TCL_STUBS"))
-#elif TCL_RELEASE_LEVEL == TCL_FINAL_RELEASE
+#else
 #   define Tcl_InitStubs(interp, version, exact) \
 	Tcl_PkgInitStubsCheck(interp, version, \
 		(exact)|(TCL_MAJOR_VERSION<<8)|(TCL_MINOR_VERSION<<16))
-#else
-#   define Tcl_InitStubs(interp, version, exact) \
-	Tcl_PkgInitStubsCheck(interp, TCL_PATCH_LEVEL, \
-		1|(TCL_MAJOR_VERSION<<8)|(TCL_MINOR_VERSION<<16))
 #endif
 #endif
 
@@ -2368,8 +2368,7 @@ void *			TclStubCall(void *arg);
  * Tcl_GetMemoryInfo is needed for AOLserver. [Bug 1868171]
  */
 
-#define Tcl_Main(argc, argv, proc) \
-	Tcl_MainEx(argc, argv, proc, \
+#define Tcl_Main(argc, argv, proc) Tcl_MainEx(argc, argv, proc, \
 	    ((Tcl_SetPanicProc(Tcl_ConsolePanic), Tcl_CreateInterp())))
 EXTERN TCL_NORETURN void Tcl_MainEx(Tcl_Size argc, char **argv,
 			    Tcl_AppInitProc *appInitProc, Tcl_Interp *interp);
@@ -2390,7 +2389,7 @@ EXTERN void		Tcl_StaticLibrary(Tcl_Interp *interp,
 #endif
 EXTERN Tcl_ExitProc *	Tcl_SetExitProc(Tcl_ExitProc *proc);
 #ifdef _WIN32
-EXTERN const char *	TclZipfs_AppHook(int *argc, wchar_t ***argv);
+EXTERN const char *TclZipfs_AppHook(int *argc, wchar_t ***argv);
 #else
 EXTERN const char *TclZipfs_AppHook(int *argc, char ***argv);
 #endif
@@ -2544,8 +2543,7 @@ TclBounceRefCount(
 
 /*
  * Declare that obj will no longer be used or referenced.
- * This will release the obj if there is no referece count,
- * otherwise let it be.
+ * This will free the obj if there are no references to the obj.
  */
 #   define Tcl_BounceRefCount(objPtr) \
     TclBounceRefCount(objPtr);
@@ -2614,10 +2612,8 @@ TclBounceRefCount(
  * hash tables:
  */
 
-#undef  Tcl_FindHashEntry
 #define Tcl_FindHashEntry(tablePtr, key) \
 	(*((tablePtr)->findProc))(tablePtr, (const char *)(key))
-#undef  Tcl_CreateHashEntry
 #define Tcl_CreateHashEntry(tablePtr, key, newPtr) \
 	(*((tablePtr)->createProc))(tablePtr, (const char *)(key), newPtr)
 

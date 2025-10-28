@@ -1102,7 +1102,9 @@ EXTERN int		Tcl_IsChannelExisting(const char *channelName);
 /* Slot 419 is reserved */
 /* Slot 420 is reserved */
 /* Slot 421 is reserved */
-/* Slot 422 is reserved */
+/* 422 */
+EXTERN Tcl_HashEntry *	Tcl_CreateHashEntry(Tcl_HashTable *tablePtr,
+				const void *key, int *newPtr);
 /* 423 */
 EXTERN void		Tcl_InitCustomHashTable(Tcl_HashTable *tablePtr,
 				int keyType, const Tcl_HashKeyType *typePtr);
@@ -1408,7 +1410,7 @@ EXTERN void		Tcl_LimitTypeSet(Tcl_Interp *interp, int type);
 /* 531 */
 EXTERN void		Tcl_LimitTypeReset(Tcl_Interp *interp, int type);
 /* 532 */
-EXTERN int		Tcl_LimitGetCommands(Tcl_Interp *interp);
+EXTERN Tcl_Size		Tcl_LimitGetCommands(Tcl_Interp *interp);
 /* 533 */
 EXTERN void		Tcl_LimitGetTime(Tcl_Interp *interp,
 				Tcl_Time *timeLimitPtr);
@@ -1764,7 +1766,9 @@ EXTERN int		Tcl_UtfCharComplete(const char *src, Tcl_Size length);
 EXTERN const char *	Tcl_UtfNext(const char *src);
 /* 656 */
 EXTERN const char *	Tcl_UtfPrev(const char *src, const char *start);
-/* Slot 657 is reserved */
+/* 657 */
+EXTERN int		Tcl_FSTildeExpand(Tcl_Interp *interp,
+				const char *path, Tcl_DString *dsPtr);
 /* 658 */
 EXTERN int		Tcl_ExternalToUtfDStringEx(Tcl_Interp *interp,
 				Tcl_Encoding encoding, const char *src,
@@ -2306,7 +2310,7 @@ typedef struct TclStubs {
     void (*reserved419)(void);
     void (*reserved420)(void);
     void (*reserved421)(void);
-    void (*reserved422)(void);
+    Tcl_HashEntry * (*tcl_CreateHashEntry) (Tcl_HashTable *tablePtr, const void *key, int *newPtr); /* 422 */
     void (*tcl_InitCustomHashTable) (Tcl_HashTable *tablePtr, int keyType, const Tcl_HashKeyType *typePtr); /* 423 */
     void (*tcl_InitObjHashTable) (Tcl_HashTable *tablePtr); /* 424 */
     void * (*tcl_CommandTraceInfo) (Tcl_Interp *interp, const char *varName, int flags, Tcl_CommandTraceProc *procPtr, void *prevClientData); /* 425 */
@@ -2416,7 +2420,7 @@ typedef struct TclStubs {
     int (*tcl_LimitTypeExceeded) (Tcl_Interp *interp, int type); /* 529 */
     void (*tcl_LimitTypeSet) (Tcl_Interp *interp, int type); /* 530 */
     void (*tcl_LimitTypeReset) (Tcl_Interp *interp, int type); /* 531 */
-    int (*tcl_LimitGetCommands) (Tcl_Interp *interp); /* 532 */
+    Tcl_Size (*tcl_LimitGetCommands) (Tcl_Interp *interp); /* 532 */
     void (*tcl_LimitGetTime) (Tcl_Interp *interp, Tcl_Time *timeLimitPtr); /* 533 */
     int (*tcl_LimitGetGranularity) (Tcl_Interp *interp, int type); /* 534 */
     Tcl_InterpState (*tcl_SaveInterpState) (Tcl_Interp *interp, int status); /* 535 */
@@ -2541,7 +2545,7 @@ typedef struct TclStubs {
     int (*tcl_UtfCharComplete) (const char *src, Tcl_Size length); /* 654 */
     const char * (*tcl_UtfNext) (const char *src); /* 655 */
     const char * (*tcl_UtfPrev) (const char *src, const char *start); /* 656 */
-    void (*reserved657)(void);
+    int (*tcl_FSTildeExpand) (Tcl_Interp *interp, const char *path, Tcl_DString *dsPtr); /* 657 */
     int (*tcl_ExternalToUtfDStringEx) (Tcl_Interp *interp, Tcl_Encoding encoding, const char *src, Tcl_Size srcLen, int flags, Tcl_DString *dsPtr, Tcl_Size *errorLocationPtr); /* 658 */
     int (*tcl_UtfToExternalDStringEx) (Tcl_Interp *interp, Tcl_Encoding encoding, const char *src, Tcl_Size srcLen, int flags, Tcl_DString *dsPtr, Tcl_Size *errorLocationPtr); /* 659 */
     int (*tcl_AsyncMarkFromSignal) (Tcl_AsyncHandler async, int sigNumber); /* 660 */
@@ -3375,7 +3379,8 @@ extern const TclStubs *tclStubsPtr;
 /* Slot 419 is reserved */
 /* Slot 420 is reserved */
 /* Slot 421 is reserved */
-/* Slot 422 is reserved */
+#define Tcl_CreateHashEntry \
+	(tclStubsPtr->tcl_CreateHashEntry) /* 422 */
 #define Tcl_InitCustomHashTable \
 	(tclStubsPtr->tcl_InitCustomHashTable) /* 423 */
 #define Tcl_InitObjHashTable \
@@ -3841,7 +3846,8 @@ extern const TclStubs *tclStubsPtr;
 	(tclStubsPtr->tcl_UtfNext) /* 655 */
 #define Tcl_UtfPrev \
 	(tclStubsPtr->tcl_UtfPrev) /* 656 */
-/* Slot 657 is reserved */
+#define Tcl_FSTildeExpand \
+	(tclStubsPtr->tcl_FSTildeExpand) /* 657 */
 #define Tcl_ExternalToUtfDStringEx \
 	(tclStubsPtr->tcl_ExternalToUtfDStringEx) /* 658 */
 #define Tcl_UtfToExternalDStringEx \
@@ -3969,9 +3975,9 @@ extern const TclStubs *tclStubsPtr;
 	    Tcl_SetObjResult(interp, Tcl_NewStringObj(__result, -1)); \
 	    if (__result != NULL && __freeProc != NULL && __freeProc != TCL_VOLATILE) { \
 		if (__freeProc == TCL_DYNAMIC) { \
-		    Tcl_Free((char *)__result); \
+		    Tcl_Free((void *)__result); \
 		} else { \
-		    (*__freeProc)((char *)__result); \
+		    (*__freeProc)((void *)__result); \
 		} \
 	    } \
 	} while(0)
@@ -4025,6 +4031,7 @@ extern const TclStubs *tclStubsPtr;
 
 #undef Tcl_GetString
 #undef Tcl_GetUnicode
+#undef Tcl_CreateHashEntry
 #define Tcl_GetString(objPtr) \
 	Tcl_GetStringFromObj(objPtr, (Tcl_Size *)NULL)
 #define Tcl_GetUnicode(objPtr) \
