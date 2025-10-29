@@ -5166,7 +5166,11 @@ proc ::critcl::SetupTkStubs {fd mintcl} {
     if {[package vcompare $mintcl 8.6] < 0} {
 	# Before 8.6+. tkStubsPtr and tkIntXlibStubsPtr are not const yet.
 	set contents [Cat [Template tkstubs_noconst.c]]
+    } elseif {[package vcompare $mintcl 9] >= 0} {
+	# Tcl 9+
+	set contents [Cat [Template tkstubs9.c]]
     } else {
+	# between 8.6 and 9
 	set contents [Cat [Template tkstubs.c]]
     }
 
