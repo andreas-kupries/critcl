@@ -681,7 +681,7 @@ proc ::critcl::MakeVariadicTypeFor {type} {
 	lappend map @ltype@ $ltype
 
 	argtype $ltype [string map $map {
-	    int src, dst, leftovers = @C;
+	    Tcl_Size src, dst, leftovers = @C;
 	    @A.c = leftovers;
 	    @A.v = (@type@*) ((!leftovers) ? 0 : ckalloc (leftovers * sizeof (@type@)));
 	    @A.o = (Tcl_Obj**) &ov[@I];
@@ -702,7 +702,7 @@ proc ::critcl::MakeVariadicTypeFor {type} {
 
 	    typedef struct critcl_@ltype@ {
 		Tcl_Obj** o; /* Original object array */
-		int       c; /* Element count */
+		Tcl_Size  c; /* Element count */
 		@type@*   v; /* Allocated array of the elements */
 	    } critcl_@ltype@;
 
@@ -4152,8 +4152,8 @@ proc ::critcl::EmitShimVariables {adb rtype} {
 	Emitln "  $d"
     }
     if {[dict get $adb hasoptional]} {
-	Emitln "  int idx_;"
-	Emitln "  int argc_;"
+	Emitln "  Tcl_Size idx_;"
+	Emitln "  Tcl_Size argc_;"
     }
 
     # Result variable, source for the C -> Tcl conversion.
@@ -6313,7 +6313,7 @@ proc ::critcl::Initialize {} {
 
     argtypesupport variadic_object {
 	typedef struct critcl_variadic_object {
-	    int             c;
+	    Tcl_Size        c;
 	    Tcl_Obj* const* v;
 	} critcl_variadic_object;
     }
