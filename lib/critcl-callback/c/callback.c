@@ -21,7 +21,7 @@ critcl_callback_new (Tcl_Interp* interp, Tcl_Size objc, Tcl_Obj** objv, Tcl_Size
 		interp, objc, objv, nargs);
 
     critcl_callback_p c = ALLOC (critcl_callback);
-    int total  = objc + nargs;
+    Tcl_Size total  = objc + nargs;
     c->nfixed  = objc;
     c->nargs   = nargs;
     c->command = NALLOC (Tcl_Obj*, total);
@@ -63,7 +63,7 @@ critcl_callback_destroy (critcl_callback_p callback)
 {
     TRACE_FUNC ("((critcl_callback_p) %p)", callback);
 
-    int i;
+    Tcl_Size i;
     for (i = callback->nfixed-1; i > 0; i--) {
 	Tcl_DecrRefCount (callback->command [i]);
     }

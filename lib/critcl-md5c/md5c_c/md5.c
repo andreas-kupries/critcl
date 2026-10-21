@@ -114,9 +114,10 @@ MD5_CTX *mdContext;
    account for the presence of each of the characters inBuf[0..inLen-1]
    in the message whose digest is being computed.
  */
-void MD5Update (mdContext, inBuf, inLen)
-register MD5_CTX *mdContext; unsigned char *inBuf;
-		 unsigned int inLen;
+void MD5Update (
+register MD5_CTX *mdContext, unsigned char *inBuf,
+		 size_t inLen
+	       )
 {
   register int i, ii;
   int mdi;
