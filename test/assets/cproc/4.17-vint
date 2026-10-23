@@ -13,7 +13,7 @@
 
 	    typedef struct critcl_variadic_int {
 		Tcl_Obj** o; /* Original object array */
-		int       c; /* Element count */
+		Tcl_Size  c; /* Element count */
 		int*   v; /* Allocated array of the elements */
 	    } critcl_variadic_int;
 
@@ -37,7 +37,7 @@ tcl__aproc0(ClientData cd, Tcl_Interp *interp, Tcl_Size oc, Tcl_Obj *CONST ov[])
   critcl_variadic_int _args;
   /* (int args, ...) - - -- --- ----- -------- */
 	{
-	int src, dst, leftovers = (oc-1);
+	Tcl_Size src, dst, leftovers = (oc-1);
 	    _args.c = leftovers;
 	    _args.v = (int*) ((!leftovers) ? 0 : ckalloc (leftovers * sizeof (int)));
 	    _args.o = (Tcl_Obj**) &ov[1];

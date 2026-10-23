@@ -11,8 +11,8 @@ tcl__aproc0(ClientData cd, Tcl_Interp *interp, Tcl_Size oc, Tcl_Obj *CONST ov[])
 {
   int _has_anargument = 0;
   int _anargument;
-  int idx_;
-  int argc_;
+  Tcl_Size idx_;
+  Tcl_Size argc_;
 
   if ((oc < 1) || (2 < oc)) {
     Tcl_WrongNumArgs(interp, 1, ov, "?anargument?");
