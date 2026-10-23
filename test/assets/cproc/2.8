@@ -14,8 +14,8 @@ tcl__aproc0(ClientData cd, Tcl_Interp *interp, Tcl_Size oc, Tcl_Obj *CONST ov[])
   int _y;
   int _has_z = 0;
   int _z;
-  int idx_;
-  int argc_;
+  Tcl_Size idx_;
+  Tcl_Size argc_;
 
   if ((oc < 2) || (4 < oc)) {
     Tcl_WrongNumArgs(interp, 1, ov, "?x? y ?z?");
